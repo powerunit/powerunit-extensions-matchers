@@ -50,7 +50,7 @@
 
 	<scm>
 		<connection>scm:git:git@github.com:powerunit/powerunit-extensions-matchers.git</connection>
-		<url>https://github.com/powerunit/powerunit/</url>
+		<url>https://github.com/powerunit/powerunit-extensions-matchers/</url>
 		<developerConnection>scm:git:git@github.com:powerunit/powerunit-extensions-matchers.git</developerConnection>
 	</scm>
 	<properties>
