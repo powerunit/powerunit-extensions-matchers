@@ -1,0 +1,20 @@
+<html>
+<head>
+<title>Powerunit Extensions Matchers</title>
+</head>
+<body>
+	This is an extension to Powerunit to generate matchers for POJO.
+	<p />
+	This library provides several annotation processors :
+	<ul>
+		<li><b>Processing of the ProvideMatchers annotation.</b><br />This
+			processor create <pre>Matcher</pre> for each annotated class, in the
+			following way :</li>
+		<li><b>Processing of the Factory annotation (from hamcrest).</b><br />
+			<i>This processor requires to set the parameter <pre>ch.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets</pre>
+				(<pre>-A</pre> parameter).
+		</i><br />This processor create <pre>DSL</pre> interface for each method
+			annotated, in the following way :</li>
+	</ul>
+</body>
+</html>

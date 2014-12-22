@@ -281,7 +281,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<excludePackageNames>ch.powerunit.impl*:ch.powerunit.matchers*:ch.powerunit.processor*:ch.powerunit.report*:ch.powerunit.rules.impl*</excludePackageNames>
+					<excludePackageNames>ch.powerunit.extensions.matchers.factoryprocessor*:ch.powerunit.extensions.matchers.provideprocessor*</excludePackageNames>
 					<docfilessubdirs>true</docfilessubdirs>
 					<linksource>true</linksource>
 					<links>
@@ -427,7 +427,7 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.10.1</version>
 				<configuration>
-					<excludePackageNames>ch.powerunit.impl*:ch.powerunit.matchers*:ch.powerunit.processor*:ch.powerunit.report*:ch.powerunit.rules.impl*</excludePackageNames>
+					<excludePackageNames>ch.powerunit.extensions.matchers.factoryprocessor*:ch.powerunit.extensions.matchers.provideprocessor*</excludePackageNames>
 					<docfilessubdirs>true</docfilessubdirs>
 					<linksource>true</linksource>
 					<links>

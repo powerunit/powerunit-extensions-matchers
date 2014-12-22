@@ -26,11 +26,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.annotation.Inherited;
 
-
+/**
+ * This annotation can be used on a java class, to mark this class as supporting
+ * generation of hamcrest matcher.
+ * 
+ * @author borettim
+ *
+ */
 @Documented
 @Retention(RetentionPolicy.SOURCE)
 @Target({ ElementType.TYPE })
 @Inherited
 public @interface ProvideMatchers {
-	
+
 }
