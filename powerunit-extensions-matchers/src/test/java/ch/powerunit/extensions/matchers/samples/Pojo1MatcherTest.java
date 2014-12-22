@@ -17,20 +17,23 @@
  * You should have received a copy of the GNU General Public License
  * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
  */
-package ch.powerunit.extensions.matchers;
+package ch.powerunit.extensions.matchers.samples;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.lang.annotation.Inherited;
+import ch.powerunit.Ignore;
+import ch.powerunit.Test;
+import ch.powerunit.TestSuite;
 
-
-@Documented
-@Retention(RetentionPolicy.SOURCE)
-@Target({ ElementType.TYPE })
-@Inherited
-public @interface ProvideMatchers {
+public class Pojo1MatcherTest implements TestSuite {
+	@Test
+	public void testOKMatcher() {
+		Pojo1 p = new Pojo1();
+		assertThat(p).is(Pojo1Matchers.pojo1With());
+	}
 	
+	@Test
+	@Ignore
+	public void testKOMatcher() {
+		Pojo1 p = new Pojo1();
+		assertThat(p).is(Pojo1Matchers.pojo1With().msg1("x"));
+	}
 }

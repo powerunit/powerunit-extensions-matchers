@@ -17,20 +17,40 @@
  * You should have received a copy of the GNU General Public License
  * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
  */
-package ch.powerunit.extensions.matchers;
+package ch.powerunit.extensions.matchers.samples;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.lang.annotation.Inherited;
+import java.util.List;
 
+import ch.powerunit.extensions.matchers.ProvideMatchers;
 
-@Documented
-@Retention(RetentionPolicy.SOURCE)
-@Target({ ElementType.TYPE })
-@Inherited
-public @interface ProvideMatchers {
+/**
+ * @author borettim
+ *
+ */
+@ProvideMatchers
+public class Pojo1 {
+	private String msg1;
+
+	public String msg2;
 	
+	public int msg3;
+	
+	public String[] msg4;
+	
+	public int[] msg5;
+	
+	public List<String> msg6;
+	
+	public List<String[]> msg7;
+	
+	public List<String>[] msg8;
+
+	public String getMsg1() {
+		return msg1;
+	}
+
+	public void setMsg1(String msg1) {
+		this.msg1 = msg1;
+	}
+
 }

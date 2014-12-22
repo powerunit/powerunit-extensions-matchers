@@ -17,20 +17,15 @@
  * You should have received a copy of the GNU General Public License
  * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
  */
-package ch.powerunit.extensions.matchers;
+package ch.powerunit.extensions.matchers.samples;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.lang.annotation.Inherited;
+import ch.powerunit.extensions.matchers.ProvideMatchers;
 
+/**
+ * @author borettim
+ *
+ */
+@ProvideMatchers
+public enum WrongAnnotatedEnum {
 
-@Documented
-@Retention(RetentionPolicy.SOURCE)
-@Target({ ElementType.TYPE })
-@Inherited
-public @interface ProvideMatchers {
-	
 }

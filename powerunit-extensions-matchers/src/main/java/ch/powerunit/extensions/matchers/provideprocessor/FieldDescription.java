@@ -17,20 +17,36 @@
  * You should have received a copy of the GNU General Public License
  * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
  */
-package ch.powerunit.extensions.matchers;
+package ch.powerunit.extensions.matchers.provideprocessor;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.lang.annotation.Inherited;
+public class FieldDescription {
+	private final String fieldAccessor;
+	private final String fieldName;
+	private final String methodFieldName;
+	private final String fieldType;
 
+	public FieldDescription(String fieldAccessor, String fieldName,
+			String methodFieldName, String fieldType) {
+		this.fieldAccessor = fieldAccessor;
+		this.fieldName = fieldName;
+		this.methodFieldName = methodFieldName;
+		this.fieldType = fieldType;
+	}
 
-@Documented
-@Retention(RetentionPolicy.SOURCE)
-@Target({ ElementType.TYPE })
-@Inherited
-public @interface ProvideMatchers {
-	
+	public String getFieldAccessor() {
+		return fieldAccessor;
+	}
+
+	public String getFieldName() {
+		return fieldName;
+	}
+
+	public String getMethodFieldName() {
+		return methodFieldName;
+	}
+
+	public String getFieldType() {
+		return fieldType;
+	}
+
 }
