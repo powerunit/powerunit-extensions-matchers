@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
@@ -41,7 +42,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
@@ -52,6 +52,37 @@ import org.hamcrest.Factory;
 @SupportedAnnotationTypes({ "org.hamcrest.Factory" })
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class FactoryAnnotationsProcessor extends AbstractProcessor {
+
+	private String targets;
+
+	private List<String[]> targetClass;
+
+	private Map<String, Collection<ExecutableElement>> build;
+
+	@Override
+	public synchronized void init(ProcessingEnvironment processingEnv) {
+		super.init(processingEnv);
+		targets = processingEnv.getOptions().get(
+				FactoryAnnotationsProcessor.class.getName() + ".targets");
+		if (targets == null || targets.trim().equals("")) {
+			processingEnv.getMessager().printMessage(
+					Kind.MANDATORY_WARNING,
+					"The parameter `"
+							+ FactoryAnnotationsProcessor.class.getName()
+							+ ".targets` is missing, please use it.");
+		} else {
+			targetClass = new ArrayList<>();
+			build = new HashMap<>();
+			for (String s : targets.split("\\s*;\\s*")) {
+				String l1[] = s.split("\\s*:\\s*");
+				build.put(l1[1], new ArrayList<>());
+				for (String l2 : l1[0].split("\\s*,\\s*")) {
+					targetClass.add(new String[] { l2, l1[1] });
+				}
+			}
+		}
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -67,30 +98,19 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 		Messager messageUtils = processingEnv.getMessager();
 		TypeElement factoryAnnotationTE = elementsUtils
 				.getTypeElement("org.hamcrest.Factory");
-		String targets = processingEnv.getOptions().get(
-				FactoryAnnotationsProcessor.class.getName() + ".targets");
+		if (targets == null || targets.trim().equals("")) {
+			return false;
+		}
 
 		if (!roundEnv.processingOver()) {
-			if (targets == null || targets.trim().equals("")) {
-				messageUtils.printMessage(
-						Kind.MANDATORY_WARNING,
-						"The parameter `"
-								+ FactoryAnnotationsProcessor.class.getName()
-								+ ".targets` is missing, please use it.");
-				return false;
-			}
-			List<String[]> targetClass = new ArrayList<>();
-			Map<String, Collection<ExecutableElement>> build = new HashMap<>();
-			for (String s : targets.split("\\s*;\\s*")) {
-				String l1[] = s.split("\\s*:\\s*");
-				build.put(l1[1], new ArrayList<>());
-				for (String l2 : l1[0].split("\\s*,\\s*")) {
-					targetClass.add(new String[] { l2, l1[1] });
-				}
-			}
+
 			Set<? extends Element> elements = roundEnv
 					.getElementsAnnotatedWith(Factory.class);
 			for (Element e : elements) {
+				if (!roundEnv.getRootElements().contains(
+						e.getEnclosingElement())) {
+					break;
+				}
 				ExecutableElement ee = e.accept(new FactoryElementVisitor(this,
 						elementsUtils, filerUtils, typesUtils, messageUtils,
 						factoryAnnotationTE), null);
@@ -104,13 +124,10 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 					}
 				}
 			}
+		} else {
 			for (Map.Entry<String, Collection<ExecutableElement>> target : build
 					.entrySet()) {
 				String targetName = target.getKey();
-				if (handled.contains(targetName)) {
-					break;
-				}
-				handled.add(targetName);
 				try {
 					JavaFileObject jfo = filerUtils.createSourceFile(
 							targetName,
@@ -130,6 +147,9 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 								+ FactoryAnnotationsProcessor.class.getName()
 								+ "\")");
 						wjfo.println("public interface " + cName + " {");
+						wjfo.println();
+						wjfo.println("  public static "+cName+" DSL = new "+cName+"() {};");
+						wjfo.println();
 						for (ExecutableElement ee : target.getValue()) {
 							wjfo.println("  // " + ee.getSimpleName());
 							String doc = elementsUtils.getDocComment(ee);
@@ -177,8 +197,6 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 		}
 		return true;
 	}
-
-	private Set<String> handled = new HashSet<>();
 
 	AnnotationMirror getFactoryAnnotation(TypeElement factoryAnnotationTE,
 			Collection<? extends AnnotationMirror> annotations) {

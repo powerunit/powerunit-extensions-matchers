@@ -23,17 +23,18 @@ import ch.powerunit.Ignore;
 import ch.powerunit.Test;
 import ch.powerunit.TestSuite;
 
-public class Pojo2MatcherTest implements TestSuite, AllMatchers {
+public class Pojo2MatcherTest implements TestSuite {
 	@Test
 	public void testOKMatcher() {
 		Pojo2 p = new Pojo2();
-		assertThat(p).is(pojo2With());
+		assertThat(p).is(AllMatchers.DSL.pojo2With());
 	}
 
 	@Test
 	@Ignore
 	public void testKOMatcher() {
 		Pojo2 p = new Pojo2();
-		assertThat(p).is(pojo2With(pojo1With().msg1("x")));
+		assertThat(p).is(
+				AllMatchers.DSL.pojo2With(AllMatchers.DSL.pojo1With().msg1("x")));
 	}
 }

@@ -69,17 +69,17 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				.getTypeElement("ch.powerunit.extensions.matchers.ProvideMatchers");
 		TypeElement objectTE = elementsUtils.getTypeElement("java.lang.Object");
 
-		if (!roundEnv.processingOver()) {
-			Set<? extends Element> elements = roundEnv
-					.getElementsAnnotatedWith(ProvideMatchers.class);
-			for (Element e : elements) {
-				TypeElement te = e.accept(new ProvidesMatchersElementVisitor(
-						this, elementsUtils, filerUtils, typesUtils,
-						messageUtils, provideMatchersTE), null);
-				if (te != null) {
-					processOneTypeElement(elementsUtils, filerUtils,
-							typesUtils, messageUtils, te, objectTE);
-				}
+		Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(ProvideMatchers.class);
+		for (Element e : elements) {
+			if (!roundEnv.getRootElements().contains(e)) {
+				break;
+			}
+			TypeElement te = e.accept(new ProvidesMatchersElementVisitor(this,
+					elementsUtils, filerUtils, typesUtils, messageUtils,
+					provideMatchersTE), null);
+			if (te != null) {
+				processOneTypeElement(elementsUtils, filerUtils, typesUtils,
+						messageUtils, te, objectTE);
 			}
 		}
 		return true;
@@ -160,7 +160,11 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 					wjfo.println("     * Add a validation on the field "
 							+ f.getFieldName() + ".");
 					wjfo.println("     *");
-					wjfo.println("     * {@link "+inputClassName+"#"+f.getFieldAccessor()+" This field is accessed by using this approach}.");
+					wjfo.println("     * {@link "
+							+ inputClassName
+							+ "#"
+							+ f.getFieldAccessor()
+							+ " This field is accessed by using this approach}.");
 					wjfo.println("     *");
 					wjfo.println("     * @param matcher a Matcher on the field.");
 					wjfo.println("     * @return the DSL to continue the construction of the matcher.");
@@ -173,7 +177,11 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 					wjfo.println("     * Add a validation on the field "
 							+ f.getFieldName() + ".");
 					wjfo.println("     *");
-					wjfo.println("     * {@link "+inputClassName+"#"+f.getFieldAccessor()+" This field is accessed by using this approach}.");
+					wjfo.println("     * {@link "
+							+ inputClassName
+							+ "#"
+							+ f.getFieldAccessor()
+							+ " This field is accessed by using this approach}.");
 					wjfo.println("     *");
 					wjfo.println("     * @param value an expected value for the field, which will be compared using the is matcher.");
 					wjfo.println("     * @return the DSL to continue the construction of the matcher.");

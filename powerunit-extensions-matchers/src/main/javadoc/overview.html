@@ -8,13 +8,38 @@
 	This library provides several annotation processors :
 	<ul>
 		<li><b>Processing of the ProvideMatchers annotation.</b><br />This
-			processor create <pre>Matcher</pre> for each annotated class, in the
-			following way :</li>
+			processor create <code>Matcher</code> for each annotated class, in
+			the following way :
+			<ul>
+				<li>For public field, create a dedicated matcher, accessing
+					this field by using direct access.</li>
+				<li>For method named <i>getXXX</i>, which haven't any parameter
+					and return something, assume this is a field and create a dedicated
+					matcher, accessing it by using this method.
+				</li>
+				<li>If this class extends another one (outside <i>Object</i>),
+					a special matcher will be created to check the super class
+					information.
+				</li>
+				<li>Create one (or two if a super class exists) methods to
+					build the matcher. These method are named based on the class name,
+					followed by <i>with</i>.
+				</li>
+			</ul></li>
 		<li><b>Processing of the Factory annotation (from hamcrest).</b><br />
 			<i>This processor requires to set the parameter <code>ch.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets</code>
 				(<code>-A</code> parameter).
-		</i><br />This processor create <code>DSL</code> interface for each method
-			annotated, in the following way :</li>
+		</i><br />This processor create <code>DSL</code> interface for each
+			method annotated, in the following way :
+			<ul>
+				<li>Static method annotated with the <code>Factory</code>
+					annotation are exposed in an interface, based on the mapping
+					defined by the parameter.
+				</li>
+				<li>The parameter is a list (; separated) on target block,
+					which defines a mapping between regular expression (, separated)
+					and a target class (separated with a :)</li>
+			</ul></li>
 	</ul>
 </body>
 </html>
