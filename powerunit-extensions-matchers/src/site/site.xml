@@ -30,19 +30,6 @@
   		<link rel="shortcut icon" type="image/png" href="logo.png" />
   	</head>
     <menu ref="reports" />
-    <menu name="General documentations">
-      <item name="FAQ" href="faq.html" />
-      <item name="Release principles" href="release.html" />
-      <item name="Samples" collapse="true" href="helloworldmaven.html">
-      	<item name="HelloWorld Test" href="helloworldmaven.html"/>
-      	<item name="EqualsVerifier integration" href="equalsverifier.html"/>
-      	<item name="Bean-Matchers integration" href="beanmatchers.html"/>
-      	<item name="Parameterized tests" href="parameters.html"/>
-      	<item name="Rule chain" href="rules.html"/>
-      	<item name="Assertions" href="assertion.html"/>
-      	<item name="Tests framework" href="framework.html"/>
-      </item>
-    </menu>
     <menu name="Linked projects">
       <item name="PowerUnit" href="http://www.powerunit.ch/powerunit"/>
     </menu>
