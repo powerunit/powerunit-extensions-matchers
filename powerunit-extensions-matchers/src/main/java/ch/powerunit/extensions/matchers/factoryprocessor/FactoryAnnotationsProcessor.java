@@ -24,7 +24,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,6 +41,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
@@ -57,7 +57,27 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 
 	private List<String[]> targetClass;
 
-	private Map<String, Collection<ExecutableElement>> build;
+	private class Entry {
+		private final ExecutableElement element;
+
+		private final String doc;
+
+		public Entry(ExecutableElement element, String doc) {
+			this.element = element;
+			this.doc = doc;
+		}
+
+		public ExecutableElement getElement() {
+			return element;
+		}
+
+		public String getDoc() {
+			return doc;
+		}
+
+	}
+
+	private Map<String, Collection<Entry>> build;
 
 	@Override
 	public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -118,21 +138,24 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 					for (String regex[] : targetClass) {
 						if (ee.getEnclosingElement().asType().toString()
 								.matches(regex[0])) {
-							build.get(regex[1]).add(ee);
+							build.get(regex[1]).add(
+									new Entry(ee, elementsUtils
+											.getDocComment(ee)));
 							break;
 						}
 					}
+
 				}
 			}
 		} else {
-			for (Map.Entry<String, Collection<ExecutableElement>> target : build
-					.entrySet()) {
+			for (Map.Entry<String, Collection<Entry>> target : build.entrySet()) {
 				String targetName = target.getKey();
 				try {
 					JavaFileObject jfo = filerUtils.createSourceFile(
 							targetName,
-							target.getValue().toArray(
-									new ExecutableElement[] {}));
+							target.getValue().stream()
+									.map((e) -> e.getElement())
+									.toArray(ExecutableElement[]::new));
 					try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
 						String fullName = targetName;
 						String pName = fullName.replaceAll("\\.[^.]+$", "");
@@ -148,11 +171,13 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 								+ "\")");
 						wjfo.println("public interface " + cName + " {");
 						wjfo.println();
-						wjfo.println("  public static "+cName+" DSL = new "+cName+"() {};");
+						wjfo.println("  public static " + cName + " DSL = new "
+								+ cName + "() {};");
 						wjfo.println();
-						for (ExecutableElement ee : target.getValue()) {
+						for (Entry entry : target.getValue()) {
+							ExecutableElement ee = entry.getElement();
 							wjfo.println("  // " + ee.getSimpleName());
-							String doc = elementsUtils.getDocComment(ee);
+							String doc = entry.getDoc();
 							if (doc != null) {
 								wjfo.println("  /**\n   * "
 										+ doc.replaceAll("\n", "\n   * ")
@@ -170,7 +195,11 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 											+ ve.getSimpleName().toString())
 									.collect(Collectors.joining(",")));
 							wjfo.println(") {");
-							wjfo.print("    return ");
+							if (TypeKind.VOID != ee.getReturnType().getKind()) {
+								wjfo.print("    return ");
+							} else {
+								wjfo.print("    ");
+							}
 							wjfo.print(elementsUtils.getPackageOf(ee
 									.getEnclosingElement()));
 							wjfo.print(".");

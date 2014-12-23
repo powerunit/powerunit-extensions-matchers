@@ -19,6 +19,8 @@
  */
 package ch.powerunit.extensions.matchers.samples;
 
+import org.hamcrest.Factory;
+
 import ch.powerunit.Ignore;
 import ch.powerunit.Test;
 import ch.powerunit.TestSuite;
@@ -36,4 +38,7 @@ public class Pojo1MatcherTest implements TestSuite {
 		Pojo1 p = new Pojo1();
 		assertThat(p).is(Pojo1Matchers.pojo1With().msg1("x"));
 	}
+	
+	@Factory
+	public static void test() {}
 }
