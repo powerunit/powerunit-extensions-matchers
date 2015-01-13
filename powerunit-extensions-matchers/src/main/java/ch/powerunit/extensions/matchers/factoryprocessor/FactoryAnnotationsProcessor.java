@@ -40,6 +40,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
@@ -197,9 +198,25 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 										+ ee.getEnclosingElement()
 												.getSimpleName().toString()
 										+ "(");
-								wjfo.print(ee.getParameters().stream()
-										.map((ve) -> ve.asType().toString())
-										.collect(Collectors.joining(",")));
+								wjfo.print(ee
+										.getParameters()
+										.stream()
+										.map((ve) -> {
+											Element e = typesUtils.asElement(ve
+													.asType());
+											if (e == null) {
+												return ve.asType().toString();
+											} else {
+												PackageElement pe = elementsUtils
+														.getPackageOf(e);
+												return pe.toString()
+														+ "."
+														+ typesUtils
+																.asElement(
+																		ve.asType())
+																.getSimpleName();
+											}
+										}).collect(Collectors.joining(",")));
 								wjfo.print(")");
 								wjfo.println("\n   */");
 							} else {
@@ -212,9 +229,25 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 										+ ee.getEnclosingElement()
 												.getSimpleName().toString()
 										+ "(");
-								wjfo.print(ee.getParameters().stream()
-										.map((ve) -> ve.asType().toString())
-										.collect(Collectors.joining(",")));
+								wjfo.print(ee
+										.getParameters()
+										.stream()
+										.map((ve) -> {
+											Element e = typesUtils.asElement(ve
+													.asType());
+											if (e == null) {
+												return ve.asType().toString();
+											} else {
+												PackageElement pe = elementsUtils
+														.getPackageOf(e);
+												return pe.toString()
+														+ "."
+														+ typesUtils
+																.asElement(
+																		ve.asType())
+																.getSimpleName();
+											}
+										}).collect(Collectors.joining(",")));
 								wjfo.println(")");
 								wjfo.println("   */");
 							}

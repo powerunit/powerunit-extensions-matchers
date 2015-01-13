@@ -51,4 +51,7 @@ public class Pojo1MatcherTest implements TestSuite {
 	 */
 	@Factory
 	public static void test(String name1,String name2) {}
+	
+	@Factory
+	public static void test(int x) {}
 }
