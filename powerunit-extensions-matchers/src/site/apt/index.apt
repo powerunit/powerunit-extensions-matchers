@@ -10,19 +10,16 @@ PowerUnit Extension Matchers
  For instance, for the following class :
  
 +-----
+/**
+ * @author borettim
+ *
+ */
 @ProvideMatchers
-public class Sample {
-	private String field1;
+public class PojoShort {
+	public String msg1;
 
-	public String getField1() {
-		return field1;
-	}
-
-	public void setField1(String field1) {
-		this.field1 = field1;
-	}
-	
 }
+
 +-----
 
  Then, the following class will be generated :
@@ -59,7 +56,7 @@ public final class SampleMatchers {
      * @param matcher a Matcher on the field.
      * @return the DSL to continue the construction of the matcher.
      */
-    SampleMatcher field1(org.hamcrest.Matcher<? super java.lang.String> matcher);
+    org.hamcrest.Matcher<Sample> field1(org.hamcrest.Matcher<? super java.lang.String> matcher);
     /**
      * Add a validation on the field field1.
      *
@@ -68,20 +65,20 @@ public final class SampleMatchers {
      * @param value an expected value for the field, which will be compared using the is matcher.
      * @return the DSL to continue the construction of the matcher.
      */
-    SampleMatcher field1(java.lang.String value);
+    org.hamcrest.Matcher<Sample> field1(java.lang.String value);
   }
 
   private static class SampleMatcherImpl extends org.hamcrest.TypeSafeDiagnosingMatcher<Sample> implements SampleMatcher {
     private Field1Matcher field1 = new Field1Matcher(org.hamcrest.Matchers.anything());
 
     @Override
-    public SampleMatcher field1(org.hamcrest.Matcher<? super java.lang.String> matcher) {
+    public org.hamcrest.Matcher<Sample> field1(org.hamcrest.Matcher<? super java.lang.String> matcher) {
       field1= new Field1Matcher(matcher);
       return this;
     }
 
     @Override
-    public SampleMatcher field1(java.lang.String value) {
+    public org.hamcrest.Matcher<Sample> field1(java.lang.String value) {
       return field1(org.hamcrest.Matchers.is(value));
     }
 
@@ -117,10 +114,13 @@ public final class SampleMatchers {
   }
 
 }
+
 +-----
 
  A new method <<<sampleWith>>> is available, to start the building of the matcher. The field can
- be specified directly by his name (<<<sampleWith().field1("v")>>>). 
+ be specified directly by his name (<<<sampleWith().field1("v")>>>). In case there is several 
+ fields, the various methods of the interface return the same interface, to be able to set the
+ various field.
  
 * DSL Generation
 

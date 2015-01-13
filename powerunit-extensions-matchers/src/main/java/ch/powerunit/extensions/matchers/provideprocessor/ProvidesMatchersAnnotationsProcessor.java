@@ -69,7 +69,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				.getTypeElement("ch.powerunit.extensions.matchers.ProvideMatchers");
 		TypeElement objectTE = elementsUtils.getTypeElement("java.lang.Object");
 
-		Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(ProvideMatchers.class);
+		Set<? extends Element> elements = roundEnv
+				.getElementsAnnotatedWith(ProvideMatchers.class);
 		for (Element e : elements) {
 			if (!roundEnv.getRootElements().contains(e)) {
 				break;
@@ -169,10 +170,17 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 					wjfo.println("     * @param matcher a Matcher on the field.");
 					wjfo.println("     * @return the DSL to continue the construction of the matcher.");
 					wjfo.println("     */");
-					wjfo.println("    " + shortClassName + "Matcher "
-							+ f.getFieldName()
-							+ "(org.hamcrest.Matcher<? super "
-							+ f.getFieldType() + "> matcher);");
+					if (fields.size() == 1) {
+						wjfo.println("    org.hamcrest.Matcher<"
+								+ shortClassName + "> " + f.getFieldName()
+								+ "(org.hamcrest.Matcher<? super "
+								+ f.getFieldType() + "> matcher);");
+					} else {
+						wjfo.println("    " + shortClassName + "Matcher "
+								+ f.getFieldName()
+								+ "(org.hamcrest.Matcher<? super "
+								+ f.getFieldType() + "> matcher);");
+					}
 					wjfo.println("    /**");
 					wjfo.println("     * Add a validation on the field "
 							+ f.getFieldName() + ".");
@@ -186,9 +194,15 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 					wjfo.println("     * @param value an expected value for the field, which will be compared using the is matcher.");
 					wjfo.println("     * @return the DSL to continue the construction of the matcher.");
 					wjfo.println("     */");
-					wjfo.println("    " + shortClassName + "Matcher "
-							+ f.getFieldName() + "(" + f.getFieldType()
-							+ " value);");
+					if (fields.size() == 1) {
+						wjfo.println("    org.hamcrest.Matcher<"
+								+ shortClassName + "> " + f.getFieldName()
+								+ "(" + f.getFieldType() + " value);");
+					} else {
+						wjfo.println("    " + shortClassName + "Matcher "
+								+ f.getFieldName() + "(" + f.getFieldType()
+								+ " value);");
+					}
 				}
 				wjfo.println("  }");
 				wjfo.println();
@@ -217,19 +231,32 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
 				for (FieldDescription f : fields) {
 					wjfo.println("    @Override");
-					wjfo.println("    public " + shortClassName + "Matcher "
-							+ f.getFieldName()
-							+ "(org.hamcrest.Matcher<? super "
-							+ f.getFieldType() + "> matcher) {");
+					if (fields.size() == 1) {
+						wjfo.println("    public org.hamcrest.Matcher<"
+								+ shortClassName + "> " + f.getFieldName()
+								+ "(org.hamcrest.Matcher<? super "
+								+ f.getFieldType() + "> matcher) {");
+					} else {
+						wjfo.println("    public " + shortClassName
+								+ "Matcher " + f.getFieldName()
+								+ "(org.hamcrest.Matcher<? super "
+								+ f.getFieldType() + "> matcher) {");
+					}
 					wjfo.println("      " + f.getFieldName() + "= new "
 							+ f.getMethodFieldName() + "Matcher(matcher);");
 					wjfo.println("      return this;");
 					wjfo.println("    }");
 					wjfo.println();
 					wjfo.println("    @Override");
-					wjfo.println("    public " + shortClassName + "Matcher "
-							+ f.getFieldName() + "(" + f.getFieldType()
-							+ " value) {");
+					if (fields.size() == 1) {
+						wjfo.println("    public org.hamcrest.Matcher<"
+								+ shortClassName + "> " + f.getFieldName()
+								+ "(" + f.getFieldType() + " value) {");
+					} else {
+						wjfo.println("    public " + shortClassName
+								+ "Matcher " + f.getFieldName() + "("
+								+ f.getFieldType() + " value) {");
+					}
 					wjfo.println("      return " + f.getFieldName()
 							+ "(org.hamcrest.Matchers.is(value));");
 					wjfo.println("    }");
