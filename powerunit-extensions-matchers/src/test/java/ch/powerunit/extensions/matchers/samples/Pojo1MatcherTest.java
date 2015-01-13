@@ -41,4 +41,14 @@ public class Pojo1MatcherTest implements TestSuite {
 	
 	@Factory
 	public static void test() {}
+	
+	@Factory
+	public static void test(String name1) {}
+	
+	/**
+	 * @param name1
+	 * @param name2
+	 */
+	@Factory
+	public static void test(String name1,String name2) {}
 }

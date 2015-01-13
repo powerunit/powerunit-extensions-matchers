@@ -164,13 +164,22 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 						wjfo.println("package " + pName + ";");
 						wjfo.println();
 						wjfo.println("/**");
-						wjfo.println(" * Factories ...");
+						wjfo.println(" * Factories generated.");
+						wjfo.println(" * <br/> ");
+						wjfo.println(" * This DSL can be use in several way : ");
+						wjfo.println(" * <ul> ");
+						wjfo.println(" *  <li>By implementing this interface. In this case, all the methods of this interface will be available inside the implementing class.</li>");
+						wjfo.println(" *  <li>By refering the static field named {@link #DSL} which expose all the DSL method.</li>");
+						wjfo.println(" * </ul> ");
 						wjfo.println(" */");
 						wjfo.println("@javax.annotation.Generated(\""
 								+ FactoryAnnotationsProcessor.class.getName()
 								+ "\")");
 						wjfo.println("public interface " + cName + " {");
 						wjfo.println();
+						wjfo.println("  /**");
+						wjfo.println("   * Use this static field to access all the DSL syntax, without be required to implements this interface.");
+						wjfo.println("   */");
 						wjfo.println("  public static " + cName + " DSL = new "
 								+ cName + "() {};");
 						wjfo.println();
@@ -180,8 +189,34 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 							String doc = entry.getDoc();
 							if (doc != null) {
 								wjfo.println("  /**\n   * "
-										+ doc.replaceAll("\n", "\n   * ")
-										+ "\n   */");
+										+ doc.replaceAll("\n", "\n   * "));
+								wjfo.print("   * @see "
+										+ elementsUtils.getPackageOf(ee
+												.getEnclosingElement())
+										+ "#"
+										+ ee.getEnclosingElement()
+												.getSimpleName().toString()
+										+ "(");
+								wjfo.print(ee.getParameters().stream()
+										.map((ve) -> ve.asType().toString())
+										.collect(Collectors.joining(",")));
+								wjfo.print(")");
+								wjfo.println("\n   */");
+							} else {
+								wjfo.println("  /**");
+								wjfo.println("   * No javadoc found from the source method.");
+								wjfo.print("   * @see "
+										+ elementsUtils.getPackageOf(ee
+												.getEnclosingElement())
+										+ "#"
+										+ ee.getEnclosingElement()
+												.getSimpleName().toString()
+										+ "(");
+								wjfo.print(ee.getParameters().stream()
+										.map((ve) -> ve.asType().toString())
+										.collect(Collectors.joining(",")));
+								wjfo.println(")");
+								wjfo.println("   */");
 							}
 							wjfo.print("  default ");
 							wjfo.print(ee.getReturnType().toString());
