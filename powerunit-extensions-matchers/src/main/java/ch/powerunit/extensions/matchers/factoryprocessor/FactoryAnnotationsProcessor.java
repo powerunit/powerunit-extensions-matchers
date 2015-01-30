@@ -252,6 +252,24 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 								wjfo.println("   */");
 							}
 							wjfo.print("  default ");
+							if (!ee.getTypeParameters().isEmpty()) {
+								wjfo.print("<");
+								wjfo.print(ee
+										.getTypeParameters()
+										.stream()
+										.map((ve) -> ve.getSimpleName()
+												.toString()
+												+ (ve.getBounds().isEmpty() ? ""
+														: (" extends "+ve.getBounds()
+																.stream()
+																.map((b) -> b
+																		.toString())
+																.collect(
+																		Collectors
+																				.joining("&")))))
+										.collect(Collectors.joining(",")));
+								wjfo.print("> ");
+							}
 							wjfo.print(ee.getReturnType().toString());
 							wjfo.print(" ");
 							wjfo.print(ee.getSimpleName().toString());

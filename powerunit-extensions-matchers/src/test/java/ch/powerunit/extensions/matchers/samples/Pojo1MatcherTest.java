@@ -19,6 +19,8 @@
  */
 package ch.powerunit.extensions.matchers.samples;
 
+import java.io.Serializable;
+
 import org.hamcrest.Factory;
 
 import ch.powerunit.Ignore;
@@ -31,27 +33,45 @@ public class Pojo1MatcherTest implements TestSuite {
 		Pojo1 p = new Pojo1();
 		assertThat(p).is(Pojo1Matchers.pojo1With());
 	}
-	
+
 	@Test
 	@Ignore
 	public void testKOMatcher() {
 		Pojo1 p = new Pojo1();
 		assertThat(p).is(Pojo1Matchers.pojo1With().msg1("x"));
 	}
-	
+
 	@Factory
-	public static void test() {}
-	
+	public static void test() {
+	}
+
 	@Factory
-	public static void test(String name1) {}
-	
+	public static void test(String name1) {
+	}
+
+	@Factory
+	public static <T> T test(T input) {
+		return input;
+	}
+
+	@Factory
+	public static <T extends Iterable<K>, K> void test1(T t1, K t2) {
+	}
+
+	@Factory
+	public static <T extends Iterable<K> & Serializable, K> void test2(T t1,
+			K t2) {
+	}
+
 	/**
 	 * @param name1
 	 * @param name2
 	 */
 	@Factory
-	public static void test(String name1,String name2) {}
-	
+	public static void test(String name1, String name2) {
+	}
+
 	@Factory
-	public static void test(int x) {}
+	public static void test(int x) {
+	}
 }
