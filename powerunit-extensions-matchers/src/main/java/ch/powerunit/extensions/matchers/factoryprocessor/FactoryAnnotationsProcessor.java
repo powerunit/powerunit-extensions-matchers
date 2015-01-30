@@ -274,12 +274,13 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 							wjfo.print(" ");
 							wjfo.print(ee.getSimpleName().toString());
 							wjfo.print("(");
-							wjfo.print(ee
+							String param = ee
 									.getParameters()
 									.stream()
 									.map((ve) -> ve.asType().toString() + " "
 											+ ve.getSimpleName().toString())
-									.collect(Collectors.joining(",")));
+									.collect(Collectors.joining(","));
+							wjfo.print(ee.isVarArgs()?param.replaceAll("\\[\\](\\s[0-9a-zA-Z_]*$)??", "..."):param);
 							wjfo.println(") {");
 							if (TypeKind.VOID != ee.getReturnType().getKind()) {
 								wjfo.print("    return ");

@@ -62,6 +62,12 @@ public class Pojo1MatcherTest implements TestSuite {
 	public static <T extends Iterable<K> & Serializable, K> void test2(T t1,
 			K t2) {
 	}
+	
+	@Factory
+	public static <T extends Iterable<K> & Serializable, K> void test3(T t1,
+			K... t2) {
+	}
+	
 
 	/**
 	 * @param name1
