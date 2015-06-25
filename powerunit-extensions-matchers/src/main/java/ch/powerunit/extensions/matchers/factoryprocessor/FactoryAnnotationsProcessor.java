@@ -35,6 +35,7 @@ import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
@@ -52,6 +53,7 @@ import org.hamcrest.Factory;
 
 @SupportedAnnotationTypes({ "org.hamcrest.Factory" })
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
+@SupportedOptions({ "ch.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets" })
 public class FactoryAnnotationsProcessor extends AbstractProcessor {
 
 	private String targets;
@@ -191,65 +193,13 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 							if (doc != null) {
 								wjfo.println("  /**\n   * "
 										+ doc.replaceAll("\n", "\n   * "));
-								wjfo.print("   * @see "
-										+ elementsUtils.getPackageOf(ee
-												.getEnclosingElement())
-										+ "#"
-										+ ee.getEnclosingElement()
-												.getSimpleName().toString()
-										+ "(");
-								wjfo.print(ee
-										.getParameters()
-										.stream()
-										.map((ve) -> {
-											Element e = typesUtils.asElement(ve
-													.asType());
-											if (e == null) {
-												return ve.asType().toString();
-											} else {
-												PackageElement pe = elementsUtils
-														.getPackageOf(e);
-												return pe.toString()
-														+ "."
-														+ typesUtils
-																.asElement(
-																		ve.asType())
-																.getSimpleName();
-											}
-										}).collect(Collectors.joining(",")));
-								wjfo.print(")");
-								wjfo.println("\n   */");
+								wjfo.println("   * @see " + getSeeValue(ee)
+										+ "\n   */");
 							} else {
 								wjfo.println("  /**");
 								wjfo.println("   * No javadoc found from the source method.");
-								wjfo.print("   * @see "
-										+ elementsUtils.getPackageOf(ee
-												.getEnclosingElement())
-										+ "#"
-										+ ee.getEnclosingElement()
-												.getSimpleName().toString()
-										+ "(");
-								wjfo.print(ee
-										.getParameters()
-										.stream()
-										.map((ve) -> {
-											Element e = typesUtils.asElement(ve
-													.asType());
-											if (e == null) {
-												return ve.asType().toString();
-											} else {
-												PackageElement pe = elementsUtils
-														.getPackageOf(e);
-												return pe.toString()
-														+ "."
-														+ typesUtils
-																.asElement(
-																		ve.asType())
-																.getSimpleName();
-											}
-										}).collect(Collectors.joining(",")));
-								wjfo.println(")");
-								wjfo.println("   */");
+								wjfo.println("   * @see " + getSeeValue(ee)
+										+ "\n   */");
 							}
 							wjfo.print("  default ");
 							if (!ee.getTypeParameters().isEmpty()) {
@@ -260,7 +210,8 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 										.map((ve) -> ve.getSimpleName()
 												.toString()
 												+ (ve.getBounds().isEmpty() ? ""
-														: (" extends "+ve.getBounds()
+														: (" extends " + ve
+																.getBounds()
 																.stream()
 																.map((b) -> b
 																		.toString())
@@ -280,7 +231,9 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 									.map((ve) -> ve.asType().toString() + " "
 											+ ve.getSimpleName().toString())
 									.collect(Collectors.joining(","));
-							wjfo.print(ee.isVarArgs()?param.replaceAll("\\[\\](\\s[0-9a-zA-Z_]*$)??", "..."):param);
+							wjfo.print(ee.isVarArgs() ? param.replaceAll(
+									"\\[\\](\\s[0-9a-zA-Z_]*$)??", "...")
+									: param);
 							wjfo.println(") {");
 							if (TypeKind.VOID != ee.getReturnType().getKind()) {
 								wjfo.print("    return ");
@@ -312,6 +265,37 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 			}
 		}
 		return true;
+	}
+
+	private String getSeeValue(ExecutableElement ee) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(
+				processingEnv.getElementUtils().getPackageOf(
+						ee.getEnclosingElement())).append(".")
+				.append(ee.getEnclosingElement().getSimpleName().toString())
+				.append("#").append(ee.getSimpleName().toString()).append("(");
+		sb.append(ee
+				.getParameters()
+				.stream()
+				.map((ve) -> {
+					Element e = processingEnv.getTypeUtils().asElement(
+							ve.asType());
+					if (e == null) {
+						return ve.asType().toString();
+					} else {
+						if (ve.asType().getKind() == TypeKind.TYPEVAR) {
+							return "java.lang.Object";
+						}
+						PackageElement pe = processingEnv.getElementUtils()
+								.getPackageOf(e);
+						return pe.toString()
+								+ "."
+								+ processingEnv.getTypeUtils()
+										.asElement(ve.asType()).getSimpleName();
+					}
+				}).collect(Collectors.joining(",")));
+		sb.append(")");
+		return sb.toString();
 	}
 
 	AnnotationMirror getFactoryAnnotation(TypeElement factoryAnnotationTE,

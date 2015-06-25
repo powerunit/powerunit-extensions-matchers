@@ -22,6 +22,7 @@ package ch.powerunit.extensions.matchers.samples;
 import java.io.Serializable;
 
 import org.hamcrest.Factory;
+import org.hamcrest.Matcher;
 
 import ch.powerunit.Ignore;
 import ch.powerunit.Test;
@@ -62,12 +63,20 @@ public class Pojo1MatcherTest implements TestSuite {
 	public static <T extends Iterable<K> & Serializable, K> void test2(T t1,
 			K t2) {
 	}
-	
+
 	@Factory
 	public static <T extends Iterable<K> & Serializable, K> void test3(T t1,
 			K... t2) {
 	}
-	
+
+	@Factory
+	public static <T extends String> void test4(T t1) {
+	}
+
+	@Factory
+	public static <T> Matcher<T> fromMatcher(Matcher<T> input) {
+		return null;
+	}
 
 	/**
 	 * @param name1
