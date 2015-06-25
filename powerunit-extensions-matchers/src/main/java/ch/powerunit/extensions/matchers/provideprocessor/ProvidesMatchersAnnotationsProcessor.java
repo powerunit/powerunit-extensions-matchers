@@ -110,6 +110,11 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
 				wjfo.println("package " + packageName + ";");
 				wjfo.println();
+				wjfo.println("/**");
+				wjfo.println(" * This class provides matchers for the class {@link "+shortClassName+"}.");
+				wjfo.println(" * ");
+				wjfo.println(" * @see "+shortClassName+" The class for which matchers are provided.");
+				wjfo.println(" */");
 				wjfo.println("@javax.annotation.Generated(\""
 						+ ProvidesMatchersAnnotationsProcessor.class.getName()
 						+ "\")");
