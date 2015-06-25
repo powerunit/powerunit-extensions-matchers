@@ -32,6 +32,7 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.SimpleElementVisitor8;
 import javax.lang.model.util.TypeKindVisitor8;
@@ -51,18 +52,23 @@ public class ProvidesMatchersSubElementVisitor extends
 	private final Filer filerUtils;
 	private final Messager messageUtils;
 	private final TypeElement typeElement;
+	private final String generic;
+	private final String fullGeneric;
 	private final PrintWriter writer;
 
 	public ProvidesMatchersSubElementVisitor(
 			ProvidesMatchersAnnotationsProcessor providesMatchersAnnotationsProcessor,
 			Elements elementsUtils, Filer filerUtils, Types typesUtils,
-			Messager messageUtils, TypeElement typeElement, PrintWriter writer) {
+			Messager messageUtils, TypeElement typeElement, String generic,
+			String fullGeneric, PrintWriter writer) {
 		this.providesMatchersAnnotationsProcessor = providesMatchersAnnotationsProcessor;
 		this.elementsUtils = elementsUtils;
 		this.typesUtils = typesUtils;
 		this.filerUtils = filerUtils;
 		this.messageUtils = messageUtils;
 		this.typeElement = typeElement;
+		this.generic = generic;
+		this.fullGeneric = fullGeneric;
 		this.writer = writer;
 	}
 
@@ -113,9 +119,9 @@ public class ProvidesMatchersSubElementVisitor extends
 	private void createFeatureMatcher(String fieldAccessor, String fieldName,
 			String methodFieldName, String fieldType) {
 		String type = typeElement.getSimpleName().toString();
-		writer.println("  private static class " + methodFieldName
-				+ "Matcher extends org.hamcrest.FeatureMatcher<" + type + ","
-				+ fieldType + "> {");
+		writer.println("  private static class " + methodFieldName + "Matcher"
+				+ fullGeneric + " extends org.hamcrest.FeatureMatcher<" + type
+				+ generic + "," + fieldType + "> {");
 		writer.println();
 		writer.println("    public " + methodFieldName
 				+ "Matcher(org.hamcrest.Matcher<? super " + fieldType
@@ -125,7 +131,7 @@ public class ProvidesMatchersSubElementVisitor extends
 		writer.println("  }");
 		writer.println();
 		writer.println("    protected " + fieldType + " featureValueOf(" + type
-				+ " actual) {");
+				+ generic + " actual) {");
 		writer.println("      return actual." + fieldAccessor + ";");
 		writer.println("    }");
 		writer.println();
@@ -183,6 +189,11 @@ public class ProvidesMatchersSubElementVisitor extends
 
 			@Override
 			public String visitDeclared(DeclaredType t, Void p) {
+				return t.toString();
+			}
+
+			@Override
+			public String visitTypeVariable(TypeVariable t, Void p) {
 				return t.toString();
 			}
 

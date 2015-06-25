@@ -19,38 +19,21 @@
  */
 package ch.powerunit.extensions.matchers.samples;
 
-import java.util.List;
+import ch.powerunit.Ignore;
+import ch.powerunit.Test;
+import ch.powerunit.TestSuite;
 
-import ch.powerunit.extensions.matchers.ProvideMatchers;
-
-/**
- * @author borettim
- *
- */
-@ProvideMatchers
-public class Pojo1 {
-	private String msg1;
-
-	public String msg2;
-	
-	public int msg3;
-	
-	public String[] msg4;
-	
-	public int[] msg5;
-	
-	public List<String> msg6;
-	
-	public List<String[]> msg7;
-	
-	public List<String>[] msg8;
-	
-	public String getMsg1() {
-		return msg1;
+public class Pojo3MatcherTest implements TestSuite {
+	@Test
+	public void testOKMatcher() {
+		Pojo3<String, String> p = new Pojo3<>();
+		assertThat(p).is(Pojo3Matchers.pojo3With());
 	}
 
-	public void setMsg1(String msg1) {
-		this.msg1 = msg1;
+	@Test
+	@Ignore
+	public void testKOMatcher() {
+		Pojo3<String, String> p = new Pojo3<>();
+		assertThat(p).is(Pojo3Matchers.<String, String> pojo3With().msg1("x"));
 	}
-
 }

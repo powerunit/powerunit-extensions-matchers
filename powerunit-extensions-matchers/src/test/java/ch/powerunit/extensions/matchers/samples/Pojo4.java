@@ -19,38 +19,21 @@
  */
 package ch.powerunit.extensions.matchers.samples;
 
-import java.util.List;
-
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import java.io.Serializable;
 
 /**
  * @author borettim
  *
  */
-@ProvideMatchers
-public class Pojo1 {
-	private String msg1;
+public class Pojo4<A, B extends Serializable> extends Pojo3<A, B> {
+	private char msg10;
 
-	public String msg2;
-	
-	public int msg3;
-	
-	public String[] msg4;
-	
-	public int[] msg5;
-	
-	public List<String> msg6;
-	
-	public List<String[]> msg7;
-	
-	public List<String>[] msg8;
-	
-	public String getMsg1() {
-		return msg1;
+	public char getMsg10() {
+		return msg10;
 	}
 
-	public void setMsg1(String msg1) {
-		this.msg1 = msg1;
+	public void setMsg10(char msg10) {
+		this.msg10 = msg10;
 	}
 
 }

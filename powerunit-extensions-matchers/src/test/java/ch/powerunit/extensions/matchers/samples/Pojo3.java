@@ -19,6 +19,7 @@
  */
 package ch.powerunit.extensions.matchers.samples;
 
+import java.io.Serializable;
 import java.util.List;
 
 import ch.powerunit.extensions.matchers.ProvideMatchers;
@@ -28,29 +29,32 @@ import ch.powerunit.extensions.matchers.ProvideMatchers;
  *
  */
 @ProvideMatchers
-public class Pojo1 {
-	private String msg1;
+public class Pojo3<T, O extends Serializable> {
+	public String msg1;
 
-	public String msg2;
-	
-	public int msg3;
-	
-	public String[] msg4;
-	
-	public int[] msg5;
-	
-	public List<String> msg6;
-	
-	public List<String[]> msg7;
-	
-	public List<String>[] msg8;
-	
-	public String getMsg1() {
-		return msg1;
+	public T msg2;
+
+	public O msg3;
+
+	private T msg4;
+
+	public T[] msg5;
+
+	public List<T> msg6;
+
+	/**
+	 * @return the msg4
+	 */
+	public T getMsg4() {
+		return msg4;
 	}
 
-	public void setMsg1(String msg1) {
-		this.msg1 = msg1;
+	/**
+	 * @param msg4
+	 *            the msg4 to set
+	 */
+	public void setMsg4(T msg4) {
+		this.msg4 = msg4;
 	}
 
 }
