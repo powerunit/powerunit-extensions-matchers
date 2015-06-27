@@ -1,6 +1,7 @@
 PowerUnit Extension Matchers
 
- This library provides support to generate matcher for Pojo and the DSL like feature of hamcrest.
+ This library provides support to generate matcher for Pojo and the DSL like feature of hamcrest. The groupId is
+ <<<ch.powerunit.extensions>>> and the artifactId is <<<powerunit-extensions-matchers>>>.
  
 * Generation of Matcher
 
