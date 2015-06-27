@@ -25,7 +25,8 @@ import java.io.Serializable;
  * @author borettim
  *
  */
-public class Pojo4<A, B extends Serializable> extends Pojo3<A, B> {
+public class Pojo4<A, B extends Serializable & Comparable<A>> extends
+		Pojo3<A, B> {
 	private char msg10;
 
 	public char getMsg10() {
@@ -35,5 +36,7 @@ public class Pojo4<A, B extends Serializable> extends Pojo3<A, B> {
 	public void setMsg10(char msg10) {
 		this.msg10 = msg10;
 	}
+	
+	public B test;
 
 }

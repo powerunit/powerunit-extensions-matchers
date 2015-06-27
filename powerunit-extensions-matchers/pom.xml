@@ -61,7 +61,7 @@
 		<surefire.version>2.17</surefire.version>
 		<deploy.url>https://oss.sonatype.org/content/repositories/snapshots</deploy.url>
 		<deploy.id>oss-snapshots</deploy.id>
-		<powerunit.version>0.2.0</powerunit.version>
+		<powerunit.version>0.3.0</powerunit.version>
 	</properties>
 
 	<build>
