@@ -44,6 +44,7 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
 import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.provideprocessor.FieldDescription.Type;
 
 /**
  * @author borettim
@@ -159,6 +160,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				wjfo.println("  public static interface " + shortClassName + "Matcher" + fullGeneric
 						+ " extends org.hamcrest.Matcher<" + shortClassName + generic + "> {");
 				for (FieldDescription f : fields) {
+					// V1
 					wjfo.println("    /**");
 					wjfo.println("     * Add a validation on the field " + f.getFieldName() + ".");
 					wjfo.println("     *");
@@ -175,6 +177,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 						wjfo.println("    " + shortClassName + "Matcher" + generic + " " + f.getFieldName()
 								+ "(org.hamcrest.Matcher<? super " + f.getFieldType() + "> matcher);");
 					}
+					// V2
 					wjfo.println("    /**");
 					wjfo.println("     * Add a validation on the field " + f.getFieldName() + ".");
 					wjfo.println("     *");
@@ -191,6 +194,25 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 					} else {
 						wjfo.println("    " + shortClassName + "Matcher" + generic + " " + f.getFieldName() + "("
 								+ f.getFieldType() + " value);");
+					}
+					// V3
+					if (f.getType() == Type.ARRAY) {
+						wjfo.println("    /**");
+						wjfo.println("     * Add a validation on the field " + f.getFieldName()
+								+ " that the array is empty.");
+						wjfo.println("     *");
+						wjfo.println("     * {@link " + inputClassName + "#" + f.getFieldAccessor()
+								+ " This field is accessed by using this approach}.");
+						wjfo.println("     *");
+						wjfo.println("     * @return the DSL to continue the construction of the matcher.");
+						wjfo.println("     */");
+						if (fields.size() == 1) {
+							wjfo.println("    org.hamcrest.Matcher<" + shortClassName + generic + "> "
+									+ f.getFieldName() + "IsEmpty();");
+						} else {
+							wjfo.println("    " + shortClassName + "Matcher" + generic + " " + f.getFieldName()
+									+ "IsEmpty();");
+						}
 					}
 				}
 				wjfo.println("  }");
@@ -214,6 +236,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				}
 
 				for (FieldDescription f : fields) {
+					// V1
 					wjfo.println("    @Override");
 					if (fields.size() == 1) {
 						wjfo.println(
@@ -227,6 +250,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 					wjfo.println("      return this;");
 					wjfo.println("    }");
 					wjfo.println();
+					// V2
 					wjfo.println("    @Override");
 					if (fields.size() == 1) {
 						wjfo.println("    public org.hamcrest.Matcher<" + shortClassName + generic + "> "
@@ -238,6 +262,20 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 					wjfo.println("      return " + f.getFieldName() + "(org.hamcrest.Matchers.is(value));");
 					wjfo.println("    }");
 					wjfo.println();
+					// V3
+					if (f.getType() == Type.ARRAY) {
+						wjfo.println("    @Override");
+						if (fields.size() == 1) {
+							wjfo.println("    public org.hamcrest.Matcher<" + shortClassName + generic + "> "
+									+ f.getFieldName() + "IsEmpty() {");
+						} else {
+							wjfo.println("    public " + shortClassName + "Matcher" + generic + " " + f.getFieldName()
+									+ "IsEmpty() {");
+						}
+						wjfo.println("      return " + f.getFieldName() + "((org.hamcrest.Matcher)org.hamcrest.Matchers.emptyArray());");
+						wjfo.println("    }");
+						wjfo.println();
+					}
 				}
 				wjfo.println("    @Override");
 				wjfo.println("    protected boolean matchesSafely(" + shortClassName

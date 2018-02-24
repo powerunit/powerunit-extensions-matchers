@@ -20,17 +20,24 @@
 package ch.powerunit.extensions.matchers.provideprocessor;
 
 public class FieldDescription {
+
+	public static enum Type {
+		NA, ARRAY, COLLECTION, LIST, SET, OPTIONAL
+	}
+
 	private final String fieldAccessor;
 	private final String fieldName;
 	private final String methodFieldName;
 	private final String fieldType;
+	private final Type type;
 
-	public FieldDescription(String fieldAccessor, String fieldName,
-			String methodFieldName, String fieldType) {
+	public FieldDescription(String fieldAccessor, String fieldName, String methodFieldName, String fieldType,
+			Type type) {
 		this.fieldAccessor = fieldAccessor;
 		this.fieldName = fieldName;
 		this.methodFieldName = methodFieldName;
 		this.fieldType = fieldType;
+		this.type = type;
 	}
 
 	public String getFieldAccessor() {
@@ -47,6 +54,10 @@ public class FieldDescription {
 
 	public String getFieldType() {
 		return fieldType;
+	}
+
+	public Type getType() {
+		return type;
 	}
 
 }

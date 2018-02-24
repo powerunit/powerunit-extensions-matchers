@@ -20,6 +20,7 @@
 package ch.powerunit.extensions.matchers.samples;
 
 import java.io.Serializable;
+import java.util.List;
 
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
@@ -42,6 +43,13 @@ public class Pojo1MatcherTest implements TestSuite {
 		Pojo1 p2 = new Pojo1();
 		p2.msg2="12";
 		assertThat(p1).is(Pojo1Matchers.pojo1WithSameValue(p2));
+	}
+	
+	@Test
+	public void testKOMatcherWithEmptyArray() {
+		Pojo1 p1 = new Pojo1();
+		p1.msg8=new List[]{};
+		assertThat(p1).is(Pojo1Matchers.pojo1With().msg8IsEmpty());
 	}
 
 	@Test

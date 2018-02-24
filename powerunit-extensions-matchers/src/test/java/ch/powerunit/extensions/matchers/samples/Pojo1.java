@@ -19,7 +19,9 @@
  */
 package ch.powerunit.extensions.matchers.samples;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 
@@ -44,6 +46,10 @@ public class Pojo1 {
 	public List<String[]> msg7;
 
 	public List<String>[] msg8;
+	
+	public Collection<Integer> msg9;
+	
+	public Set<String> msg12;
 
 	public String getMsg1() {
 		return msg1;
