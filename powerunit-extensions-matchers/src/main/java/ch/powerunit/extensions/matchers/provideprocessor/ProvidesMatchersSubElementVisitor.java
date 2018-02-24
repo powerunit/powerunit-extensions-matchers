@@ -112,6 +112,23 @@ public class ProvidesMatchersSubElementVisitor extends
 				return new FieldDescription(methodName + "()", fieldName,
 						fieldNameDirect, fieldType);
 			}
+		} else if (e.getModifiers().contains(Modifier.PUBLIC)
+				&& e.getSimpleName().toString().startsWith("is")
+				&& e.getParameters().size() == 0) {
+			String methodName = e.getSimpleName().toString();
+			String fieldNameDirect = methodName.replaceFirst("is", "");
+			String fieldName = fieldNameDirect.substring(0, 1).toLowerCase()
+					+ fieldNameDirect.substring(1);
+			String fieldType = parseType(e, e.getReturnType(), false);
+			if (fieldType != null) {
+				writer.println("  // Method " + methodName + " for field "
+						+ fieldName + " of " + fieldType);
+				createFeatureMatcher(methodName + "()", fieldName,
+						fieldNameDirect, fieldType);
+				writer.println();
+				return new FieldDescription(methodName + "()", fieldName,
+						fieldNameDirect, fieldType);
+			}
 		}
 		return null;
 	}

@@ -32,25 +32,37 @@ public class Pojo1 {
 	private String msg1;
 
 	public String msg2;
-	
+
 	public int msg3;
-	
+
 	public String[] msg4;
-	
+
 	public int[] msg5;
-	
+
 	public List<String> msg6;
-	
+
 	public List<String[]> msg7;
-	
+
 	public List<String>[] msg8;
-	
+
 	public String getMsg1() {
 		return msg1;
 	}
 
 	public void setMsg1(String msg1) {
 		this.msg1 = msg1;
+	}
+
+	public boolean myBoolean;
+
+	private boolean oneBoolean;
+
+	public boolean isOneBoolean() {
+		return oneBoolean;
+	}
+
+	public void setOneBoolean(boolean oneBoolean) {
+		this.oneBoolean = oneBoolean;
 	}
 
 }
