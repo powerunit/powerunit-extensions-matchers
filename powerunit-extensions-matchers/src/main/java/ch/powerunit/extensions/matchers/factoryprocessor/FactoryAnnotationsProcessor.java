@@ -241,7 +241,7 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 								wjfo.print("    ");
 							}
 							wjfo.print(elementsUtils.getPackageOf(ee
-									.getEnclosingElement()));
+									.getEnclosingElement()).getQualifiedName().toString());
 							wjfo.print(".");
 							wjfo.print(ee.getEnclosingElement().getSimpleName()
 									.toString());
