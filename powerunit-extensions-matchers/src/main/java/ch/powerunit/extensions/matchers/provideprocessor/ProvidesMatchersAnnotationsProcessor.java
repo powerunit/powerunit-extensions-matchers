@@ -217,6 +217,41 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 									+ "IsEmpty();");
 						}
 					}
+					// V4
+					if (f.getType() == Type.OPTIONAL) {
+						wjfo.println("    /**");
+						wjfo.println("     * Add a validation on the field " + f.getFieldName()
+								+ " with a present optional.");
+						wjfo.println("     *");
+						wjfo.println("     * {@link " + inputClassName + "#" + f.getFieldAccessor()
+								+ " This field is accessed by using this approach}.");
+						wjfo.println("     *");
+						wjfo.println("     * @return the DSL to continue the construction of the matcher.");
+						wjfo.println("     */");
+						if (fields.size() == 1) {
+							wjfo.println("    org.hamcrest.Matcher<" + shortClassName + generic + "> "
+									+ f.getFieldName() + "IsPresent();");
+						} else {
+							wjfo.println("    " + shortClassName + "Matcher" + generic + " " + f.getFieldName()
+									+ "IsPresent();");
+						}
+						wjfo.println("    /**");
+						wjfo.println("     * Add a validation on the field " + f.getFieldName()
+								+ " with a not present optional.");
+						wjfo.println("     *");
+						wjfo.println("     * {@link " + inputClassName + "#" + f.getFieldAccessor()
+								+ " This field is accessed by using this approach}.");
+						wjfo.println("     *");
+						wjfo.println("     * @return the DSL to continue the construction of the matcher.");
+						wjfo.println("     */");
+						if (fields.size() == 1) {
+							wjfo.println("    org.hamcrest.Matcher<" + shortClassName + generic + "> "
+									+ f.getFieldName() + "IsNotPresent();");
+						} else {
+							wjfo.println("    " + shortClassName + "Matcher" + generic + " " + f.getFieldName()
+									+ "IsNotPresent();");
+						}
+					}
 				}
 				wjfo.println("  }");
 				wjfo.println();
@@ -277,6 +312,33 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 						}
 						wjfo.println("      return " + f.getFieldName()
 								+ "((org.hamcrest.Matcher)org.hamcrest.Matchers.emptyArray());");
+						wjfo.println("    }");
+						wjfo.println();
+					}
+					// V4
+					if (f.getType() == Type.OPTIONAL) {
+						wjfo.println("    @Override");
+						if (fields.size() == 1) {
+							wjfo.println("    public org.hamcrest.Matcher<" + shortClassName + generic + "> "
+									+ f.getFieldName() + "IsPresent() {");
+						} else {
+							wjfo.println("    public " + shortClassName + "Matcher" + generic + " " + f.getFieldName()
+									+ "IsPresent() {");
+						}
+						wjfo.println("      opt = "+f.getMethodFieldName() + "Matcher.isPresent();");
+						wjfo.println("      return this;");
+						wjfo.println("    }");
+						wjfo.println();
+						wjfo.println("    @Override");
+						if (fields.size() == 1) {
+							wjfo.println("    public org.hamcrest.Matcher<" + shortClassName + generic + "> "
+									+ f.getFieldName() + "IsNotPresent() {");
+						} else {
+							wjfo.println("    public " + shortClassName + "Matcher" + generic + " " + f.getFieldName()
+									+ "IsNotPresent() {");
+						}
+						wjfo.println("      opt = "+f.getMethodFieldName() + "Matcher.isNotPresent();");
+						wjfo.println("      return this;");
 						wjfo.println("    }");
 						wjfo.println();
 					}

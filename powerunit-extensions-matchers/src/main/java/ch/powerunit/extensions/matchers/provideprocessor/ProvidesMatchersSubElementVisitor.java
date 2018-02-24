@@ -302,7 +302,18 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Fie
 				
 				break;
 			case OPTIONAL:
-				
+				writer.println(
+						"    public static " + methodFieldName + "Matcher isPresent() {");
+				writer.println("      return new "+methodFieldName + "Matcher(new org.hamcrest.CustomTypeSafeMatcher<java.util.Optional>(\"optional is present\"){");
+				writer.println("        public boolean matchesSafely(java.util.Optional o) {return o.isPresent();}");
+				writer.println("      });");
+				writer.println("  }");
+				writer.println(
+						"    public static " + methodFieldName + "Matcher isNotPresent() {");
+				writer.println("      return new "+methodFieldName + "Matcher(new org.hamcrest.CustomTypeSafeMatcher<java.util.Optional>(\"optional is not present\"){");
+				writer.println("        public boolean matchesSafely(java.util.Optional o) {return !o.isPresent();}");
+				writer.println("      });");
+				writer.println("  }");
 				break;
 			default:
 				//NOTHING
