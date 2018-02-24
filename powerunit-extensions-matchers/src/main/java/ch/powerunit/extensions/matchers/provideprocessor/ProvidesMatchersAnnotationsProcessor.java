@@ -78,7 +78,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			TypeElement te = e.accept(new ProvidesMatchersElementVisitor(this, elementsUtils, filerUtils, typesUtils,
 					messageUtils, provideMatchersTE), null);
 			if (te != null) {
-				processOneTypeElement(elementsUtils, filerUtils, typesUtils, messageUtils, te, objectTE);
+				processOneTypeElement(elementsUtils, filerUtils, typesUtils, messageUtils, te, objectTE, elements);
 			}
 		}
 		return true;
@@ -90,9 +90,10 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	 * @param messageUtils
 	 * @param te
 	 * @param objectTE
+	 * @param elements
 	 */
 	private void processOneTypeElement(Elements elementsUtils, Filer filerUtils, Types typesUtils,
-			Messager messageUtils, TypeElement te, TypeElement objectTE) {
+			Messager messageUtils, TypeElement te, TypeElement objectTE, Set<? extends Element> elements) {
 		Name inputClassName = te.getQualifiedName();
 		Name packageName = elementsUtils.getPackageOf(te).getQualifiedName();
 		String outputClassName = inputClassName + "Matchers";
@@ -100,6 +101,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		String shortClassName = te.getSimpleName().toString();
 		String methodShortClassName = shortClassName.substring(0, 1).toLowerCase() + shortClassName.substring(1);
 		boolean hasParent = !objectTE.asType().equals(te.getSuperclass());
+		boolean hasParentInSameRound = elements.stream().filter(e -> typesUtils.isSameType(e.asType(), te.asType()))
+				.findAny().isPresent();
 		String generic = "";
 		String fullGeneric = "";
 		if (te.getTypeParameters().size() > 0) {
@@ -272,7 +275,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 							wjfo.println("    public " + shortClassName + "Matcher" + generic + " " + f.getFieldName()
 									+ "IsEmpty() {");
 						}
-						wjfo.println("      return " + f.getFieldName() + "((org.hamcrest.Matcher)org.hamcrest.Matchers.emptyArray());");
+						wjfo.println("      return " + f.getFieldName()
+								+ "((org.hamcrest.Matcher)org.hamcrest.Matchers.emptyArray());");
 						wjfo.println("    }");
 						wjfo.println();
 					}
@@ -364,6 +368,30 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 							+ methodShortClassName + "WithSameValue(" + shortClassName + " " + generic + " other) {");
 					wjfo.println("    " + shortClassName + "Matcher" + generic + " m=new " + shortClassName
 							+ "MatcherImpl" + generic + "();");
+
+					for (FieldDescription f : fields) {
+						wjfo.println("    m." + f.getFieldName() + "(org.hamcrest.Matchers.is(other."
+								+ f.getFieldAccessor() + "));");
+					}
+					wjfo.println("    return m;");
+					wjfo.println("  }");
+				}
+				if (hasParent && hasParentInSameRound) {
+					wjfo.println("  /**");
+					wjfo.println(
+							"   * Start a DSL matcher for the {@link " + inputClassName + " " + shortClassName + "}.");
+					wjfo.println("   * ");
+					wjfo.println("   * @param other the other object to be used as a reference.");
+					wjfo.println("   * @return the DSL matcher.");
+					wjfo.println("   */");
+					wjfo.println("  @org.hamcrest.Factory");
+					String pname = typesUtils.asElement(te.getSuperclass()).getSimpleName().toString();
+					wjfo.println("  public static " + fullGeneric + " " + shortClassName + "Matcher" + generic + " "
+							+ methodShortClassName + "WithSameValue(" + shortClassName + " " + generic + " other) {");
+					wjfo.println("    " + shortClassName + "Matcher" + generic + " m=new " + shortClassName
+							+ "MatcherImpl" + generic + "(" + te.getSuperclass().toString().replaceAll("<.*$", "")
+							+ "Matchers." + pname.substring(0, 1).toLowerCase() + pname.substring(1)
+							+ "WithSameValue(other));");
 
 					for (FieldDescription f : fields) {
 						wjfo.println("    m." + f.getFieldName() + "(org.hamcrest.Matchers.is(other."
