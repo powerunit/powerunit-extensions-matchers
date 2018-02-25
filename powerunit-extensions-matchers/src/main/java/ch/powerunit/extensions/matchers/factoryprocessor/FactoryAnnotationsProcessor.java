@@ -183,7 +183,7 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 						wjfo.println("  /**");
 						wjfo.println("   * Use this static field to access all the DSL syntax, without be required to implements this interface.");
 						wjfo.println("   */");
-						wjfo.println("  public static " + cName + " DSL = new "
+						wjfo.println("  public static final " + cName + " DSL = new "
 								+ cName + "() {};");
 						wjfo.println();
 						for (Entry entry : target.getValue()) {
