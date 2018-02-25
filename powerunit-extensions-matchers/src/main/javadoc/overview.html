@@ -17,6 +17,10 @@
 					and return something, assume this is a field and create a dedicated
 					matcher, accessing it by using this method.
 				</li>
+				<li>For method named <i>isXXX</i>, which haven't any parameter
+					and return something, assume this is a field and create a dedicated
+					matcher, accessing it by using this method.
+				</li>
 				<li>If this class extends another one (outside <i>Object</i>),
 					a special matcher will be created to check the super class
 					information.
@@ -25,6 +29,10 @@
 					build the matcher. These method are named based on the class name,
 					followed by <i>with</i>.
 				</li>
+				<li>Create dedicated method to compare, using matcher, on
+					object with another.</li>
+				<li>For some specific type, add method to do some matching with
+					more clean name, like XXXIsPresent for an Optional.</li>
 			</ul></li>
 		<li><b>Processing of the Factory annotation (from hamcrest).</b><br />
 			<i>This processor requires to set the parameter <code>ch.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets</code>
