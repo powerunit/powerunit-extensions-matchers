@@ -28,8 +28,9 @@ import java.lang.annotation.Inherited;
 
 /**
  * This annotation can be used on a java class, to mark this class as supporting
- * generation of hamcrest matcher. <b/> This annotation is not supported on
- * interface and enum. A warning will be displayed in this case.
+ * generation of hamcrest matcher. <br/>
+ * This annotation is not supported on interface and enum. A warning will be
+ * displayed in this case.
  * 
  * @author borettim
  *

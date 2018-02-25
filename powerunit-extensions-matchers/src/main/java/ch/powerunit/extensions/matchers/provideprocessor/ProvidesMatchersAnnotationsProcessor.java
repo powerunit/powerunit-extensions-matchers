@@ -167,8 +167,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 					wjfo.println("    /**");
 					wjfo.println("     * Add a validation on the field " + f.getFieldName() + ".");
 					wjfo.println("     *");
-					wjfo.println("     * {@link " + inputClassName + "#" + f.getFieldAccessor()
-							+ " This field is accessed by using this approach}.");
+					printLinkToFileAccessor(inputClassName, wjfo, f);
 					wjfo.println("     *");
 					wjfo.println("     * @param matcher a Matcher on the field.");
 					wjfo.println("     * @return the DSL to continue the construction of the matcher.");
@@ -184,8 +183,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 					wjfo.println("    /**");
 					wjfo.println("     * Add a validation on the field " + f.getFieldName() + ".");
 					wjfo.println("     *");
-					wjfo.println("     * {@link " + inputClassName + "#" + f.getFieldAccessor()
-							+ " This field is accessed by using this approach}.");
+					printLinkToFileAccessor(inputClassName, wjfo, f);
 					wjfo.println("     *");
 					wjfo.println(
 							"     * @param value an expected value for the field, which will be compared using the is matcher.");
@@ -204,8 +202,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 						wjfo.println("     * Add a validation on the field " + f.getFieldName()
 								+ " that the array is empty.");
 						wjfo.println("     *");
-						wjfo.println("     * {@link " + inputClassName + "#" + f.getFieldAccessor()
-								+ " This field is accessed by using this approach}.");
+						printLinkToFileAccessor(inputClassName, wjfo, f);
 						wjfo.println("     *");
 						wjfo.println("     * @return the DSL to continue the construction of the matcher.");
 						wjfo.println("     */");
@@ -223,8 +220,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 						wjfo.println("     * Add a validation on the field " + f.getFieldName()
 								+ " with a present optional.");
 						wjfo.println("     *");
-						wjfo.println("     * {@link " + inputClassName + "#" + f.getFieldAccessor()
-								+ " This field is accessed by using this approach}.");
+						printLinkToFileAccessor(inputClassName, wjfo, f);
 						wjfo.println("     *");
 						wjfo.println("     * @return the DSL to continue the construction of the matcher.");
 						wjfo.println("     */");
@@ -239,8 +235,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 						wjfo.println("     * Add a validation on the field " + f.getFieldName()
 								+ " with a not present optional.");
 						wjfo.println("     *");
-						wjfo.println("     * {@link " + inputClassName + "#" + f.getFieldAccessor()
-								+ " This field is accessed by using this approach}.");
+						printLinkToFileAccessor(inputClassName, wjfo, f);
 						wjfo.println("     *");
 						wjfo.println("     * @return the DSL to continue the construction of the matcher.");
 						wjfo.println("     */");
@@ -467,6 +462,16 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		} catch (IOException e1) {
 			messageUtils.printMessage(Kind.ERROR, "Unable to create the file containing the target class", te);
 		}
+	}
+
+	/**
+	 * @param inputClassName
+	 * @param wjfo
+	 * @param f
+	 */
+	private void printLinkToFileAccessor(Name inputClassName, PrintWriter wjfo, FieldDescription f) {
+		wjfo.println("     * {@link " + inputClassName + "#" + f.getFieldAccessor()
+				+ " This field is accessed by using this approach}.");
 	}
 
 	AnnotationMirror getProvideMatchersAnnotation(TypeElement provideMatchersTE,
