@@ -22,7 +22,7 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 public class FieldDescription {
 
 	public static enum Type {
-		NA, ARRAY, COLLECTION, LIST, SET, OPTIONAL
+		NA, ARRAY, COLLECTION, LIST, SET, OPTIONAL, COMPARABLE
 	}
 
 	private final String fieldAccessor;

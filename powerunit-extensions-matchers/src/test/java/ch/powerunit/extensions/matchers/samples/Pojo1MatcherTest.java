@@ -39,6 +39,13 @@ public class Pojo1MatcherTest implements TestSuite {
 	}
 	
 	@Test
+	public void testOKMatcherWithComparable() {
+		Pojo1 p = new Pojo1();
+		p.msg2="12";
+		assertThat(p).is(Pojo1Matchers.pojo1With().msg2ComparesEqualTo("12"));
+	}
+	
+	@Test
 	public void testKOMatcherWithReference() {
 		Pojo1 p1 = new Pojo1();
 		p1.msg2="12";
