@@ -43,6 +43,8 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
+import org.hamcrest.Matchers;
+
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.provideprocessor.FieldDescription.Type;
 
@@ -259,6 +261,14 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		}
 	}
 
+	private String generateMethodReturn(List<FieldDescription> fields, String shortClassName, String generic) {
+		if (fields.size() == 1) {
+			return "org.hamcrest.Matcher<" + shortClassName + generic + "> ";
+		} else {
+			return shortClassName + "Matcher" + generic + " ";
+		}
+	}
+
 	private void generatePrivateImplementation(TypeElement te, Name inputClassName, String shortClassName,
 			boolean hasParent, String generic, String fullGeneric, PrintWriter wjfo, List<FieldDescription> fields) {
 		wjfo.println("  private static class " + shortClassName + "MatcherImpl" + fullGeneric
@@ -282,39 +292,25 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		for (FieldDescription f : fields) {
 			// V1
 			wjfo.println("    @Override");
-			if (fields.size() == 1) {
-				wjfo.println("    public org.hamcrest.Matcher<" + shortClassName + generic + "> " + f.getFieldName()
-						+ "(org.hamcrest.Matcher<? super " + f.getFieldType() + "> matcher) {");
-			} else {
-				wjfo.println("    public " + shortClassName + "Matcher" + generic + " " + f.getFieldName()
-						+ "(org.hamcrest.Matcher<? super " + f.getFieldType() + "> matcher) {");
-			}
+
+			wjfo.println("    public " + generateMethodReturn(fields, shortClassName, generic) + " " + f.getFieldName()
+					+ "(org.hamcrest.Matcher<? super " + f.getFieldType() + "> matcher) {");
 			wjfo.println("      " + f.getFieldName() + "= new " + f.getMethodFieldName() + "Matcher(matcher);");
 			wjfo.println("      return this;");
 			wjfo.println("    }");
 			wjfo.println();
 			// V2
 			wjfo.println("    @Override");
-			if (fields.size() == 1) {
-				wjfo.println("    public org.hamcrest.Matcher<" + shortClassName + generic + "> " + f.getFieldName()
-						+ "(" + f.getFieldType() + " value) {");
-			} else {
-				wjfo.println("    public " + shortClassName + "Matcher" + generic + " " + f.getFieldName() + "("
-						+ f.getFieldType() + " value) {");
-			}
+			wjfo.println("    public " + generateMethodReturn(fields, shortClassName, generic) + " " + f.getFieldName()
+					+ "(" + f.getFieldType() + " value) {");
 			wjfo.println("      return " + f.getFieldName() + "(org.hamcrest.Matchers.is(value));");
 			wjfo.println("    }");
 			wjfo.println();
 			// V3
 			if (f.getType() == Type.ARRAY) {
 				wjfo.println("    @Override");
-				if (fields.size() == 1) {
-					wjfo.println("    public org.hamcrest.Matcher<" + shortClassName + generic + "> " + f.getFieldName()
-							+ "IsEmpty() {");
-				} else {
-					wjfo.println("    public " + shortClassName + "Matcher" + generic + " " + f.getFieldName()
-							+ "IsEmpty() {");
-				}
+				wjfo.println("    public " + generateMethodReturn(fields, shortClassName, generic) + " "
+						+ f.getFieldName() + "IsEmpty() {");
 				wjfo.println("      return " + f.getFieldName()
 						+ "((org.hamcrest.Matcher)org.hamcrest.Matchers.emptyArray());");
 				wjfo.println("    }");
@@ -323,26 +319,16 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			// V4
 			if (f.getType() == Type.OPTIONAL) {
 				wjfo.println("    @Override");
-				if (fields.size() == 1) {
-					wjfo.println("    public org.hamcrest.Matcher<" + shortClassName + generic + "> " + f.getFieldName()
-							+ "IsPresent() {");
-				} else {
-					wjfo.println("    public " + shortClassName + "Matcher" + generic + " " + f.getFieldName()
-							+ "IsPresent() {");
-				}
-				wjfo.println("      "+f.getFieldName() +" = " + f.getMethodFieldName() + "Matcher.isPresent();");
+				wjfo.println("    public " + generateMethodReturn(fields, shortClassName, generic) + " "
+						+ f.getFieldName() + "IsPresent() {");
+				wjfo.println("      " + f.getFieldName() + " = " + f.getMethodFieldName() + "Matcher.isPresent();");
 				wjfo.println("      return this;");
 				wjfo.println("    }");
 				wjfo.println();
 				wjfo.println("    @Override");
-				if (fields.size() == 1) {
-					wjfo.println("    public org.hamcrest.Matcher<" + shortClassName + generic + "> " + f.getFieldName()
-							+ "IsNotPresent() {");
-				} else {
-					wjfo.println("    public " + shortClassName + "Matcher" + generic + " " + f.getFieldName()
-							+ "IsNotPresent() {");
-				}
-				wjfo.println("      "+f.getFieldName()+ " = " + f.getMethodFieldName() + "Matcher.isNotPresent();");
+				wjfo.println("    public " + generateMethodReturn(fields, shortClassName, generic) + " "
+						+ f.getFieldName() + "IsNotPresent() {");
+				wjfo.println("      " + f.getFieldName() + " = " + f.getMethodFieldName() + "Matcher.isNotPresent();");
 				wjfo.println("      return this;");
 				wjfo.println("    }");
 				wjfo.println();
@@ -350,16 +336,36 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			// V5
 			if (f.getType() == Type.COMPARABLE) {
 				wjfo.println("    @Override");
-				if (fields.size() == 1) {
-					wjfo.println("    public org.hamcrest.Matcher<" + shortClassName + generic + "> " + f.getFieldName()
-							+ "ComparesEqualTo("+ f.getFieldType() + " value) {");
-				} else {
-					wjfo.println("    public " + shortClassName + "Matcher" + generic + " " + f.getFieldName()
-							+ "ComparesEqualTo("+ f.getFieldType() + " value) {");
-				}
-				wjfo.println("      return "+f.getFieldName() +"(org.hamcrest.Matchers.comparesEqualTo(value));");
+				wjfo.println("    public " + generateMethodReturn(fields, shortClassName, generic) + " "
+						+ f.getFieldName() + "ComparesEqualTo(" + f.getFieldType() + " value) {");
+				wjfo.println("      return " + f.getFieldName() + "(org.hamcrest.Matchers.comparesEqualTo(value));");
 				wjfo.println("    }");
-				wjfo.println();			}
+				wjfo.println();
+				wjfo.println("    @Override");
+				wjfo.println("    public " + generateMethodReturn(fields, shortClassName, generic) + " "
+						+ f.getFieldName() + "LessThan(" + f.getFieldType() + " value) {");
+				wjfo.println("      return " + f.getFieldName() + "(org.hamcrest.Matchers.lessThan(value));");
+				wjfo.println("    }");
+				wjfo.println();
+				wjfo.println("    @Override");
+				wjfo.println("    public " + generateMethodReturn(fields, shortClassName, generic) + " "
+						+ f.getFieldName() + "LessThanOrEqualTo(" + f.getFieldType() + " value) {");
+				wjfo.println("      return " + f.getFieldName() + "(org.hamcrest.Matchers.lessThanOrEqualTo(value));");
+				wjfo.println("    }");
+				wjfo.println();
+				wjfo.println("    @Override");
+				wjfo.println("    public " + generateMethodReturn(fields, shortClassName, generic) + " "
+						+ f.getFieldName() + "GreaterThan(" + f.getFieldType() + " value) {");
+				wjfo.println("      return " + f.getFieldName() + "(org.hamcrest.Matchers.greaterThan(value));");
+				wjfo.println("    }");
+				wjfo.println();
+				wjfo.println("    @Override");
+				wjfo.println("    public " + generateMethodReturn(fields, shortClassName, generic) + " "
+						+ f.getFieldName() + "GreaterThanOrEqualTo(" + f.getFieldType() + " value) {");
+				wjfo.println("      return " + f.getFieldName() + "(org.hamcrest.Matchers.greaterThanOrEqualTo(value));");
+				wjfo.println("    }");
+				wjfo.println();
+			}
 		}
 		wjfo.println("    @Override");
 		wjfo.println("    protected boolean matchesSafely(" + shortClassName
@@ -419,13 +425,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			wjfo.println("     * @param matcher a Matcher on the field.");
 			wjfo.println("     * @return the DSL to continue the construction of the matcher.");
 			wjfo.println("     */");
-			if (fields.size() == 1) {
-				wjfo.println("    org.hamcrest.Matcher<" + shortClassName + generic + "> " + f.getFieldName()
-						+ "(org.hamcrest.Matcher<? super " + f.getFieldType() + "> matcher);");
-			} else {
-				wjfo.println("    " + shortClassName + "Matcher" + generic + " " + f.getFieldName()
-						+ "(org.hamcrest.Matcher<? super " + f.getFieldType() + "> matcher);");
-			}
+			wjfo.println("     " + generateMethodReturn(fields, shortClassName, generic) + " " + f.getFieldName()
+					+ "(org.hamcrest.Matcher<? super " + f.getFieldType() + "> matcher);");
 			// V2
 			wjfo.println("    /**");
 			wjfo.println("     * Add a validation on the field " + f.getFieldName() + ".");
@@ -436,13 +437,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 					"     * @param value an expected value for the field, which will be compared using the is matcher.");
 			wjfo.println("     * @return the DSL to continue the construction of the matcher.");
 			wjfo.println("     */");
-			if (fields.size() == 1) {
-				wjfo.println("    org.hamcrest.Matcher<" + shortClassName + generic + "> " + f.getFieldName() + "("
-						+ f.getFieldType() + " value);");
-			} else {
-				wjfo.println("    " + shortClassName + "Matcher" + generic + " " + f.getFieldName() + "("
-						+ f.getFieldType() + " value);");
-			}
+			wjfo.println("     " + generateMethodReturn(fields, shortClassName, generic) + " " + f.getFieldName() + "("
+					+ f.getFieldType() + " value);");
 			// V3
 			if (f.getType() == Type.ARRAY) {
 				wjfo.println("    /**");
@@ -452,12 +448,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				wjfo.println("     *");
 				wjfo.println("     * @return the DSL to continue the construction of the matcher.");
 				wjfo.println("     */");
-				if (fields.size() == 1) {
-					wjfo.println("    org.hamcrest.Matcher<" + shortClassName + generic + "> " + f.getFieldName()
-							+ "IsEmpty();");
-				} else {
-					wjfo.println("    " + shortClassName + "Matcher" + generic + " " + f.getFieldName() + "IsEmpty();");
-				}
+				wjfo.println("     " + generateMethodReturn(fields, shortClassName, generic) + " " + f.getFieldName()
+						+ "IsEmpty();");
 			}
 			// V4
 			if (f.getType() == Type.OPTIONAL) {
@@ -468,13 +460,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				wjfo.println("     *");
 				wjfo.println("     * @return the DSL to continue the construction of the matcher.");
 				wjfo.println("     */");
-				if (fields.size() == 1) {
-					wjfo.println("    org.hamcrest.Matcher<" + shortClassName + generic + "> " + f.getFieldName()
-							+ "IsPresent();");
-				} else {
-					wjfo.println(
-							"    " + shortClassName + "Matcher" + generic + " " + f.getFieldName() + "IsPresent();");
-				}
+				wjfo.println("     " + generateMethodReturn(fields, shortClassName, generic) + " " + f.getFieldName()
+						+ "IsPresent();");
 				wjfo.println("    /**");
 				wjfo.println(
 						"     * Add a validation on the field " + f.getFieldName() + " with a not present optional.");
@@ -483,13 +470,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				wjfo.println("     *");
 				wjfo.println("     * @return the DSL to continue the construction of the matcher.");
 				wjfo.println("     */");
-				if (fields.size() == 1) {
-					wjfo.println("    org.hamcrest.Matcher<" + shortClassName + generic + "> " + f.getFieldName()
-							+ "IsNotPresent();");
-				} else {
-					wjfo.println(
-							"    " + shortClassName + "Matcher" + generic + " " + f.getFieldName() + "IsNotPresent();");
-				}
+				wjfo.println("     " + generateMethodReturn(fields, shortClassName, generic) + " " + f.getFieldName()
+						+ "IsNotPresent();");
 			}
 			// V5
 			if (f.getType() == Type.COMPARABLE) {
@@ -501,13 +483,53 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				wjfo.println("     *");
 				wjfo.println("     * @return the DSL to continue the construction of the matcher.");
 				wjfo.println("     */");
-				if (fields.size() == 1) {
-					wjfo.println("    org.hamcrest.Matcher<" + shortClassName + generic + "> " + f.getFieldName()
-							+ "ComparesEqualTo("+ f.getFieldType() + " value);");
-				} else {
-					wjfo.println("    " + shortClassName + "Matcher" + generic + " " + f.getFieldName()
-							+ "ComparesEqualTo("+ f.getFieldType() + " value);");
-				}
+				wjfo.println("     " + generateMethodReturn(fields, shortClassName, generic) + " " + f.getFieldName()
+						+ "ComparesEqualTo(" + f.getFieldType() + " value);");
+
+				wjfo.println();
+				wjfo.println("    /**");
+				wjfo.println("     * Add a validation on the field " + f.getFieldName()
+						+ " that this field is less than another value.");
+				wjfo.println("     *");
+				printLinkToFileAccessor(inputClassName, wjfo, f);
+				wjfo.println("     *");
+				wjfo.println("     * @return the DSL to continue the construction of the matcher.");
+				wjfo.println("     */");
+				wjfo.println("     " + generateMethodReturn(fields, shortClassName, generic) + " " + f.getFieldName()
+						+ "LessThan(" + f.getFieldType() + " value);");
+				wjfo.println();
+				wjfo.println("    /**");
+				wjfo.println("     * Add a validation on the field " + f.getFieldName()
+						+ " that this field is less or equal than another value.");
+				wjfo.println("     *");
+				printLinkToFileAccessor(inputClassName, wjfo, f);
+				wjfo.println("     *");
+				wjfo.println("     * @return the DSL to continue the construction of the matcher.");
+				wjfo.println("     */");
+				wjfo.println("     " + generateMethodReturn(fields, shortClassName, generic) + " " + f.getFieldName()
+						+ "LessThanOrEqualTo(" + f.getFieldType() + " value);");
+				wjfo.println();
+				wjfo.println("    /**");
+				wjfo.println("     * Add a validation on the field " + f.getFieldName()
+						+ " that this field is greater than another value.");
+				wjfo.println("     *");
+				printLinkToFileAccessor(inputClassName, wjfo, f);
+				wjfo.println("     *");
+				wjfo.println("     * @return the DSL to continue the construction of the matcher.");
+				wjfo.println("     */");
+				wjfo.println("     " + generateMethodReturn(fields, shortClassName, generic) + " " + f.getFieldName()
+						+ "GreaterThan(" + f.getFieldType() + " value);");
+				wjfo.println();
+				wjfo.println("    /**");
+				wjfo.println("     * Add a validation on the field " + f.getFieldName()
+						+ " that this field is greater or equal than another value.");
+				wjfo.println("     *");
+				printLinkToFileAccessor(inputClassName, wjfo, f);
+				wjfo.println("     *");
+				wjfo.println("     * @return the DSL to continue the construction of the matcher.");
+				wjfo.println("     */");
+				wjfo.println("     " + generateMethodReturn(fields, shortClassName, generic) + " " + f.getFieldName()
+						+ "GreaterThanOrEqualTo(" + f.getFieldType() + " value);");
 			}
 		}
 		wjfo.println("  }");
