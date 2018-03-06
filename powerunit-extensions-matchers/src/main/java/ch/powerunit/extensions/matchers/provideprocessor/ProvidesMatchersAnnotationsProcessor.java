@@ -21,6 +21,7 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -125,8 +126,9 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				wjfo.println(" * ");
 				wjfo.println(" * @see " + shortClassName + " The class for which matchers are provided.");
 				wjfo.println(" */");
-				wjfo.println("@javax.annotation.Generated(\"" + ProvidesMatchersAnnotationsProcessor.class.getName()
-						+ "\")");
+				wjfo.println(
+						"@javax.annotation.Generated(value=\"" + ProvidesMatchersAnnotationsProcessor.class.getName()
+								+ "\",date=\"" + Instant.now().toString() + "\")");
 				wjfo.println("public final class " + outputSimpleName + " {");
 				wjfo.println();
 				wjfo.println("  private " + outputSimpleName + "() {}");
@@ -362,7 +364,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				wjfo.println("    @Override");
 				wjfo.println("    public " + generateMethodReturn(fields, shortClassName, generic) + " "
 						+ f.getFieldName() + "GreaterThanOrEqualTo(" + f.getFieldType() + " value) {");
-				wjfo.println("      return " + f.getFieldName() + "(org.hamcrest.Matchers.greaterThanOrEqualTo(value));");
+				wjfo.println(
+						"      return " + f.getFieldName() + "(org.hamcrest.Matchers.greaterThanOrEqualTo(value));");
 				wjfo.println("    }");
 				wjfo.println();
 			}

@@ -21,6 +21,7 @@ package ch.powerunit.extensions.matchers.factoryprocessor;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -85,14 +86,10 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 	@Override
 	public synchronized void init(ProcessingEnvironment processingEnv) {
 		super.init(processingEnv);
-		targets = processingEnv.getOptions().get(
-				FactoryAnnotationsProcessor.class.getName() + ".targets");
+		targets = processingEnv.getOptions().get(FactoryAnnotationsProcessor.class.getName() + ".targets");
 		if (targets == null || targets.trim().equals("")) {
-			processingEnv.getMessager().printMessage(
-					Kind.MANDATORY_WARNING,
-					"The parameter `"
-							+ FactoryAnnotationsProcessor.class.getName()
-							+ ".targets` is missing, please use it.");
+			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING, "The parameter `"
+					+ FactoryAnnotationsProcessor.class.getName() + ".targets` is missing, please use it.");
 		} else {
 			targetClass = new ArrayList<>();
 			build = new HashMap<>();
@@ -175,9 +172,9 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 						wjfo.println(" *  <li>By refering the static field named {@link #DSL} which expose all the DSL method.</li>");
 						wjfo.println(" * </ul> ");
 						wjfo.println(" */");
-						wjfo.println("@javax.annotation.Generated(\""
+						wjfo.println("@javax.annotation.Generated(value=\""
 								+ FactoryAnnotationsProcessor.class.getName()
-								+ "\")");
+								+ "\",date=\""+Instant.now().toString()+"\")");
 						wjfo.println("public interface " + cName + " {");
 						wjfo.println();
 						wjfo.println("  /**");
@@ -269,31 +266,21 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 
 	private String getSeeValue(ExecutableElement ee) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(
-				processingEnv.getElementUtils().getPackageOf(
-						ee.getEnclosingElement())).append(".")
-				.append(ee.getEnclosingElement().getSimpleName().toString())
-				.append("#").append(ee.getSimpleName().toString()).append("(");
-		sb.append(ee
-				.getParameters()
-				.stream()
-				.map((ve) -> {
-					Element e = processingEnv.getTypeUtils().asElement(
-							ve.asType());
-					if (e == null) {
-						return ve.asType().toString();
-					} else {
-						if (ve.asType().getKind() == TypeKind.TYPEVAR) {
-							return "java.lang.Object";
-						}
-						PackageElement pe = processingEnv.getElementUtils()
-								.getPackageOf(e);
-						return pe.toString()
-								+ "."
-								+ processingEnv.getTypeUtils()
-										.asElement(ve.asType()).getSimpleName();
-					}
-				}).collect(Collectors.joining(",")));
+		sb.append(processingEnv.getElementUtils().getPackageOf(ee.getEnclosingElement())).append(".")
+				.append(ee.getEnclosingElement().getSimpleName().toString()).append("#")
+				.append(ee.getSimpleName().toString()).append("(");
+		sb.append(ee.getParameters().stream().map((ve) -> {
+			Element e = processingEnv.getTypeUtils().asElement(ve.asType());
+			if (e == null) {
+				return ve.asType().toString();
+			} else {
+				if (ve.asType().getKind() == TypeKind.TYPEVAR) {
+					return "java.lang.Object";
+				}
+				PackageElement pe = processingEnv.getElementUtils().getPackageOf(e);
+				return pe.toString() + "." + processingEnv.getTypeUtils().asElement(ve.asType()).getSimpleName();
+			}
+		}).collect(Collectors.joining(",")));
 		sb.append(")");
 		return sb.toString();
 	}
