@@ -171,3 +171,8 @@ public interface AllMatchers {
  
  []
  
+ Two dedicated artifacts (<<<powerunit-extensions-matchers-factory>>> and 
+ <<<powerunit-extensions-matchers-providematchers>>>) are provided to only support the generation of matchers or
+ the generation of the factory.
+ 
+ []

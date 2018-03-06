@@ -30,6 +30,8 @@ import ch.powerunit.Test;
 import ch.powerunit.TestSuite;
 
 public class Pojo1MatcherTest implements TestSuite {
+	
+	
 	@Test
 	public void testOKMatcher() {
 		Pojo1 p = new Pojo1();
