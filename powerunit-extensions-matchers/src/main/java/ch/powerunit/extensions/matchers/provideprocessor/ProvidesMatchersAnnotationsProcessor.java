@@ -436,6 +436,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			wjfo.println(
 					"     * @param value an expected value for the field, which will be compared using the is matcher.");
 			wjfo.println("     * @return the DSL to continue the construction of the matcher.");
+			wjfo.println("     * @see org.hamcrest.Matchers#is(java.lang.Object)");
 			wjfo.println("     */");
 			wjfo.println("     " + generateMethodReturn(fields, shortClassName, generic) + " " + f.getFieldName() + "("
 					+ f.getFieldType() + " value);");
@@ -482,6 +483,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				printLinkToFileAccessor(inputClassName, wjfo, f);
 				wjfo.println("     *");
 				wjfo.println("     * @return the DSL to continue the construction of the matcher.");
+				wjfo.println("     * @see org.hamcrest.Matchers#comparesEqualTo(java.lang.Comparable) ");
 				wjfo.println("     */");
 				wjfo.println("     " + generateMethodReturn(fields, shortClassName, generic) + " " + f.getFieldName()
 						+ "ComparesEqualTo(" + f.getFieldType() + " value);");
@@ -494,6 +496,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				printLinkToFileAccessor(inputClassName, wjfo, f);
 				wjfo.println("     *");
 				wjfo.println("     * @return the DSL to continue the construction of the matcher.");
+				wjfo.println("     * @see org.hamcrest.Matchers#lessThan(java.lang.Comparable) ");
 				wjfo.println("     */");
 				wjfo.println("     " + generateMethodReturn(fields, shortClassName, generic) + " " + f.getFieldName()
 						+ "LessThan(" + f.getFieldType() + " value);");
@@ -505,6 +508,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				printLinkToFileAccessor(inputClassName, wjfo, f);
 				wjfo.println("     *");
 				wjfo.println("     * @return the DSL to continue the construction of the matcher.");
+				wjfo.println("     * @see org.hamcrest.Matchers#lessThanOrEqualTo(java.lang.Comparable) ");
 				wjfo.println("     */");
 				wjfo.println("     " + generateMethodReturn(fields, shortClassName, generic) + " " + f.getFieldName()
 						+ "LessThanOrEqualTo(" + f.getFieldType() + " value);");
@@ -516,6 +520,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				printLinkToFileAccessor(inputClassName, wjfo, f);
 				wjfo.println("     *");
 				wjfo.println("     * @return the DSL to continue the construction of the matcher.");
+				wjfo.println("     * @see org.hamcrest.Matchers#greaterThan(java.lang.Comparable) ");
 				wjfo.println("     */");
 				wjfo.println("     " + generateMethodReturn(fields, shortClassName, generic) + " " + f.getFieldName()
 						+ "GreaterThan(" + f.getFieldType() + " value);");
@@ -527,6 +532,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				printLinkToFileAccessor(inputClassName, wjfo, f);
 				wjfo.println("     *");
 				wjfo.println("     * @return the DSL to continue the construction of the matcher.");
+				wjfo.println("     * @see org.hamcrest.Matchers#greaterThanOrEqualTo(java.lang.Comparable) ");
 				wjfo.println("     */");
 				wjfo.println("     " + generateMethodReturn(fields, shortClassName, generic) + " " + f.getFieldName()
 						+ "GreaterThanOrEqualTo(" + f.getFieldType() + " value);");
