@@ -7,6 +7,23 @@
 		<format>jar</format>
 	</formats>
 	<includeBaseDirectory>false</includeBaseDirectory>
+	<dependencySets>
+		<dependencySet>
+			<outputDirectory>/</outputDirectory>
+			<useProjectArtifact>true</useProjectArtifact>
+			<unpack>true</unpack>
+			<scope>runtime</scope>
+			<includes>
+				<include>org.hamcrest:hamcrest-all</include>
+			</includes>
+			<unpackOptions>
+				<includes>
+					<include>**/Factory.class</include>
+				</includes>
+			</unpackOptions>
+		</dependencySet>
+	</dependencySets>
+
 	<fileSets>
 		<fileSet>
 			<directory>target/classes</directory>
