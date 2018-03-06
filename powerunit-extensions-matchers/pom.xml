@@ -353,6 +353,86 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>xml-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>prepare-pom</id>
+						<phase>package</phase>
+						<goals>
+							<goal>transform</goal>
+						</goals>
+						<configuration>
+							<transformationSets>
+								<transformationSet>
+									<dir>${basedir}</dir>
+									<outputDir>${project.build.directory}</outputDir>
+									<includes>
+										<include>pom.xml</include>
+									</includes>
+									<stylesheet>src/main/xslt/only-providematchers.xsl</stylesheet>
+									<fileMappers>
+										<fileMapper
+											implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+											<pattern>.xml$</pattern>
+											<replacement>-only-providematchers.xml</replacement>
+										</fileMapper>
+									</fileMappers>
+								</transformationSet>
+								<transformationSet>
+									<dir>${basedir}</dir>
+									<outputDir>${project.build.directory}</outputDir>
+									<includes>
+										<include>pom.xml</include>
+									</includes>
+									<stylesheet>src/main/xslt/only-factory.xsl</stylesheet>
+									<fileMappers>
+										<fileMapper
+											implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+											<pattern>.xml$</pattern>
+											<replacement>-only-factory.xml</replacement>
+										</fileMapper>
+									</fileMappers>
+								</transformationSet>
+							</transformationSets>
+						</configuration>
+					</execution>
+					
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>only-providematchers</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>src/assemble/only-providematchers.xml</descriptor>
+							</descriptors>
+							<attach>false</attach>
+						</configuration>
+					</execution>
+					<execution>
+						<id>only-factory</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>src/assemble/only-factory.xml</descriptor>
+							</descriptors>
+							<attach>false</attach>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
 		</plugins>
 		<resources>
 			<resource>
@@ -412,6 +492,40 @@
 								<goals>
 									<goal>sign</goal>
 								</goals>
+							</execution>
+							<execution>
+								<id>sign-and-deploy-provide</id>
+								<phase>deploy</phase>
+								<goals>
+									<goal>sign-and-deploy-file</goal>
+								</goals>
+								<configuration>
+									<url>${deploy.url}</url>
+									<file>${project.build.directory}/${project.artifactId}-${project.version}-only-providematchers.jar</file>
+									<artifactId>${project.artifactId}-providematchers</artifactId>
+									<groupId>${project.groupId}</groupId>
+									<pomFile>${project.build.directory}/pom-only-providematchers.xml</pomFile>
+									<repositoryId>${deploy.id}</repositoryId>
+									<javadoc>${project.build.directory}/${project.artifactId}-${project.version}-javadoc.jar</javadoc>
+									<sources>${project.build.directory}/${project.artifactId}-${project.version}-sources.jar</sources>
+								</configuration>
+							</execution>
+							<execution>
+								<id>sign-and-deploy-factory</id>
+								<phase>deploy</phase>
+								<goals>
+									<goal>sign-and-deploy-file</goal>
+								</goals>
+								<configuration>
+									<url>${deploy.url}</url>
+									<file>${project.build.directory}/${project.artifactId}-${project.version}-only-factory.jar</file>
+									<artifactId>${project.artifactId}-factory</artifactId>
+									<groupId>${project.groupId}</groupId>
+									<pomFile>${project.build.directory}/pom-only-factory.xml</pomFile>
+									<repositoryId>${deploy.id}</repositoryId>
+									<javadoc>${project.build.directory}/${project.artifactId}-${project.version}-javadoc.jar</javadoc>
+									<sources>${project.build.directory}/${project.artifactId}-${project.version}-sources.jar</sources>
+								</configuration>
 							</execution>
 						</executions>
 					</plugin>
