@@ -45,7 +45,7 @@ public class Pojo1MatcherTest implements TestSuite {
 					.nullRejected("was null").accepting(new Pojo1("12"), new Pojo1("121"))
 					.rejecting(value("").withMessage("was \"\""), value(new Pojo1()).withMessage("[msg1 was null]\n"),
 							value(new Pojo1("11")).withMessage("[msg1 was \"11\"]\n")),
-					matcher(Pojo1Matchers.pojo1With().msg6IsEmpty())
+					matcher(Pojo1Matchers.pojo1With().msg6IsEmptyIterable())
 							.describedAs(
 									"an instance of ch.powerunit.extensions.matchers.samples.Pojo1 with\n[msg2 ANYTHING]\n[msg3 ANYTHING]\n[msg4 ANYTHING]\n[msg5 ANYTHING]\n[msg6 an empty iterable]\n[msg7 ANYTHING]\n[msg8 ANYTHING]\n[msg9 ANYTHING]\n[msg12 ANYTHING]\n[msg1 ANYTHING]\n[myBoolean ANYTHING]\n[oneBoolean ANYTHING]\n")
 							.nullRejected("was null").accepting(new Pojo1(Collections.emptyList()))

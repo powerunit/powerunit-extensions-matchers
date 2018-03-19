@@ -76,14 +76,20 @@ public class FieldDescription {
 		case COLLECTION:
 			tmp1.add(this::getImplementationForIterable);
 			tmp2.add(this::getDslForIterable);
+			tmp1.add(this::getImplementationForCollection);
+			tmp2.add(this::getDslForCollection);
 			break;
 		case LIST:
 			tmp1.add(this::getImplementationForIterable);
 			tmp2.add(this::getDslForIterable);
+			tmp1.add(this::getImplementationForCollection);
+			tmp2.add(this::getDslForCollection);
 			break;
 		case SET:
 			tmp1.add(this::getImplementationForIterable);
 			tmp2.add(this::getDslForIterable);
+			tmp1.add(this::getImplementationForCollection);
+			tmp2.add(this::getDslForCollection);
 			break;
 		default:
 			// Nothing
@@ -136,7 +142,7 @@ public class FieldDescription {
 	private String getImplementationForIterable(String inputClassName, String returnMethod, String prefix) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(prefix).append("@Override").append("\n");
-		sb.append(prefix).append("public " + returnMethod + " " + fieldName + "IsEmpty() {").append("\n");
+		sb.append(prefix).append("public " + returnMethod + " " + fieldName + "IsEmptyIterable() {").append("\n");
 		sb.append(prefix)
 				.append("  return " + fieldName + "((org.hamcrest.Matcher)org.hamcrest.Matchers.emptyIterable());")
 				.append("\n");
@@ -150,6 +156,17 @@ public class FieldDescription {
 		sb.append(prefix).append("public " + returnMethod + " " + fieldName + "IsEmpty() {").append("\n");
 		sb.append(prefix)
 				.append("  return " + fieldName + "((org.hamcrest.Matcher)org.hamcrest.Matchers.emptyArray());")
+				.append("\n");
+		sb.append(prefix).append("}").append("\n");
+		return sb.toString();
+	}
+	
+	private String getImplementationForCollection(String inputClassName, String returnMethod, String prefix) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(prefix).append("@Override").append("\n");
+		sb.append(prefix).append("public " + returnMethod + " " + fieldName + "IsEmpty() {").append("\n");
+		sb.append(prefix)
+				.append("  return " + fieldName + "((org.hamcrest.Matcher)org.hamcrest.Matchers.empty());")
 				.append("\n");
 		sb.append(prefix).append("}").append("\n");
 		return sb.toString();
@@ -301,7 +318,7 @@ public class FieldDescription {
 		sb.append(prefix).append(" *").append("\n");
 		sb.append(prefix).append(" * @return the DSL to continue the construction of the matcher.").append("\n");
 		sb.append(prefix).append(" */").append("\n");
-		sb.append(prefix).append(returnMethod).append(fieldName).append("IsEmpty();").append("\n");
+		sb.append(prefix).append(returnMethod).append(fieldName).append("IsEmptyIterable();").append("\n");
 
 		return sb.toString();
 	}
@@ -312,6 +329,23 @@ public class FieldDescription {
 		StringBuilder sb = new StringBuilder();
 		sb.append(prefix).append("/**").append("\n");
 		sb.append(prefix).append(" * Add a validation on the field " + fieldName + " that the array is empty.")
+				.append("\n");
+		sb.append(prefix).append(" *").append("\n");
+		sb.append(prefix).append(" * ").append(linkToAccessor).append("\n");
+		sb.append(prefix).append(" *").append("\n");
+		sb.append(prefix).append(" * @return the DSL to continue the construction of the matcher.").append("\n");
+		sb.append(prefix).append(" */").append("\n");
+		sb.append(prefix).append(returnMethod).append(fieldName).append("IsEmpty();").append("\n");
+
+		return sb.toString();
+	}
+	
+	private String getDslForCollection(String inputClassName, String returnMethod, String prefix) {
+		String linkToAccessor = "{@link " + inputClassName + "#" + getFieldAccessor()
+				+ " This field is accessed by using this approach}.";
+		StringBuilder sb = new StringBuilder();
+		sb.append(prefix).append("/**").append("\n");
+		sb.append(prefix).append(" * Add a validation on the field " + fieldName + " that the collection is empty.")
 				.append("\n");
 		sb.append(prefix).append(" *").append("\n");
 		sb.append(prefix).append(" * ").append(linkToAccessor).append("\n");

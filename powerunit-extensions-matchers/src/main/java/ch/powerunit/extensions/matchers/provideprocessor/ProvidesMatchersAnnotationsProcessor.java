@@ -300,17 +300,15 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		wjfo.println("      boolean result=true;");
 		if (hasParent) {
 			wjfo.println("      if(!parent.matches(actual)) {");
-			wjfo.println("        mismatchDescription.appendText(\"[\");");
-			wjfo.println("        parent.describeMismatch(actual,mismatchDescription);");
-			wjfo.println("        mismatchDescription.appendText(\"]\\n\");");
+			wjfo.println(
+					"        mismatchDescription.appendText(\"[\"); parent.describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");");
 			wjfo.println("        result=false;");
 			wjfo.println("      }");
 		}
 		for (FieldDescription f : fields) {
 			wjfo.println("      if(!" + f.getFieldName() + ".matches(actual)) {");
-			wjfo.println("        mismatchDescription.appendText(\"[\");");
-			wjfo.println("        " + f.getFieldName() + ".describeMismatch(actual,mismatchDescription);");
-			wjfo.println("        mismatchDescription.appendText(\"]\\n\");");
+			wjfo.println("        mismatchDescription.appendText(\"[\"); " + f.getFieldName()
+					+ ".describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");");
 			wjfo.println("        result=false;");
 			wjfo.println("      }");
 		}
