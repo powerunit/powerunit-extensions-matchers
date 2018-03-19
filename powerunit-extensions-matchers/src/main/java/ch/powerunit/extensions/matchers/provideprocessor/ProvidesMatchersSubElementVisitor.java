@@ -19,11 +19,7 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
-import static org.hamcrest.core.IsEqual.equalTo;
-
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
@@ -42,8 +38,6 @@ import javax.lang.model.util.SimpleElementVisitor8;
 import javax.lang.model.util.TypeKindVisitor8;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
-
-import org.hamcrest.Matcher;
 
 import ch.powerunit.extensions.matchers.provideprocessor.FieldDescription.Type;
 
