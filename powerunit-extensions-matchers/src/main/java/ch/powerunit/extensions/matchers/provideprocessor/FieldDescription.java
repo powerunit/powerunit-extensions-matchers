@@ -463,7 +463,7 @@ public class FieldDescription {
 				.collect(Collectors.joining("\n"));
 	}
 
-	public String getMatcherForField(String shortClassName,String generic, String fullGeneric, String prefix) {
+	public String getMatcherForField(String shortClassName, String generic, String fullGeneric, String prefix) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(prefix).append("// " + type).append("\n");
 		sb.append(prefix)
@@ -477,26 +477,24 @@ public class FieldDescription {
 		sb.append(prefix).append("  }").append("\n");
 		if (type == Type.OPTIONAL) {
 			sb.append(prefix).append("  public static " + methodFieldName + "Matcher isPresent() {").append("\n");
-			sb.append(prefix)
-					.append("    return new " + methodFieldName
-							+ "Matcher(new org.hamcrest.CustomTypeSafeMatcher<"+fieldType+">(\"optional is present\"){")
+			sb.append(prefix).append("    return new " + methodFieldName
+					+ "Matcher(new org.hamcrest.CustomTypeSafeMatcher<" + fieldType + ">(\"optional is present\"){")
 					.append("\n");
-			sb.append(prefix).append("      public boolean matchesSafely("+fieldType+" o) {return o.isPresent();}")
+			sb.append(prefix).append("      public boolean matchesSafely(" + fieldType + " o) {return o.isPresent();}")
 					.append("\n");
 			sb.append(prefix).append("    });").append("\n");
 			sb.append(prefix).append("  }").append("\n");
 			sb.append(prefix).append("  public static " + methodFieldName + "Matcher isNotPresent() {").append("\n");
-			sb.append(prefix)
-					.append("    return new " + methodFieldName
-							+ "Matcher(new org.hamcrest.CustomTypeSafeMatcher<"+fieldType+ ">(\"optional is not present\"){")
+			sb.append(prefix).append("    return new " + methodFieldName
+					+ "Matcher(new org.hamcrest.CustomTypeSafeMatcher<" + fieldType + ">(\"optional is not present\"){")
 					.append("\n");
-			sb.append(prefix)
-					.append("      public boolean matchesSafely("+fieldType+" o) {return !o.isPresent();}")
+			sb.append(prefix).append("      public boolean matchesSafely(" + fieldType + " o) {return !o.isPresent();}")
 					.append("\n");
 			sb.append(prefix).append("    });").append("\n");
 			sb.append(prefix).append("  }").append("\n");
 		}
-		sb.append(prefix).append("  protected " + fieldType + " featureValueOf(" + shortClassName + generic + " actual) {")
+		sb.append(prefix)
+				.append("  protected " + fieldType + " featureValueOf(" + shortClassName + generic + " actual) {")
 				.append("\n");
 		sb.append(prefix).append("    return actual." + fieldAccessor + ";").append("\n");
 		sb.append(prefix).append("  }").append("\n");
