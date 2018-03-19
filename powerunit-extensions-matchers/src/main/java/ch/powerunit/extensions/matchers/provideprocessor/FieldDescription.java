@@ -73,6 +73,18 @@ public class FieldDescription {
 			tmp1.add(this::getImplementationForString);
 			tmp2.add(this::getDslForString);
 			break;
+		case COLLECTION:
+			tmp1.add(this::getImplementationForIterable);
+			tmp2.add(this::getDslForIterable);
+			break;
+		case LIST:
+			tmp1.add(this::getImplementationForIterable);
+			tmp2.add(this::getDslForIterable);
+			break;
+		case SET:
+			tmp1.add(this::getImplementationForIterable);
+			tmp2.add(this::getDslForIterable);
+			break;
 		default:
 			// Nothing
 		}
@@ -106,21 +118,29 @@ public class FieldDescription {
 		sb.append(prefix).append("  return " + fieldName + "(org.hamcrest.Matchers.containsString(other));")
 				.append("\n");
 		sb.append(prefix).append("}").append("\n");
-		
+
 		sb.append(prefix).append("@Override").append("\n");
 		sb.append(prefix).append("public " + returnMethod + " " + fieldName + "StartsWith(String other) {")
 				.append("\n");
-		sb.append(prefix).append("  return " + fieldName + "(org.hamcrest.Matchers.startsWith(other));")
-				.append("\n");
+		sb.append(prefix).append("  return " + fieldName + "(org.hamcrest.Matchers.startsWith(other));").append("\n");
 		sb.append(prefix).append("}").append("\n");
-		
+
 		sb.append(prefix).append("@Override").append("\n");
-		sb.append(prefix).append("public " + returnMethod + " " + fieldName + "EndsWith(String other) {")
-				.append("\n");
-		sb.append(prefix).append("  return " + fieldName + "(org.hamcrest.Matchers.endsWith(other));")
+		sb.append(prefix).append("public " + returnMethod + " " + fieldName + "EndsWith(String other) {").append("\n");
+		sb.append(prefix).append("  return " + fieldName + "(org.hamcrest.Matchers.endsWith(other));").append("\n");
+		sb.append(prefix).append("}").append("\n");
+
+		return sb.toString();
+	}
+
+	private String getImplementationForIterable(String inputClassName, String returnMethod, String prefix) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(prefix).append("@Override").append("\n");
+		sb.append(prefix).append("public " + returnMethod + " " + fieldName + "IsEmpty() {").append("\n");
+		sb.append(prefix)
+				.append("  return " + fieldName + "((org.hamcrest.Matcher)org.hamcrest.Matchers.emptyIterable());")
 				.append("\n");
 		sb.append(prefix).append("}").append("\n");
-		
 		return sb.toString();
 	}
 
@@ -239,7 +259,7 @@ public class FieldDescription {
 		sb.append(prefix).append(" * @see org.hamcrest.Matchers#containsString(java.lang.String)").append("\n");
 		sb.append(prefix).append(" */").append("\n");
 		sb.append(prefix).append(returnMethod).append(fieldName).append("ContainsString(String other);").append("\n");
-		
+
 		sb.append(prefix).append("/**").append("\n");
 		sb.append(prefix)
 				.append(" * Add a validation on the field " + fieldName + " that the string contains another one.")
@@ -265,11 +285,28 @@ public class FieldDescription {
 		sb.append(prefix).append(" * @see org.hamcrest.Matchers#endsWith(java.lang.String)").append("\n");
 		sb.append(prefix).append(" */").append("\n");
 		sb.append(prefix).append(returnMethod).append(fieldName).append("EndsWith(String other);").append("\n");
-		
+
 		return sb.toString();
 	}
 
-	public String getDslForArray(String inputClassName, String returnMethod, String prefix) {
+	private String getDslForIterable(String inputClassName, String returnMethod, String prefix) {
+		String linkToAccessor = "{@link " + inputClassName + "#" + getFieldAccessor()
+				+ " This field is accessed by using this approach}.";
+		StringBuilder sb = new StringBuilder();
+		sb.append(prefix).append("/**").append("\n");
+		sb.append(prefix).append(" * Add a validation on the field " + fieldName + " that the iterable is empty.")
+				.append("\n");
+		sb.append(prefix).append(" *").append("\n");
+		sb.append(prefix).append(" * ").append(linkToAccessor).append("\n");
+		sb.append(prefix).append(" *").append("\n");
+		sb.append(prefix).append(" * @return the DSL to continue the construction of the matcher.").append("\n");
+		sb.append(prefix).append(" */").append("\n");
+		sb.append(prefix).append(returnMethod).append(fieldName).append("IsEmpty();").append("\n");
+
+		return sb.toString();
+	}
+
+	private String getDslForArray(String inputClassName, String returnMethod, String prefix) {
 		String linkToAccessor = "{@link " + inputClassName + "#" + getFieldAccessor()
 				+ " This field is accessed by using this approach}.";
 		StringBuilder sb = new StringBuilder();
@@ -286,7 +323,7 @@ public class FieldDescription {
 		return sb.toString();
 	}
 
-	public String getDslForOptional(String inputClassName, String returnMethod, String prefix) {
+	private String getDslForOptional(String inputClassName, String returnMethod, String prefix) {
 		String linkToAccessor = "{@link " + inputClassName + "#" + getFieldAccessor()
 				+ " This field is accessed by using this approach}.";
 		StringBuilder sb = new StringBuilder();
@@ -313,7 +350,7 @@ public class FieldDescription {
 		return sb.toString();
 	}
 
-	public String getDslForComparable(String inputClassName, String returnMethod, String prefix) {
+	private String getDslForComparable(String inputClassName, String returnMethod, String prefix) {
 		String linkToAccessor = "{@link " + inputClassName + "#" + getFieldAccessor()
 				+ " This field is accessed by using this approach}.";
 		StringBuilder sb = new StringBuilder();

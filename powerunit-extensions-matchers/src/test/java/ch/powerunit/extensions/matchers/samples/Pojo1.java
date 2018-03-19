@@ -46,9 +46,9 @@ public class Pojo1 {
 	public List<String[]> msg7;
 
 	public List<String>[] msg8;
-	
+
 	public Collection<Integer> msg9;
-	
+
 	public Set<String> msg12;
 
 	public String getMsg1() {
@@ -70,12 +70,16 @@ public class Pojo1 {
 	public void setOneBoolean(boolean oneBoolean) {
 		this.oneBoolean = oneBoolean;
 	}
-	
+
 	public Pojo1() {
 	}
 
 	public Pojo1(String msg1) {
 		this.msg1 = msg1;
+	}
+
+	public Pojo1(List<String> msg6) {
+		this.msg6 = msg6;
 	}
 
 }
