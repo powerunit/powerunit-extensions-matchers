@@ -54,23 +54,27 @@ public class FieldDescription {
 		List<Generator> tmp2 = new ArrayList<>();
 		tmp1.add(this::getImplementationForDefault);
 		tmp2.add(this::getDslForDefault);
-		if (type == Type.ARRAY) {
+		switch (type) {
+		case ARRAY:
 			tmp1.add(this::getImplementationForArray);
 			tmp2.add(this::getDslForArray);
-		}
-		if (type == Type.OPTIONAL) {
+			break;
+		case OPTIONAL:
 			tmp1.add(this::getImplementationForOptional);
 			tmp2.add(this::getDslForOptional);
-		}
-		if (type == Type.COMPARABLE) {
+			break;
+		case COMPARABLE:
 			tmp1.add(this::getImplementationForComparable);
 			tmp2.add(this::getDslForComparable);
-		}
-		if (type == Type.STRING) {
+			break;
+		case STRING:
 			tmp1.add(this::getImplementationForComparable);
 			tmp2.add(this::getDslForComparable);
 			tmp1.add(this::getImplementationForString);
 			tmp2.add(this::getDslForString);
+			break;
+		default:
+			// Nothing
 		}
 		implGenerator = Collections.unmodifiableList(tmp1);
 		dslGenerator = Collections.unmodifiableList(tmp2);
@@ -209,7 +213,8 @@ public class FieldDescription {
 				+ " This field is accessed by using this approach}.";
 		StringBuilder sb = new StringBuilder();
 		sb.append(prefix).append("/**").append("\n");
-		sb.append(prefix).append(" * Add a validation on the field " + fieldName + " that the string contains another one.")
+		sb.append(prefix)
+				.append(" * Add a validation on the field " + fieldName + " that the string contains another one.")
 				.append("\n");
 		sb.append(prefix).append(" *").append("\n");
 		sb.append(prefix).append(" * ").append(linkToAccessor).append("\n");

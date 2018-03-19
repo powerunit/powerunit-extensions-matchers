@@ -321,14 +321,11 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		wjfo.println("    public void describeTo(org.hamcrest.Description description) {");
 		wjfo.println("        description.appendText(\"an instance of " + inputClassName + " with\\n\");");
 		if (hasParent) {
-			wjfo.println("        description.appendText(\"[\");");
-			wjfo.println("        description.appendDescriptionOf(parent);");
-			wjfo.println("        description.appendText(\"]\\n\");");
+			wjfo.println("        description.appendText(\"[\").appendDescriptionOf(parent).appendText(\"]\\n\");");
 		}
 		for (FieldDescription f : fields) {
-			wjfo.println("        description.appendText(\"[\");");
-			wjfo.println("        description.appendDescriptionOf(" + f.getFieldName() + ");");
-			wjfo.println("        description.appendText(\"]\\n\");");
+			wjfo.println("        description.appendText(\"[\").appendDescriptionOf(" + f.getFieldName()
+					+ ").appendText(\"]\\n\");");
 		}
 		wjfo.println("    }");
 
