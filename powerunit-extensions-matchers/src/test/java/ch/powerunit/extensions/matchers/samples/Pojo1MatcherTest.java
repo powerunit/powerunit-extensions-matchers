@@ -19,6 +19,9 @@
  */
 package ch.powerunit.extensions.matchers.samples;
 
+import static ch.powerunit.matchers.MatcherTester.matcher;
+import static ch.powerunit.matchers.MatcherTester.value;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -27,37 +30,47 @@ import org.hamcrest.Matcher;
 
 import ch.powerunit.Ignore;
 import ch.powerunit.Test;
+import ch.powerunit.TestDelegate;
 import ch.powerunit.TestSuite;
+import ch.powerunit.matchers.MatcherTester;
 
 public class Pojo1MatcherTest implements TestSuite {
-	
-	
+
+	@TestDelegate
+	public final MatcherTester<Pojo1Matchers.Pojo1Matcher> tester = testerOfMatcher(Pojo1Matchers.Pojo1Matcher.class)
+			.with(matcher(Pojo1Matchers.pojo1With().msg1ContainsString("12"))
+					.describedAs(
+							"an instance of ch.powerunit.extensions.matchers.samples.Pojo1 with\n[msg2 ANYTHING]\n[msg3 ANYTHING]\n[msg4 ANYTHING]\n[msg5 ANYTHING]\n[msg6 ANYTHING]\n[msg7 ANYTHING]\n[msg8 ANYTHING]\n[msg9 ANYTHING]\n[msg12 ANYTHING]\n[msg1 a string containing \"12\"]\n[myBoolean ANYTHING]\n[oneBoolean ANYTHING]\n")
+					.nullRejected("was null").accepting(new Pojo1("12"), new Pojo1("121"))
+					.rejecting(value("").withMessage("was \"\""), value(new Pojo1()).withMessage("[msg1 was null]\n"),
+							value(new Pojo1("11")).withMessage("[msg1 was \"11\"]\n")));
+
 	@Test
 	public void testOKMatcher() {
 		Pojo1 p = new Pojo1();
 		assertThat(p).is(Pojo1Matchers.pojo1With());
 	}
-	
+
 	@Test
 	public void testOKMatcherWithComparable() {
 		Pojo1 p = new Pojo1();
-		p.msg2="12";
+		p.msg2 = "12";
 		assertThat(p).is(Pojo1Matchers.pojo1With().msg2ComparesEqualTo("12"));
 	}
-	
+
 	@Test
 	public void testKOMatcherWithReference() {
 		Pojo1 p1 = new Pojo1();
-		p1.msg2="12";
+		p1.msg2 = "12";
 		Pojo1 p2 = new Pojo1();
-		p2.msg2="12";
+		p2.msg2 = "12";
 		assertThat(p1).is(Pojo1Matchers.pojo1WithSameValue(p2));
 	}
-	
+
 	@Test
 	public void testKOMatcherWithEmptyArray() {
 		Pojo1 p1 = new Pojo1();
-		p1.msg8=new List[]{};
+		p1.msg8 = new List[] {};
 		assertThat(p1).is(Pojo1Matchers.pojo1With().msg8IsEmpty());
 	}
 
@@ -86,13 +99,11 @@ public class Pojo1MatcherTest implements TestSuite {
 	}
 
 	@Factory
-	public static <T extends Iterable<K> & Serializable, K> void test2(T t1,
-			K t2) {
+	public static <T extends Iterable<K> & Serializable, K> void test2(T t1, K t2) {
 	}
 
 	@Factory
-	public static <T extends Iterable<K> & Serializable, K> void test3(T t1,
-			K... t2) {
+	public static <T extends Iterable<K> & Serializable, K> void test3(T t1, K... t2) {
 	}
 
 	@Factory

@@ -70,5 +70,12 @@ public class Pojo1 {
 	public void setOneBoolean(boolean oneBoolean) {
 		this.oneBoolean = oneBoolean;
 	}
+	
+	public Pojo1() {
+	}
+
+	public Pojo1(String msg1) {
+		this.msg1 = msg1;
+	}
 
 }

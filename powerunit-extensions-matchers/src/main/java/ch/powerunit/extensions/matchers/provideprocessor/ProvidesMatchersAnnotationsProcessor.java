@@ -271,7 +271,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
 	private void generatePrivateImplementation(TypeElement te, Name inputClassName, String shortClassName,
 			boolean hasParent, String generic, String fullGeneric, PrintWriter wjfo, List<FieldDescription> fields) {
-		wjfo.println("  private static class " + shortClassName + "MatcherImpl" + fullGeneric
+		wjfo.println("  /* package protected */ static class " + shortClassName + "MatcherImpl" + fullGeneric
 				+ " extends org.hamcrest.TypeSafeDiagnosingMatcher<" + shortClassName + generic + "> implements "
 				+ shortClassName + "Matcher" + generic + " {");
 		for (FieldDescription f : fields) {
