@@ -152,15 +152,11 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	private List<FieldDescription> generateAndExtractFieldAndParentPrivateMatcher(Elements elementsUtils,
 			Filer filerUtils, Types typesUtils, Messager messageUtils, TypeElement te, String shortClassName,
 			boolean hasParent, String generic, String fullGeneric, PrintWriter wjfo) {
-		List<FieldDescription> fields = new ArrayList<>();
-		for (Element ie : te.getEnclosedElements()) {
-			FieldDescription f = ie
-					.accept(new ProvidesMatchersSubElementVisitor(this, elementsUtils, typesUtils, messageUtils), null);
-			if (f != null) {
-				fields.add(f);
-			}
-		}
-		wjfo.println(fields.stream().map(f -> f.getMatcherForField(shortClassName,generic, fullGeneric, "  "))
+		List<FieldDescription> fields = te.getEnclosedElements()
+				.stream().map(ie -> ie
+						.accept(new ProvidesMatchersSubElementVisitor(elementsUtils, typesUtils, messageUtils), null))
+				.filter(v -> v != null).collect(Collectors.toList());
+		wjfo.println(fields.stream().map(f -> f.getMatcherForField(shortClassName, generic, fullGeneric, "  "))
 				.collect(Collectors.joining("\n")));
 		if (hasParent) {
 			wjfo.println(

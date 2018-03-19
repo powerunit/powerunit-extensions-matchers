@@ -19,14 +19,10 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
-import java.io.PrintWriter;
-
-import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
@@ -208,14 +204,11 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Fie
 		}
 	}
 
-	private final ProvidesMatchersAnnotationsProcessor providesMatchersAnnotationsProcessor;
 	private final Elements elementsUtils;
 	private final Types typesUtils;
 	private final Messager messageUtils;
 
-	public ProvidesMatchersSubElementVisitor(ProvidesMatchersAnnotationsProcessor providesMatchersAnnotationsProcessor,
-			Elements elementsUtils, Types typesUtils, Messager messageUtils) {
-		this.providesMatchersAnnotationsProcessor = providesMatchersAnnotationsProcessor;
+	public ProvidesMatchersSubElementVisitor(Elements elementsUtils, Types typesUtils, Messager messageUtils) {
 		this.elementsUtils = elementsUtils;
 		this.typesUtils = typesUtils;
 		this.messageUtils = messageUtils;
@@ -260,7 +253,6 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Fie
 		}
 		return null;
 	}
-
 
 	private String parseType(Element e, TypeMirror type, boolean asPrimitif) {
 		return type.accept(new ExtractNameVisitor(e, asPrimitif), null);
