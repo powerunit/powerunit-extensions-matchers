@@ -44,6 +44,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -153,7 +154,7 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 						wjfo.println();
 						wjfo.println("/**");
 						wjfo.println(" * Factories generated.");
-						wjfo.println(" * <br/> ");
+						wjfo.println(" * <p> ");
 						wjfo.println(" * This DSL can be use in several way : ");
 						wjfo.println(" * <ul> ");
 						wjfo.println(
@@ -179,11 +180,11 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 							String doc = entry.getDoc();
 							if (doc != null) {
 								wjfo.println("  /**\n   * " + doc.replaceAll("\n", "\n   * "));
-								wjfo.println("   * @see " + getSeeValue(ee) + "\n   */");
+								wjfo.println("   * @see " + getSeeValue(typesUtils,ee) + "\n   */");
 							} else {
 								wjfo.println("  /**");
 								wjfo.println("   * No javadoc found from the source method.");
-								wjfo.println("   * @see " + getSeeValue(ee) + "\n   */");
+								wjfo.println("   * @see " + getSeeValue(typesUtils,ee) + "\n   */");
 							}
 							wjfo.print("  default ");
 							if (!ee.getTypeParameters().isEmpty()) {
@@ -232,7 +233,7 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 		return true;
 	}
 
-	private String getSeeValue(ExecutableElement ee) {
+	private String getSeeValue(Types typeutils,ExecutableElement ee) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(processingEnv.getElementUtils().getPackageOf(ee.getEnclosingElement()).getQualifiedName()).append(".")
 				.append(ee.getEnclosingElement().getSimpleName().toString()).append("#")
@@ -240,17 +241,23 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 		sb.append(ee.getParameters().stream().map((ve) -> {
 			Element e = processingEnv.getTypeUtils().asElement(ve.asType());
 			if (e == null) {
-				return ve.asType().toString();
+				return typeutils.erasure(ve.asType()).toString();
 			} else {
 				if (ve.asType().getKind() == TypeKind.TYPEVAR) {
-					return "java.lang.Object";
+					return typeutils.erasure(ve.asType()).toString();
 				}
+				
+				
 				PackageElement pe = processingEnv.getElementUtils().getPackageOf(e);
 				return pe.toString() + "." + processingEnv.getTypeUtils().asElement(ve.asType()).getSimpleName();
 			}
 		}).collect(Collectors.joining(",")));
 		sb.append(")");
-		return sb.toString();
+		String result = sb.toString();
+		if (ee.isVarArgs()) {
+			result=result.replaceAll("\\[\\](\\s[0-9a-zA-Z_]*$)??", "...");
+		}
+		return result;
 	}
 
 	AnnotationMirror getFactoryAnnotation(TypeElement factoryAnnotationTE,
