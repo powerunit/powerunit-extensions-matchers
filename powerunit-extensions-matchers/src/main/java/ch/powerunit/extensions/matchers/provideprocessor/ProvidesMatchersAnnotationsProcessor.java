@@ -154,12 +154,14 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			boolean hasParent, String generic, String fullGeneric, PrintWriter wjfo) {
 		List<FieldDescription> fields = new ArrayList<>();
 		for (Element ie : te.getEnclosedElements()) {
-			FieldDescription f = ie.accept(new ProvidesMatchersSubElementVisitor(this, elementsUtils, filerUtils,
-					typesUtils, messageUtils, te, generic, fullGeneric, wjfo), null);
+			FieldDescription f = ie
+					.accept(new ProvidesMatchersSubElementVisitor(this, elementsUtils, typesUtils, messageUtils), null);
 			if (f != null) {
 				fields.add(f);
 			}
 		}
+		wjfo.println(fields.stream().map(f -> f.getMatcherForField(shortClassName,generic, fullGeneric, "  "))
+				.collect(Collectors.joining("\n")));
 		if (hasParent) {
 			wjfo.println(
 					"  private static class SuperClassMatcher" + fullGeneric + " extends org.hamcrest.FeatureMatcher<"

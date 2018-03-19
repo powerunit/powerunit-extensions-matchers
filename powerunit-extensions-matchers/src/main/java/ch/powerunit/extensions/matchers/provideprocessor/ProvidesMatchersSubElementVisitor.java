@@ -211,25 +211,14 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Fie
 	private final ProvidesMatchersAnnotationsProcessor providesMatchersAnnotationsProcessor;
 	private final Elements elementsUtils;
 	private final Types typesUtils;
-	private final Filer filerUtils;
 	private final Messager messageUtils;
-	private final TypeElement typeElement;
-	private final String generic;
-	private final String fullGeneric;
-	private final PrintWriter writer;
 
 	public ProvidesMatchersSubElementVisitor(ProvidesMatchersAnnotationsProcessor providesMatchersAnnotationsProcessor,
-			Elements elementsUtils, Filer filerUtils, Types typesUtils, Messager messageUtils, TypeElement typeElement,
-			String generic, String fullGeneric, PrintWriter writer) {
+			Elements elementsUtils, Types typesUtils, Messager messageUtils) {
 		this.providesMatchersAnnotationsProcessor = providesMatchersAnnotationsProcessor;
 		this.elementsUtils = elementsUtils;
 		this.typesUtils = typesUtils;
-		this.filerUtils = filerUtils;
 		this.messageUtils = messageUtils;
-		this.typeElement = typeElement;
-		this.generic = generic;
-		this.fullGeneric = fullGeneric;
-		this.writer = writer;
 	}
 
 	@Override
@@ -239,10 +228,6 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Fie
 			String fieldType = parseType(e, e.asType(), false);
 			if (fieldType != null) {
 				Type type = parseType(e.asType());
-				writer.println("  // Field " + fieldName + " of " + fieldType);
-				createFeatureMatcher(fieldName, fieldName,
-						fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1), fieldType, type);
-				writer.println();
 				return new FieldDescription(fieldName, fieldName,
 						fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1), fieldType, type);
 			}
@@ -260,9 +245,6 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Fie
 			String fieldType = parseType(e, e.getReturnType(), false);
 			if (fieldType != null) {
 				Type type = parseType(e.getReturnType());
-				writer.println("  // Method " + methodName + " for field " + fieldName + " of " + fieldType);
-				createFeatureMatcher(methodName + "()", fieldName, fieldNameDirect, fieldType, type);
-				writer.println();
 				return new FieldDescription(methodName + "()", fieldName, fieldNameDirect, fieldType, type);
 			}
 		} else if (e.getModifiers().contains(Modifier.PUBLIC) && e.getSimpleName().toString().startsWith("is")
@@ -273,62 +255,12 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Fie
 			String fieldType = parseType(e, e.getReturnType(), false);
 			if (fieldType != null) {
 				Type type = parseType(e.getReturnType());
-				writer.println("  // Method " + methodName + " for field " + fieldName + " of " + fieldType);
-				createFeatureMatcher(methodName + "()", fieldName, fieldNameDirect, fieldType, type);
-				writer.println();
 				return new FieldDescription(methodName + "()", fieldName, fieldNameDirect, fieldType, type);
 			}
 		}
 		return null;
 	}
 
-	private void createFeatureMatcher(String fieldAccessor, String fieldName, String methodFieldName, String fieldType,
-			Type typeSpecial) {
-		String type = typeElement.getSimpleName().toString();
-		writer.println("  // " + typeSpecial);
-		writer.println("  private static class " + methodFieldName + "Matcher" + fullGeneric
-				+ " extends org.hamcrest.FeatureMatcher<" + type + generic + "," + fieldType + "> {");
-		writer.println();
-		writer.println(
-				"    public " + methodFieldName + "Matcher(org.hamcrest.Matcher<? super " + fieldType + "> matcher) {");
-		writer.println("      super(matcher,\"" + fieldName + "\",\"" + fieldName + "\");");
-		writer.println("  }");
-		switch (typeSpecial) {
-			case ARRAY:
-
-				break;
-			case SET:
-				
-				break;
-			case COLLECTION:
-				
-				break;
-			case OPTIONAL:
-				writer.println(
-						"    public static " + methodFieldName + "Matcher isPresent() {");
-				writer.println("      return new "+methodFieldName + "Matcher(new org.hamcrest.CustomTypeSafeMatcher<java.util.Optional>(\"optional is present\"){");
-				writer.println("        public boolean matchesSafely(java.util.Optional o) {return o.isPresent();}");
-				writer.println("      });");
-				writer.println("  }");
-				writer.println(
-						"    public static " + methodFieldName + "Matcher isNotPresent() {");
-				writer.println("      return new "+methodFieldName + "Matcher(new org.hamcrest.CustomTypeSafeMatcher<java.util.Optional>(\"optional is not present\"){");
-				writer.println("        public boolean matchesSafely(java.util.Optional o) {return !o.isPresent();}");
-				writer.println("      });");
-				writer.println("  }");
-				break;
-			default:
-				//NOTHING
-				break;
-		}
-		writer.println();
-		writer.println("    protected " + fieldType + " featureValueOf(" + type + generic + " actual) {");
-		writer.println("      return actual." + fieldAccessor + ";");
-		writer.println("    }");
-		writer.println();
-		writer.println("  }");
-		writer.println();
-	}
 
 	private String parseType(Element e, TypeMirror type, boolean asPrimitif) {
 		return type.accept(new ExtractNameVisitor(e, asPrimitif), null);

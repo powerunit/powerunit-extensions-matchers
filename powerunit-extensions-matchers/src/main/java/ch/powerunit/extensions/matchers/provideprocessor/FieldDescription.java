@@ -160,13 +160,12 @@ public class FieldDescription {
 		sb.append(prefix).append("}").append("\n");
 		return sb.toString();
 	}
-	
+
 	private String getImplementationForCollection(String inputClassName, String returnMethod, String prefix) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(prefix).append("@Override").append("\n");
 		sb.append(prefix).append("public " + returnMethod + " " + fieldName + "IsEmpty() {").append("\n");
-		sb.append(prefix)
-				.append("  return " + fieldName + "((org.hamcrest.Matcher)org.hamcrest.Matchers.empty());")
+		sb.append(prefix).append("  return " + fieldName + "((org.hamcrest.Matcher)org.hamcrest.Matchers.empty());")
 				.append("\n");
 		sb.append(prefix).append("}").append("\n");
 		return sb.toString();
@@ -339,7 +338,7 @@ public class FieldDescription {
 
 		return sb.toString();
 	}
-	
+
 	private String getDslForCollection(String inputClassName, String returnMethod, String prefix) {
 		String linkToAccessor = "{@link " + inputClassName + "#" + getFieldAccessor()
 				+ " This field is accessed by using this approach}.";
@@ -462,6 +461,47 @@ public class FieldDescription {
 	public String getDslInterface(String inputClassName, String returnMethod, String prefix) {
 		return dslGenerator.stream().map(g -> g.generate(inputClassName, returnMethod, prefix))
 				.collect(Collectors.joining("\n"));
+	}
+
+	public String getMatcherForField(String shortClassName,String generic, String fullGeneric, String prefix) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(prefix).append("// " + type).append("\n");
+		sb.append(prefix)
+				.append("private static class " + methodFieldName + "Matcher" + fullGeneric
+						+ " extends org.hamcrest.FeatureMatcher<" + shortClassName + generic + "," + fieldType + "> {")
+				.append("\n");
+		sb.append(prefix).append(
+				"  public " + methodFieldName + "Matcher(org.hamcrest.Matcher<? super " + fieldType + "> matcher) {")
+				.append("\n");
+		sb.append(prefix).append("    super(matcher,\"" + fieldName + "\",\"" + fieldName + "\");").append("\n");
+		sb.append(prefix).append("  }").append("\n");
+		if (type == Type.OPTIONAL) {
+			sb.append(prefix).append("  public static " + methodFieldName + "Matcher isPresent() {").append("\n");
+			sb.append(prefix)
+					.append("    return new " + methodFieldName
+							+ "Matcher(new org.hamcrest.CustomTypeSafeMatcher<"+fieldType+">(\"optional is present\"){")
+					.append("\n");
+			sb.append(prefix).append("      public boolean matchesSafely("+fieldType+" o) {return o.isPresent();}")
+					.append("\n");
+			sb.append(prefix).append("    });").append("\n");
+			sb.append(prefix).append("  }").append("\n");
+			sb.append(prefix).append("  public static " + methodFieldName + "Matcher isNotPresent() {").append("\n");
+			sb.append(prefix)
+					.append("    return new " + methodFieldName
+							+ "Matcher(new org.hamcrest.CustomTypeSafeMatcher<"+fieldType+ ">(\"optional is not present\"){")
+					.append("\n");
+			sb.append(prefix)
+					.append("      public boolean matchesSafely("+fieldType+" o) {return !o.isPresent();}")
+					.append("\n");
+			sb.append(prefix).append("    });").append("\n");
+			sb.append(prefix).append("  }").append("\n");
+		}
+		sb.append(prefix).append("  protected " + fieldType + " featureValueOf(" + shortClassName + generic + " actual) {")
+				.append("\n");
+		sb.append(prefix).append("    return actual." + fieldAccessor + ";").append("\n");
+		sb.append(prefix).append("  }").append("\n");
+		sb.append(prefix).append("}").append("\n");
+		return sb.toString();
 	}
 
 	public String getFieldAccessor() {

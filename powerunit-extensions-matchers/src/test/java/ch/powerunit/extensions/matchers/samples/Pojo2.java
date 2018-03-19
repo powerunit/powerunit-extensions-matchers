@@ -33,5 +33,5 @@ public class Pojo2 extends Pojo1 {
 	public void setMsg10(char msg10) {
 		this.msg10 = msg10;
 	}
-
+	
 }
