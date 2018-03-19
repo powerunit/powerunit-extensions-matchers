@@ -106,6 +106,21 @@ public class FieldDescription {
 		sb.append(prefix).append("  return " + fieldName + "(org.hamcrest.Matchers.containsString(other));")
 				.append("\n");
 		sb.append(prefix).append("}").append("\n");
+		
+		sb.append(prefix).append("@Override").append("\n");
+		sb.append(prefix).append("public " + returnMethod + " " + fieldName + "StartsWith(String other) {")
+				.append("\n");
+		sb.append(prefix).append("  return " + fieldName + "(org.hamcrest.Matchers.startsWith(other));")
+				.append("\n");
+		sb.append(prefix).append("}").append("\n");
+		
+		sb.append(prefix).append("@Override").append("\n");
+		sb.append(prefix).append("public " + returnMethod + " " + fieldName + "EndsWith(String other) {")
+				.append("\n");
+		sb.append(prefix).append("  return " + fieldName + "(org.hamcrest.Matchers.endsWith(other));")
+				.append("\n");
+		sb.append(prefix).append("}").append("\n");
+		
 		return sb.toString();
 	}
 
@@ -224,7 +239,33 @@ public class FieldDescription {
 		sb.append(prefix).append(" * @see org.hamcrest.Matchers#containsString(java.lang.String)").append("\n");
 		sb.append(prefix).append(" */").append("\n");
 		sb.append(prefix).append(returnMethod).append(fieldName).append("ContainsString(String other);").append("\n");
+		
+		sb.append(prefix).append("/**").append("\n");
+		sb.append(prefix)
+				.append(" * Add a validation on the field " + fieldName + " that the string contains another one.")
+				.append("\n");
+		sb.append(prefix).append(" *").append("\n");
+		sb.append(prefix).append(" * ").append(linkToAccessor).append("\n");
+		sb.append(prefix).append(" *").append("\n");
+		sb.append(prefix).append(" * @param other the string is contains in the other one.").append("\n");
+		sb.append(prefix).append(" * @return the DSL to continue the construction of the matcher.").append("\n");
+		sb.append(prefix).append(" * @see org.hamcrest.Matchers#startsWith(java.lang.String)").append("\n");
+		sb.append(prefix).append(" */").append("\n");
+		sb.append(prefix).append(returnMethod).append(fieldName).append("StartsWith(String other);").append("\n");
 
+		sb.append(prefix).append("/**").append("\n");
+		sb.append(prefix)
+				.append(" * Add a validation on the field " + fieldName + " that the string contains another one.")
+				.append("\n");
+		sb.append(prefix).append(" *").append("\n");
+		sb.append(prefix).append(" * ").append(linkToAccessor).append("\n");
+		sb.append(prefix).append(" *").append("\n");
+		sb.append(prefix).append(" * @param other the string is contains in the other one.").append("\n");
+		sb.append(prefix).append(" * @return the DSL to continue the construction of the matcher.").append("\n");
+		sb.append(prefix).append(" * @see org.hamcrest.Matchers#endsWith(java.lang.String)").append("\n");
+		sb.append(prefix).append(" */").append("\n");
+		sb.append(prefix).append(returnMethod).append(fieldName).append("EndsWith(String other);").append("\n");
+		
 		return sb.toString();
 	}
 
