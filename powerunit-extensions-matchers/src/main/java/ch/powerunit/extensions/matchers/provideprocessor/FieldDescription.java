@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 public class FieldDescription {
 
 	public static enum Type {
-		NA, ARRAY, COLLECTION, LIST, SET, OPTIONAL, COMPARABLE
+		NA, ARRAY, COLLECTION, LIST, SET, OPTIONAL, COMPARABLE, STRING
 	}
 
 	@FunctionalInterface
@@ -50,30 +50,30 @@ public class FieldDescription {
 		this.methodFieldName = methodFieldName;
 		this.fieldType = fieldType;
 		this.type = type;
-		List<Generator> tmp = new ArrayList<>();
-		tmp.add(this::getImplementationForDefault);
+		List<Generator> tmp1 = new ArrayList<>();
+		List<Generator> tmp2 = new ArrayList<>();
+		tmp1.add(this::getImplementationForDefault);
+		tmp2.add(this::getDslForDefault);
 		if (type == Type.ARRAY) {
-			tmp.add(this::getImplementationForArray);
+			tmp1.add(this::getImplementationForArray);
+			tmp2.add(this::getDslForArray);
 		}
 		if (type == Type.OPTIONAL) {
-			tmp.add(this::getImplementationForOptional);
+			tmp1.add(this::getImplementationForOptional);
+			tmp2.add(this::getDslForOptional);
 		}
 		if (type == Type.COMPARABLE) {
-			tmp.add(this::getImplementationForComparable);
+			tmp1.add(this::getImplementationForComparable);
+			tmp2.add(this::getDslForComparable);
 		}
-		implGenerator = Collections.unmodifiableList(tmp);
-		tmp = new ArrayList<>();
-		tmp.add(this::getDslForDefault);
-		if (type == Type.ARRAY) {
-			tmp.add(this::getDslForArray);
+		if (type == Type.STRING) {
+			tmp1.add(this::getImplementationForComparable);
+			tmp2.add(this::getDslForComparable);
+			tmp1.add(this::getImplementationForString);
+			tmp2.add(this::getDslForString);
 		}
-		if (type == Type.OPTIONAL) {
-			tmp.add(this::getDslForOptional);
-		}
-		if (type == Type.COMPARABLE) {
-			tmp.add(this::getDslForComparable);
-		}
-		dslGenerator = Collections.unmodifiableList(tmp);
+		implGenerator = Collections.unmodifiableList(tmp1);
+		dslGenerator = Collections.unmodifiableList(tmp2);
 	}
 
 	private String getImplementationForDefault(String inputClassName, String returnMethod, String prefix) {
@@ -91,6 +91,17 @@ public class FieldDescription {
 		sb.append(prefix).append("  return " + fieldName + "(org.hamcrest.Matchers.is(value));").append("\n");
 		sb.append(prefix).append("}").append("\n");
 
+		return sb.toString();
+	}
+
+	private String getImplementationForString(String inputClassName, String returnMethod, String prefix) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(prefix).append("@Override").append("\n");
+		sb.append(prefix).append("public " + returnMethod + " " + fieldName + "ContainsString(String other) {")
+				.append("\n");
+		sb.append(prefix).append("  return " + fieldName + "(org.hamcrest.Matchers.containsString(other));")
+				.append("\n");
+		sb.append(prefix).append("}").append("\n");
 		return sb.toString();
 	}
 
@@ -189,6 +200,25 @@ public class FieldDescription {
 		sb.append(prefix).append(" * @see org.hamcrest.Matchers#is(java.lang.Object)").append("\n");
 		sb.append(prefix).append(" */").append("\n");
 		sb.append(prefix).append(returnMethod).append(fieldName).append("(" + fieldType + " value);").append("\n");
+
+		return sb.toString();
+	}
+
+	private String getDslForString(String inputClassName, String returnMethod, String prefix) {
+		String linkToAccessor = "{@link " + inputClassName + "#" + getFieldAccessor()
+				+ " This field is accessed by using this approach}.";
+		StringBuilder sb = new StringBuilder();
+		sb.append(prefix).append("/**").append("\n");
+		sb.append(prefix).append(" * Add a validation on the field " + fieldName + " that the string contains another one.")
+				.append("\n");
+		sb.append(prefix).append(" *").append("\n");
+		sb.append(prefix).append(" * ").append(linkToAccessor).append("\n");
+		sb.append(prefix).append(" *").append("\n");
+		sb.append(prefix).append(" * @param other the string is contains in the other one.").append("\n");
+		sb.append(prefix).append(" * @return the DSL to continue the construction of the matcher.").append("\n");
+		sb.append(prefix).append(" * @see org.hamcrest.Matchers#containsString(java.lang.String)").append("\n");
+		sb.append(prefix).append(" */").append("\n");
+		sb.append(prefix).append(returnMethod).append(fieldName).append("ContainsString(String other);").append("\n");
 
 		return sb.toString();
 	}

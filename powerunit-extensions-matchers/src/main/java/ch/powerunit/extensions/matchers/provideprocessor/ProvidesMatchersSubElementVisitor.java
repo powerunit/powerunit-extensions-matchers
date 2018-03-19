@@ -113,6 +113,10 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Fie
 				return FieldDescription.Type.COLLECTION;
 			}
 			if (typesUtils.isAssignable(t,
+					typesUtils.erasure(elementsUtils.getTypeElement("java.lang.String").asType()))) {
+				return FieldDescription.Type.STRING;
+			}
+			if (typesUtils.isAssignable(t,
 					typesUtils.erasure(elementsUtils.getTypeElement("java.lang.Comparable").asType()))) {
 				return FieldDescription.Type.COMPARABLE;
 			}
