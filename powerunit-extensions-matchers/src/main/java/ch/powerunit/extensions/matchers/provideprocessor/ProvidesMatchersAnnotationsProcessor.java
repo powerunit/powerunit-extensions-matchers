@@ -45,7 +45,6 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
 import ch.powerunit.extensions.matchers.ProvideMatchers;
-import ch.powerunit.extensions.matchers.provideprocessor.FieldDescription.Type;
 
 /**
  * @author borettim
