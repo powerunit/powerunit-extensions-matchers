@@ -125,7 +125,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 					wjfo.println("   */");
 					wjfo.println("  public static final " + cName + " DSL = new " + cName + "() {};");
 					wjfo.println();
-					wjfo.println(factories.stream().collect(Collectors.joining("\n")));
+					factories.stream().forEach(wjfo::println);
 					wjfo.println("}");
 				}
 			} catch (IOException e1) {
