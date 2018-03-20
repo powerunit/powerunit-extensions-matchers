@@ -316,7 +316,11 @@
 				<configuration>
 					<source>${java.source.version}</source>
 					<target>${java.target.version}</target>
-					<compilerArgument>-Ach.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets=.*:ch.powerunit.extensions.matchers.samples.AllMatchers</compilerArgument>
+					<compilerArgs>
+						<compilerArg>-Ach.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets=.*:ch.powerunit.extensions.matchers.samples.AllMatchers</compilerArg>
+						<compilerArg>-Ach.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor.factory=ch.powerunit.extensions.matchers.samples.AllMatchersAlternate</compilerArg>
+
+					</compilerArgs>
 				</configuration>
 				<executions>
 					<execution>
@@ -399,7 +403,7 @@
 							</transformationSets>
 						</configuration>
 					</execution>
-					
+
 				</executions>
 			</plugin>
 			<plugin>
@@ -433,7 +437,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 		</plugins>
 		<resources>
 			<resource>

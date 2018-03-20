@@ -44,7 +44,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -226,7 +225,7 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 						wjfo.println("}");
 					}
 				} catch (IOException e) {
-					messageUtils.printMessage(Kind.ERROR, "Unable to create the file containing the target class ");
+					messageUtils.printMessage(Kind.ERROR, "Unable to create the file containing the target class `"+targetName+"`, because of "+e.getMessage());
 				}
 			}
 		}
