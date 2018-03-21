@@ -64,7 +64,7 @@ import java.lang.annotation.Target;
  * processor do the following :
  * <ul>
  * <li>For each public field or public method starting with {@code get} or
- * {@code is}, generated a private matcher based on the
+ * {@code is} without any argument, generated a private matcher based on the
  * {@link org.hamcrest.FeatureMatcher} for this field ; this will provide a way
  * to validate the value of one specific <i>property</i>.</li>
  * <li>Generate an interface and the related implementation of a matcher (which
@@ -138,7 +138,7 @@ import java.lang.annotation.Target;
  * 
  * </pre>
  * 
- * Assuming the {@code msg2} is change to the value {code 11}, the resulting
+ * Assuming the {@code msg2} is change to the value {@code 11}, the resulting
  * unit test error will look like (the Pojo1 classes contains several fields) :
  * 
  * <pre>
