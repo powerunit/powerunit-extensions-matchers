@@ -21,11 +21,10 @@ package ch.powerunit.extensions.matchers;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import java.lang.annotation.Inherited;
 
 /**
  * This annotation can be used on a java class, to mark this class as supporting
@@ -119,6 +118,46 @@ import java.lang.annotation.Inherited;
  * provided, for example : {@code oneFieldComparesEqualTo},
  * {@code oneFieldLessThan}, {@code oneFieldStartsWith}, etc.</li>
  * </ul>
+ * <i>Second example</i> In case the annotated contains several fields, the
+ * generated <i>DSL</i> provide chained methods, for example
+ * {@code TwoFieldsPojoMatcher firstField(Matcher<? super String> matcher)} and
+ * {@code TwoFieldsPojoMatcher secondField(Matcher<? super String> matcher)}.
+ * 
+ * Also, depending on the class, other <i>with</i> methods may be provided.
+ * <p>
+ * <i>Usage example</i> Assuming powerunit as a test framework, the usage of the
+ * matcher will look like :
+ * 
+ * <pre>
+ * &#64;Test
+ * public void testOKMatcherWithComparable() {
+ * 	Pojo1 p = new Pojo1();
+ * 	p.msg2 = "12";
+ * 	assertThat(p).is(Pojo1Matchers.pojo1With().msg2ComparesEqualTo("12"));
+ * }
+ * 
+ * </pre>
+ * 
+ * Assuming the {@code msg2} is change to the value {code 11}, the resulting
+ * unit test error will look like (the Pojo1 classes contains several fields) :
+ * 
+ * <pre>
+ * expecting an instance of ch.powerunit.extensions.matchers.samples.Pojo1 with
+ * [msg2 a value equal to "12"]
+ * [msg3 ANYTHING]
+ * [msg4 ANYTHING]
+ * [msg5 ANYTHING]
+ * [msg6 ANYTHING]
+ * [msg7 ANYTHING]
+ * [msg8 ANYTHING]
+ * [msg9 ANYTHING]
+ * [msg12 ANYTHING]
+ * [msg1 ANYTHING]
+ * [myBoolean ANYTHING]
+ * [oneBoolean ANYTHING]
+ * but [msg2 "11" was less than "12"]
+ * 
+ * </pre>
  * 
  * <hr>
  * <p>
