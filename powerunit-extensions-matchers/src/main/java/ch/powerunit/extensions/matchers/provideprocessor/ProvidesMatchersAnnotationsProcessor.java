@@ -324,8 +324,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			wjfo.println("  }");
 
 			factories.append("  default " + fullGeneric + " " + packageName + "." + shortClassName + "Matchers" + "."
-					+ shortClassName + "Matcher" + generic + " " + methodShortClassName + "WithSameValue("
-					+ shortClassName + " " + generic + " other)" + " {").append("\n");
+					+ shortClassName + "Matcher" + generic + " " + methodShortClassName + "WithSameValue(" + packageName
+					+ "." + shortClassName + " " + generic + " other)" + " {").append("\n");
 			factories.append("    return " + packageName + "." + shortClassName + "Matchers." + methodShortClassName
 					+ "WithSameValue(other);").append("\n");
 			factories.append("  }").append("\n");
@@ -357,8 +357,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			wjfo.println("  }");
 
 			factories.append("  default " + fullGeneric + " " + packageName + "." + shortClassName + "Matchers" + "."
-					+ shortClassName + "Matcher" + generic + " " + methodShortClassName + "WithSameValue("
-					+ shortClassName + " " + generic + " other)" + " {").append("\n");
+					+ shortClassName + "Matcher" + generic + " " + methodShortClassName + "WithSameValue(" + packageName
+					+ "." + shortClassName + " " + generic + " other)" + " {").append("\n");
 			factories.append("    return " + packageName + "." + shortClassName + "Matchers." + methodShortClassName
 					+ "WithSameValue(other);").append("\n");
 			factories.append("  }").append("\n");
