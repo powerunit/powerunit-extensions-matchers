@@ -151,6 +151,11 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		Name packageName = elementsUtils.getPackageOf(te).getQualifiedName();
 		String outputClassName = inputClassName + "Matchers";
 		String outputSimpleName = te.getSimpleName().toString() + "Matchers";
+		ProvideMatchers pm = te.getAnnotation(ProvideMatchers.class);
+		if (!"".equals(pm.matchersClassName())) {
+			outputClassName=outputClassName.replaceAll(outputSimpleName+"$", pm.matchersClassName());
+			outputSimpleName=pm.matchersClassName();
+		}
 		String shortClassName = te.getSimpleName().toString();
 		String methodShortClassName = shortClassName.substring(0, 1).toLowerCase() + shortClassName.substring(1);
 		boolean hasParent = !objectTE.asType().equals(te.getSuperclass());
@@ -193,7 +198,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
 				wjfo.println();
 
-				factories.append(generateDSLStarter(packageName.toString(), typesUtils, te, inputClassName,
+				factories.append(generateDSLStarter(packageName.toString(), outputSimpleName ,typesUtils, te, inputClassName,
 						shortClassName, methodShortClassName, hasParent, hasParentInSameRound, generic, fullGeneric,
 						wjfo, fields));
 				wjfo.println("}");
@@ -235,7 +240,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		return fields;
 	}
 
-	private String generateDSLStarter(String packageName, Types typesUtils, TypeElement te, Name inputClassName,
+	private String generateDSLStarter(String packageName,String outputSimpleName, Types typesUtils, TypeElement te, Name inputClassName,
 			String shortClassName, String methodShortClassName, boolean hasParent, boolean hasParentInSameRound,
 			String generic, String fullGeneric, PrintWriter wjfo, List<FieldDescription> fields) {
 		StringBuilder factories = new StringBuilder();
@@ -255,11 +260,11 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			wjfo.println("  @org.hamcrest.Factory");
 			wjfo.println("  public static " + methodName + " {");
 			factories
-					.append("  default " + fullGeneric + " " + packageName + "." + shortClassName + "Matchers" + "."
+					.append("  default " + fullGeneric + " " + packageName + "." + outputSimpleName + "."
 							+ shortClassName + "Matcher" + generic + " " + methodShortClassName + "With()" + " {")
 					.append("\n");
 			factories.append(
-					"    return " + packageName + "." + shortClassName + "Matchers." + methodShortClassName + "With();")
+					"    return " + packageName + "." + outputSimpleName  + "." + methodShortClassName + "With();")
 					.append("\n");
 			factories.append("  }").append("\n");
 			if (hasParent) {
@@ -288,11 +293,11 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			wjfo.println("    return new " + shortClassName + "MatcherImpl" + generic + "(matcherOnParent);");
 			wjfo.println("  }");
 
-			factories.append("  default " + fullGeneric + " " + packageName + "." + shortClassName + "Matchers" + "."
+			factories.append("  default " + fullGeneric + " " + packageName + "." + outputSimpleName  + "."
 					+ shortClassName + "Matcher" + generic + " " + methodShortClassName
 					+ "With(org.hamcrest.Matcher<? super " + te.getSuperclass().toString() + "> matcherOnParent)"
 					+ " {").append("\n");
-			factories.append("    return " + packageName + "." + shortClassName + "Matchers." + methodShortClassName
+			factories.append("    return " + packageName + "." + outputSimpleName  + "." + methodShortClassName
 					+ "With(matcherOnParent);").append("\n");
 			factories.append("  }").append("\n");
 		}
@@ -323,10 +328,10 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			wjfo.println("    return m;");
 			wjfo.println("  }");
 
-			factories.append("  default " + fullGeneric + " " + packageName + "." + shortClassName + "Matchers" + "."
+			factories.append("  default " + fullGeneric + " " + packageName + "." + outputSimpleName  + "."
 					+ shortClassName + "Matcher" + generic + " " + methodShortClassName + "WithSameValue(" + packageName
 					+ "." + shortClassName + " " + generic + " other)" + " {").append("\n");
-			factories.append("    return " + packageName + "." + shortClassName + "Matchers." + methodShortClassName
+			factories.append("    return " + packageName + "." + outputSimpleName  + "." + methodShortClassName
 					+ "WithSameValue(other);").append("\n");
 			factories.append("  }").append("\n");
 		}
@@ -343,10 +348,16 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			factories.append(javadoc.toString());
 			wjfo.println("  @org.hamcrest.Factory");
 			String pname = typesUtils.asElement(te.getSuperclass()).getSimpleName().toString();
+			TypeElement typeElementParent = (TypeElement)typesUtils.asElement(te.getSuperclass());
+			String fpname = typeElementParent.getQualifiedName().toString()+"Matchers";
+			ProvideMatchers panntation = typeElementParent.getAnnotation(ProvideMatchers.class);
+			if (!"".equals(panntation.matchersClassName())) {
+				fpname=fpname.replaceAll(pname+"Matchers$", panntation.matchersClassName());
+			}
 			wjfo.println("  public static " + fullGeneric + " " + shortClassName + "Matcher" + generic + " "
 					+ methodShortClassName + "WithSameValue(" + shortClassName + " " + generic + " other) {");
 			wjfo.println("    " + shortClassName + "Matcher" + generic + " m=new " + shortClassName + "MatcherImpl"
-					+ generic + "(" + te.getSuperclass().toString().replaceAll("<.*$", "") + "Matchers."
+					+ generic + "(" + fpname + "."
 					+ pname.substring(0, 1).toLowerCase() + pname.substring(1) + "WithSameValue(other));");
 
 			for (FieldDescription f : fields) {
@@ -356,10 +367,10 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			wjfo.println("    return m;");
 			wjfo.println("  }");
 
-			factories.append("  default " + fullGeneric + " " + packageName + "." + shortClassName + "Matchers" + "."
+			factories.append("  default " + fullGeneric + " " + packageName + "." + outputSimpleName  + "."
 					+ shortClassName + "Matcher" + generic + " " + methodShortClassName + "WithSameValue(" + packageName
 					+ "." + shortClassName + " " + generic + " other)" + " {").append("\n");
-			factories.append("    return " + packageName + "." + shortClassName + "Matchers." + methodShortClassName
+			factories.append("    return " + packageName + "." + outputSimpleName  + "." + methodShortClassName
 					+ "WithSameValue(other);").append("\n");
 			factories.append("  }").append("\n");
 		}

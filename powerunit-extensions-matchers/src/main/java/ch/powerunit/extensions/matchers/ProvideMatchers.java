@@ -41,5 +41,14 @@ import java.lang.annotation.Inherited;
 @Target({ ElementType.TYPE })
 @Inherited
 public @interface ProvideMatchers {
+	/**
+	 * This attribute may be used to override the default class name that will contains the generated matchers.
+	 * <p>
+	 * <i>By default, this attribute is an empty string, which indicate to use the default construction pattern.</i>
+	 * <p>
+	 * By default, the Matchers class name is the name of the annotated class, followed by {@code Matchers}.
+	 * @return the name of the matchers class or an empty string if this is not overloaded.
+	 */
+	String matchersClassName() default "";
 
 }
