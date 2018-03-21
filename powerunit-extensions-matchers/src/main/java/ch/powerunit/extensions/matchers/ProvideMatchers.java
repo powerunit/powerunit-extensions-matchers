@@ -24,6 +24,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
 import java.lang.annotation.Inherited;
 
 /**
@@ -43,6 +44,89 @@ import java.lang.annotation.Inherited;
  * is set, this value define the fully qualified name of a interface that will
  * be generated and will contains all <i>start method</i> allowing to create
  * instance of the various matchers.</li>
+ * </ul>
+ * <p>
+ * <i>The generated classes are related with the hamcrest framework ; This
+ * library will be required in the classpath in order to compile or run the
+ * generated classes.</i>
+ * <p>
+ * <b>Concept regarding the generated Matchers</b>
+ * <p>
+ * Hamcrest Matchers can be used, for example, with test framework (JUnit,
+ * PowerUnit, etc.) to validate expectation on object. Hamcrest provides several
+ * matchers to validate some information of an object (is an instance of, is, an
+ * array contains some value, etc.), but can't provide ready to use matcher for
+ * your own object. When trying to validate properties of object, no syntaxic
+ * sugar (ie. autocompletion) are available and only the generic method can be
+ * used.
+ * <p>
+ * With this annotation, it is possible to provide <i>builder-like</i> method,
+ * based on hamcrest, to validate fields of an object. To do so, the annotation
+ * processor do the following :
+ * <ul>
+ * <li>For each public field or public method starting with {@code get} or
+ * {@code is}, generated a private matcher based on the
+ * {@link org.hamcrest.FeatureMatcher} for this field ; this will provide a way
+ * to validate the value of one specific <i>property</i>.</li>
+ * <li>Generate an interface and the related implementation of a matcher (which
+ * is also a builder) on the annotated classes itself, which will validate all
+ * of the <i>properties</i>.</li>
+ * <li>Generate various methods, with a name based on the annotated class, to
+ * start the creation of the matcher.</li>
+ * </ul>
+ * <i>First example</i>
+ * <p>
+ * Let's assume the following class, containing one single field, will be
+ * processed by the annotation processor :
+ * 
+ * <pre>
+ * package ch.powerunit.extensions.matchers.samples;
+ *
+ * import ch.powerunit.extensions.matchers.ProvideMatchers;
+ *
+ * &#64;ProvideMatchers
+ * public class SimplePojo {
+ * 	public String oneField;
+ * }
+ * </pre>
+ * 
+ * In this case a class named {@code SimplePojoMatchers} will be generated. As a
+ * public interface, the following methods will be available :
+ * <ul>
+ * <li>{@code public static SimplePojoMatcher simplePojoWith()}: This will
+ * return a matcher (see below), which by default matches any instance of the
+ * SimplePojo class.</li>
+ * <li>
+ * {@code public static SimplePojoMatcher simplePojoWithSameValue(SimplePojo  other)}
+ * : This will return a matcher, which by default matches an instance of the
+ * SimplePojo having the field {@code oneField} matching (Matcher {@code is} of
+ * hamcrest) of the reference object.</li>
+ * </ul>
+ * The returned interface is already a correct hamcrest matcher. This interface
+ * provide method that set the expectating on the various fields. As in this
+ * case, where is only one field, the returned interface ensure that once the
+ * expected is defined, it is not possible to modify it. Depending of the type
+ * of the field, various methods are generated to define the expectation :
+ * <ul>
+ * <li>Two standards methods are defined for all type of fields : {@code Matcher
+ * <SimplePojo> oneField(Matcher<? super java.lang.String> matcher)} and
+ * {@code Matcher<SimplePojo> oneField(String value)}. The second one is a
+ * shortcut to validate the field with the {@code is} Matcher and the first one
+ * accept another matcher ; The method with matcher parameter ensures that it is
+ * possible to combine any other matcher provided by hamcrest or any others
+ * extensions.
+ * <li>As the field is a String, others special expectation (shortcut) are
+ * provided, for example : {@code oneFieldComparesEqualTo},
+ * {@code oneFieldLessThan}, {@code oneFieldStartsWith}, etc.</li>
+ * </ul>
+ * 
+ * <hr>
+ * <p>
+ * <b>Overriding the way the matchers are generated</b>
+ * <ul>
+ * <li>The attribute {@link #matchersClassName() matchersClassName} may be used
+ * to change the simple name (<b>NOT THE FULLY QUALIFIED NAME</b>) of the
+ * generated class.</li>
  * </ul>
  * 
  * @author borettim
