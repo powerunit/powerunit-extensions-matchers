@@ -98,6 +98,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			}
 		} else if (factory != null) {
 			try {
+				messageUtils.printMessage(Kind.NOTE, "The interface `"+factory+"` will be generated as a factory interface.");
 				JavaFileObject jfo = filerUtils.createSourceFile(factory);
 				try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
 					wjfo.println("package " + factory.replaceAll("\\.[^.]+$", "") + ";");
@@ -172,6 +173,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 					.collect(Collectors.joining(",")) + ">";
 		}
 		try {
+			messageUtils.printMessage(Kind.NOTE, "The class `"+outputClassName+"` will be generated as a Matchers class.",te);
 			JavaFileObject jfo = filerUtils.createSourceFile(outputClassName, te);
 			try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
 				wjfo.println("package " + packageName + ";");
