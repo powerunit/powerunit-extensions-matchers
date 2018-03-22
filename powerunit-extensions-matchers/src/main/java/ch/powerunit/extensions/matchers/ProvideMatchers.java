@@ -118,15 +118,19 @@ import java.lang.annotation.Target;
  * provided, for example : {@code oneFieldComparesEqualTo},
  * {@code oneFieldLessThan}, {@code oneFieldStartsWith}, etc.</li>
  * </ul>
- * <i>Second example</i> In case the annotated contains several fields, the
- * generated <i>DSL</i> provide chained methods, for example
+ * <i>Second example</i>
+ * <p>
+ * In case the annotated contains several fields, the generated <i>DSL</i>
+ * provide chained methods, for example
  * {@code TwoFieldsPojoMatcher firstField(Matcher<? super String> matcher)} and
  * {@code TwoFieldsPojoMatcher secondField(Matcher<? super String> matcher)}.
  * 
  * Also, depending on the class, other <i>with</i> methods may be provided.
  * <p>
- * <i>Usage example</i> Assuming powerunit as a test framework, the usage of the
- * matcher will look like :
+ * <i>Usage example</i>
+ * <p>
+ * Assuming powerunit as a test framework, the usage of the matcher will look
+ * like :
  * 
  * <pre>
  * &#64;Test
