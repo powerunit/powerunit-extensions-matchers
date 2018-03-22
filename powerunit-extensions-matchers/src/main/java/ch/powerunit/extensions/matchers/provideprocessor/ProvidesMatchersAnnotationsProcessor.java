@@ -368,7 +368,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				fpname = fpname.replaceAll(pname + "Matchers$", panntation.matchersClassName());
 			}
 			if (!"".equals(panntation.matchersPackageName())) {
-				fpname = fpname.replaceAll("^([^.]+\\.)+", panntation.matchersPackageName());
+				fpname = fpname.replaceAll("^([^.]+\\.)+", panntation.matchersPackageName()+".");
 			}
 			wjfo.println("  public static " + fullGeneric + " " + shortClassName + "Matcher" + generic + " "
 					+ methodShortClassName + "WithSameValue(" + shortClassName + " " + generic + " other) {");
