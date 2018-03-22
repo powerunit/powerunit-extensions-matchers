@@ -8,16 +8,19 @@
 	<packaging>jar</packaging>
 
 	<properties>
+		<!-- Java 8 at least if required -->
 		<java.source.version>1.8</java.source.version>
 		<java.target.version>1.8</java.target.version>
-		<powerunit.version>${powerunit.version}</powerunit.version>
 		<powerunit.extension.matcher.version>${version}</powerunit.extension.matcher.version>
+		<!-- This part is optional and is linked with powerunit -->
+		<powerunit.version>${powerunit.version}</powerunit.version>
 		<surefire.version>${surefire.version}</surefire.version>
 	</properties>
 
 	<build>
 		<pluginManagement>
 			<plugins>
+				<!-- Enable powerunit as test framework (optional) -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
@@ -40,6 +43,7 @@
 					<source>${java.source.version}</source>
 					<target>${java.target.version}</target>
 					<compilerArgs>
+						<!-- configuration that generate one single class with all the factory -->
 						<compilerArg>-Ach.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets=.*:\${package}.AllMatchers</compilerArg>
 					</compilerArgs>
 				</configuration>
@@ -54,6 +58,7 @@
 			<artifactId>${artifactId}</artifactId>
 			<version>\${powerunit.extension.matcher.version}</version>
 		</dependency>
+		<!-- optional - powerunit test framework -->
 		<dependency>
 			<groupId>ch.powerunit</groupId>
 			<artifactId>powerunit</artifactId>
