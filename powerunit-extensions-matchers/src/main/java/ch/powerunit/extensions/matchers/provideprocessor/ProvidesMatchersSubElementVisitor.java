@@ -231,17 +231,18 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Fie
 
 	@Override
 	public FieldDescription visitExecutable(ExecutableElement e, Void p) {
-		if (e.getModifiers().contains(Modifier.PUBLIC) && e.getSimpleName().toString().startsWith("get")
-				&& e.getParameters().size() == 0) {
-			FieldDescription f = visiteExecutableGet(e, "get");
-			if (f != null) {
-				return f;
-			}
-		} else if (e.getModifiers().contains(Modifier.PUBLIC) && e.getSimpleName().toString().startsWith("is")
-				&& e.getParameters().size() == 0) {
-			FieldDescription f = visiteExecutableGet(e, "is");
-			if (f != null) {
-				return f;
+		if (e.getModifiers().contains(Modifier.PUBLIC) && e.getParameters().size() == 0) {
+			String simpleName = e.getSimpleName().toString();
+			if (simpleName.startsWith("get")) {
+				FieldDescription f = visiteExecutableGet(e, "get");
+				if (f != null) {
+					return f;
+				}
+			} else if (simpleName.startsWith("is")) {
+				FieldDescription f = visiteExecutableGet(e, "is");
+				if (f != null) {
+					return f;
+				}
 			}
 		}
 		return null;

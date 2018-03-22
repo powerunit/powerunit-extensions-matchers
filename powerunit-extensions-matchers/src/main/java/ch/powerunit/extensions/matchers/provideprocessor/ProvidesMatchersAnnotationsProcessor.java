@@ -515,11 +515,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
 	AnnotationMirror getProvideMatchersAnnotation(TypeElement provideMatchersTE,
 			Collection<? extends AnnotationMirror> annotations) {
-		for (AnnotationMirror a : annotations) {
-			if (a.getAnnotationType().equals(provideMatchersTE.asType())) {
-				return a;
-			}
-		}
-		return null;
+		return annotations.stream().filter(a -> a.getAnnotationType().equals(provideMatchersTE.asType())).findAny()
+				.orElse(null);
 	}
 }
