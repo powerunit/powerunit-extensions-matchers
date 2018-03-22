@@ -121,118 +121,136 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 		}
 
 		if (!roundEnv.processingOver()) {
-
-			Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(Factory.class);
-			for (Element e : elements) {
-				if (!roundEnv.getRootElements().contains(e.getEnclosingElement())) {
-					break;
-				}
-				ExecutableElement ee = e.accept(new FactoryElementVisitor(this, elementsUtils, filerUtils, typesUtils,
-						messageUtils, factoryAnnotationTE), null);
-				if (ee != null) {
-					for (String regex[] : targetClass) {
-						if (ee.getEnclosingElement().asType().toString().matches(regex[0])) {
-							build.get(regex[1]).add(new Entry(ee, elementsUtils.getDocComment(ee)));
-							break;
-						}
-					}
-
-				}
-			}
+			processFactoryAnnotation(roundEnv, elementsUtils, filerUtils, typesUtils, messageUtils,
+					factoryAnnotationTE);
 		} else {
-			for (Map.Entry<String, Collection<Entry>> target : build.entrySet()) {
-				String targetName = target.getKey();
-				try {
-					JavaFileObject jfo = filerUtils.createSourceFile(targetName,
-							target.getValue().stream().map((e) -> e.getElement()).toArray(ExecutableElement[]::new));
-					try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
-						String fullName = targetName;
-						String pName = fullName.replaceAll("\\.[^.]+$", "");
-						String cName = fullName.substring(fullName.lastIndexOf('.') + 1);
-						wjfo.println("package " + pName + ";");
-						wjfo.println();
-						wjfo.println("/**");
-						wjfo.println(" * Factories generated.");
-						wjfo.println(" * <p> ");
-						wjfo.println(" * This DSL can be use in several way : ");
-						wjfo.println(" * <ul> ");
-						wjfo.println(
-								" *  <li>By implementing this interface. In this case, all the methods of this interface will be available inside the implementing class.</li>");
-						wjfo.println(
-								" *  <li>By refering the static field named {@link #DSL} which expose all the DSL method.</li>");
-						wjfo.println(" * </ul> ");
-						wjfo.println(" */");
-						wjfo.println(
-								"@javax.annotation.Generated(value=\"" + FactoryAnnotationsProcessor.class.getName()
-										+ "\",date=\"" + Instant.now().toString() + "\")");
-						wjfo.println("public interface " + cName + " {");
-						wjfo.println();
-						wjfo.println("  /**");
-						wjfo.println(
-								"   * Use this static field to access all the DSL syntax, without be required to implements this interface.");
-						wjfo.println("   */");
-						wjfo.println("  public static final " + cName + " DSL = new " + cName + "() {};");
-						wjfo.println();
-						for (Entry entry : target.getValue()) {
-							ExecutableElement ee = entry.getElement();
-							wjfo.println("  // " + ee.getSimpleName());
-							String doc = entry.getDoc();
-							if (doc != null) {
-								wjfo.println("  /**\n   * " + doc.replaceAll("\n", "\n   * "));
-								wjfo.println("   * @see " + getSeeValue(typesUtils,ee) + "\n   */");
-							} else {
-								wjfo.println("  /**");
-								wjfo.println("   * No javadoc found from the source method.");
-								wjfo.println("   * @see " + getSeeValue(typesUtils,ee) + "\n   */");
-							}
-							wjfo.print("  default ");
-							if (!ee.getTypeParameters().isEmpty()) {
-								wjfo.print("<");
-								wjfo.print(ee.getTypeParameters().stream()
-										.map((ve) -> ve.getSimpleName().toString() + (ve.getBounds().isEmpty() ? ""
-												: (" extends " + ve.getBounds().stream().map((b) -> b.toString())
-														.collect(Collectors.joining("&")))))
-										.collect(Collectors.joining(",")));
-								wjfo.print("> ");
-							}
-							wjfo.print(ee.getReturnType().toString());
-							wjfo.print(" ");
-							wjfo.print(ee.getSimpleName().toString());
-							wjfo.print("(");
-							String param = ee.getParameters().stream()
-									.map((ve) -> ve.asType().toString() + " " + ve.getSimpleName().toString())
-									.collect(Collectors.joining(","));
-							wjfo.print(ee.isVarArgs() ? param.replaceAll("\\[\\](\\s[0-9a-zA-Z_]*$)??", "...") : param);
-							wjfo.println(") {");
-							if (TypeKind.VOID != ee.getReturnType().getKind()) {
-								wjfo.print("    return ");
-							} else {
-								wjfo.print("    ");
-							}
-							wjfo.print(
-									elementsUtils.getPackageOf(ee.getEnclosingElement()).getQualifiedName().toString());
-							wjfo.print(".");
-							wjfo.print(ee.getEnclosingElement().getSimpleName().toString());
-							wjfo.print(".");
-							wjfo.print(ee.getSimpleName().toString());
-							wjfo.print("(");
-							wjfo.print(ee.getParameters().stream().map((ve) -> ve.getSimpleName().toString())
-									.collect(Collectors.joining(",")));
-							wjfo.println(");");
-							wjfo.println("  }");
-							wjfo.println();
-						}
-						wjfo.println("}");
-					}
-				} catch (IOException e) {
-					messageUtils.printMessage(Kind.ERROR, "Unable to create the file containing the target class `"+targetName+"`, because of "+e.getMessage());
-				}
-			}
+			processGenerationOfFinalClasses(elementsUtils, filerUtils, typesUtils, messageUtils);
 		}
 		return true;
 	}
 
-	private String getSeeValue(Types typeutils,ExecutableElement ee) {
+	private void processGenerationOfFinalClasses(Elements elementsUtils, Filer filerUtils, Types typesUtils,
+			Messager messageUtils) {
+		for (Map.Entry<String, Collection<Entry>> target : build.entrySet()) {
+			String targetName = target.getKey();
+			Collection<Entry> entries = target.getValue();
+			processGenerateOneFactoryInterface(elementsUtils, filerUtils, typesUtils, messageUtils, targetName,
+					entries);
+		}
+	}
+
+	private void processGenerateOneFactoryInterface(Elements elementsUtils, Filer filerUtils, Types typesUtils,
+			Messager messageUtils, String targetName, Collection<Entry> entries) {
+		try {
+			JavaFileObject jfo = filerUtils.createSourceFile(targetName,
+					entries.stream().map((e) -> e.getElement()).toArray(ExecutableElement[]::new));
+			try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
+				String fullName = targetName;
+				String pName = fullName.replaceAll("\\.[^.]+$", "");
+				String cName = fullName.substring(fullName.lastIndexOf('.') + 1);
+				wjfo.println("package " + pName + ";");
+				wjfo.println();
+				wjfo.println("/**");
+				wjfo.println(" * Factories generated.");
+				wjfo.println(" * <p> ");
+				wjfo.println(" * This DSL can be use in several way : ");
+				wjfo.println(" * <ul> ");
+				wjfo.println(
+						" *  <li>By implementing this interface. In this case, all the methods of this interface will be available inside the implementing class.</li>");
+				wjfo.println(
+						" *  <li>By refering the static field named {@link #DSL} which expose all the DSL method.</li>");
+				wjfo.println(" * </ul> ");
+				wjfo.println(" */");
+				wjfo.println("@javax.annotation.Generated(value=\"" + FactoryAnnotationsProcessor.class.getName()
+						+ "\",date=\"" + Instant.now().toString() + "\")");
+				wjfo.println("public interface " + cName + " {");
+				wjfo.println();
+				wjfo.println("  /**");
+				wjfo.println(
+						"   * Use this static field to access all the DSL syntax, without be required to implements this interface.");
+				wjfo.println("   */");
+				wjfo.println("  public static final " + cName + " DSL = new " + cName + "() {};");
+				wjfo.println();
+				for (Entry entry : entries) {
+					ExecutableElement ee = entry.getElement();
+					wjfo.println("  // " + ee.getSimpleName());
+					String doc = entry.getDoc();
+					if (doc != null) {
+						wjfo.println("  /**\n   * " + doc.replaceAll("\n", "\n   * "));
+						wjfo.println("   * @see " + getSeeValue(typesUtils, ee) + "\n   */");
+					} else {
+						wjfo.println("  /**");
+						wjfo.println("   * No javadoc found from the source method.");
+						wjfo.println("   * @see " + getSeeValue(typesUtils, ee) + "\n   */");
+					}
+					wjfo.print("  default ");
+					if (!ee.getTypeParameters().isEmpty()) {
+						wjfo.print("<");
+						wjfo.print(
+								ee.getTypeParameters().stream()
+										.map((ve) -> ve.getSimpleName().toString() + (ve.getBounds().isEmpty() ? ""
+												: (" extends " + ve.getBounds().stream().map((b) -> b.toString())
+														.collect(Collectors.joining("&")))))
+										.collect(Collectors.joining(",")));
+						wjfo.print("> ");
+					}
+					wjfo.print(ee.getReturnType().toString());
+					wjfo.print(" ");
+					wjfo.print(ee.getSimpleName().toString());
+					wjfo.print("(");
+					String param = ee.getParameters().stream()
+							.map((ve) -> ve.asType().toString() + " " + ve.getSimpleName().toString())
+							.collect(Collectors.joining(","));
+					wjfo.print(ee.isVarArgs() ? param.replaceAll("\\[\\](\\s[0-9a-zA-Z_]*$)??", "...") : param);
+					wjfo.println(") {");
+					if (TypeKind.VOID != ee.getReturnType().getKind()) {
+						wjfo.print("    return ");
+					} else {
+						wjfo.print("    ");
+					}
+					wjfo.print(elementsUtils.getPackageOf(ee.getEnclosingElement()).getQualifiedName().toString());
+					wjfo.print(".");
+					wjfo.print(ee.getEnclosingElement().getSimpleName().toString());
+					wjfo.print(".");
+					wjfo.print(ee.getSimpleName().toString());
+					wjfo.print("(");
+					wjfo.print(ee.getParameters().stream().map((ve) -> ve.getSimpleName().toString())
+							.collect(Collectors.joining(",")));
+					wjfo.println(");");
+					wjfo.println("  }");
+					wjfo.println();
+				}
+				wjfo.println("}");
+			}
+		} catch (IOException e) {
+			messageUtils.printMessage(Kind.ERROR, "Unable to create the file containing the target class `" + targetName
+					+ "`, because of " + e.getMessage());
+		}
+	}
+
+	private void processFactoryAnnotation(RoundEnvironment roundEnv, Elements elementsUtils, Filer filerUtils,
+			Types typesUtils, Messager messageUtils, TypeElement factoryAnnotationTE) {
+		Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(Factory.class);
+		FactoryElementVisitor factoryElementVisitor = new FactoryElementVisitor(this, elementsUtils, messageUtils,
+				factoryAnnotationTE);
+		for (Element e : elements) {
+			if (!roundEnv.getRootElements().contains(e.getEnclosingElement())) {
+				break;
+			}
+			ExecutableElement ee = e.accept(factoryElementVisitor, null);
+			if (ee != null) {
+				for (String regex[] : targetClass) {
+					if (ee.getEnclosingElement().asType().toString().matches(regex[0])) {
+						build.get(regex[1]).add(new Entry(ee, elementsUtils.getDocComment(ee)));
+						break;
+					}
+				}
+
+			}
+		}
+	}
+
+	private String getSeeValue(Types typeutils, ExecutableElement ee) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(processingEnv.getElementUtils().getPackageOf(ee.getEnclosingElement()).getQualifiedName()).append(".")
 				.append(ee.getEnclosingElement().getSimpleName().toString()).append("#")
@@ -245,8 +263,7 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 				if (ve.asType().getKind() == TypeKind.TYPEVAR) {
 					return typeutils.erasure(ve.asType()).toString();
 				}
-				
-				
+
 				PackageElement pe = processingEnv.getElementUtils().getPackageOf(e);
 				return pe.toString() + "." + processingEnv.getTypeUtils().asElement(ve.asType()).getSimpleName();
 			}
@@ -254,18 +271,14 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 		sb.append(")");
 		String result = sb.toString();
 		if (ee.isVarArgs()) {
-			result=result.replaceAll("\\[\\](\\s[0-9a-zA-Z_]*$)??", "...");
+			result = result.replaceAll("\\[\\](\\s[0-9a-zA-Z_]*$)??", "...");
 		}
 		return result;
 	}
 
 	AnnotationMirror getFactoryAnnotation(TypeElement factoryAnnotationTE,
 			Collection<? extends AnnotationMirror> annotations) {
-		for (AnnotationMirror a : annotations) {
-			if (a.getAnnotationType().equals(factoryAnnotationTE.asType())) {
-				return a;
-			}
-		}
-		return null;
+		return annotations.stream().filter(a -> a.getAnnotationType().equals(factoryAnnotationTE.asType())).findAny()
+				.orElse(null);
 	}
 }

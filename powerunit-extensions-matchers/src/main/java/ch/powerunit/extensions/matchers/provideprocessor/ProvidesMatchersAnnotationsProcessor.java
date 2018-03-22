@@ -84,58 +84,65 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		TypeElement objectTE = elementsUtils.getTypeElement("java.lang.Object");
 
 		if (!roundEnv.processingOver()) {
-			Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(ProvideMatchers.class);
-			for (Element e : elements) {
-				if (!roundEnv.getRootElements().contains(e)) {
-					break;
-				}
-				TypeElement te = e.accept(new ProvidesMatchersElementVisitor(this, elementsUtils, filerUtils,
-						typesUtils, messageUtils, provideMatchersTE), null);
-				if (te != null) {
-					factories.add(processOneTypeElement(elementsUtils, filerUtils, typesUtils, messageUtils, te,
-							objectTE, elements));
-				}
-			}
+			processAnnotatedElements(roundEnv, elementsUtils, filerUtils, typesUtils, messageUtils, provideMatchersTE,
+					objectTE);
+
 		} else if (factory != null) {
-			try {
-				messageUtils.printMessage(Kind.NOTE,
-						"The interface `" + factory + "` will be generated as a factory interface.");
-				JavaFileObject jfo = filerUtils.createSourceFile(factory);
-				try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
-					wjfo.println("package " + factory.replaceAll("\\.[^.]+$", "") + ";");
-					wjfo.println();
-					wjfo.println("/**");
-					wjfo.println(" * Factories generated.");
-					wjfo.println(" * <p> ");
-					wjfo.println(" * This DSL can be use in several way : ");
-					wjfo.println(" * <ul> ");
-					wjfo.println(
-							" *  <li>By implementing this interface. In this case, all the methods of this interface will be available inside the implementing class.</li>");
-					wjfo.println(
-							" *  <li>By refering the static field named {@link #DSL} which expose all the DSL method.</li>");
-					wjfo.println(" * </ul> ");
-					wjfo.println(" */");
-					wjfo.println("@javax.annotation.Generated(value=\""
-							+ ProvidesMatchersAnnotationsProcessor.class.getName() + "\",date=\""
-							+ Instant.now().toString() + "\")");
-					String cName = factory.replaceAll("^([^.]+\\.)*", "");
-					wjfo.println("public interface " + cName + " {");
-					wjfo.println();
-					wjfo.println("  /**");
-					wjfo.println(
-							"   * Use this static field to access all the DSL syntax, without be required to implements this interface.");
-					wjfo.println("   */");
-					wjfo.println("  public static final " + cName + " DSL = new " + cName + "() {};");
-					wjfo.println();
-					factories.stream().forEach(wjfo::println);
-					wjfo.println("}");
-				}
-			} catch (IOException e1) {
-				messageUtils.printMessage(Kind.ERROR, "Unable to create the file containing the target class `"
-						+ factory + "`, because of " + e1.getMessage());
-			}
+			processFactory(filerUtils, messageUtils);
 		}
 		return true;
+	}
+
+	private void processFactory(Filer filerUtils, Messager messageUtils) {
+		try {
+			messageUtils.printMessage(Kind.NOTE,
+					"The interface `" + factory + "` will be generated as a factory interface.");
+			JavaFileObject jfo = filerUtils.createSourceFile(factory);
+			try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
+				wjfo.println("package " + factory.replaceAll("\\.[^.]+$", "") + ";");
+				wjfo.println();
+				wjfo.println("/**");
+				wjfo.println(" * Factories generated.");
+				wjfo.println(" * <p> ");
+				wjfo.println(" * This DSL can be use in several way : ");
+				wjfo.println(" * <ul> ");
+				wjfo.println(
+						" *  <li>By implementing this interface. In this case, all the methods of this interface will be available inside the implementing class.</li>");
+				wjfo.println(
+						" *  <li>By refering the static field named {@link #DSL} which expose all the DSL method.</li>");
+				wjfo.println(" * </ul> ");
+				wjfo.println(" */");
+				wjfo.println(
+						"@javax.annotation.Generated(value=\"" + ProvidesMatchersAnnotationsProcessor.class.getName()
+								+ "\",date=\"" + Instant.now().toString() + "\")");
+				String cName = factory.replaceAll("^([^.]+\\.)*", "");
+				wjfo.println("public interface " + cName + " {");
+				wjfo.println();
+				wjfo.println("  /**");
+				wjfo.println(
+						"   * Use this static field to access all the DSL syntax, without be required to implements this interface.");
+				wjfo.println("   */");
+				wjfo.println("  public static final " + cName + " DSL = new " + cName + "() {};");
+				wjfo.println();
+				factories.stream().forEach(wjfo::println);
+				wjfo.println("}");
+			}
+		} catch (IOException e1) {
+			messageUtils.printMessage(Kind.ERROR, "Unable to create the file containing the target class `" + factory
+					+ "`, because of " + e1.getMessage());
+		}
+	}
+
+	private void processAnnotatedElements(RoundEnvironment roundEnv, Elements elementsUtils, Filer filerUtils,
+			Types typesUtils, Messager messageUtils, TypeElement provideMatchersTE, TypeElement objectTE) {
+		Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(ProvideMatchers.class);
+		ProvidesMatchersElementVisitor providesMatchersElementVisitor = new ProvidesMatchersElementVisitor(this,
+				elementsUtils, messageUtils, provideMatchersTE);
+		factories.addAll(elements.stream().filter(e -> roundEnv.getRootElements().contains(e))
+				.map(e -> e.accept(providesMatchersElementVisitor, null)).filter(te -> te != null)
+				.map(te -> processOneTypeElement(elementsUtils, filerUtils, typesUtils, messageUtils, te, objectTE,
+						elements))
+				.collect(Collectors.toList()));
 	}
 
 	private String toJavaSyntax(String unformatted) {
@@ -250,10 +257,11 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	private List<FieldDescription> generateAndExtractFieldAndParentPrivateMatcher(Elements elementsUtils,
 			Filer filerUtils, Types typesUtils, Messager messageUtils, TypeElement te, String fullClassName,
 			String shortClassName, boolean hasParent, String generic, String fullGeneric, PrintWriter wjfo) {
-		List<FieldDescription> fields = te.getEnclosedElements()
-				.stream().map(ie -> ie
-						.accept(new ProvidesMatchersSubElementVisitor(elementsUtils, typesUtils, messageUtils), null))
-				.filter(v -> v != null).collect(Collectors.toList());
+		ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor = new ProvidesMatchersSubElementVisitor(
+				elementsUtils, typesUtils, messageUtils);
+		List<FieldDescription> fields = te.getEnclosedElements().stream()
+				.map(ie -> ie.accept(providesMatchersSubElementVisitor, null)).filter(v -> v != null)
+				.collect(Collectors.toList());
 		wjfo.println(fields.stream()
 				.map(f -> f.getMatcherForField(fullClassName, shortClassName, generic, fullGeneric, "  "))
 				.collect(Collectors.joining("\n")));

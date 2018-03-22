@@ -207,6 +207,7 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Fie
 	private final Elements elementsUtils;
 	private final Types typesUtils;
 	private final Messager messageUtils;
+	private final ExtracTypeVisitor extractTypeVisitor = new ExtracTypeVisitor();
 
 	public ProvidesMatchersSubElementVisitor(Elements elementsUtils, Types typesUtils, Messager messageUtils) {
 		this.elementsUtils = elementsUtils;
@@ -232,24 +233,28 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Fie
 	public FieldDescription visitExecutable(ExecutableElement e, Void p) {
 		if (e.getModifiers().contains(Modifier.PUBLIC) && e.getSimpleName().toString().startsWith("get")
 				&& e.getParameters().size() == 0) {
-			String methodName = e.getSimpleName().toString();
-			String fieldNameDirect = methodName.replaceFirst("get", "");
-			String fieldName = fieldNameDirect.substring(0, 1).toLowerCase() + fieldNameDirect.substring(1);
-			String fieldType = parseType(e, e.getReturnType(), false);
-			if (fieldType != null) {
-				Type type = parseType(e.getReturnType());
-				return new FieldDescription(methodName + "()", fieldName, fieldNameDirect, fieldType, type);
+			FieldDescription f = visiteExecutableGet(e, "get");
+			if (f != null) {
+				return f;
 			}
 		} else if (e.getModifiers().contains(Modifier.PUBLIC) && e.getSimpleName().toString().startsWith("is")
 				&& e.getParameters().size() == 0) {
-			String methodName = e.getSimpleName().toString();
-			String fieldNameDirect = methodName.replaceFirst("is", "");
-			String fieldName = fieldNameDirect.substring(0, 1).toLowerCase() + fieldNameDirect.substring(1);
-			String fieldType = parseType(e, e.getReturnType(), false);
-			if (fieldType != null) {
-				Type type = parseType(e.getReturnType());
-				return new FieldDescription(methodName + "()", fieldName, fieldNameDirect, fieldType, type);
+			FieldDescription f = visiteExecutableGet(e, "is");
+			if (f != null) {
+				return f;
 			}
+		}
+		return null;
+	}
+
+	private FieldDescription visiteExecutableGet(ExecutableElement e, String prefix) {
+		String methodName = e.getSimpleName().toString();
+		String fieldNameDirect = methodName.replaceFirst(prefix, "");
+		String fieldName = fieldNameDirect.substring(0, 1).toLowerCase() + fieldNameDirect.substring(1);
+		String fieldType = parseType(e, e.getReturnType(), false);
+		if (fieldType != null) {
+			Type type = parseType(e.getReturnType());
+			return new FieldDescription(methodName + "()", fieldName, fieldNameDirect, fieldType, type);
 		}
 		return null;
 	}
@@ -259,7 +264,7 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Fie
 	}
 
 	private FieldDescription.Type parseType(TypeMirror type) {
-		return type.accept(new ExtracTypeVisitor(), null);
+		return type.accept(extractTypeVisitor, null);
 	}
 
 }
