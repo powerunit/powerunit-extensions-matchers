@@ -463,12 +463,12 @@ public class FieldDescription {
 				.collect(Collectors.joining("\n"));
 	}
 
-	public String getMatcherForField(String shortClassName, String generic, String fullGeneric, String prefix) {
+	public String getMatcherForField(String fullClassName,String shortClassName, String generic, String fullGeneric, String prefix) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(prefix).append("// " + type).append("\n");
 		sb.append(prefix)
 				.append("private static class " + methodFieldName + "Matcher" + fullGeneric
-						+ " extends org.hamcrest.FeatureMatcher<" + shortClassName + generic + "," + fieldType + "> {")
+						+ " extends org.hamcrest.FeatureMatcher<" + fullClassName + generic + "," + fieldType + "> {")
 				.append("\n");
 		sb.append(prefix).append(
 				"  public " + methodFieldName + "Matcher(org.hamcrest.Matcher<? super " + fieldType + "> matcher) {")
@@ -494,7 +494,7 @@ public class FieldDescription {
 			sb.append(prefix).append("  }").append("\n");
 		}
 		sb.append(prefix)
-				.append("  protected " + fieldType + " featureValueOf(" + shortClassName + generic + " actual) {")
+				.append("  protected " + fieldType + " featureValueOf(" + fullClassName + generic + " actual) {")
 				.append("\n");
 		sb.append(prefix).append("    return actual." + fieldAccessor + ";").append("\n");
 		sb.append(prefix).append("  }").append("\n");

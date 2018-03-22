@@ -166,6 +166,8 @@ import java.lang.annotation.Target;
  * <li>The attribute {@link #matchersClassName() matchersClassName} may be used
  * to change the simple name (<b>NOT THE FULLY QUALIFIED NAME</b>) of the
  * generated class.</li>
+ * <li>The attribute {@link #matchersPackageName() matchersPackageName} may be
+ * used to change the package name of the generated class.</li>
  * </ul>
  * 
  * @author borettim
@@ -190,5 +192,20 @@ public @interface ProvideMatchers {
 	 *         overloaded.
 	 */
 	String matchersClassName() default "";
+
+	/**
+	 * This attribute may be used to override the default package name that will
+	 * be used for the generated matchers.
+	 * <p>
+	 * <i>By default, this attribute is an empty string, which indicate to use
+	 * the default construction pattern.</i>
+	 * <p>
+	 * By default, the Matchers package name is the same that the annotated
+	 * class.
+	 * 
+	 * @return the name of the matchers package or an empty string if this is
+	 *         not overloaded.
+	 */
+	String matchersPackageName() default "";
 
 }
