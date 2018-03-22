@@ -28,7 +28,7 @@ import ch.powerunit.extensions.matchers.ProvideMatchers;
  * @author borettim
  *
  */
-@ProvideMatchers
+@ProvideMatchers(comments="this is a \"comment\"")
 public class Pojo3<T, O extends Serializable> {
 	public String msg1;
 

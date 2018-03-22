@@ -138,6 +138,35 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		return true;
 	}
 
+	private String toJavaSyntax(String unformatted) {
+		StringBuilder sb = new StringBuilder();
+		sb.append('"');
+		for (int i = 0; i < unformatted.length(); i++) {
+			toJavaSyntax(sb, unformatted.charAt(i));
+		}
+		sb.append('"');
+		return sb.toString();
+	}
+
+	private void toJavaSyntax(StringBuilder sb, char ch) {
+		switch (ch) {
+		case '"':
+			sb.append("\\\"");
+			break;
+		case '\n':
+			sb.append("\\n");
+			break;
+		case '\r':
+			sb.append("\\r");
+			break;
+		case '\t':
+			sb.append("\\t");
+			break;
+		default:
+			sb.append(ch);
+		}
+	}
+
 	/**
 	 * @param elementsUtils
 	 * @param filerUtils
@@ -190,9 +219,9 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				wjfo.println(" * ");
 				wjfo.println(" * @see " + inputClassName.toString() + " The class for which matchers are provided.");
 				wjfo.println(" */");
-				wjfo.println(
-						"@javax.annotation.Generated(value=\"" + ProvidesMatchersAnnotationsProcessor.class.getName()
-								+ "\",date=\"" + Instant.now().toString() + "\")");
+				wjfo.println("@javax.annotation.Generated(value=\""
+						+ ProvidesMatchersAnnotationsProcessor.class.getName() + "\",date=\"" + Instant.now().toString()
+						+ "\",comments=" + toJavaSyntax(pm.comments()) + ")");
 				wjfo.println("public final class " + outputSimpleName + " {");
 				wjfo.println();
 				wjfo.println("  private " + outputSimpleName + "() {}");
@@ -368,7 +397,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				fpname = fpname.replaceAll(pname + "Matchers$", panntation.matchersClassName());
 			}
 			if (!"".equals(panntation.matchersPackageName())) {
-				fpname = fpname.replaceAll("^([^.]+\\.)+", panntation.matchersPackageName()+".");
+				fpname = fpname.replaceAll("^([^.]+\\.)+", panntation.matchersPackageName() + ".");
 			}
 			wjfo.println("  public static " + fullGeneric + " " + shortClassName + "Matcher" + generic + " "
 					+ methodShortClassName + "WithSameValue(" + shortClassName + " " + generic + " other) {");

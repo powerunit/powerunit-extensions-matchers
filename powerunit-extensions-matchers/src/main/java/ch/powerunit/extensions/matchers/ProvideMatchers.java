@@ -208,4 +208,13 @@ public @interface ProvideMatchers {
 	 */
 	String matchersPackageName() default "";
 
+	/**
+	 * This attribute may be used to set a comments that will be passed inside
+	 * the {@link javax.annotation.Generated#comments() comments} attribute of
+	 * the {@link javax.annotation.Generated @Generated} annotation.
+	 * 
+	 * @return the comments or an empty string if ignored.
+	 */
+	String comments() default "";
+
 }
