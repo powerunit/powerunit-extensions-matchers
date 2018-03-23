@@ -217,7 +217,7 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Fie
 
 	@Override
 	public FieldDescription visitVariable(VariableElement e, Void p) {
-		if (e.getModifiers().contains(Modifier.PUBLIC)) {
+		if (e.getModifiers().contains(Modifier.PUBLIC) && !e.getModifiers().contains(Modifier.STATIC)) {
 			String fieldName = e.getSimpleName().toString();
 			String fieldType = parseType(e, e.asType(), false);
 			if (fieldType != null) {
@@ -231,7 +231,8 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Fie
 
 	@Override
 	public FieldDescription visitExecutable(ExecutableElement e, Void p) {
-		if (e.getModifiers().contains(Modifier.PUBLIC) && e.getParameters().size() == 0) {
+		if (e.getModifiers().contains(Modifier.PUBLIC) && e.getParameters().size() == 0
+				&& !e.getModifiers().contains(Modifier.STATIC)) {
 			String simpleName = e.getSimpleName().toString();
 			if (simpleName.startsWith("get")) {
 				FieldDescription f = visiteExecutableGet(e, "get");
