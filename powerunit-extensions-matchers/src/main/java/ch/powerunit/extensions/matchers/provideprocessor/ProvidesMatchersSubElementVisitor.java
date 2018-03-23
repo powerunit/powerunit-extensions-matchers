@@ -19,6 +19,8 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
+import java.util.Optional;
+
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -40,7 +42,7 @@ import ch.powerunit.extensions.matchers.provideprocessor.FieldDescription.Type;
  * @author borettim
  *
  */
-public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<FieldDescription, Void> {
+public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Optional<FieldDescription>, Void> {
 
 	private final class ExtracTypeVisitor extends TypeKindVisitor8<FieldDescription.Type, Void> {
 
@@ -207,37 +209,31 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Fie
 	}
 
 	@Override
-	public FieldDescription visitVariable(VariableElement e, Void p) {
+	public Optional<FieldDescription> visitVariable(VariableElement e, Void p) {
 		if (e.getModifiers().contains(Modifier.PUBLIC) && !e.getModifiers().contains(Modifier.STATIC)) {
 			String fieldName = e.getSimpleName().toString();
 			String fieldType = parseType(e.asType(), false);
 			if (fieldType != null) {
 				Type type = parseType(e.asType());
-				return new FieldDescription(fieldName, fieldName,
-						fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1), fieldType, type);
+				return Optional.of(new FieldDescription(fieldName, fieldName,
+						fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1), fieldType, type));
 			}
 		}
-		return null;
+		return Optional.empty();
 	}
 
 	@Override
-	public FieldDescription visitExecutable(ExecutableElement e, Void p) {
+	public Optional<FieldDescription> visitExecutable(ExecutableElement e, Void p) {
 		if (e.getModifiers().contains(Modifier.PUBLIC) && e.getParameters().size() == 0
 				&& !e.getModifiers().contains(Modifier.STATIC)) {
 			String simpleName = e.getSimpleName().toString();
 			if (simpleName.startsWith("get")) {
-				FieldDescription f = visiteExecutableGet(e, "get");
-				if (f != null) {
-					return f;
-				}
+				return Optional.ofNullable(visiteExecutableGet(e, "get"));
 			} else if (simpleName.startsWith("is")) {
-				FieldDescription f = visiteExecutableGet(e, "is");
-				if (f != null) {
-					return f;
-				}
+				return Optional.ofNullable(visiteExecutableGet(e, "is"));
 			}
 		}
-		return null;
+		return Optional.empty();
 	}
 
 	private FieldDescription visiteExecutableGet(ExecutableElement e, String prefix) {

@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -139,38 +140,34 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		ProvidesMatchersElementVisitor providesMatchersElementVisitor = new ProvidesMatchersElementVisitor(this,
 				elementsUtils, messageUtils, provideMatchersTE);
 		factories.addAll(elements.stream().filter(e -> roundEnv.getRootElements().contains(e))
-				.map(e -> e.accept(providesMatchersElementVisitor, null)).filter(te -> te != null)
-				.map(te -> processOneTypeElement(elementsUtils, filerUtils, typesUtils, messageUtils, te, objectTE,
-						elements))
+				.map(e -> e.accept(providesMatchersElementVisitor, null)).filter(Optional::isPresent)
+				.map(te -> processOneTypeElement(elementsUtils, filerUtils, typesUtils, messageUtils, te.get(),
+						objectTE, elements))
 				.collect(Collectors.toList()));
 	}
 
 	private String toJavaSyntax(String unformatted) {
 		StringBuilder sb = new StringBuilder();
 		sb.append('"');
-		for (int i = 0; i < unformatted.length(); i++) {
-			toJavaSyntax(sb, unformatted.charAt(i));
+		for (char c : unformatted.toCharArray()) {
+			sb.append(toJavaSyntax(c));
 		}
 		sb.append('"');
 		return sb.toString();
 	}
 
-	private void toJavaSyntax(StringBuilder sb, char ch) {
+	private String toJavaSyntax(char ch) {
 		switch (ch) {
 		case '"':
-			sb.append("\\\"");
-			break;
+			return "\\\"";
 		case '\n':
-			sb.append("\\n");
-			break;
+			return "\\n";
 		case '\r':
-			sb.append("\\r");
-			break;
+			return "\\r";
 		case '\t':
-			sb.append("\\t");
-			break;
+			return "\\t";
 		default:
-			sb.append(ch);
+			return "" + ch;
 		}
 	}
 
@@ -260,8 +257,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor = new ProvidesMatchersSubElementVisitor(
 				elementsUtils, typesUtils, messageUtils);
 		List<FieldDescription> fields = te.getEnclosedElements().stream()
-				.map(ie -> ie.accept(providesMatchersSubElementVisitor, null)).filter(v -> v != null)
-				.collect(Collectors.toList());
+				.map(ie -> ie.accept(providesMatchersSubElementVisitor, null)).filter(Optional::isPresent)
+				.map(t -> t.get()).collect(Collectors.toList());
 		wjfo.println(fields.stream()
 				.map(f -> f.getMatcherForField(fullClassName, shortClassName, generic, fullGeneric, "  "))
 				.collect(Collectors.joining("\n")));

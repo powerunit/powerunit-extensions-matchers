@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -64,18 +65,18 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 	private class Entry {
 		private final ExecutableElement element;
 
-		private final String doc;
+		private final Optional<String> doc;
 
 		public Entry(ExecutableElement element, String doc) {
 			this.element = element;
-			this.doc = doc;
+			this.doc = Optional.ofNullable(doc);
 		}
 
 		public ExecutableElement getElement() {
 			return element;
 		}
 
-		public String getDoc() {
+		public Optional<String> getDoc() {
 			return doc;
 		}
 
@@ -131,12 +132,8 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 
 	private void processGenerationOfFinalClasses(Elements elementsUtils, Filer filerUtils, Types typesUtils,
 			Messager messageUtils) {
-		for (Map.Entry<String, Collection<Entry>> target : build.entrySet()) {
-			String targetName = target.getKey();
-			Collection<Entry> entries = target.getValue();
-			processGenerateOneFactoryInterface(elementsUtils, filerUtils, typesUtils, messageUtils, targetName,
-					entries);
-		}
+		build.entrySet().forEach(target -> processGenerateOneFactoryInterface(elementsUtils, filerUtils, typesUtils,
+				messageUtils, target.getKey(), target.getValue()));
 	}
 
 	private void processGenerateOneFactoryInterface(Elements elementsUtils, Filer filerUtils, Types typesUtils,
@@ -174,15 +171,10 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 				for (Entry entry : entries) {
 					ExecutableElement ee = entry.getElement();
 					wjfo.println("  // " + ee.getSimpleName());
-					String doc = entry.getDoc();
-					if (doc != null) {
-						wjfo.println("  /**\n   * " + doc.replaceAll("\n", "\n   * "));
-						wjfo.println("   * @see " + getSeeValue(typesUtils, ee) + "\n   */");
-					} else {
-						wjfo.println("  /**");
-						wjfo.println("   * No javadoc found from the source method.");
-						wjfo.println("   * @see " + getSeeValue(typesUtils, ee) + "\n   */");
-					}
+					String doc = entry.getDoc().map(t -> t.replaceAll("\n", "\n   * "))
+							.orElse("No javadoc found from the source method.");
+					wjfo.println("  /**\n   * " + doc);
+					wjfo.println("   * @see " + getSeeValue(typesUtils, ee) + "\n   */");
 					wjfo.print("  default ");
 					if (!ee.getTypeParameters().isEmpty()) {
 						wjfo.print("<");
@@ -237,8 +229,7 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 			if (!roundEnv.getRootElements().contains(e.getEnclosingElement())) {
 				break;
 			}
-			ExecutableElement ee = e.accept(factoryElementVisitor, null);
-			if (ee != null) {
+			e.accept(factoryElementVisitor, null).ifPresent(ee -> {
 				for (String regex[] : targetClass) {
 					if (ee.getEnclosingElement().asType().toString().matches(regex[0])) {
 						build.get(regex[1]).add(new Entry(ee, elementsUtils.getDocComment(ee)));
@@ -246,7 +237,7 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 					}
 				}
 
-			}
+			});
 		}
 	}
 
