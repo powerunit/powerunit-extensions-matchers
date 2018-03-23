@@ -20,7 +20,6 @@
 package ch.powerunit.extensions.matchers.provideprocessor;
 
 import javax.annotation.processing.Messager;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
@@ -131,75 +130,66 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Fie
 		}
 	}
 
-	private final class ExtractNameVisitor extends TypeKindVisitor8<String, Void> {
-
-		public ExtractNameVisitor(Element e, boolean asPrimitif) {
-			this.asPrimitif = asPrimitif;
-			this.e = e;
-		}
-
-		private final boolean asPrimitif;
-
-		private final Element e;
+	private final class ExtractNameVisitor extends TypeKindVisitor8<String, Boolean> {
 
 		@Override
-		public String visitPrimitiveAsBoolean(PrimitiveType t, Void p) {
+		public String visitPrimitiveAsBoolean(PrimitiveType t, Boolean asPrimitif) {
 			return (asPrimitif) ? "boolean" : "Boolean";
 		}
 
 		@Override
-		public String visitPrimitiveAsByte(PrimitiveType t, Void p) {
+		public String visitPrimitiveAsByte(PrimitiveType t, Boolean asPrimitif) {
 			return (asPrimitif) ? "byte" : "Byte";
 		}
 
 		@Override
-		public String visitPrimitiveAsShort(PrimitiveType t, Void p) {
+		public String visitPrimitiveAsShort(PrimitiveType t, Boolean asPrimitif) {
 			return (asPrimitif) ? "short" : "Short";
 		}
 
 		@Override
-		public String visitPrimitiveAsInt(PrimitiveType t, Void p) {
+		public String visitPrimitiveAsInt(PrimitiveType t, Boolean asPrimitif) {
 			return (asPrimitif) ? "int" : "Integer";
 		}
 
 		@Override
-		public String visitPrimitiveAsLong(PrimitiveType t, Void p) {
+		public String visitPrimitiveAsLong(PrimitiveType t, Boolean asPrimitif) {
 			return (asPrimitif) ? "long" : "Long";
 		}
 
 		@Override
-		public String visitPrimitiveAsChar(PrimitiveType t, Void p) {
+		public String visitPrimitiveAsChar(PrimitiveType t, Boolean asPrimitif) {
 			return (asPrimitif) ? "char" : "Character";
 		}
 
 		@Override
-		public String visitPrimitiveAsFloat(PrimitiveType t, Void p) {
+		public String visitPrimitiveAsFloat(PrimitiveType t, Boolean asPrimitif) {
 			return (asPrimitif) ? "float" : "Float";
 		}
 
 		@Override
-		public String visitPrimitiveAsDouble(PrimitiveType t, Void p) {
+		public String visitPrimitiveAsDouble(PrimitiveType t, Boolean asPrimitif) {
 			return (asPrimitif) ? "double" : "Double";
 		}
 
 		@Override
-		public String visitArray(ArrayType t, Void p) {
-			return parseType(e, t.getComponentType(), true) + "[]";
+		public String visitArray(ArrayType t, Boolean asPrimitif) {
+			return parseType(t.getComponentType(), true) + "[]";
 		}
 
 		@Override
-		public String visitDeclared(DeclaredType t, Void p) {
+		public String visitDeclared(DeclaredType t, Boolean asPrimitif) {
 			return t.toString();
 		}
 
 		@Override
-		public String visitTypeVariable(TypeVariable t, Void p) {
+		public String visitTypeVariable(TypeVariable t, Boolean asPrimitif) {
 			return t.toString();
 		}
 
 		@Override
-		public String visitUnknown(TypeMirror t, Void p) {
-			messageUtils.printMessage(Kind.MANDATORY_WARNING, "Unsupported type element", e);
+		public String visitUnknown(TypeMirror t, Boolean asPrimitif) {
+			messageUtils.printMessage(Kind.MANDATORY_WARNING, "Unsupported type element", typesUtils.asElement(t));
 			return null;
 		}
 	}
@@ -208,6 +198,7 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Fie
 	private final Types typesUtils;
 	private final Messager messageUtils;
 	private final ExtracTypeVisitor extractTypeVisitor = new ExtracTypeVisitor();
+	private final ExtractNameVisitor extractNameVisitor = new ExtractNameVisitor();
 
 	public ProvidesMatchersSubElementVisitor(Elements elementsUtils, Types typesUtils, Messager messageUtils) {
 		this.elementsUtils = elementsUtils;
@@ -219,7 +210,7 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Fie
 	public FieldDescription visitVariable(VariableElement e, Void p) {
 		if (e.getModifiers().contains(Modifier.PUBLIC) && !e.getModifiers().contains(Modifier.STATIC)) {
 			String fieldName = e.getSimpleName().toString();
-			String fieldType = parseType(e, e.asType(), false);
+			String fieldType = parseType(e.asType(), false);
 			if (fieldType != null) {
 				Type type = parseType(e.asType());
 				return new FieldDescription(fieldName, fieldName,
@@ -253,7 +244,7 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Fie
 		String methodName = e.getSimpleName().toString();
 		String fieldNameDirect = methodName.replaceFirst(prefix, "");
 		String fieldName = fieldNameDirect.substring(0, 1).toLowerCase() + fieldNameDirect.substring(1);
-		String fieldType = parseType(e, e.getReturnType(), false);
+		String fieldType = parseType(e.getReturnType(), false);
 		if (fieldType != null) {
 			Type type = parseType(e.getReturnType());
 			return new FieldDescription(methodName + "()", fieldName, fieldNameDirect, fieldType, type);
@@ -261,8 +252,8 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Fie
 		return null;
 	}
 
-	private String parseType(Element e, TypeMirror type, boolean asPrimitif) {
-		return type.accept(new ExtractNameVisitor(e, asPrimitif), null);
+	private String parseType(TypeMirror type, boolean asPrimitif) {
+		return type.accept(extractNameVisitor, asPrimitif);
 	}
 
 	private FieldDescription.Type parseType(TypeMirror type) {
