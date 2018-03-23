@@ -73,6 +73,10 @@ import java.lang.annotation.Target;
  * <li>Generate various methods, with a name based on the annotated class, to
  * start the creation of the matcher.</li>
  * </ul>
+ * The annotation processor will also generate javadoc and try to retrieve from
+ * the javadoc of the annotated element the information regarding generic
+ * attribute.
+ * <p>
  * <i>First example</i>
  * <p>
  * Let's assume the following class, containing one single field, will be
