@@ -296,6 +296,11 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			javadoc.append("  /**").append("\n");
 			javadoc.append("   * Start a DSL matcher for the {@link " + inputClassName + " " + shortClassName + "}.")
 					.append("\n");
+			javadoc.append("   * <p>").append("\n");
+			javadoc.append(
+					"   * The returned builder (which is also a Matcher), at this point accepts any object that is a {@link "
+							+ inputClassName + " " + shortClassName + "}.")
+					.append("\n");
 			javadoc.append("   * ").append("\n");
 			javadoc.append("   * @return the DSL matcher.").append("\n");
 			javadoc.append("   */").append("\n");
@@ -368,10 +373,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			wjfo.println("    " + shortClassName + "Matcher" + generic + " m=new " + shortClassName + "MatcherImpl"
 					+ generic + "();");
 
-			for (FieldDescription f : fields) {
-				wjfo.println("    m." + f.getFieldName() + "(org.hamcrest.Matchers.is(other." + f.getFieldAccessor()
-						+ "));");
-			}
+			fields.stream().map(f -> "    m." + f.getFieldName() + "(org.hamcrest.Matchers.is(other."
+					+ f.getFieldAccessor() + "));").forEach(wjfo::println);
 			wjfo.println("    return m;");
 			wjfo.println("  }");
 
@@ -410,10 +413,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 					+ generic + "(" + fpname + "." + pname.substring(0, 1).toLowerCase() + pname.substring(1)
 					+ "WithSameValue(other));");
 
-			for (FieldDescription f : fields) {
-				wjfo.println("    m." + f.getFieldName() + "(org.hamcrest.Matchers.is(other." + f.getFieldAccessor()
-						+ "));");
-			}
+			fields.stream().map(f -> "    m." + f.getFieldName() + "(org.hamcrest.Matchers.is(other."
+					+ f.getFieldAccessor() + "));").forEach(wjfo::println);
 			wjfo.println("    return m;");
 			wjfo.println("  }");
 
@@ -441,11 +442,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		wjfo.println("  /* package protected */ static class " + shortClassName + "MatcherImpl" + fullGeneric
 				+ " extends org.hamcrest.TypeSafeDiagnosingMatcher<" + inputClassName.toString() + generic
 				+ "> implements " + shortClassName + "Matcher" + generic + " {");
-		for (FieldDescription f : fields) {
-			wjfo.println("    private " + f.getMethodFieldName() + "Matcher " + f.getFieldName() + " = new "
-					+ f.getMethodFieldName() + "Matcher(org.hamcrest.Matchers.anything());");
-		}
-		wjfo.println();
+		fields.stream().map(f -> "    private " + f.getMethodFieldName() + "Matcher " + f.getFieldName() + " = new "
+				+ f.getMethodFieldName() + "Matcher(org.hamcrest.Matchers.anything());").forEach(wjfo::println);
 		if (hasParent) {
 			wjfo.println("    private final SuperClassMatcher parent;");
 			wjfo.println();
@@ -488,10 +486,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		if (hasParent) {
 			wjfo.println("        description.appendText(\"[\").appendDescriptionOf(parent).appendText(\"]\\n\");");
 		}
-		for (FieldDescription f : fields) {
-			wjfo.println("        description.appendText(\"[\").appendDescriptionOf(" + f.getFieldName()
-					+ ").appendText(\"]\\n\");");
-		}
+		fields.stream().map(f -> "        description.appendText(\"[\").appendDescriptionOf(" + f.getFieldName()
+				+ ").appendText(\"]\\n\");").forEach(wjfo::println);
 		wjfo.println("    }");
 
 		wjfo.println("  }");
