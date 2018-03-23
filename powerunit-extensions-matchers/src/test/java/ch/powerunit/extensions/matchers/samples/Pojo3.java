@@ -26,9 +26,13 @@ import ch.powerunit.extensions.matchers.ProvideMatchers;
 
 /**
  * @author borettim
+ * @param <T>
+ *            This is T
+ * @param <O>
+ *            This is O
  *
  */
-@ProvideMatchers(comments="this is a \"comment\"")
+@ProvideMatchers(comments = "this is a \"comment\"")
 public class Pojo3<T, O extends Serializable> {
 	public String msg1;
 

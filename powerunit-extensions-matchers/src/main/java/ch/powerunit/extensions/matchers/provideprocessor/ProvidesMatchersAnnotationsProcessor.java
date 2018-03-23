@@ -233,7 +233,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				List<FieldDescription> fields = generateAndExtractFieldAndParentPrivateMatcher(elementsUtils,
 						filerUtils, typesUtils, messageUtils, te, inputClassName.toString(), shortClassName, hasParent,
 						generic, fullGeneric, wjfo);
-				generatePublicInterface(inputClassName, shortClassName, generic, fullGeneric, wjfo, fields);
+				generatePublicInterface(inputClassName, shortClassName, generic, fullGeneric, wjfo, fields,
+						elementsUtils, te);
 				wjfo.println();
 				generatePrivateImplementation(te, inputClassName, shortClassName, hasParent, generic, fullGeneric, wjfo,
 						fields);
@@ -242,13 +243,34 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
 				factories.append(generateDSLStarter(packageName, outputSimpleName, typesUtils, te, inputClassName,
 						shortClassName, methodShortClassName, hasParent, hasParentInSameRound, generic, fullGeneric,
-						wjfo, fields));
+						wjfo, fields, elementsUtils));
 				wjfo.println("}");
 			}
 		} catch (IOException e1) {
 			messageUtils.printMessage(Kind.ERROR, "Unable to create the file containing the target class", te);
 		}
 		return factories.toString();
+	}
+
+	private String extractParamFromJavadoc(String docComment) {
+		if (docComment == null) {
+			return " * \n";
+		}
+		boolean insideParam = false;
+		StringBuilder sb = new StringBuilder();
+		sb.append("   * \n");
+		for (String line : docComment.split("\\R")) {
+			if (insideParam && line.matches("^\\s*@.*$")) {
+				insideParam = false;
+			}
+			if (line.matches("^\\s*@param.*$")) {
+				insideParam = true;
+			}
+			if (insideParam) {
+				sb.append("   *" + line).append("\n");
+			}
+		}
+		return sb.toString();
 	}
 
 	private List<FieldDescription> generateAndExtractFieldAndParentPrivateMatcher(Elements elementsUtils,
@@ -287,7 +309,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	private String generateDSLStarter(String packageName, String outputSimpleName, Types typesUtils, TypeElement te,
 			Name inputClassName, String shortClassName, String methodShortClassName, boolean hasParent,
 			boolean hasParentInSameRound, String generic, String fullGeneric, PrintWriter wjfo,
-			List<FieldDescription> fields) {
+			List<FieldDescription> fields, Elements elementsUtils) {
 		StringBuilder factories = new StringBuilder();
 		{
 			StringBuilder javadoc = new StringBuilder();
@@ -303,6 +325,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 					.append("\n");
 			javadoc.append("   * ").append("\n");
 			javadoc.append("   * @return the DSL matcher.").append("\n");
+			javadoc.append(extractParamFromJavadoc(elementsUtils.getDocComment(te)));
 			javadoc.append("   */").append("\n");
 			wjfo.println(javadoc.toString());
 			factories.append(javadoc.toString());
@@ -332,6 +355,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			javadoc.append("   * ").append("\n");
 			javadoc.append("   * @param matcherOnParent the matcher on the parent data.").append("\n");
 			javadoc.append("   * @return the DSL matcher.").append("\n");
+			javadoc.append(extractParamFromJavadoc(elementsUtils.getDocComment(te)));
 			javadoc.append("   */").append("\n");
 			wjfo.println(javadoc.toString());
 			factories.append(javadoc.toString());
@@ -363,6 +387,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			javadoc.append("   * ").append("\n");
 			javadoc.append("   * @param other the other object to be used as a reference.").append("\n");
 			javadoc.append("   * @return the DSL matcher.").append("\n");
+			javadoc.append(extractParamFromJavadoc(elementsUtils.getDocComment(te)));
 			javadoc.append("   */").append("\n");
 			wjfo.println(javadoc.toString());
 			factories.append(javadoc.toString());
@@ -393,6 +418,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			javadoc.append("   * ").append("\n");
 			javadoc.append("   * @param other the other object to be used as a reference.").append("\n");
 			javadoc.append("   * @return the DSL matcher.").append("\n");
+			javadoc.append(extractParamFromJavadoc(elementsUtils.getDocComment(te)));
 			javadoc.append("   */").append("\n");
 			wjfo.println(javadoc.toString());
 			factories.append(javadoc.toString());
@@ -494,9 +520,10 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	}
 
 	private void generatePublicInterface(Name inputClassName, String shortClassName, String generic, String fullGeneric,
-			PrintWriter wjfo, List<FieldDescription> fields) {
+			PrintWriter wjfo, List<FieldDescription> fields, Elements elementsUtils, TypeElement te) {
 		wjfo.println("  /**");
 		wjfo.println("   * DSL interface for matcher on {@link " + inputClassName + " " + shortClassName + "}.");
+		wjfo.print(extractParamFromJavadoc(elementsUtils.getDocComment(te)));
 		wjfo.println("   */");
 		wjfo.println("  public static interface " + shortClassName + "Matcher" + fullGeneric
 				+ " extends org.hamcrest.Matcher<" + inputClassName.toString() + generic + "> {");

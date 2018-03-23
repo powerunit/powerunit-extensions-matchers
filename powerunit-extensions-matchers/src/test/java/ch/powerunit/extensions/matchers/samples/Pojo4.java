@@ -23,10 +23,15 @@ import java.io.Serializable;
 
 /**
  * @author borettim
+ * 
+ * @param <A>
+ *            A...
+ * @param <B>
+ *            B...
+ * @see org.hamcrest.Matcher
  *
  */
-public class Pojo4<A, B extends Serializable & Comparable<A>> extends
-		Pojo3<A, B> {
+public class Pojo4<A, B extends Serializable & Comparable<A>> extends Pojo3<A, B> {
 	private char msg10;
 
 	public char getMsg10() {
@@ -36,7 +41,7 @@ public class Pojo4<A, B extends Serializable & Comparable<A>> extends
 	public void setMsg10(char msg10) {
 		this.msg10 = msg10;
 	}
-	
+
 	public B test;
 
 }
