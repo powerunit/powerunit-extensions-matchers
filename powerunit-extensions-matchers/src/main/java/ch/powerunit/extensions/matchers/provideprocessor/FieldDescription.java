@@ -260,6 +260,23 @@ public class FieldDescription {
 			sb.append(prefix).append("  return " + fieldName + "(org.hamcrest.Matchers.contains(matchersOnElements));")
 					.append("\n");
 			sb.append(prefix).append("}").append("\n");
+
+			sb.append(prefix).append("@Override").append("\n");
+			sb.append(prefix).append("public " + containingElementMirror.getDefaultReturnMethod() + " " + fieldName
+					+ "ContainsInAnyOrder(" + generic + "... elements) {").append("\n");
+			sb.append(prefix).append("  return " + fieldName + "(org.hamcrest.Matchers.containsInAnyOrder(elements));")
+					.append("\n");
+			sb.append(prefix).append("}").append("\n");
+
+			sb.append(prefix).append("@Override").append("\n");
+			sb.append(prefix)
+					.append("public " + containingElementMirror.getDefaultReturnMethod() + " " + fieldName
+							+ "ContainsInAnyOrder(org.hamcrest.Matcher<" + generic + ">... matchersOnElements) {")
+					.append("\n");
+			sb.append(prefix)
+					.append("  return " + fieldName + "(org.hamcrest.Matchers.containsInAnyOrder(matchersOnElements));")
+					.append("\n");
+			sb.append(prefix).append("}").append("\n");
 		}
 		return sb.toString();
 	}
@@ -458,6 +475,22 @@ public class FieldDescription {
 					Optional.of("org.hamcrest.Matchers#contains(org.hamcrest.Matcher[])")));
 			sb.append(prefix).append(containingElementMirror.getDefaultReturnMethod() + " " + fieldName
 					+ "Contains(org.hamcrest.Matcher<" + generic + ">... matchersOnElements);").append("\n");
+
+			sb.append(
+					getJavaDocFor(prefix, Optional.of("that the iterable contains the received elements in any order"),
+							Optional.of("elements the elements"),
+							Optional.of("org.hamcrest.Matchers#containsInAnyOrder(java.lang.Object[])")));
+			sb.append(prefix).append(containingElementMirror.getDefaultReturnMethod() + " " + fieldName
+					+ "ContainsInAnyOrder(" + generic + "... elements);").append("\n");
+
+			sb.append(getJavaDocFor(prefix,
+					Optional.of("that the iterable contains the received elements, using matchers in any order"),
+					Optional.of("matchersOnElements the matchers on the elements"),
+					Optional.of("org.hamcrest.Matchers#containsInAnyOrder(org.hamcrest.Matcher[])")));
+			sb.append(prefix)
+					.append(containingElementMirror.getDefaultReturnMethod() + " " + fieldName
+							+ "ContainsInAnyOrder(org.hamcrest.Matcher<" + generic + ">... matchersOnElements);")
+					.append("\n");
 		}
 
 		return sb.toString();
