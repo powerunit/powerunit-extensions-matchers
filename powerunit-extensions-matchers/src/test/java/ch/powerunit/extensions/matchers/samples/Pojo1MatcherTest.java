@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
+import org.hamcrest.BaseMatcher;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
 
@@ -38,14 +39,14 @@ import ch.powerunit.matchers.MatcherTester;
 public class Pojo1MatcherTest implements TestSuite {
 
 	@TestDelegate
-	public final MatcherTester<Pojo1Matchers.Pojo1Matcher> tester = testerOfMatcher(Pojo1Matchers.Pojo1Matcher.class)
-			.with(matcher(Pojo1Matchers.pojo1With().msg1ContainsString("12"))
+	public final MatcherTester<?> tester = testerOfMatcher(Pojo1Matchers.Pojo1MatcherImpl.class)
+			.with(matcher((Pojo1Matchers.Pojo1MatcherImpl)Pojo1Matchers.pojo1With().msg1ContainsString("12"))
 					.describedAs(
 							"an instance of ch.powerunit.extensions.matchers.samples.Pojo1 with\n[msg2 ANYTHING]\n[msg3 ANYTHING]\n[msg4 ANYTHING]\n[msg5 ANYTHING]\n[msg6 ANYTHING]\n[msg7 ANYTHING]\n[msg8 ANYTHING]\n[msg9 ANYTHING]\n[msg12 ANYTHING]\n[msg1 a string containing \"12\"]\n[myBoolean ANYTHING]\n[oneBoolean ANYTHING]\n")
 					.nullRejected("was null").accepting(new Pojo1("12"), new Pojo1("121"))
 					.rejecting(value("").withMessage("was \"\""), value(new Pojo1()).withMessage("[msg1 was null]\n"),
 							value(new Pojo1("11")).withMessage("[msg1 was \"11\"]\n")),
-					matcher(Pojo1Matchers.pojo1With().msg6IsEmptyIterable())
+					matcher((Pojo1Matchers.Pojo1MatcherImpl)Pojo1Matchers.pojo1With().msg6IsEmptyIterable())
 							.describedAs(
 									"an instance of ch.powerunit.extensions.matchers.samples.Pojo1 with\n[msg2 ANYTHING]\n[msg3 ANYTHING]\n[msg4 ANYTHING]\n[msg5 ANYTHING]\n[msg6 an empty iterable]\n[msg7 ANYTHING]\n[msg8 ANYTHING]\n[msg9 ANYTHING]\n[msg12 ANYTHING]\n[msg1 ANYTHING]\n[myBoolean ANYTHING]\n[oneBoolean ANYTHING]\n")
 							.nullRejected("was null").accepting(new Pojo1(Collections.emptyList()))

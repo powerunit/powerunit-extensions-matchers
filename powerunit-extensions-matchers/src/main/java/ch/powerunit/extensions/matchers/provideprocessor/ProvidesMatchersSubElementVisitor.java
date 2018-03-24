@@ -20,8 +20,10 @@
 package ch.powerunit.extensions.matchers.provideprocessor;
 
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import javax.annotation.processing.Messager;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
@@ -42,7 +44,8 @@ import ch.powerunit.extensions.matchers.provideprocessor.FieldDescription.Type;
  * @author borettim
  *
  */
-public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Optional<FieldDescription>, Void> {
+public class ProvidesMatchersSubElementVisitor
+		extends SimpleElementVisitor8<Optional<FieldDescription>, ProvideMatchersAnnotatedElementMirror> {
 
 	private final class ExtracTypeVisitor extends TypeKindVisitor8<FieldDescription.Type, Void> {
 
@@ -199,51 +202,57 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Opt
 	private final Elements elementsUtils;
 	private final Types typesUtils;
 	private final Messager messageUtils;
+	private final Predicate<Element> isInSameRound;
 	private final ExtracTypeVisitor extractTypeVisitor = new ExtracTypeVisitor();
 	private final ExtractNameVisitor extractNameVisitor = new ExtractNameVisitor();
 
-	public ProvidesMatchersSubElementVisitor(Elements elementsUtils, Types typesUtils, Messager messageUtils) {
+	public ProvidesMatchersSubElementVisitor(Elements elementsUtils, Types typesUtils, Messager messageUtils,
+			Predicate<Element> isInSameRound) {
 		this.elementsUtils = elementsUtils;
 		this.typesUtils = typesUtils;
 		this.messageUtils = messageUtils;
+		this.isInSameRound = isInSameRound;
 	}
 
 	@Override
-	public Optional<FieldDescription> visitVariable(VariableElement e, Void p) {
+	public Optional<FieldDescription> visitVariable(VariableElement e, ProvideMatchersAnnotatedElementMirror p) {
 		if (e.getModifiers().contains(Modifier.PUBLIC) && !e.getModifiers().contains(Modifier.STATIC)) {
 			String fieldName = e.getSimpleName().toString();
 			String fieldType = parseType(e.asType(), false);
 			if (fieldType != null) {
 				Type type = parseType(e.asType());
-				return Optional.of(new FieldDescription(fieldName, fieldName,
-						fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1), fieldType, type));
+				return Optional.of(new FieldDescription(p, fieldName, fieldName,
+						fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1), fieldType, type,
+						isInSameRound.test(typesUtils.asElement(e.asType())), elementsUtils));
 			}
 		}
 		return Optional.empty();
 	}
 
 	@Override
-	public Optional<FieldDescription> visitExecutable(ExecutableElement e, Void p) {
+	public Optional<FieldDescription> visitExecutable(ExecutableElement e, ProvideMatchersAnnotatedElementMirror p) {
 		if (e.getModifiers().contains(Modifier.PUBLIC) && e.getParameters().size() == 0
 				&& !e.getModifiers().contains(Modifier.STATIC)) {
 			String simpleName = e.getSimpleName().toString();
 			if (simpleName.startsWith("get")) {
-				return Optional.ofNullable(visiteExecutableGet(e, "get"));
+				return Optional.ofNullable(visiteExecutableGet(e, "get", p));
 			} else if (simpleName.startsWith("is")) {
-				return Optional.ofNullable(visiteExecutableGet(e, "is"));
+				return Optional.ofNullable(visiteExecutableGet(e, "is", p));
 			}
 		}
 		return Optional.empty();
 	}
 
-	private FieldDescription visiteExecutableGet(ExecutableElement e, String prefix) {
+	private FieldDescription visiteExecutableGet(ExecutableElement e, String prefix,
+			ProvideMatchersAnnotatedElementMirror p) {
 		String methodName = e.getSimpleName().toString();
 		String fieldNameDirect = methodName.replaceFirst(prefix, "");
 		String fieldName = fieldNameDirect.substring(0, 1).toLowerCase() + fieldNameDirect.substring(1);
 		String fieldType = parseType(e.getReturnType(), false);
 		if (fieldType != null) {
 			Type type = parseType(e.getReturnType());
-			return new FieldDescription(methodName + "()", fieldName, fieldNameDirect, fieldType, type);
+			return new FieldDescription(p, methodName + "()", fieldName, fieldNameDirect, fieldType, type,
+					isInSameRound.test(typesUtils.asElement(e.asType())), elementsUtils);
 		}
 		return null;
 	}
