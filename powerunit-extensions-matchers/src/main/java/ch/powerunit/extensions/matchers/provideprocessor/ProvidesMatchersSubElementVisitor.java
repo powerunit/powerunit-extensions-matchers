@@ -222,11 +222,23 @@ public class ProvidesMatchersSubElementVisitor
 			String fieldType = parseType(e.asType(), false);
 			if (fieldType != null) {
 				Type type = parseType(e.asType());
+				p.removeFromIgnoreList(e);
 				return Optional.of(new FieldDescription(p, fieldName, fieldName,
 						fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1), fieldType, type,
 						isInSameRound.test(typesUtils.asElement(e.asType())), elementsUtils,
-						e.getAnnotation(IgnoreInMatcher.class) != null,e));
+						e.getAnnotation(IgnoreInMatcher.class) != null, e));
 			}
+		}
+		if (p.isInsideIgnoreList(e)) {
+			messageUtils
+					.printMessage(Kind.MANDATORY_WARNING,
+							"The annotation @IgnoreInMatcher is not supported as this location ; Check that this field is public and not static",
+							e,
+							e.getAnnotationMirrors().stream()
+									.filter(a -> a.getAnnotationType().equals(elementsUtils
+											.getTypeElement(IgnoreInMatcher.class.getName().toString()).asType()))
+							.findAny().orElse(null));
+			p.removeFromIgnoreList(e);
 		}
 		return Optional.empty();
 	}
@@ -242,6 +254,17 @@ public class ProvidesMatchersSubElementVisitor
 				return Optional.ofNullable(visiteExecutableGet(e, "is", p));
 			}
 		}
+		if (p.isInsideIgnoreList(e)) {
+			messageUtils
+					.printMessage(Kind.MANDATORY_WARNING,
+							"The annotation @IgnoreInMatcher is not supported as this location ; CHeck that this method is public, doesn't have any parameter and is named isXXX or getXXX",
+							e,
+							e.getAnnotationMirrors().stream()
+									.filter(a -> a.getAnnotationType().equals(elementsUtils
+											.getTypeElement(IgnoreInMatcher.class.getName().toString()).asType()))
+							.findAny().orElse(null));
+			p.removeFromIgnoreList(e);
+		}
 		return Optional.empty();
 	}
 
@@ -253,9 +276,10 @@ public class ProvidesMatchersSubElementVisitor
 		String fieldType = parseType(e.getReturnType(), false);
 		if (fieldType != null) {
 			Type type = parseType(e.getReturnType());
+			p.removeFromIgnoreList(e);
 			return new FieldDescription(p, methodName + "()", fieldName, fieldNameDirect, fieldType, type,
 					isInSameRound.test(typesUtils.asElement(e.asType())), elementsUtils,
-					e.getAnnotation(IgnoreInMatcher.class) != null,e);
+					e.getAnnotation(IgnoreInMatcher.class) != null, e);
 		}
 		return null;
 	}
