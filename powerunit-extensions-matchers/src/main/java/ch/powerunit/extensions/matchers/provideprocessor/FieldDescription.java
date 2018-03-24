@@ -610,6 +610,7 @@ public class FieldDescription {
 		gmf.setFieldIsIgnored(ignore);
 		gmf.setFieldName(fieldName);
 		gmf.setFieldCategory(type.name());
+		gmf.setFieldAccessor(fieldAccessor);
 		return gmf;
 	}
 

@@ -32,6 +32,8 @@ public class GeneratedMatcherField {
 
 	private String fieldCategory;
 
+	private String fieldAccessor;
+
 	public String getFieldName() {
 		return fieldName;
 	}
@@ -54,6 +56,14 @@ public class GeneratedMatcherField {
 
 	public void setFieldCategory(String fieldCategory) {
 		this.fieldCategory = fieldCategory;
+	}
+
+	public String getFieldAccessor() {
+		return fieldAccessor;
+	}
+
+	public void setFieldAccessor(String fieldAccessor) {
+		this.fieldAccessor = fieldAccessor;
 	}
 
 }
