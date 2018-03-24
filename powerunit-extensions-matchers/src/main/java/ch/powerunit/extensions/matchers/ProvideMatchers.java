@@ -77,6 +77,10 @@ import java.lang.annotation.Target;
  * the javadoc of the annotated element the information regarding generic
  * attribute.
  * <p>
+ * The processor will also try, for field which are not based on generics, to
+ * link the generated matchers between them, in order to provide chaining of the
+ * Fields.
+ * <p>
  * <i>First example</i>
  * <p>
  * Let's assume the following class, containing one single field, will be

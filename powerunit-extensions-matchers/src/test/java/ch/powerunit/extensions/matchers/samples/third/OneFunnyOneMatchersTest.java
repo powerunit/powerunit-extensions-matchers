@@ -17,30 +17,20 @@
  * You should have received a copy of the GNU General Public License
  * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
  */
-package ch.powerunit.extensions.matchers.samples;
+package ch.powerunit.extensions.matchers.samples.third;
 
-import ch.powerunit.Ignore;
 import ch.powerunit.Test;
 import ch.powerunit.TestSuite;
+import ch.powerunit.extensions.matchers.samples.Pojo1;
 
-public class Pojo2MatcherTest implements TestSuite {
-	@Test
-	public void testOKMatcher() {
-		Pojo2 p = new Pojo2();
-		assertThat(p).is(AllMatchers.DSL.pojo2With());
-	}
+public class OneFunnyOneMatchersTest implements TestSuite {
 
 	@Test
-	@Ignore
-	public void testKOMatcher() {
-		Pojo2 p = new Pojo2();
-		assertThat(p).is(AllMatchers.DSL.pojo2With(AllMatchers.DSL.pojo1With().msg1("x")));
-	}
+	public void testMatcherWithSubMatcherDSL() {
+		OneFunnyOne obj = new OneFunnyOne();
+		obj.onePojo1 = new Pojo1();
+		obj.onePojo1.msg2 = "12";
+		assertThat(obj).is(OneFunnyOneMatchers.oneFunnyOneWith().onePojo1With().msg2("12").end());
 
-	@Test
-	public void testOKMatcherForParent() {
-		Pojo2 p = new Pojo2();
-		p.msg2 = "12";
-		assertThat(p).is(AllMatchers.DSL.pojo2WithParent().msg2("12").end());
 	}
 }
