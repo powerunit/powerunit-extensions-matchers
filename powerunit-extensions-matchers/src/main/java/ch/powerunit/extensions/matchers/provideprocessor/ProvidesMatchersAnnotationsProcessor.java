@@ -49,13 +49,15 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
+import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 
 /**
  * @author borettim
  *
  */
-@SupportedAnnotationTypes({ "ch.powerunit.extensions.matchers.ProvideMatchers" })
+@SupportedAnnotationTypes({ "ch.powerunit.extensions.matchers.ProvideMatchers",
+		"ch.powerunit.extensions.matchers.IgnoreInMatcher" })
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedOptions({ "ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor.factory" })
 public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
@@ -138,14 +140,16 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
 	private void processAnnotatedElements(RoundEnvironment roundEnv, Elements elementsUtils, Filer filerUtils,
 			Types typesUtils, Messager messageUtils, TypeElement provideMatchersTE, TypeElement objectTE) {
-		Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(ProvideMatchers.class);
+		Set<? extends Element> elementsWithPM = roundEnv.getElementsAnnotatedWith(ProvideMatchers.class);
+		Set<? extends Element> elementsWithIgnore = roundEnv.getElementsAnnotatedWith(IgnoreInMatcher.class);
+
 		ProvidesMatchersElementVisitor providesMatchersElementVisitor = new ProvidesMatchersElementVisitor(this,
 				elementsUtils, messageUtils, provideMatchersTE);
 		Map<String, ProvideMatchersAnnotatedElementMirror> alias = new HashMap<>();
-		elements.stream().filter(e -> roundEnv.getRootElements().contains(e))
+		elementsWithPM.stream().filter(e -> roundEnv.getRootElements().contains(e))
 				.map(e -> e.accept(providesMatchersElementVisitor, null)).filter(Optional::isPresent)
 				.map(t -> new ProvideMatchersAnnotatedElementMirror(t.get(), elementsUtils, filerUtils, typesUtils,
-						messageUtils, isInSameRound(elements, typesUtils), (n) -> alias.get(n)))
+						messageUtils, isInSameRound(elementsWithPM, typesUtils), (n) -> alias.get(n)))
 				.forEach(a -> alias.put(a.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher(), a));
 
 		factories.addAll(alias.values().stream().map(ProvideMatchersAnnotatedElementMirror::process)

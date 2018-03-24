@@ -47,10 +47,11 @@ public class FieldDescription {
 	private final List<Function<String, String>> dslGenerator;
 	private final Elements elementsUtils;
 	private final ProvideMatchersAnnotatedElementMirror containingElementMirror;
+	private final boolean ignore;
 
 	public FieldDescription(ProvideMatchersAnnotatedElementMirror containingElementMirror, String fieldAccessor,
 			String fieldName, String methodFieldName, String fieldType, Type type, boolean isInSameRound,
-			Elements elementsUtils) {
+			Elements elementsUtils, boolean ignore) {
 		this.containingElementMirror = containingElementMirror;
 		this.fieldAccessor = fieldAccessor;
 		this.fieldName = fieldName;
@@ -58,6 +59,7 @@ public class FieldDescription {
 		this.fieldType = fieldType;
 		this.type = type;
 		this.elementsUtils = elementsUtils;
+		this.ignore = ignore;
 		if (isInSameRound) {
 			TypeElement typeElement = elementsUtils.getTypeElement(fieldType);
 			if (typeElement != null) {
@@ -515,6 +517,39 @@ public class FieldDescription {
 
 	public Type getType() {
 		return type;
+	}
+
+	public boolean isIgnore() {
+		return ignore;
+	}
+
+	public boolean isNotIgnore() {
+		return !ignore;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((fieldName == null) ? 0 : fieldName.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		FieldDescription other = (FieldDescription) obj;
+		if (fieldName == null) {
+			if (other.fieldName != null)
+				return false;
+		} else if (!fieldName.equals(other.fieldName))
+			return false;
+		return true;
 	}
 
 }
