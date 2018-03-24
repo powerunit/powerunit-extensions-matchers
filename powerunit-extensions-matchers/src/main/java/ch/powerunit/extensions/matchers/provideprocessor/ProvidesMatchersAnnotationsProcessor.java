@@ -20,6 +20,7 @@
 package ch.powerunit.extensions.matchers.provideprocessor;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -47,10 +48,16 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
+import javax.tools.StandardLocation;
 
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatchers;
 
 /**
  * @author borettim
@@ -65,6 +72,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	private String factory = null;
 
 	private List<String> factories = new ArrayList<>();
+
+	private GeneratedMatchers allGeneratedMatchers = new GeneratedMatchers();
 
 	@Override
 	public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -92,10 +101,30 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			processAnnotatedElements(roundEnv, elementsUtils, filerUtils, typesUtils, messageUtils, provideMatchersTE,
 					objectTE);
 
-		} else if (factory != null) {
-			processFactory(filerUtils, messageUtils);
+		} else {
+			processReport(filerUtils, messageUtils);
+			if (factory != null) {
+				processFactory(filerUtils, messageUtils);
+			}
 		}
 		return true;
+	}
+
+	private void processReport(Filer filerUtils, Messager messageUtils) {
+		try {
+			FileObject jfo = filerUtils.createResource(StandardLocation.SOURCE_OUTPUT, "",
+					"META-INF/" + getClass().getName() + "/matchers.xml");
+			try (OutputStream os = jfo.openOutputStream();) {
+				Marshaller m = JAXBContext.newInstance(GeneratedMatchers.class).createMarshaller();
+				m.setProperty("jaxb.formatted.output", true);
+				m.marshal(allGeneratedMatchers, os);
+			}
+		} catch (IOException | JAXBException e1) {
+			messageUtils.printMessage(Kind.MANDATORY_WARNING,
+					"Unable to create the file containing meta data about this generation, because of "
+							+ e1.getMessage());
+		}
+
 	}
 
 	private void processFactory(Filer filerUtils, Messager messageUtils) {
@@ -155,9 +184,12 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
 		factories.addAll(alias.values().stream().map(ProvideMatchersAnnotatedElementMirror::process)
 				.collect(Collectors.toList()));
+		allGeneratedMatchers.getGeneratedMatcher().addAll(
+				alias.values().stream().map(ProvideMatchersAnnotatedElementMirror::asXml).collect(Collectors.toList()));
 		elementsWithIgnore.stream()
 				.forEach(e -> messageUtils.printMessage(Kind.MANDATORY_WARNING,
-						"Annotation @IgnoreInMatcher not supported at this location ; The surrounding class is not annotated with @ProvideMatchers", e,
+						"Annotation @IgnoreInMatcher not supported at this location ; The surrounding class is not annotated with @ProvideMatchers",
+						e,
 						e.getAnnotationMirrors().stream()
 								.filter(a -> a.getAnnotationType().equals(elementsUtils
 										.getTypeElement(IgnoreInMatcher.class.getName().toString()).asType()))

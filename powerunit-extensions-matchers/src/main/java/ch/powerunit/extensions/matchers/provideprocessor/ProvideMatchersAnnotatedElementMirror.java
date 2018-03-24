@@ -20,6 +20,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.Diagnostic.Kind;
 
 import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 
 public class ProvideMatchersAnnotatedElementMirror {
 
@@ -672,6 +673,15 @@ public class ProvideMatchersAnnotatedElementMirror {
 
 	public boolean isInsideIgnoreList(Element e) {
 		return elementsWithIgnore.contains(e);
+	}
+
+	public GeneratedMatcher asXml() {
+		GeneratedMatcher gm = new GeneratedMatcher();
+		gm.setFullyQualifiedNameGeneratedClass(fullyQualifiedNameOfGeneratedClass);
+		gm.setFullyQualifiedNameInputClass(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher);
+		gm.setSimpleNameGeneratedClass(simpleNameOfGeneratedClass);
+		gm.setSimpleNameInputClass(simpleNameOfClassAnnotatedWithProvideMatcher);
+		return gm;
 	}
 
 }
