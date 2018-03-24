@@ -321,237 +321,278 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			boolean hasParentInSameRound, String generic, String fullGeneric, PrintWriter wjfo,
 			List<FieldDescription> fields, Elements elementsUtils) {
 		StringBuilder factories = new StringBuilder();
-		{
-			StringBuilder javadoc = new StringBuilder();
-			String methodName = fullGeneric + " " + shortClassName + "Matcher" + addNoParentToGeneric(generic) + " "
-					+ methodShortClassName + "With()";
-			javadoc.append("  /**").append("\n");
-			javadoc.append("   * Start a DSL matcher for the {@link " + inputClassName + " " + shortClassName + "}.")
-					.append("\n");
-			javadoc.append("   * <p>").append("\n");
-			javadoc.append(
-					"   * The returned builder (which is also a Matcher), at this point accepts any object that is a {@link "
-							+ inputClassName + " " + shortClassName + "}.")
-					.append("\n");
-			javadoc.append("   * ").append("\n");
-			javadoc.append("   * @return the DSL matcher.").append("\n");
-			javadoc.append(extractParamFromJavadoc(elementsUtils.getDocComment(te)));
-			javadoc.append("   */").append("\n");
-			wjfo.println(javadoc.toString());
-			factories.append(javadoc.toString());
+		generateDefaultDSLStarter(packageName, outputSimpleName, te, inputClassName, shortClassName,
+				methodShortClassName, hasParent, generic, fullGeneric, wjfo, elementsUtils, factories);
 
-			wjfo.println("  @org.hamcrest.Factory");
-			wjfo.println("  public static " + methodName + " {");
-			factories.append(
-					"  default " + fullGeneric + " " + packageName + "." + outputSimpleName + "." + shortClassName
-							+ "Matcher" + addNoParentToGeneric(generic) + " " + methodShortClassName + "With()" + " {")
-					.append("\n");
-			factories.append(
-					"    return " + packageName + "." + outputSimpleName + "." + methodShortClassName + "With();")
-					.append("\n");
-			factories.append("  }").append("\n");
-			if (hasParent) {
-				wjfo.println("    return new " + shortClassName + "MatcherImpl" + addNoParentToGeneric(generic)
-						+ "(org.hamcrest.Matchers.anything());");
-			} else {
-				wjfo.println(
-						"    return new " + shortClassName + "MatcherImpl" + addNoParentToGeneric(generic) + "();");
-			}
-			wjfo.println("  }");
-		}
-		{
-			StringBuilder javadoc = new StringBuilder();
-			String methodName = addParentToGeneric(fullGeneric) + " " + shortClassName + "Matcher"
-					+ addParentToGeneric(generic) + " " + methodShortClassName + "WithParent(_PARENT parentBuilder)";
-			javadoc.append("  /**").append("\n");
-			javadoc.append("   * Start a DSL matcher for the {@link " + inputClassName + " " + shortClassName + "}.")
-					.append("\n");
-			javadoc.append("   * <p>").append("\n");
-			javadoc.append(
-					"   * The returned builder (which is also a Matcher), at this point accepts any object that is a {@link "
-							+ inputClassName + " " + shortClassName + "}.")
-					.append("\n");
-			javadoc.append("   * ").append("\n");
-			javadoc.append("   * @param parentBuilder the parentBuilder.").append("\n");
-			javadoc.append("   * @return the DSL matcher.").append("\n");
-			javadoc.append(extractParamFromJavadoc(elementsUtils.getDocComment(te)));
-			javadoc.append("   * @param <_PARENT> The parent builder").append("\n");
-			javadoc.append("   */").append("\n");
-			wjfo.println(javadoc.toString());
-
-			wjfo.println("  public static " + methodName + " {");
-			if (hasParent) {
-				wjfo.println("    return new " + shortClassName + "MatcherImpl" + addParentToGeneric(generic)
-						+ "(org.hamcrest.Matchers.anything(),parentBuilder);");
-			} else {
-				wjfo.println("    return new " + shortClassName + "MatcherImpl" + addParentToGeneric(generic)
-						+ "(parentBuilder);");
-			}
-			wjfo.println("  }");
-		}
+		generateDefaultForChainingDSLStarter(te, inputClassName, shortClassName, methodShortClassName, hasParent,
+				generic, fullGeneric, wjfo, elementsUtils);
 
 		if (hasParent) {
-			StringBuilder javadoc = new StringBuilder();
-			javadoc.append("  /**").append("\n");
-			javadoc.append("   * Start a DSL matcher for the {@link " + inputClassName + " " + shortClassName + "}.")
-					.append("\n");
-			javadoc.append("   * ").append("\n");
-			javadoc.append("   * @param matcherOnParent the matcher on the parent data.").append("\n");
-			javadoc.append("   * @return the DSL matcher.").append("\n");
-			javadoc.append(extractParamFromJavadoc(elementsUtils.getDocComment(te)));
-			javadoc.append("   */").append("\n");
-			wjfo.println(javadoc.toString());
-			factories.append(javadoc.toString());
-
-			wjfo.println("  @org.hamcrest.Factory");
-			wjfo.println("  public static " + fullGeneric + " " + shortClassName + "Matcher"
-					+ addNoParentToGeneric(generic) + " " + methodShortClassName + "With(org.hamcrest.Matcher<? super "
-					+ te.getSuperclass().toString() + "> matcherOnParent) {");
-			wjfo.println("    return new " + shortClassName + "MatcherImpl" + addNoParentToGeneric(generic)
-					+ "(matcherOnParent);");
-			wjfo.println("  }");
-
-			factories.append("  default " + fullGeneric + " " + packageName + "." + outputSimpleName + "."
-					+ shortClassName + "Matcher" + addNoParentToGeneric(generic) + " " + methodShortClassName
-					+ "With(org.hamcrest.Matcher<? super " + te.getSuperclass().toString() + "> matcherOnParent)"
-					+ " {").append("\n");
-			factories.append("    return " + packageName + "." + outputSimpleName + "." + methodShortClassName
-					+ "With(matcherOnParent);").append("\n");
-			factories.append("  }").append("\n");
+			generateParentDSLStarter(packageName, outputSimpleName, te, inputClassName, shortClassName,
+					methodShortClassName, generic, fullGeneric, wjfo, elementsUtils, factories);
 		}
 
 		wjfo.println();
 
 		if (!hasParent) {
-			StringBuilder javadoc = new StringBuilder();
-			javadoc.append("  /**").append("\n");
-			javadoc.append("   * Start a DSL matcher for the {@link " + inputClassName + " " + shortClassName + "}.")
-					.append("\n");
-			javadoc.append("   * ").append("\n");
-			javadoc.append("   * @param other the other object to be used as a reference.").append("\n");
-			javadoc.append("   * @return the DSL matcher.").append("\n");
-			javadoc.append(extractParamFromJavadoc(elementsUtils.getDocComment(te)));
-			javadoc.append("   */").append("\n");
-			wjfo.println(javadoc.toString());
-			factories.append(javadoc.toString());
-			wjfo.println("  @org.hamcrest.Factory");
-			wjfo.println("  public static " + fullGeneric + " " + shortClassName + "Matcher"
-					+ addNoParentToGeneric(generic) + " " + methodShortClassName + "WithSameValue("
-					+ inputClassName.toString() + " " + generic + " other) {");
-			wjfo.println("    " + shortClassName + "Matcher" + addNoParentToGeneric(generic) + " m=new "
-					+ shortClassName + "MatcherImpl" + addNoParentToGeneric(generic) + "();");
-
-			fields.stream().map(f -> "    m." + f.getFieldName() + "(org.hamcrest.Matchers.is(other."
-					+ f.getFieldAccessor() + "));").forEach(wjfo::println);
-			wjfo.println("    return m;");
-			wjfo.println("  }");
-
-			factories
-					.append("  default " + fullGeneric + " " + packageName + "." + outputSimpleName + "."
-							+ shortClassName + "Matcher" + addNoParentToGeneric(generic) + " " + methodShortClassName
-							+ "WithSameValue(" + inputClassName.toString() + " " + generic + " other)" + " {")
-					.append("\n");
-			factories.append("    return " + packageName + "." + outputSimpleName + "." + methodShortClassName
-					+ "WithSameValue(other);").append("\n");
-			factories.append("  }").append("\n");
+			generateNoParentDSLStarter(packageName, outputSimpleName, te, inputClassName, shortClassName,
+					methodShortClassName, generic, fullGeneric, wjfo, fields, elementsUtils, factories);
 		}
 		if (hasParent && hasParentInSameRound) {
-			{
-				StringBuilder javadoc = new StringBuilder();
-				javadoc.append("  /**").append("\n");
-				javadoc.append(
-						"   * Start a DSL matcher for the {@link " + inputClassName + " " + shortClassName + "}.")
-						.append("\n");
-				javadoc.append("   * ").append("\n");
-				javadoc.append("   * @param other the other object to be used as a reference.").append("\n");
-				javadoc.append("   * @return the DSL matcher.").append("\n");
-				javadoc.append(extractParamFromJavadoc(elementsUtils.getDocComment(te)));
-				javadoc.append("   */").append("\n");
-				wjfo.println(javadoc.toString());
-				factories.append(javadoc.toString());
-				wjfo.println("  @org.hamcrest.Factory");
-				String pname = typesUtils.asElement(te.getSuperclass()).getSimpleName().toString();
-				TypeElement typeElementParent = (TypeElement) typesUtils.asElement(te.getSuperclass());
-				String fpname = typeElementParent.getQualifiedName().toString() + "Matchers";
-				ProvideMatchers panntation = typeElementParent.getAnnotation(ProvideMatchers.class);
-				if (!"".equals(panntation.matchersClassName())) {
-					fpname = fpname.replaceAll(pname + "Matchers$", panntation.matchersClassName());
-				}
-				if (!"".equals(panntation.matchersPackageName())) {
-					fpname = fpname.replaceAll("^([^.]+\\.)+", panntation.matchersPackageName() + ".");
-				}
-				wjfo.println("  public static " + fullGeneric + " " + shortClassName + "Matcher"
-						+ addNoParentToGeneric(generic) + " " + methodShortClassName + "WithSameValue(" + shortClassName
-						+ " " + generic + " other) {");
-				wjfo.println("    " + shortClassName + "Matcher" + addNoParentToGeneric(generic) + " m=new "
-						+ shortClassName + "MatcherImpl" + addNoParentToGeneric(generic) + "(" + fpname + "."
-						+ pname.substring(0, 1).toLowerCase() + pname.substring(1) + "WithSameValue(other));");
-
-				fields.stream().map(f -> "    m." + f.getFieldName() + "(org.hamcrest.Matchers.is(other."
-						+ f.getFieldAccessor() + "));").forEach(wjfo::println);
-				wjfo.println("    return m;");
-				wjfo.println("  }");
-
-				factories.append("  default " + fullGeneric + " " + packageName + "." + outputSimpleName + "."
-						+ shortClassName + "Matcher" + addNoParentToGeneric(generic) + " " + methodShortClassName
-						+ "WithSameValue(" + packageName + "." + shortClassName + " " + generic + " other)" + " {")
-						.append("\n");
-				factories.append("    return " + packageName + "." + outputSimpleName + "." + methodShortClassName
-						+ "WithSameValue(other);").append("\n");
-				factories.append("  }").append("\n");
-			}
-			{
-				TypeElement typeElementParent = (TypeElement) typesUtils.asElement(te.getSuperclass());
-				if (typeElementParent.getTypeParameters().isEmpty()) {
-					StringBuilder javadoc = new StringBuilder();
-					javadoc.append("  /**").append("\n");
-					javadoc.append(
-							"   * Start a DSL matcher for the {@link " + inputClassName + " " + shortClassName + "}.")
-							.append("\n");
-					javadoc.append("   * ").append("\n");
-					javadoc.append("   * @return the DSL matcher.").append("\n");
-					javadoc.append(extractParamFromJavadoc(elementsUtils.getDocComment(te)));
-					javadoc.append("   */").append("\n");
-					wjfo.println(javadoc.toString());
-					factories.append(javadoc.toString());
-					wjfo.println("  @org.hamcrest.Factory");
-					String pname = typesUtils.asElement(te.getSuperclass()).getSimpleName().toString();
-					String fpname = typeElementParent.getQualifiedName().toString() + "Matchers";
-					ProvideMatchers panntation = typeElementParent.getAnnotation(ProvideMatchers.class);
-					if (!"".equals(panntation.matchersClassName())) {
-						fpname = fpname.replaceAll(pname + "Matchers$", panntation.matchersClassName());
-					}
-					if (!"".equals(panntation.matchersPackageName())) {
-						fpname = fpname.replaceAll("^([^.]+\\.)+", panntation.matchersPackageName() + ".");
-					}
-					wjfo.println("  public static " + fullGeneric + " " + fpname + "."
-							+ typeElementParent.getSimpleName() + "Matcher"
-							+ addParentToGeneric(generic).replaceAll("^<_PARENT",
-									"<" + shortClassName + "Matcher" + addNoParentToGeneric(generic))
-							+ " " + methodShortClassName + "WithParent() {");
-					wjfo.println("    " + shortClassName + "MatcherImpl" + addNoParentToGeneric(generic) + " m=new "
-							+ shortClassName + "MatcherImpl" + addNoParentToGeneric(generic)
-							+ "(org.hamcrest.Matchers.anything());");
-
-					wjfo.println("    " + fpname + "." + pname + "Matcher tmp = " + fpname + "."
-							+ pname.substring(0, 1).toLowerCase() + pname.substring(1) + "WithParent(m);");
-					wjfo.println("    m._parent = new SuperClassMatcher(tmp);");
-					wjfo.println("    return tmp;");
-					wjfo.println("  }");
-
-					factories.append("  default " + fullGeneric + " " + fpname + "." + typeElementParent.getSimpleName()
-							+ "Matcher"
-							+ addParentToGeneric(generic).replaceAll("^<_PARENT",
-									"<" + packageName + "." + outputSimpleName + "." + shortClassName + "Matcher"
-											+ addNoParentToGeneric(generic))
-							+ " " + methodShortClassName + "WithParent()" + " {").append("\n");
-					factories.append("    return " + packageName + "." + outputSimpleName + "." + methodShortClassName
-							+ "WithParent();").append("\n");
-					factories.append("  }").append("\n");
-				}
-			}
+			generateParentInSameRoundDSLStarter(packageName, outputSimpleName, typesUtils, te, inputClassName,
+					shortClassName, methodShortClassName, generic, fullGeneric, wjfo, fields, elementsUtils, factories);
 		}
 		return factories.toString();
+	}
+
+	private void generateParentInSameRoundDSLStarter(String packageName, String outputSimpleName, Types typesUtils,
+			TypeElement te, Name inputClassName, String shortClassName, String methodShortClassName, String generic,
+			String fullGeneric, PrintWriter wjfo, List<FieldDescription> fields, Elements elementsUtils,
+			StringBuilder factories) {
+		generateParentInSameRoundSameValueDSLStarter(packageName, outputSimpleName, typesUtils, te, inputClassName,
+				shortClassName, methodShortClassName, generic, fullGeneric, wjfo, fields, elementsUtils, factories);
+
+		TypeElement typeElementParent = (TypeElement) typesUtils.asElement(te.getSuperclass());
+		if (typeElementParent.getTypeParameters().isEmpty()) {
+			generateParentInSameRoundWithChaningDSLStarter(packageName, outputSimpleName, typesUtils, te,
+					inputClassName, shortClassName, methodShortClassName, generic, fullGeneric, wjfo, elementsUtils,
+					factories, typeElementParent);
+		}
+	}
+
+	private void generateParentInSameRoundWithChaningDSLStarter(String packageName, String outputSimpleName,
+			Types typesUtils, TypeElement te, Name inputClassName, String shortClassName, String methodShortClassName,
+			String generic, String fullGeneric, PrintWriter wjfo, Elements elementsUtils, StringBuilder factories,
+			TypeElement typeElementParent) {
+		StringBuilder javadoc = new StringBuilder();
+		javadoc.append("  /**").append("\n");
+		javadoc.append("   * Start a DSL matcher for the {@link " + inputClassName + " " + shortClassName + "}.")
+				.append("\n");
+		javadoc.append("   * ").append("\n");
+		javadoc.append("   * @return the DSL matcher.").append("\n");
+		javadoc.append(extractParamFromJavadoc(elementsUtils.getDocComment(te)));
+		javadoc.append("   */").append("\n");
+		wjfo.println(javadoc.toString());
+		factories.append(javadoc.toString());
+		wjfo.println("  @org.hamcrest.Factory");
+		String pname = typesUtils.asElement(te.getSuperclass()).getSimpleName().toString();
+		String fpname = typeElementParent.getQualifiedName().toString() + "Matchers";
+		ProvideMatchers panntation = typeElementParent.getAnnotation(ProvideMatchers.class);
+		if (!"".equals(panntation.matchersClassName())) {
+			fpname = fpname.replaceAll(pname + "Matchers$", panntation.matchersClassName());
+		}
+		if (!"".equals(panntation.matchersPackageName())) {
+			fpname = fpname.replaceAll("^([^.]+\\.)+", panntation.matchersPackageName() + ".");
+		}
+		wjfo.println(
+				"  public static " + fullGeneric + " " + fpname + "." + typeElementParent.getSimpleName() + "Matcher"
+						+ addParentToGeneric(generic).replaceAll("^<_PARENT",
+								"<" + shortClassName + "Matcher" + addNoParentToGeneric(generic))
+						+ " " + methodShortClassName + "WithParent() {");
+		wjfo.println(
+				"    " + shortClassName + "MatcherImpl" + addNoParentToGeneric(generic) + " m=new " + shortClassName
+						+ "MatcherImpl" + addNoParentToGeneric(generic) + "(org.hamcrest.Matchers.anything());");
+
+		wjfo.println("    " + fpname + "." + pname + "Matcher tmp = " + fpname + "."
+				+ pname.substring(0, 1).toLowerCase() + pname.substring(1) + "WithParent(m);");
+		wjfo.println("    m._parent = new SuperClassMatcher(tmp);");
+		wjfo.println("    return tmp;");
+		wjfo.println("  }");
+
+		factories.append("  default " + fullGeneric + " " + fpname + "." + typeElementParent.getSimpleName() + "Matcher"
+				+ addParentToGeneric(generic).replaceAll("^<_PARENT",
+						"<" + packageName + "." + outputSimpleName + "." + shortClassName + "Matcher"
+								+ addNoParentToGeneric(generic))
+				+ " " + methodShortClassName + "WithParent()" + " {").append("\n");
+		factories.append(
+				"    return " + packageName + "." + outputSimpleName + "." + methodShortClassName + "WithParent();")
+				.append("\n");
+		factories.append("  }").append("\n");
+	}
+
+	private void generateParentInSameRoundSameValueDSLStarter(String packageName, String outputSimpleName,
+			Types typesUtils, TypeElement te, Name inputClassName, String shortClassName, String methodShortClassName,
+			String generic, String fullGeneric, PrintWriter wjfo, List<FieldDescription> fields, Elements elementsUtils,
+			StringBuilder factories) {
+		StringBuilder javadoc = new StringBuilder();
+		javadoc.append("  /**").append("\n");
+		javadoc.append("   * Start a DSL matcher for the {@link " + inputClassName + " " + shortClassName + "}.")
+				.append("\n");
+		javadoc.append("   * ").append("\n");
+		javadoc.append("   * @param other the other object to be used as a reference.").append("\n");
+		javadoc.append("   * @return the DSL matcher.").append("\n");
+		javadoc.append(extractParamFromJavadoc(elementsUtils.getDocComment(te)));
+		javadoc.append("   */").append("\n");
+		wjfo.println(javadoc.toString());
+		factories.append(javadoc.toString());
+		wjfo.println("  @org.hamcrest.Factory");
+		String pname = typesUtils.asElement(te.getSuperclass()).getSimpleName().toString();
+		TypeElement typeElementParent = (TypeElement) typesUtils.asElement(te.getSuperclass());
+		String fpname = typeElementParent.getQualifiedName().toString() + "Matchers";
+		ProvideMatchers panntation = typeElementParent.getAnnotation(ProvideMatchers.class);
+		if (!"".equals(panntation.matchersClassName())) {
+			fpname = fpname.replaceAll(pname + "Matchers$", panntation.matchersClassName());
+		}
+		if (!"".equals(panntation.matchersPackageName())) {
+			fpname = fpname.replaceAll("^([^.]+\\.)+", panntation.matchersPackageName() + ".");
+		}
+		wjfo.println("  public static " + fullGeneric + " " + shortClassName + "Matcher" + addNoParentToGeneric(generic)
+				+ " " + methodShortClassName + "WithSameValue(" + shortClassName + " " + generic + " other) {");
+		wjfo.println("    " + shortClassName + "Matcher" + addNoParentToGeneric(generic) + " m=new " + shortClassName
+				+ "MatcherImpl" + addNoParentToGeneric(generic) + "(" + fpname + "."
+				+ pname.substring(0, 1).toLowerCase() + pname.substring(1) + "WithSameValue(other));");
+
+		fields.stream().map(
+				f -> "    m." + f.getFieldName() + "(org.hamcrest.Matchers.is(other." + f.getFieldAccessor() + "));")
+				.forEach(wjfo::println);
+		wjfo.println("    return m;");
+		wjfo.println("  }");
+
+		factories.append("  default " + fullGeneric + " " + packageName + "." + outputSimpleName + "." + shortClassName
+				+ "Matcher" + addNoParentToGeneric(generic) + " " + methodShortClassName + "WithSameValue("
+				+ packageName + "." + shortClassName + " " + generic + " other)" + " {").append("\n");
+		factories.append("    return " + packageName + "." + outputSimpleName + "." + methodShortClassName
+				+ "WithSameValue(other);").append("\n");
+		factories.append("  }").append("\n");
+	}
+
+	private void generateNoParentDSLStarter(String packageName, String outputSimpleName, TypeElement te,
+			Name inputClassName, String shortClassName, String methodShortClassName, String generic, String fullGeneric,
+			PrintWriter wjfo, List<FieldDescription> fields, Elements elementsUtils, StringBuilder factories) {
+		StringBuilder javadoc = new StringBuilder();
+		javadoc.append("  /**").append("\n");
+		javadoc.append("   * Start a DSL matcher for the {@link " + inputClassName + " " + shortClassName + "}.")
+				.append("\n");
+		javadoc.append("   * ").append("\n");
+		javadoc.append("   * @param other the other object to be used as a reference.").append("\n");
+		javadoc.append("   * @return the DSL matcher.").append("\n");
+		javadoc.append(extractParamFromJavadoc(elementsUtils.getDocComment(te)));
+		javadoc.append("   */").append("\n");
+		wjfo.println(javadoc.toString());
+		factories.append(javadoc.toString());
+		wjfo.println("  @org.hamcrest.Factory");
+		wjfo.println("  public static " + fullGeneric + " " + shortClassName + "Matcher" + addNoParentToGeneric(generic)
+				+ " " + methodShortClassName + "WithSameValue(" + inputClassName.toString() + " " + generic
+				+ " other) {");
+		wjfo.println("    " + shortClassName + "Matcher" + addNoParentToGeneric(generic) + " m=new " + shortClassName
+				+ "MatcherImpl" + addNoParentToGeneric(generic) + "();");
+
+		fields.stream().map(
+				f -> "    m." + f.getFieldName() + "(org.hamcrest.Matchers.is(other." + f.getFieldAccessor() + "));")
+				.forEach(wjfo::println);
+		wjfo.println("    return m;");
+		wjfo.println("  }");
+
+		factories.append("  default " + fullGeneric + " " + packageName + "." + outputSimpleName + "." + shortClassName
+				+ "Matcher" + addNoParentToGeneric(generic) + " " + methodShortClassName + "WithSameValue("
+				+ inputClassName.toString() + " " + generic + " other)" + " {").append("\n");
+		factories.append("    return " + packageName + "." + outputSimpleName + "." + methodShortClassName
+				+ "WithSameValue(other);").append("\n");
+		factories.append("  }").append("\n");
+	}
+
+	private void generateParentDSLStarter(String packageName, String outputSimpleName, TypeElement te,
+			Name inputClassName, String shortClassName, String methodShortClassName, String generic, String fullGeneric,
+			PrintWriter wjfo, Elements elementsUtils, StringBuilder factories) {
+		StringBuilder javadoc = new StringBuilder();
+		javadoc.append("  /**").append("\n");
+		javadoc.append("   * Start a DSL matcher for the {@link " + inputClassName + " " + shortClassName + "}.")
+				.append("\n");
+		javadoc.append("   * ").append("\n");
+		javadoc.append("   * @param matcherOnParent the matcher on the parent data.").append("\n");
+		javadoc.append("   * @return the DSL matcher.").append("\n");
+		javadoc.append(extractParamFromJavadoc(elementsUtils.getDocComment(te)));
+		javadoc.append("   */").append("\n");
+		wjfo.println(javadoc.toString());
+		factories.append(javadoc.toString());
+
+		wjfo.println("  @org.hamcrest.Factory");
+		wjfo.println("  public static " + fullGeneric + " " + shortClassName + "Matcher" + addNoParentToGeneric(generic)
+				+ " " + methodShortClassName + "With(org.hamcrest.Matcher<? super " + te.getSuperclass().toString()
+				+ "> matcherOnParent) {");
+		wjfo.println("    return new " + shortClassName + "MatcherImpl" + addNoParentToGeneric(generic)
+				+ "(matcherOnParent);");
+		wjfo.println("  }");
+
+		factories.append("  default " + fullGeneric + " " + packageName + "." + outputSimpleName + "." + shortClassName
+				+ "Matcher" + addNoParentToGeneric(generic) + " " + methodShortClassName
+				+ "With(org.hamcrest.Matcher<? super " + te.getSuperclass().toString() + "> matcherOnParent)" + " {")
+				.append("\n");
+		factories.append("    return " + packageName + "." + outputSimpleName + "." + methodShortClassName
+				+ "With(matcherOnParent);").append("\n");
+		factories.append("  }").append("\n");
+	}
+
+	private void generateDefaultForChainingDSLStarter(TypeElement te, Name inputClassName, String shortClassName,
+			String methodShortClassName, boolean hasParent, String generic, String fullGeneric, PrintWriter wjfo,
+			Elements elementsUtils) {
+		StringBuilder javadoc = new StringBuilder();
+		String methodName = addParentToGeneric(fullGeneric) + " " + shortClassName + "Matcher"
+				+ addParentToGeneric(generic) + " " + methodShortClassName + "WithParent(_PARENT parentBuilder)";
+		javadoc.append("  /**").append("\n");
+		javadoc.append("   * Start a DSL matcher for the {@link " + inputClassName + " " + shortClassName + "}.")
+				.append("\n");
+		javadoc.append("   * <p>").append("\n");
+		javadoc.append(
+				"   * The returned builder (which is also a Matcher), at this point accepts any object that is a {@link "
+						+ inputClassName + " " + shortClassName + "}.")
+				.append("\n");
+		javadoc.append("   * ").append("\n");
+		javadoc.append("   * @param parentBuilder the parentBuilder.").append("\n");
+		javadoc.append("   * @return the DSL matcher.").append("\n");
+		javadoc.append(extractParamFromJavadoc(elementsUtils.getDocComment(te)));
+		javadoc.append("   * @param <_PARENT> The parent builder").append("\n");
+		javadoc.append("   */").append("\n");
+		wjfo.println(javadoc.toString());
+
+		wjfo.println("  public static " + methodName + " {");
+		if (hasParent) {
+			wjfo.println("    return new " + shortClassName + "MatcherImpl" + addParentToGeneric(generic)
+					+ "(org.hamcrest.Matchers.anything(),parentBuilder);");
+		} else {
+			wjfo.println("    return new " + shortClassName + "MatcherImpl" + addParentToGeneric(generic)
+					+ "(parentBuilder);");
+		}
+		wjfo.println("  }");
+	}
+
+	private void generateDefaultDSLStarter(String packageName, String outputSimpleName, TypeElement te,
+			Name inputClassName, String shortClassName, String methodShortClassName, boolean hasParent, String generic,
+			String fullGeneric, PrintWriter wjfo, Elements elementsUtils, StringBuilder factories) {
+		StringBuilder javadoc = new StringBuilder();
+		String methodName = fullGeneric + " " + shortClassName + "Matcher" + addNoParentToGeneric(generic) + " "
+				+ methodShortClassName + "With()";
+		javadoc.append("  /**").append("\n");
+		javadoc.append("   * Start a DSL matcher for the {@link " + inputClassName + " " + shortClassName + "}.")
+				.append("\n");
+		javadoc.append("   * <p>").append("\n");
+		javadoc.append(
+				"   * The returned builder (which is also a Matcher), at this point accepts any object that is a {@link "
+						+ inputClassName + " " + shortClassName + "}.")
+				.append("\n");
+		javadoc.append("   * ").append("\n");
+		javadoc.append("   * @return the DSL matcher.").append("\n");
+		javadoc.append(extractParamFromJavadoc(elementsUtils.getDocComment(te)));
+		javadoc.append("   */").append("\n");
+		wjfo.println(javadoc.toString());
+		factories.append(javadoc.toString());
+
+		wjfo.println("  @org.hamcrest.Factory");
+		wjfo.println("  public static " + methodName + " {");
+		factories
+				.append("  default " + fullGeneric + " " + packageName + "." + outputSimpleName + "." + shortClassName
+						+ "Matcher" + addNoParentToGeneric(generic) + " " + methodShortClassName + "With()" + " {")
+				.append("\n");
+		factories.append("    return " + packageName + "." + outputSimpleName + "." + methodShortClassName + "With();")
+				.append("\n");
+		factories.append("  }").append("\n");
+		if (hasParent) {
+			wjfo.println("    return new " + shortClassName + "MatcherImpl" + addNoParentToGeneric(generic)
+					+ "(org.hamcrest.Matchers.anything());");
+		} else {
+			wjfo.println("    return new " + shortClassName + "MatcherImpl" + addNoParentToGeneric(generic) + "();");
+		}
+		wjfo.println("  }");
 	}
 
 	private String generateMethodReturn(List<FieldDescription> fields, String fullClassName, String shortClassName,
