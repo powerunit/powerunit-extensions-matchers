@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 import javax.annotation.processing.Messager;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -97,28 +98,28 @@ public class ProvidesMatchersSubElementVisitor
 
 		@Override
 		public FieldDescription.Type visitDeclared(DeclaredType t, Void p) {
-			if (typesUtils.isAssignable(t,
-					typesUtils.erasure(elementsUtils.getTypeElement("java.util.Optional").asType()))) {
+			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Optional").asType()))) {
 				return FieldDescription.Type.OPTIONAL;
 			}
-			if (typesUtils.isAssignable(t,
-					typesUtils.erasure(elementsUtils.getTypeElement("java.util.Set").asType()))) {
+			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Set").asType()))) {
 				return FieldDescription.Type.SET;
 			}
-			if (typesUtils.isAssignable(t,
-					typesUtils.erasure(elementsUtils.getTypeElement("java.util.List").asType()))) {
+			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.List").asType()))) {
 				return FieldDescription.Type.LIST;
 			}
-			if (typesUtils.isAssignable(t,
-					typesUtils.erasure(elementsUtils.getTypeElement("java.util.Collection").asType()))) {
+			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Collection").asType()))) {
 				return FieldDescription.Type.COLLECTION;
 			}
-			if (typesUtils.isAssignable(t,
-					typesUtils.erasure(elementsUtils.getTypeElement("java.lang.String").asType()))) {
+			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+					.erasure(processingEnv.getElementUtils().getTypeElement("java.lang.String").asType()))) {
 				return FieldDescription.Type.STRING;
 			}
-			if (typesUtils.isAssignable(t,
-					typesUtils.erasure(elementsUtils.getTypeElement("java.lang.Comparable").asType()))) {
+			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+					.erasure(processingEnv.getElementUtils().getTypeElement("java.lang.Comparable").asType()))) {
 				return FieldDescription.Type.COMPARABLE;
 			}
 			return FieldDescription.Type.NA;
@@ -131,7 +132,7 @@ public class ProvidesMatchersSubElementVisitor
 
 		@Override
 		public FieldDescription.Type visitUnknown(TypeMirror t, Void p) {
-			messageUtils.printMessage(Kind.MANDATORY_WARNING, "Unsupported type element");
+			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING, "Unsupported type element");
 			return FieldDescription.Type.NA;
 		}
 	}
@@ -195,23 +196,19 @@ public class ProvidesMatchersSubElementVisitor
 
 		@Override
 		public String visitUnknown(TypeMirror t, Boolean asPrimitif) {
-			messageUtils.printMessage(Kind.MANDATORY_WARNING, "Unsupported type element", typesUtils.asElement(t));
+			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING, "Unsupported type element",
+					processingEnv.getTypeUtils().asElement(t));
 			return null;
 		}
 	}
 
-	private final Elements elementsUtils;
-	private final Types typesUtils;
-	private final Messager messageUtils;
+	private final ProcessingEnvironment processingEnv;
 	private final Predicate<Element> isInSameRound;
 	private final ExtracTypeVisitor extractTypeVisitor = new ExtracTypeVisitor();
 	private final ExtractNameVisitor extractNameVisitor = new ExtractNameVisitor();
 
-	public ProvidesMatchersSubElementVisitor(Elements elementsUtils, Types typesUtils, Messager messageUtils,
-			Predicate<Element> isInSameRound) {
-		this.elementsUtils = elementsUtils;
-		this.typesUtils = typesUtils;
-		this.messageUtils = messageUtils;
+	public ProvidesMatchersSubElementVisitor(ProcessingEnvironment processingEnv, Predicate<Element> isInSameRound) {
+		this.processingEnv = processingEnv;
 		this.isInSameRound = isInSameRound;
 	}
 
@@ -225,17 +222,17 @@ public class ProvidesMatchersSubElementVisitor
 				p.removeFromIgnoreList(e);
 				return Optional.of(new FieldDescription(p, fieldName, fieldName,
 						fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1), fieldType, type,
-						isInSameRound.test(typesUtils.asElement(e.asType())), elementsUtils,
-						e.getAnnotation(IgnoreInMatcher.class) != null, e));
+						isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())),
+						processingEnv.getElementUtils(), e.getAnnotation(IgnoreInMatcher.class) != null, e));
 			}
 		}
 		if (p.isInsideIgnoreList(e)) {
-			messageUtils
-					.printMessage(Kind.MANDATORY_WARNING,
-							"The annotation @IgnoreInMatcher is not supported as this location ; Check that this field is public and not static",
-							e,
-							e.getAnnotationMirrors().stream()
-									.filter(a -> a.getAnnotationType().equals(elementsUtils
+			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
+					"The annotation @IgnoreInMatcher is not supported as this location ; Check that this field is public and not static",
+					e,
+					e.getAnnotationMirrors().stream()
+							.filter(a -> a.getAnnotationType()
+									.equals(processingEnv.getElementUtils()
 											.getTypeElement(IgnoreInMatcher.class.getName().toString()).asType()))
 							.findAny().orElse(null));
 			p.removeFromIgnoreList(e);
@@ -255,12 +252,12 @@ public class ProvidesMatchersSubElementVisitor
 			}
 		}
 		if (p.isInsideIgnoreList(e)) {
-			messageUtils
-					.printMessage(Kind.MANDATORY_WARNING,
-							"The annotation @IgnoreInMatcher is not supported as this location ; CHeck that this method is public, doesn't have any parameter and is named isXXX or getXXX",
-							e,
-							e.getAnnotationMirrors().stream()
-									.filter(a -> a.getAnnotationType().equals(elementsUtils
+			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
+					"The annotation @IgnoreInMatcher is not supported as this location ; CHeck that this method is public, doesn't have any parameter and is named isXXX or getXXX",
+					e,
+					e.getAnnotationMirrors().stream()
+							.filter(a -> a.getAnnotationType()
+									.equals(processingEnv.getElementUtils()
 											.getTypeElement(IgnoreInMatcher.class.getName().toString()).asType()))
 							.findAny().orElse(null));
 			p.removeFromIgnoreList(e);
@@ -278,8 +275,8 @@ public class ProvidesMatchersSubElementVisitor
 			Type type = parseType(e.getReturnType());
 			p.removeFromIgnoreList(e);
 			return new FieldDescription(p, methodName + "()", fieldName, fieldNameDirect, fieldType, type,
-					isInSameRound.test(typesUtils.asElement(e.asType())), elementsUtils,
-					e.getAnnotation(IgnoreInMatcher.class) != null, e);
+					isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())),
+					processingEnv.getElementUtils(), e.getAnnotation(IgnoreInMatcher.class) != null, e);
 		}
 		return null;
 	}
