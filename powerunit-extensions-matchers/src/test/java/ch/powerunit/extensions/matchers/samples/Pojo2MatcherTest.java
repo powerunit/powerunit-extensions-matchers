@@ -34,7 +34,13 @@ public class Pojo2MatcherTest implements TestSuite {
 	@Ignore
 	public void testKOMatcher() {
 		Pojo2 p = new Pojo2();
-		assertThat(p).is(
-				AllMatchers.DSL.pojo2With(AllMatchers.DSL.pojo1With().msg1("x")));
+		assertThat(p).is(AllMatchers.DSL.pojo2With(AllMatchers.DSL.pojo1With().msg1("x")));
+	}
+
+	@Test
+	public void testOKMatcherForParent() {
+		Pojo2 p = new Pojo2();
+		p.msg2 = "12";
+		assertThat(p).is(AllMatchers.DSL.pojo2WithParent().msg2("12").end());
 	}
 }
