@@ -34,6 +34,7 @@ import javax.lang.model.util.Elements;
 
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcherField;
 
 public class FieldDescription {
 
@@ -602,6 +603,14 @@ public class FieldDescription {
 
 	public String getDescriptionForIgnoreIfApplicable() {
 		return Optional.ofNullable(fieldElement.getAnnotation(IgnoreInMatcher.class)).map(i -> i.comments()).orElse("");
+	}
+
+	public GeneratedMatcherField asGeneratedMatcherField() {
+		GeneratedMatcherField gmf = new GeneratedMatcherField();
+		gmf.setFieldIsIgnored(ignore);
+		gmf.setFieldName(fieldName);
+		gmf.setFieldCategory(type.name());
+		return gmf;
 	}
 
 }

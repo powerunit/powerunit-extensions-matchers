@@ -19,6 +19,8 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.xml;
 
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -37,6 +39,8 @@ public class GeneratedMatcher {
 	private String simpleNameGeneratedClass;
 
 	private String dslMethodNameStart;
+	
+	private List<GeneratedMatcherField> generatedMatcherField;
 
 	private transient ProvideMatchersAnnotatedElementMirror mirror;
 
@@ -78,6 +82,14 @@ public class GeneratedMatcher {
 
 	public void setDslMethodNameStart(String dslMethodNameStart) {
 		this.dslMethodNameStart = dslMethodNameStart;
+	}
+
+	public List<GeneratedMatcherField> getGeneratedMatcherField() {
+		return generatedMatcherField;
+	}
+
+	public void setGeneratedMatcherField(List<GeneratedMatcherField> generatedMatcherField) {
+		this.generatedMatcherField = generatedMatcherField;
 	}
 
 	public ProvideMatchersAnnotatedElementMirror getMirror() {
