@@ -25,6 +25,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+
+import ch.powerunit.extensions.matchers.ProvideMatchers;
+
 public class FieldDescription {
 
 	public static enum Type {
@@ -40,17 +46,48 @@ public class FieldDescription {
 	private final String fieldName;
 	private final String methodFieldName;
 	private final String fieldType;
+	private final String fullyQualifiedNameMatcherInSameRound;
 	private final Type type;
 	private final List<Generator> implGenerator;
 	private final List<Generator> dslGenerator;
+	private final boolean isInSameRound;
+	private final Elements elementsUtils;
+	private final Types typesUtils;
 
-	public FieldDescription(String fieldAccessor, String fieldName, String methodFieldName, String fieldType,
-			Type type) {
+	public FieldDescription(String fieldAccessor, String fieldName, String methodFieldName, String fieldType, Type type,
+			boolean isInSameRound, Elements elementsUtils, Types typesUtils) {
 		this.fieldAccessor = fieldAccessor;
 		this.fieldName = fieldName;
 		this.methodFieldName = methodFieldName;
 		this.fieldType = fieldType;
 		this.type = type;
+		this.isInSameRound = isInSameRound;
+		this.elementsUtils = elementsUtils;
+		this.typesUtils = typesUtils;
+		if (isInSameRound) {
+			TypeElement typeElement = elementsUtils.getTypeElement(fieldType);
+			if (typeElement != null) {
+				String simpleName = typeElement.getSimpleName().toString() + "Matchers";
+				String packageName = elementsUtils.getPackageOf(typeElement).getQualifiedName().toString();
+				String fullyQualifiedNameMatcher = typeElement.getQualifiedName().toString() + "Matchers";
+				ProvideMatchers pm = typeElement.getAnnotation(ProvideMatchers.class);
+				if (!"".equals(pm.matchersClassName())) {
+					fullyQualifiedNameMatcher = fullyQualifiedNameMatcher.replaceAll(simpleName + "$",
+							pm.matchersClassName());
+					simpleName = pm.matchersClassName();
+				}
+				if (!"".equals(pm.matchersPackageName())) {
+					fullyQualifiedNameMatcher = fullyQualifiedNameMatcher.replaceAll("^" + packageName,
+							pm.matchersPackageName());
+					packageName = pm.matchersPackageName();
+				}
+				this.fullyQualifiedNameMatcherInSameRound = fullyQualifiedNameMatcher;
+			} else {
+				this.fullyQualifiedNameMatcherInSameRound = null;
+			}
+		} else {
+			this.fullyQualifiedNameMatcherInSameRound = null;
+		}
 		List<Generator> tmp1 = new ArrayList<>();
 		List<Generator> tmp2 = new ArrayList<>();
 		tmp1.add(this::getImplementationForDefault);
@@ -113,6 +150,26 @@ public class FieldDescription {
 				.append("\n");
 		sb.append(prefix).append("  return " + fieldName + "(org.hamcrest.Matchers.is(value));").append("\n");
 		sb.append(prefix).append("}").append("\n");
+
+		if (fullyQualifiedNameMatcherInSameRound != null) {
+			TypeElement targetElement = elementsUtils.getTypeElement(fieldType);
+			if (targetElement.getTypeParameters().isEmpty()) {
+				String name = targetElement.getSimpleName().toString();
+				String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
+				sb.append(prefix).append("@Override").append("\n");
+				sb.append(prefix).append("public " + fullyQualifiedNameMatcherInSameRound + "." + name + "Matcher" + "<"
+						+ returnMethod + "> " + fieldName + "With() {").append("\n");
+				sb.append(prefix)
+						.append("  " + fullyQualifiedNameMatcherInSameRound + "." + name + "Matcher tmp = "
+								+ fullyQualifiedNameMatcherInSameRound + "." + lname + "WithParent(this);")
+						.append("\n");
+				sb.append(prefix).append("  " + fieldName + "(tmp);").append("\n");
+				sb.append(prefix).append("  return tmp;").append("\n");
+				sb.append(prefix).append("}").append("\n");
+			}
+
+		}
+		sb.append(prefix).append("\n");
 
 		return sb.toString();
 	}
@@ -267,6 +324,19 @@ public class FieldDescription {
 				Optional.of("value an expected value for the field, which will be compared using the is matcher"),
 				Optional.of("org.hamcrest.Matchers#is(java.lang.Object)")));
 		sb.append(prefix).append(returnMethod).append(fieldName).append("(" + fieldType + " value);").append("\n");
+
+		if (fullyQualifiedNameMatcherInSameRound != null) {
+			TypeElement targetElement = elementsUtils.getTypeElement(fieldType);
+			if (targetElement.getTypeParameters().isEmpty()) {
+				String name = targetElement.getSimpleName().toString();
+				String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
+				sb.append(getJavaDocFor(inputClassName, prefix, Optional.of("by starting a matcher for this field"),
+						Optional.empty(), Optional.empty()));
+				sb.append(prefix).append(fullyQualifiedNameMatcherInSameRound + "." + name + "Matcher" + "<"
+						+ returnMethod + "> " + fieldName + "With();").append("\n");
+			}
+
+		}
 
 		return sb.toString();
 	}

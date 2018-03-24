@@ -20,8 +20,10 @@
 package ch.powerunit.extensions.matchers.provideprocessor;
 
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import javax.annotation.processing.Messager;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
@@ -35,6 +37,7 @@ import javax.lang.model.util.SimpleElementVisitor8;
 import javax.lang.model.util.TypeKindVisitor8;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
+
 
 import ch.powerunit.extensions.matchers.provideprocessor.FieldDescription.Type;
 
@@ -199,13 +202,16 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Opt
 	private final Elements elementsUtils;
 	private final Types typesUtils;
 	private final Messager messageUtils;
+	private final Predicate<Element> isInSameRound;
 	private final ExtracTypeVisitor extractTypeVisitor = new ExtracTypeVisitor();
 	private final ExtractNameVisitor extractNameVisitor = new ExtractNameVisitor();
 
-	public ProvidesMatchersSubElementVisitor(Elements elementsUtils, Types typesUtils, Messager messageUtils) {
+	public ProvidesMatchersSubElementVisitor(Elements elementsUtils, Types typesUtils, Messager messageUtils,
+			Predicate<Element> isInSameRound) {
 		this.elementsUtils = elementsUtils;
 		this.typesUtils = typesUtils;
 		this.messageUtils = messageUtils;
+		this.isInSameRound = isInSameRound;
 	}
 
 	@Override
@@ -216,7 +222,8 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Opt
 			if (fieldType != null) {
 				Type type = parseType(e.asType());
 				return Optional.of(new FieldDescription(fieldName, fieldName,
-						fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1), fieldType, type));
+						fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1), fieldType, type,
+						isInSameRound.test(typesUtils.asElement(e.asType())), elementsUtils, typesUtils));
 			}
 		}
 		return Optional.empty();
@@ -243,7 +250,8 @@ public class ProvidesMatchersSubElementVisitor extends SimpleElementVisitor8<Opt
 		String fieldType = parseType(e.getReturnType(), false);
 		if (fieldType != null) {
 			Type type = parseType(e.getReturnType());
-			return new FieldDescription(methodName + "()", fieldName, fieldNameDirect, fieldType, type);
+			return new FieldDescription(methodName + "()", fieldName, fieldNameDirect, fieldType, type,
+					isInSameRound.test(typesUtils.asElement(e.asType())), elementsUtils, typesUtils);
 		}
 		return null;
 	}

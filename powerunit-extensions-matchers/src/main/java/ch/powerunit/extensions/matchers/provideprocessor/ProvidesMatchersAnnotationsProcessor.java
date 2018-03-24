@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -45,6 +46,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
+
 import javax.tools.JavaFileObject;
 
 import ch.powerunit.extensions.matchers.ProvideMatchers;
@@ -171,6 +173,11 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		}
 	}
 
+	private Predicate<Element> isInSameRound(Set<? extends Element> elements, Types typesUtils) {
+		return t -> t == null ? false
+				: elements.stream().filter(e -> typesUtils.isSameType(e.asType(), t.asType())).findAny().isPresent();
+	}
+
 	/**
 	 * @param elementsUtils
 	 * @param filerUtils
@@ -181,6 +188,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	 */
 	private String processOneTypeElement(Elements elementsUtils, Filer filerUtils, Types typesUtils,
 			Messager messageUtils, TypeElement te, TypeElement objectTE, Set<? extends Element> elements) {
+		Predicate<Element> isInSameRound = isInSameRound(elements, typesUtils);
 		StringBuilder factories = new StringBuilder();
 		Name inputClassName = te.getQualifiedName();
 		String packageName = elementsUtils.getPackageOf(te).getQualifiedName().toString();
@@ -198,8 +206,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		String shortClassName = te.getSimpleName().toString();
 		String methodShortClassName = shortClassName.substring(0, 1).toLowerCase() + shortClassName.substring(1);
 		boolean hasParent = !objectTE.asType().equals(te.getSuperclass());
-		boolean hasParentInSameRound = elements.stream().filter(e -> typesUtils.isSameType(e.asType(), te.asType()))
-				.findAny().isPresent();
+		boolean hasParentInSameRound = isInSameRound.test(te);
 		String generic = "";
 		String fullGeneric = "";
 		if (te.getTypeParameters().size() > 0) {
@@ -209,6 +216,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 					.map(t -> t.toString() + " extends "
 							+ t.getBounds().stream().map(b -> b.toString()).collect(Collectors.joining("&")))
 					.collect(Collectors.joining(",")) + ">";
+		} else {
+
 		}
 		try {
 			messageUtils.printMessage(Kind.NOTE,
@@ -232,7 +241,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				wjfo.println();
 				List<FieldDescription> fields = generateAndExtractFieldAndParentPrivateMatcher(elementsUtils,
 						filerUtils, typesUtils, messageUtils, te, inputClassName.toString(), shortClassName, hasParent,
-						generic, fullGeneric, wjfo);
+						generic, fullGeneric, wjfo, isInSameRound);
 				generatePublicInterface(inputClassName, shortClassName, generic, fullGeneric, wjfo, fields,
 						elementsUtils, te);
 				wjfo.println();
@@ -275,9 +284,10 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
 	private List<FieldDescription> generateAndExtractFieldAndParentPrivateMatcher(Elements elementsUtils,
 			Filer filerUtils, Types typesUtils, Messager messageUtils, TypeElement te, String fullClassName,
-			String shortClassName, boolean hasParent, String generic, String fullGeneric, PrintWriter wjfo) {
+			String shortClassName, boolean hasParent, String generic, String fullGeneric, PrintWriter wjfo,
+			Predicate<Element> isInSameRound) {
 		ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor = new ProvidesMatchersSubElementVisitor(
-				elementsUtils, typesUtils, messageUtils);
+				elementsUtils, typesUtils, messageUtils, isInSameRound);
 		List<FieldDescription> fields = te.getEnclosedElements().stream()
 				.map(ie -> ie.accept(providesMatchersSubElementVisitor, null)).filter(Optional::isPresent)
 				.map(t -> t.get()).collect(Collectors.toList());
@@ -313,8 +323,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		StringBuilder factories = new StringBuilder();
 		{
 			StringBuilder javadoc = new StringBuilder();
-			String methodName = fullGeneric + " " + shortClassName + "Matcher" + generic + " " + methodShortClassName
-					+ "With()";
+			String methodName = fullGeneric + " " + shortClassName + "Matcher" + addNoParentToGeneric(generic) + " "
+					+ methodShortClassName + "With()";
 			javadoc.append("  /**").append("\n");
 			javadoc.append("   * Start a DSL matcher for the {@link " + inputClassName + " " + shortClassName + "}.")
 					.append("\n");
@@ -332,21 +342,54 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
 			wjfo.println("  @org.hamcrest.Factory");
 			wjfo.println("  public static " + methodName + " {");
-			factories
-					.append("  default " + fullGeneric + " " + packageName + "." + outputSimpleName + "."
-							+ shortClassName + "Matcher" + generic + " " + methodShortClassName + "With()" + " {")
+			factories.append(
+					"  default " + fullGeneric + " " + packageName + "." + outputSimpleName + "." + shortClassName
+							+ "Matcher" + addNoParentToGeneric(generic) + " " + methodShortClassName + "With()" + " {")
 					.append("\n");
 			factories.append(
 					"    return " + packageName + "." + outputSimpleName + "." + methodShortClassName + "With();")
 					.append("\n");
 			factories.append("  }").append("\n");
 			if (hasParent) {
-				wjfo.println("    return new " + shortClassName + "MatcherImpl(org.hamcrest.Matchers.anything());");
+				wjfo.println("    return new " + shortClassName + "MatcherImpl" + addNoParentToGeneric(generic)
+						+ "(org.hamcrest.Matchers.anything());");
 			} else {
-				wjfo.println("    return new " + shortClassName + "MatcherImpl" + generic + "();");
+				wjfo.println(
+						"    return new " + shortClassName + "MatcherImpl" + addNoParentToGeneric(generic) + "();");
 			}
 			wjfo.println("  }");
 		}
+		{
+			StringBuilder javadoc = new StringBuilder();
+			String methodName = addParentToGeneric(fullGeneric) + " " + shortClassName + "Matcher"
+					+ addParentToGeneric(generic) + " " + methodShortClassName + "WithParent(_PARENT parentBuilder)";
+			javadoc.append("  /**").append("\n");
+			javadoc.append("   * Start a DSL matcher for the {@link " + inputClassName + " " + shortClassName + "}.")
+					.append("\n");
+			javadoc.append("   * <p>").append("\n");
+			javadoc.append(
+					"   * The returned builder (which is also a Matcher), at this point accepts any object that is a {@link "
+							+ inputClassName + " " + shortClassName + "}.")
+					.append("\n");
+			javadoc.append("   * ").append("\n");
+			javadoc.append("   * @param parentBuilder the parentBuilder.").append("\n");
+			javadoc.append("   * @return the DSL matcher.").append("\n");
+			javadoc.append(extractParamFromJavadoc(elementsUtils.getDocComment(te)));
+			javadoc.append("   * @param <_PARENT> The parent builder").append("\n");
+			javadoc.append("   */").append("\n");
+			wjfo.println(javadoc.toString());
+
+			wjfo.println("  public static " + methodName + " {");
+			if (hasParent) {
+				wjfo.println("    return new " + shortClassName + "MatcherImpl" + addParentToGeneric(generic)
+						+ "(org.hamcrest.Matchers.anything(),parentBuilder);");
+			} else {
+				wjfo.println("    return new " + shortClassName + "MatcherImpl" + addParentToGeneric(generic)
+						+ "(parentBuilder);");
+			}
+			wjfo.println("  }");
+		}
+
 		if (hasParent) {
 			StringBuilder javadoc = new StringBuilder();
 			javadoc.append("  /**").append("\n");
@@ -361,17 +404,17 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			factories.append(javadoc.toString());
 
 			wjfo.println("  @org.hamcrest.Factory");
-			wjfo.println("  public static " + fullGeneric + " " + shortClassName + "Matcher" + generic + " "
-					+ methodShortClassName + "With(org.hamcrest.Matcher<? super " + te.getSuperclass().toString()
-					+ "> matcherOnParent) {");
-			wjfo.println("    return new " + shortClassName + "MatcherImpl" + generic + "(matcherOnParent);");
+			wjfo.println("  public static " + fullGeneric + " " + shortClassName + "Matcher"
+					+ addNoParentToGeneric(generic) + " " + methodShortClassName + "With(org.hamcrest.Matcher<? super "
+					+ te.getSuperclass().toString() + "> matcherOnParent) {");
+			wjfo.println("    return new " + shortClassName + "MatcherImpl" + addNoParentToGeneric(generic)
+					+ "(matcherOnParent);");
 			wjfo.println("  }");
 
-			factories.append(
-					"  default " + fullGeneric + " " + packageName + "." + outputSimpleName + "." + shortClassName
-							+ "Matcher" + generic + " " + methodShortClassName + "With(org.hamcrest.Matcher<? super "
-							+ te.getSuperclass().toString() + "> matcherOnParent)" + " {")
-					.append("\n");
+			factories.append("  default " + fullGeneric + " " + packageName + "." + outputSimpleName + "."
+					+ shortClassName + "Matcher" + addNoParentToGeneric(generic) + " " + methodShortClassName
+					+ "With(org.hamcrest.Matcher<? super " + te.getSuperclass().toString() + "> matcherOnParent)"
+					+ " {").append("\n");
 			factories.append("    return " + packageName + "." + outputSimpleName + "." + methodShortClassName
 					+ "With(matcherOnParent);").append("\n");
 			factories.append("  }").append("\n");
@@ -392,20 +435,22 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			wjfo.println(javadoc.toString());
 			factories.append(javadoc.toString());
 			wjfo.println("  @org.hamcrest.Factory");
-			wjfo.println("  public static " + fullGeneric + " " + shortClassName + "Matcher" + generic + " "
-					+ methodShortClassName + "WithSameValue(" + inputClassName.toString() + " " + generic
-					+ " other) {");
-			wjfo.println("    " + shortClassName + "Matcher" + generic + " m=new " + shortClassName + "MatcherImpl"
-					+ generic + "();");
+			wjfo.println("  public static " + fullGeneric + " " + shortClassName + "Matcher"
+					+ addNoParentToGeneric(generic) + " " + methodShortClassName + "WithSameValue("
+					+ inputClassName.toString() + " " + generic + " other) {");
+			wjfo.println("    " + shortClassName + "Matcher" + addNoParentToGeneric(generic) + " m=new "
+					+ shortClassName + "MatcherImpl" + addNoParentToGeneric(generic) + "();");
 
 			fields.stream().map(f -> "    m." + f.getFieldName() + "(org.hamcrest.Matchers.is(other."
 					+ f.getFieldAccessor() + "));").forEach(wjfo::println);
 			wjfo.println("    return m;");
 			wjfo.println("  }");
 
-			factories.append("  default " + fullGeneric + " " + packageName + "." + outputSimpleName + "."
-					+ shortClassName + "Matcher" + generic + " " + methodShortClassName + "WithSameValue("
-					+ inputClassName.toString() + " " + generic + " other)" + " {").append("\n");
+			factories
+					.append("  default " + fullGeneric + " " + packageName + "." + outputSimpleName + "."
+							+ shortClassName + "Matcher" + addNoParentToGeneric(generic) + " " + methodShortClassName
+							+ "WithSameValue(" + inputClassName.toString() + " " + generic + " other)" + " {")
+					.append("\n");
 			factories.append("    return " + packageName + "." + outputSimpleName + "." + methodShortClassName
 					+ "WithSameValue(other);").append("\n");
 			factories.append("  }").append("\n");
@@ -433,20 +478,23 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			if (!"".equals(panntation.matchersPackageName())) {
 				fpname = fpname.replaceAll("^([^.]+\\.)+", panntation.matchersPackageName() + ".");
 			}
-			wjfo.println("  public static " + fullGeneric + " " + shortClassName + "Matcher" + generic + " "
-					+ methodShortClassName + "WithSameValue(" + shortClassName + " " + generic + " other) {");
-			wjfo.println("    " + shortClassName + "Matcher" + generic + " m=new " + shortClassName + "MatcherImpl"
-					+ generic + "(" + fpname + "." + pname.substring(0, 1).toLowerCase() + pname.substring(1)
-					+ "WithSameValue(other));");
+			wjfo.println("  public static " + fullGeneric + " " + shortClassName + "Matcher"
+					+ addNoParentToGeneric(generic) + " " + methodShortClassName + "WithSameValue(" + shortClassName
+					+ " " + generic + " other) {");
+			wjfo.println("    " + shortClassName + "Matcher" + addNoParentToGeneric(generic) + " m=new "
+					+ shortClassName + "MatcherImpl" + addNoParentToGeneric(generic) + "(" + fpname + "."
+					+ pname.substring(0, 1).toLowerCase() + pname.substring(1) + "WithSameValue(other));");
 
 			fields.stream().map(f -> "    m." + f.getFieldName() + "(org.hamcrest.Matchers.is(other."
 					+ f.getFieldAccessor() + "));").forEach(wjfo::println);
 			wjfo.println("    return m;");
 			wjfo.println("  }");
 
-			factories.append("  default " + fullGeneric + " " + packageName + "." + outputSimpleName + "."
-					+ shortClassName + "Matcher" + generic + " " + methodShortClassName + "WithSameValue(" + packageName
-					+ "." + shortClassName + " " + generic + " other)" + " {").append("\n");
+			factories
+					.append("  default " + fullGeneric + " " + packageName + "." + outputSimpleName + "."
+							+ shortClassName + "Matcher" + addNoParentToGeneric(generic) + " " + methodShortClassName
+							+ "WithSameValue(" + packageName + "." + shortClassName + " " + generic + " other)" + " {")
+					.append("\n");
 			factories.append("    return " + packageName + "." + outputSimpleName + "." + methodShortClassName
 					+ "WithSameValue(other);").append("\n");
 			factories.append("  }").append("\n");
@@ -456,26 +504,43 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
 	private String generateMethodReturn(List<FieldDescription> fields, String fullClassName, String shortClassName,
 			String generic) {
-		if (fields.size() == 1) {
-			return "org.hamcrest.Matcher<" + fullClassName + generic + "> ";
-		} else {
-			return shortClassName + "Matcher" + generic + " ";
-		}
+		return shortClassName + "Matcher" + addParentToGeneric(generic) + " ";
 	}
 
 	private void generatePrivateImplementation(TypeElement te, Name inputClassName, String shortClassName,
 			boolean hasParent, String generic, String fullGeneric, PrintWriter wjfo, List<FieldDescription> fields) {
-		wjfo.println("  /* package protected */ static class " + shortClassName + "MatcherImpl" + fullGeneric
-				+ " extends org.hamcrest.TypeSafeDiagnosingMatcher<" + inputClassName.toString() + generic
-				+ "> implements " + shortClassName + "Matcher" + generic + " {");
+		wjfo.println("  /* package protected */ static class " + shortClassName + "MatcherImpl"
+				+ addParentToGeneric(fullGeneric) + " extends org.hamcrest.TypeSafeDiagnosingMatcher<"
+				+ inputClassName.toString() + generic + "> implements " + shortClassName + "Matcher"
+				+ addParentToGeneric(generic) + " {");
 		fields.stream().map(f -> "    private " + f.getMethodFieldName() + "Matcher " + f.getFieldName() + " = new "
 				+ f.getMethodFieldName() + "Matcher(org.hamcrest.Matchers.anything());").forEach(wjfo::println);
+		wjfo.println("    private final _PARENT _parentBuilder;");
 		if (hasParent) {
-			wjfo.println("    private final SuperClassMatcher parent;");
+			wjfo.println("    private final SuperClassMatcher _parent;");
 			wjfo.println();
 			wjfo.println("    public " + shortClassName + "MatcherImpl(org.hamcrest.Matcher<? super "
 					+ te.getSuperclass().toString() + "> parent) {");
-			wjfo.println("      this.parent=new SuperClassMatcher(parent);");
+			wjfo.println("      this._parent=new SuperClassMatcher(parent);");
+			wjfo.println("      this._parentBuilder=null;");
+			wjfo.println("    }");
+			wjfo.println();
+			wjfo.println();
+			wjfo.println("    public " + shortClassName + "MatcherImpl(org.hamcrest.Matcher<? super "
+					+ te.getSuperclass().toString() + "> parent,_PARENT parentBuilder) {");
+			wjfo.println("      this._parent=new SuperClassMatcher(parent);");
+			wjfo.println("      this._parentBuilder=parentBuilder;");
+			wjfo.println("    }");
+			wjfo.println();
+		} else {
+			wjfo.println();
+			wjfo.println("    public " + shortClassName + "MatcherImpl() {");
+			wjfo.println("      this._parentBuilder=null;");
+			wjfo.println("    }");
+			wjfo.println();
+			wjfo.println();
+			wjfo.println("    public " + shortClassName + "MatcherImpl(_PARENT parentBuilder) {");
+			wjfo.println("      this._parentBuilder=parentBuilder;");
 			wjfo.println("    }");
 			wjfo.println();
 		}
@@ -490,9 +555,9 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				+ " actual, org.hamcrest.Description mismatchDescription) {");
 		wjfo.println("      boolean result=true;");
 		if (hasParent) {
-			wjfo.println("      if(!parent.matches(actual)) {");
+			wjfo.println("      if(!_parent.matches(actual)) {");
 			wjfo.println(
-					"        mismatchDescription.appendText(\"[\"); parent.describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");");
+					"        mismatchDescription.appendText(\"[\"); _parent.describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");");
 			wjfo.println("        result=false;");
 			wjfo.println("      }");
 		}
@@ -510,13 +575,34 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		wjfo.println("    public void describeTo(org.hamcrest.Description description) {");
 		wjfo.println("        description.appendText(\"an instance of " + inputClassName + " with\\n\");");
 		if (hasParent) {
-			wjfo.println("        description.appendText(\"[\").appendDescriptionOf(parent).appendText(\"]\\n\");");
+			wjfo.println("        description.appendText(\"[\").appendDescriptionOf(_parent).appendText(\"]\\n\");");
 		}
 		fields.stream().map(f -> "        description.appendText(\"[\").appendDescriptionOf(" + f.getFieldName()
 				+ ").appendText(\"]\\n\");").forEach(wjfo::println);
 		wjfo.println("    }");
+		wjfo.println();
+		wjfo.println("    @Override");
+		wjfo.println("    public _PARENT end() {");
+		wjfo.println("      return _parentBuilder;");
+		wjfo.println("    }");
 
 		wjfo.println("  }");
+	}
+
+	private String addParentToGeneric(String generic) {
+		if ("".equals(generic)) {
+			return "<_PARENT>";
+		} else {
+			return generic.replaceFirst("<", "<_PARENT,");
+		}
+	}
+
+	private String addNoParentToGeneric(String generic) {
+		if ("".equals(generic)) {
+			return "<Void>";
+		} else {
+			return generic.replaceFirst("<", "<Void,");
+		}
 	}
 
 	private void generatePublicInterface(Name inputClassName, String shortClassName, String generic, String fullGeneric,
@@ -524,12 +610,23 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		wjfo.println("  /**");
 		wjfo.println("   * DSL interface for matcher on {@link " + inputClassName + " " + shortClassName + "}.");
 		wjfo.print(extractParamFromJavadoc(elementsUtils.getDocComment(te)));
+		wjfo.println(
+				"   * @param <_PARENT> used to reference, if necessary, a parent for this builder. By default Void is used an indicate no parent builder");
 		wjfo.println("   */");
-		wjfo.println("  public static interface " + shortClassName + "Matcher" + fullGeneric
+		wjfo.println("  public static interface " + shortClassName + "Matcher" + addParentToGeneric(fullGeneric)
 				+ " extends org.hamcrest.Matcher<" + inputClassName.toString() + generic + "> {");
 		String returnMethod = generateMethodReturn(fields, inputClassName.toString(), shortClassName, generic);
 		wjfo.println(fields.stream().map(f -> f.getDslInterface(inputClassName.toString(), returnMethod, "    "))
 				.collect(Collectors.joining("\n")));
+		wjfo.println();
+		wjfo.println("    /**");
+		wjfo.println("     * Method that return the parent builder.");
+		wjfo.println("     * <p>");
+		wjfo.println(
+				"     * <b>This method only works in the contexte of a parent builder. If the real type is Void, then nothing will be returned.</b>");
+		wjfo.println("     * @return the parent builder or null if not applicable");
+		wjfo.println("     */");
+		wjfo.println("    _PARENT end();");
 		wjfo.println("  }");
 	}
 
