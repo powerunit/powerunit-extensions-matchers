@@ -34,6 +34,8 @@ public class GeneratedMatcherField {
 
 	private String fieldAccessor;
 
+	private String genericDetails;
+
 	public String getFieldName() {
 		return fieldName;
 	}
@@ -64,6 +66,14 @@ public class GeneratedMatcherField {
 
 	public void setFieldAccessor(String fieldAccessor) {
 		this.fieldAccessor = fieldAccessor;
+	}
+
+	public String getGenericDetails() {
+		return genericDetails;
+	}
+
+	public void setGenericDetails(String genericDetails) {
+		this.genericDetails = genericDetails;
 	}
 
 }

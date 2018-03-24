@@ -612,6 +612,7 @@ public class FieldDescription {
 		gmf.setFieldName(fieldName);
 		gmf.setFieldCategory(type.name());
 		gmf.setFieldAccessor(fieldAccessor);
+		gmf.setGenericDetails(generic);
 		return gmf;
 	}
 
