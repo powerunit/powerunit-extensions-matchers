@@ -161,8 +161,17 @@ public class ProvideMatchersAnnotatedElementMirror {
 		ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor = new ProvidesMatchersSubElementVisitor(
 				elementsUtils, typesUtils, messageUtils, isInSameRound);
 		List<FieldDescription> fields = typeElementForClassAnnotatedWithProvideMatcher.getEnclosedElements().stream()
-				.map(ie -> ie.accept(providesMatchersSubElementVisitor, this)).filter(Optional::isPresent)
-				.map(t -> t.get()).collect(Collectors.toList());
+				.map(ie -> ie.accept(providesMatchersSubElementVisitor,
+						this))
+				.filter(Optional::isPresent)
+				.map(t -> t
+						.get())
+				.collect(
+						Collectors.collectingAndThen(
+								Collectors.groupingBy(t -> t.getFieldName(),
+										Collectors.reducing(null,
+												(v1, v2) -> v1 == null ? v2 : v1.isIgnore() ? v1 : v2)),
+								c -> c.values().stream().collect(Collectors.toList())));
 		wjfo.println(fields.stream().map(f -> f.getMatcherForField("  ")).collect(Collectors.joining("\n")));
 		if (hasParent) {
 			wjfo.println("  private static class SuperClassMatcher" + fullGeneric
@@ -227,7 +236,8 @@ public class ProvideMatchersAnnotatedElementMirror {
 				+ " extends org.hamcrest.Matcher<" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + generic
 				+ ">," + simpleNameOfGeneratedInterfaceMatcher + "BuildSyntaxicSugar " + generic + ","
 				+ simpleNameOfGeneratedInterfaceMatcher + "EndSyntaxicSugar " + genericParent + " {");
-		wjfo.println(fields.stream().map(f -> f.getDslInterface("    ")).collect(Collectors.joining("\n")));
+		wjfo.println(fields.stream().filter(FieldDescription::isNotIgnore).map(f -> f.getDslInterface("    "))
+				.collect(Collectors.joining("\n")));
 		wjfo.println("  }");
 
 	}
@@ -237,8 +247,15 @@ public class ProvideMatchersAnnotatedElementMirror {
 				+ fullGenericParent + " extends org.hamcrest.TypeSafeDiagnosingMatcher<"
 				+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + generic + "> implements "
 				+ simpleNameOfGeneratedInterfaceMatcher + genericParent + " {");
-		fields.stream().map(f -> "    private " + f.getMethodFieldName() + "Matcher " + f.getFieldName() + " = new "
-				+ f.getMethodFieldName() + "Matcher(org.hamcrest.Matchers.anything());").forEach(wjfo::println);
+		fields.stream().filter(FieldDescription::isNotIgnore)
+				.map(f -> "    private " + f.getMethodFieldName() + "Matcher " + f.getFieldName() + " = new "
+						+ f.getMethodFieldName() + "Matcher(org.hamcrest.Matchers.anything());")
+				.forEach(wjfo::println);
+		fields.stream().filter(FieldDescription::isIgnore)
+				.map(f -> "    private " + f.getMethodFieldName() + "Matcher " + f.getFieldName() + " = new "
+						+ f.getMethodFieldName()
+						+ "Matcher(org.hamcrest.Matchers.anything(\"This field is ignored\"));")
+				.forEach(wjfo::println);
 		wjfo.println("    private final _PARENT _parentBuilder;");
 		if (hasParent) {
 			wjfo.println("    private SuperClassMatcher _parent;");
@@ -270,7 +287,8 @@ public class ProvideMatchersAnnotatedElementMirror {
 			wjfo.println();
 		}
 
-		wjfo.println(fields.stream().map(f -> f.getImplementationInterface("    ")).collect(Collectors.joining("\n")));
+		wjfo.println(fields.stream().filter(FieldDescription::isNotIgnore)
+				.map(f -> f.getImplementationInterface("    ")).collect(Collectors.joining("\n")));
 
 		wjfo.println("    @Override");
 		wjfo.println("    protected boolean matchesSafely(" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
@@ -445,7 +463,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 		wjfo.println("    " + simpleNameOfGeneratedInterfaceMatcher + genericNoParent + " m=new "
 				+ simpleNameOfGeneratedImplementationMatcher + genericNoParent + "();");
 
-		fields.stream().map(
+		fields.stream().filter(FieldDescription::isNotIgnore).map(
 				f -> "    m." + f.getFieldName() + "(org.hamcrest.Matchers.is(other." + f.getFieldAccessor() + "));")
 				.forEach(wjfo::println);
 		wjfo.println("    return m;");
@@ -493,7 +511,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 				+ parentMirror.fullyQualifiedNameOfGeneratedClass + "." + parentMirror.methodShortClassName
 				+ "WithSameValue(other));");
 
-		fields.stream().map(
+		fields.stream().filter(FieldDescription::isNotIgnore).map(
 				f -> "    m." + f.getFieldName() + "(org.hamcrest.Matchers.is(other." + f.getFieldAccessor() + "));")
 				.forEach(wjfo::println);
 		wjfo.println("    return m;");

@@ -31,6 +31,7 @@
 			<excludes>
 				<exclude>**/provideprocessor/**</exclude>
 				<exclude>**/ProvideMatchers*</exclude>
+				<exclude>**/*Matcher*</exclude>
 				<exclude>META-INF/services/javax.annotation.processing.Processor</exclude>
 			</excludes>
 		</fileSet>
