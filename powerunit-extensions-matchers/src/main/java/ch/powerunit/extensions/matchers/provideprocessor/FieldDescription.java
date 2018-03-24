@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 
@@ -46,23 +45,19 @@ public class FieldDescription {
 	private final Type type;
 	private final List<Function<String, String>> implGenerator;
 	private final List<Function<String, String>> dslGenerator;
-	private final boolean isInSameRound;
 	private final Elements elementsUtils;
-	private final Types typesUtils;
 	private final ProvideMatchersAnnotatedElementMirror containingElementMirror;
 
 	public FieldDescription(ProvideMatchersAnnotatedElementMirror containingElementMirror, String fieldAccessor,
 			String fieldName, String methodFieldName, String fieldType, Type type, boolean isInSameRound,
-			Elements elementsUtils, Types typesUtils) {
+			Elements elementsUtils) {
 		this.containingElementMirror = containingElementMirror;
 		this.fieldAccessor = fieldAccessor;
 		this.fieldName = fieldName;
 		this.methodFieldName = methodFieldName;
 		this.fieldType = fieldType;
 		this.type = type;
-		this.isInSameRound = isInSameRound;
 		this.elementsUtils = elementsUtils;
-		this.typesUtils = typesUtils;
 		if (isInSameRound) {
 			TypeElement typeElement = elementsUtils.getTypeElement(fieldType);
 			if (typeElement != null) {
@@ -91,6 +86,11 @@ public class FieldDescription {
 		List<Function<String, String>> tmp2 = new ArrayList<>();
 		tmp1.add(this::getImplementationForDefault);
 		tmp2.add(this::getDslForDefault);
+		if (fullyQualifiedNameMatcherInSameRound != null
+				&& elementsUtils.getTypeElement(fieldType).getTypeParameters().isEmpty()) {
+			tmp1.add(this::getImplementationForDefaultChaining);
+			tmp2.add(this::getDslForDefaultChaining);
+		}
 		switch (type) {
 		case ARRAY:
 			tmp1.add(this::getImplementationForArray);
@@ -150,26 +150,26 @@ public class FieldDescription {
 		sb.append(prefix).append("  return " + fieldName + "(org.hamcrest.Matchers.is(value));").append("\n");
 		sb.append(prefix).append("}").append("\n");
 
-		if (fullyQualifiedNameMatcherInSameRound != null) {
-			TypeElement targetElement = elementsUtils.getTypeElement(fieldType);
-			if (targetElement.getTypeParameters().isEmpty()) {
-				String name = targetElement.getSimpleName().toString();
-				String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
-				sb.append(prefix).append("@Override").append("\n");
-				sb.append(prefix)
-						.append("public " + fullyQualifiedNameMatcherInSameRound + "." + name + "Matcher" + "<"
-								+ containingElementMirror.getDefaultReturnMethod() + "> " + fieldName + "With() {")
-						.append("\n");
-				sb.append(prefix)
-						.append("  " + fullyQualifiedNameMatcherInSameRound + "." + name + "Matcher tmp = "
-								+ fullyQualifiedNameMatcherInSameRound + "." + lname + "WithParent(this);")
-						.append("\n");
-				sb.append(prefix).append("  " + fieldName + "(tmp);").append("\n");
-				sb.append(prefix).append("  return tmp;").append("\n");
-				sb.append(prefix).append("}").append("\n");
-			}
+		sb.append(prefix).append("\n");
 
-		}
+		return sb.toString();
+	}
+
+	private String getImplementationForDefaultChaining(String prefix) {
+		StringBuilder sb = new StringBuilder();
+		TypeElement targetElement = elementsUtils.getTypeElement(fieldType);
+		String name = targetElement.getSimpleName().toString();
+		String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
+		sb.append(prefix).append("@Override").append("\n");
+		sb.append(prefix)
+				.append("public " + fullyQualifiedNameMatcherInSameRound + "." + name + "Matcher" + "<"
+						+ containingElementMirror.getDefaultReturnMethod() + "> " + fieldName + "With() {")
+				.append("\n");
+		sb.append(prefix).append("  " + fullyQualifiedNameMatcherInSameRound + "." + name + "Matcher tmp = "
+				+ fullyQualifiedNameMatcherInSameRound + "." + lname + "WithParent(this);").append("\n");
+		sb.append(prefix).append("  " + fieldName + "(tmp);").append("\n");
+		sb.append(prefix).append("  return tmp;").append("\n");
+		sb.append(prefix).append("}").append("\n");
 		sb.append(prefix).append("\n");
 
 		return sb.toString();
@@ -335,20 +335,17 @@ public class FieldDescription {
 		sb.append(prefix).append(containingElementMirror.getDefaultReturnMethod()).append(fieldName)
 				.append("(" + fieldType + " value);").append("\n");
 
-		if (fullyQualifiedNameMatcherInSameRound != null) {
-			TypeElement targetElement = elementsUtils.getTypeElement(fieldType);
-			if (targetElement.getTypeParameters().isEmpty()) {
-				String name = targetElement.getSimpleName().toString();
-				String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
-				sb.append(getJavaDocFor(prefix, Optional.of("by starting a matcher for this field"), Optional.empty(),
-						Optional.empty()));
-				sb.append(prefix)
-						.append(fullyQualifiedNameMatcherInSameRound + "." + name + "Matcher" + "<"
-								+ containingElementMirror.getDefaultReturnMethod() + "> " + fieldName + "With();")
-						.append("\n");
-			}
+		return sb.toString();
+	}
 
-		}
+	public String getDslForDefaultChaining(String prefix) {
+		StringBuilder sb = new StringBuilder();
+		TypeElement targetElement = elementsUtils.getTypeElement(fieldType);
+		String name = targetElement.getSimpleName().toString();
+		sb.append(getJavaDocFor(prefix, Optional.of("by starting a matcher for this field"), Optional.empty(),
+				Optional.empty()));
+		sb.append(prefix).append(fullyQualifiedNameMatcherInSameRound + "." + name + "Matcher" + "<"
+				+ containingElementMirror.getDefaultReturnMethod() + "> " + fieldName + "With();").append("\n");
 
 		return sb.toString();
 	}
