@@ -245,6 +245,22 @@ public class FieldDescription {
 				.append("  return " + fieldName + "((org.hamcrest.Matcher)org.hamcrest.Matchers.emptyIterable());")
 				.append("\n");
 		sb.append(prefix).append("}").append("\n");
+
+		if (!"".equals(generic)) {
+			sb.append(prefix).append("@Override").append("\n");
+			sb.append(prefix).append("public " + containingElementMirror.getDefaultReturnMethod() + " " + fieldName
+					+ "Contains(" + generic + "... elements) {").append("\n");
+			sb.append(prefix).append("  return " + fieldName + "(org.hamcrest.Matchers.contains(elements));")
+					.append("\n");
+			sb.append(prefix).append("}").append("\n");
+
+			sb.append(prefix).append("@Override").append("\n");
+			sb.append(prefix).append("public " + containingElementMirror.getDefaultReturnMethod() + " " + fieldName
+					+ "Contains(org.hamcrest.Matcher<" + generic + ">... matchersOnElements) {").append("\n");
+			sb.append(prefix).append("  return " + fieldName + "(org.hamcrest.Matchers.contains(matchersOnElements));")
+					.append("\n");
+			sb.append(prefix).append("}").append("\n");
+		}
 		return sb.toString();
 	}
 
@@ -428,6 +444,21 @@ public class FieldDescription {
 		sb.append(getJavaDocFor(prefix, Optional.of("that the iterable is empty"), Optional.empty(), Optional.empty()));
 		sb.append(prefix).append(containingElementMirror.getDefaultReturnMethod()).append(fieldName)
 				.append("IsEmptyIterable();").append("\n");
+
+		if (!"".equals(generic)) {
+			sb.append(getJavaDocFor(prefix, Optional.of("that the iterable contains the received elements"),
+					Optional.of("elements the elements"),
+					Optional.of("org.hamcrest.Matchers#contains(java.lang.Object[])")));
+			sb.append(prefix).append(containingElementMirror.getDefaultReturnMethod() + " " + fieldName + "Contains("
+					+ generic + "... elements);").append("\n");
+
+			sb.append(getJavaDocFor(prefix,
+					Optional.of("that the iterable contains the received elements, using matchers"),
+					Optional.of("matchersOnElements the matchers on the elements"),
+					Optional.of("org.hamcrest.Matchers#contains(org.hamcrest.Matcher[])")));
+			sb.append(prefix).append(containingElementMirror.getDefaultReturnMethod() + " " + fieldName
+					+ "Contains(org.hamcrest.Matcher<" + generic + ">... matchersOnElements);").append("\n");
+		}
 
 		return sb.toString();
 	}
