@@ -253,8 +253,8 @@ public class ProvideMatchersAnnotatedElementMirror {
 				.forEach(wjfo::println);
 		fields.stream().filter(FieldDescription::isIgnore)
 				.map(f -> "    private " + f.getMethodFieldName() + "Matcher " + f.getFieldName() + " = new "
-						+ f.getMethodFieldName()
-						+ "Matcher(org.hamcrest.Matchers.anything(\"This field is ignored\"));")
+						+ f.getMethodFieldName() + "Matcher(org.hamcrest.Matchers.anything(\"This field is ignored \"+"
+						+ toJavaSyntax(f.getDescriptionForIgnoreIfApplicable()) + "));")
 				.forEach(wjfo::println);
 		wjfo.println("    private final _PARENT _parentBuilder;");
 		if (hasParent) {

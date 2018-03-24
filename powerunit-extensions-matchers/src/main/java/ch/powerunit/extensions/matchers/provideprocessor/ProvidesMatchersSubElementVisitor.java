@@ -225,7 +225,7 @@ public class ProvidesMatchersSubElementVisitor
 				return Optional.of(new FieldDescription(p, fieldName, fieldName,
 						fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1), fieldType, type,
 						isInSameRound.test(typesUtils.asElement(e.asType())), elementsUtils,
-						e.getAnnotation(IgnoreInMatcher.class) != null));
+						e.getAnnotation(IgnoreInMatcher.class) != null,e));
 			}
 		}
 		return Optional.empty();
@@ -255,7 +255,7 @@ public class ProvidesMatchersSubElementVisitor
 			Type type = parseType(e.getReturnType());
 			return new FieldDescription(p, methodName + "()", fieldName, fieldNameDirect, fieldType, type,
 					isInSameRound.test(typesUtils.asElement(e.asType())), elementsUtils,
-					e.getAnnotation(IgnoreInMatcher.class) != null);
+					e.getAnnotation(IgnoreInMatcher.class) != null,e);
 		}
 		return null;
 	}
