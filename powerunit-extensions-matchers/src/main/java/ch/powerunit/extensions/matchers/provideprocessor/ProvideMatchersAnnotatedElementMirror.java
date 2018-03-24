@@ -187,25 +187,19 @@ public class ProvideMatchersAnnotatedElementMirror {
 	}
 
 	private void generatePublicInterface(PrintWriter wjfo, List<FieldDescription> fields) {
-		wjfo.println("  /**");
-		wjfo.println("   * DSL interface for matcher on {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
-				+ " " + simpleNameOfClassAnnotatedWithProvideMatcher + "}.");
-		wjfo.print(paramJavadoc);
-		wjfo.println(
-				"   * @param <_PARENT> used to reference, if necessary, a parent for this builder. By default Void is used an indicate no parent builder");
-		wjfo.println("   */");
+		wjfo.println(generateJavaDoc("  ",
+				"DSL interface for matcher on {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
+						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}",
+				Optional.empty(), Optional.empty(), Optional.empty(), true, true));
 		wjfo.println("  public static interface " + simpleNameOfGeneratedInterfaceMatcher + fullGenericParent
 				+ " extends org.hamcrest.Matcher<" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + generic
 				+ "> {");
 		wjfo.println(fields.stream().map(f -> f.getDslInterface("    ")).collect(Collectors.joining("\n")));
 		wjfo.println();
-		wjfo.println("    /**");
-		wjfo.println("     * Method that return the parent builder.");
-		wjfo.println("     * <p>");
-		wjfo.println(
-				"     * <b>This method only works in the contexte of a parent builder. If the real type is Void, then nothing will be returned.</b>");
-		wjfo.println("     * @return the parent builder or null if not applicable");
-		wjfo.println("     */");
+		wjfo.println(generateJavaDoc("  ", "Method that return the parent builder",
+				Optional.of(
+						"<b>This method only works in the contexte of a parent builder. If the real type is Void, then nothing will be returned.</b>"),
+				Optional.empty(), Optional.of("the parent builder or null if not applicable"), false, false));
 		wjfo.println("    _PARENT end();");
 		wjfo.println("  }");
 	}
@@ -316,19 +310,16 @@ public class ProvideMatchersAnnotatedElementMirror {
 		StringBuilder javadoc = new StringBuilder();
 		String methodName = fullGeneric + " " + simpleNameOfGeneratedInterfaceMatcher + genericNoParent + " "
 				+ methodShortClassName + "With()";
-		javadoc.append("  /**").append("\n");
-		javadoc.append("   * Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
-				+ " " + simpleNameOfClassAnnotatedWithProvideMatcher + "}.").append("\n");
-		javadoc.append("   * <p>").append("\n");
-		javadoc.append(
-				"   * The returned builder (which is also a Matcher), at this point accepts any object that is a {@link "
-						+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}.")
-				.append("\n");
-		javadoc.append("   * ").append("\n");
-		javadoc.append("   * @return the DSL matcher.").append("\n");
-		javadoc.append(paramJavadoc);
-		javadoc.append("   */").append("\n");
+
+		javadoc.append(generateJavaDoc("  ",
+				"Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
+						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}",
+				Optional.of(
+						"The returned builder (which is also a Matcher), at this point accepts any object that is a {@link "
+								+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
+								+ simpleNameOfClassAnnotatedWithProvideMatcher + "}."),
+				Optional.empty(), Optional.of("the DSL matcher"), true, false));
+
 		wjfo.println(javadoc.toString());
 		factories.append(javadoc.toString());
 
@@ -355,21 +346,15 @@ public class ProvideMatchersAnnotatedElementMirror {
 		StringBuilder javadoc = new StringBuilder();
 		String methodName = fullGenericParent + " " + simpleNameOfGeneratedInterfaceMatcher + genericParent + " "
 				+ methodShortClassName + "WithParent(_PARENT parentBuilder)";
-		javadoc.append("  /**").append("\n");
-		javadoc.append("   * Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
-				+ " " + simpleNameOfClassAnnotatedWithProvideMatcher + "}.").append("\n");
-		javadoc.append("   * <p>").append("\n");
-		javadoc.append(
-				"   * The returned builder (which is also a Matcher), at this point accepts any object that is a {@link "
-						+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}.")
-				.append("\n");
-		javadoc.append("   * ").append("\n");
-		javadoc.append("   * @param parentBuilder the parentBuilder.").append("\n");
-		javadoc.append("   * @return the DSL matcher.").append("\n");
-		javadoc.append(paramJavadoc);
-		javadoc.append("   * @param <_PARENT> The parent builder").append("\n");
-		javadoc.append("   */").append("\n");
+		javadoc.append(generateJavaDoc("  ",
+				"Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
+						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}",
+				Optional.of(
+						"The returned builder (which is also a Matcher), at this point accepts any object that is a {@link "
+								+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
+								+ simpleNameOfClassAnnotatedWithProvideMatcher + "}."),
+				Optional.of("parentBuilder the parentBuilder."), Optional.of("the DSL matcher"), true, true));
+
 		wjfo.println(javadoc.toString());
 
 		wjfo.println("  public static " + methodName + " {");
@@ -387,14 +372,12 @@ public class ProvideMatchersAnnotatedElementMirror {
 	private String generateParentDSLStarter(PrintWriter wjfo) {
 		StringBuilder factories = new StringBuilder();
 		StringBuilder javadoc = new StringBuilder();
-		javadoc.append("  /**").append("\n");
-		javadoc.append("   * Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
-				+ " " + simpleNameOfClassAnnotatedWithProvideMatcher + "}.").append("\n");
-		javadoc.append("   * ").append("\n");
-		javadoc.append("   * @param matcherOnParent the matcher on the parent data.").append("\n");
-		javadoc.append("   * @return the DSL matcher.").append("\n");
-		javadoc.append(paramJavadoc);
-		javadoc.append("   */").append("\n");
+		javadoc.append(generateJavaDoc("  ",
+				"Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
+						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}",
+				Optional.empty(), Optional.of("matcherOnParent the matcher on the parent data."),
+				Optional.of("the DSL matcher"), true, false));
+
 		wjfo.println(javadoc.toString());
 		factories.append(javadoc.toString());
 
@@ -420,14 +403,11 @@ public class ProvideMatchersAnnotatedElementMirror {
 	private String generateNoParentDSLStarter(PrintWriter wjfo, List<FieldDescription> fields) {
 		StringBuilder factories = new StringBuilder();
 		StringBuilder javadoc = new StringBuilder();
-		javadoc.append("  /**").append("\n");
-		javadoc.append("   * Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
-				+ " " + simpleNameOfClassAnnotatedWithProvideMatcher + "}.").append("\n");
-		javadoc.append("   * ").append("\n");
-		javadoc.append("   * @param other the other object to be used as a reference.").append("\n");
-		javadoc.append("   * @return the DSL matcher.").append("\n");
-		javadoc.append(paramJavadoc);
-		javadoc.append("   */").append("\n");
+		javadoc.append(generateJavaDoc("  ",
+				"Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
+						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}",
+				Optional.empty(), Optional.of("other the other object to be used as a reference."),
+				Optional.of("the DSL matcher"), true, false));
 		wjfo.println(javadoc.toString());
 		factories.append(javadoc.toString());
 		wjfo.println("  @org.hamcrest.Factory");
@@ -469,14 +449,11 @@ public class ProvideMatchersAnnotatedElementMirror {
 			ProvideMatchersAnnotatedElementMirror parentMirror) {
 		StringBuilder factories = new StringBuilder();
 		StringBuilder javadoc = new StringBuilder();
-		javadoc.append("  /**").append("\n");
-		javadoc.append("   * Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
-				+ " " + simpleNameOfClassAnnotatedWithProvideMatcher + "}.").append("\n");
-		javadoc.append("   * ").append("\n");
-		javadoc.append("   * @param other the other object to be used as a reference.").append("\n");
-		javadoc.append("   * @return the DSL matcher.").append("\n");
-		javadoc.append(paramJavadoc);
-		javadoc.append("   */").append("\n");
+		javadoc.append(generateJavaDoc("  ",
+				"Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
+						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}",
+				Optional.empty(), Optional.of("other the other object to be used as a reference."),
+				Optional.of("the DSL matcher"), true, false));
 		wjfo.println(javadoc.toString());
 		factories.append(javadoc.toString());
 		wjfo.println("  @org.hamcrest.Factory");
@@ -508,13 +485,11 @@ public class ProvideMatchersAnnotatedElementMirror {
 			ProvideMatchersAnnotatedElementMirror parentMirror) {
 		StringBuilder factories = new StringBuilder();
 		StringBuilder javadoc = new StringBuilder();
-		javadoc.append("  /**").append("\n");
-		javadoc.append("   * Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
-				+ " " + simpleNameOfClassAnnotatedWithProvideMatcher + "}.").append("\n");
-		javadoc.append("   * ").append("\n");
-		javadoc.append("   * @return the DSL matcher.").append("\n");
-		javadoc.append(paramJavadoc);
-		javadoc.append("   */").append("\n");
+		javadoc.append(generateJavaDoc("  ",
+				"Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
+						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}",
+				Optional.empty(), Optional.empty(), Optional.of("the DSL matcher"), true, false));
+
 		wjfo.println(javadoc.toString());
 		factories.append(javadoc.toString());
 		wjfo.println("  @org.hamcrest.Factory");
@@ -540,6 +515,27 @@ public class ProvideMatchersAnnotatedElementMirror {
 				.append("\n");
 		factories.append("  }").append("\n");
 		return factories.toString();
+	}
+
+	private String generateJavaDoc(String prefix, String description, Optional<String> moreDetails,
+			Optional<String> param, Optional<String> returnDescription, boolean withParam, boolean withParent) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(prefix).append("/**").append("\n");
+		sb.append(prefix).append(" * ").append(description).append(".\n");
+		moreDetails.ifPresent(
+				t -> sb.append(prefix).append(" * <p>\n").append(prefix).append(" * ").append(t).append("\n"));
+		param.ifPresent(t -> sb.append(prefix).append(" * @param ").append(t).append("\n"));
+		if (withParam) {
+			sb.append(prefix).append(paramJavadoc.replaceAll("\\R", "\n" + prefix)).append(" * \n");
+		}
+		if (withParent) {
+			sb.append(prefix)
+					.append(" * @param <_PARENT> used to reference, if necessary, a parent for this builder. By default Void is used an indicate no parent builder")
+					.append("\n");
+		}
+		returnDescription.ifPresent(t -> sb.append(prefix).append(" * @return ").append(t).append("\n"));
+		sb.append(prefix).append(" */").append("\n");
+		return sb.toString();
 	}
 
 	private static String toJavaSyntax(String unformatted) {
@@ -573,7 +569,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 		}
 		boolean insideParam = false;
 		StringBuilder sb = new StringBuilder();
-		sb.append("   * \n");
+		sb.append(" * \n");
 		for (String line : docComment.split("\\R")) {
 			if (insideParam && line.matches("^\\s*@.*$")) {
 				insideParam = false;
@@ -582,7 +578,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 				insideParam = true;
 			}
 			if (insideParam) {
-				sb.append("   *" + line).append("\n");
+				sb.append(" *" + line).append("\n");
 			}
 		}
 		return sb.toString();
