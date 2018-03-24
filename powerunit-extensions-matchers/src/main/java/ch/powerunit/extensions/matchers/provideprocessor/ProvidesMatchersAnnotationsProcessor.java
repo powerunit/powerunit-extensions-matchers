@@ -34,8 +34,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.Filer;
-import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -45,15 +43,14 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
@@ -89,49 +86,50 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	 */
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-		Elements elementsUtils = processingEnv.getElementUtils();
-		Filer filerUtils = processingEnv.getFiler();
-		Types typesUtils = processingEnv.getTypeUtils();
-		Messager messageUtils = processingEnv.getMessager();
-		TypeElement provideMatchersTE = elementsUtils
+		TypeElement provideMatchersTE = processingEnv.getElementUtils()
 				.getTypeElement("ch.powerunit.extensions.matchers.ProvideMatchers");
-		TypeElement objectTE = elementsUtils.getTypeElement("java.lang.Object");
+		TypeElement objectTE = processingEnv.getElementUtils().getTypeElement("java.lang.Object");
 
 		if (!roundEnv.processingOver()) {
-			processAnnotatedElements(roundEnv, elementsUtils, filerUtils, typesUtils, messageUtils, provideMatchersTE,
-					objectTE);
+			processAnnotatedElements(roundEnv, provideMatchersTE, objectTE);
 
 		} else {
-			processReport(filerUtils, messageUtils);
+			processReport();
 			if (factory != null) {
-				processFactory(filerUtils, messageUtils);
+				processFactory();
 			}
 		}
 		return true;
 	}
 
-	private void processReport(Filer filerUtils, Messager messageUtils) {
+	private void processReport() {
 		try {
-			FileObject jfo = filerUtils.createResource(StandardLocation.SOURCE_OUTPUT, "",
-					"META-INF/" + getClass().getName() + "/matchers.xml");
+			FileObject jfo = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "",
+					"META-INF/" + getClass().getName() + "/matchers.xml",
+					allGeneratedMatchers.getGeneratedMatcher().stream()
+							.map(g -> g.getMirror().getTypeElementForClassAnnotatedWithProvideMatcher())
+							.collect(Collectors.toList()).toArray(new Element[0]));
 			try (OutputStream os = jfo.openOutputStream();) {
 				Marshaller m = JAXBContext.newInstance(GeneratedMatchers.class).createMarshaller();
 				m.setProperty("jaxb.formatted.output", true);
 				m.marshal(allGeneratedMatchers, os);
 			}
 		} catch (IOException | JAXBException e1) {
-			messageUtils.printMessage(Kind.MANDATORY_WARNING,
+			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
 					"Unable to create the file containing meta data about this generation, because of "
 							+ e1.getMessage());
 		}
 
 	}
 
-	private void processFactory(Filer filerUtils, Messager messageUtils) {
+	private void processFactory() {
 		try {
-			messageUtils.printMessage(Kind.NOTE,
+			processingEnv.getMessager().printMessage(Kind.NOTE,
 					"The interface `" + factory + "` will be generated as a factory interface.");
-			JavaFileObject jfo = filerUtils.createSourceFile(factory);
+			JavaFileObject jfo = processingEnv.getFiler().createSourceFile(factory,
+					allGeneratedMatchers.getGeneratedMatcher().stream()
+							.map(g -> g.getMirror().getTypeElementForClassAnnotatedWithProvideMatcher())
+							.collect(Collectors.toList()).toArray(new Element[0]));
 			try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
 				wjfo.println("package " + factory.replaceAll("\\.[^.]+$", "") + ";");
 				wjfo.println();
@@ -162,23 +160,24 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				wjfo.println("}");
 			}
 		} catch (IOException e1) {
-			messageUtils.printMessage(Kind.ERROR, "Unable to create the file containing the target class `" + factory
-					+ "`, because of " + e1.getMessage());
+			processingEnv.getMessager().printMessage(Kind.ERROR,
+					"Unable to create the file containing the target class `" + factory + "`, because of "
+							+ e1.getMessage());
 		}
 	}
 
-	private void processAnnotatedElements(RoundEnvironment roundEnv, Elements elementsUtils, Filer filerUtils,
-			Types typesUtils, Messager messageUtils, TypeElement provideMatchersTE, TypeElement objectTE) {
+	private void processAnnotatedElements(RoundEnvironment roundEnv, TypeElement provideMatchersTE,
+			TypeElement objectTE) {
 		Set<? extends Element> elementsWithPM = roundEnv.getElementsAnnotatedWith(ProvideMatchers.class);
 		Set<? extends Element> elementsWithIgnore = roundEnv.getElementsAnnotatedWith(IgnoreInMatcher.class);
 
 		ProvidesMatchersElementVisitor providesMatchersElementVisitor = new ProvidesMatchersElementVisitor(this,
-				elementsUtils, messageUtils, provideMatchersTE);
+				processingEnv, provideMatchersTE);
 		Map<String, ProvideMatchersAnnotatedElementMirror> alias = new HashMap<>();
 		elementsWithPM.stream().filter(e -> roundEnv.getRootElements().contains(e))
 				.map(e -> e.accept(providesMatchersElementVisitor, null)).filter(Optional::isPresent)
-				.map(t -> new ProvideMatchersAnnotatedElementMirror(t.get(), elementsUtils, filerUtils, typesUtils,
-						messageUtils, isInSameRound(elementsWithPM, typesUtils), (n) -> alias.get(n),
+				.map(t -> new ProvideMatchersAnnotatedElementMirror(t.get(), processingEnv,
+						isInSameRound(elementsWithPM, processingEnv.getTypeUtils()), (n) -> alias.get(n),
 						elementsWithIgnore))
 				.forEach(a -> alias.put(a.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher(), a));
 
@@ -187,13 +186,19 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		allGeneratedMatchers.getGeneratedMatcher().addAll(
 				alias.values().stream().map(ProvideMatchersAnnotatedElementMirror::asXml).collect(Collectors.toList()));
 		elementsWithIgnore.stream()
-				.forEach(e -> messageUtils.printMessage(Kind.MANDATORY_WARNING,
-						"Annotation @IgnoreInMatcher not supported at this location ; The surrounding class is not annotated with @ProvideMatchers",
-						e,
-						e.getAnnotationMirrors().stream()
-								.filter(a -> a.getAnnotationType().equals(elementsUtils
-										.getTypeElement(IgnoreInMatcher.class.getName().toString()).asType()))
-								.findAny().orElse(null)));
+				.forEach(
+						e -> processingEnv.getMessager()
+								.printMessage(Kind.MANDATORY_WARNING,
+										"Annotation @IgnoreInMatcher not supported at this location ; The surrounding class is not annotated with @ProvideMatchers",
+										e,
+										e.getAnnotationMirrors()
+												.stream().filter(
+														a -> a.getAnnotationType()
+																.equals(processingEnv.getElementUtils()
+																		.getTypeElement(IgnoreInMatcher.class.getName()
+																				.toString())
+																		.asType()))
+												.findAny().orElse(null)));
 	}
 
 	private Predicate<Element> isInSameRound(Set<? extends Element> elements, Types typesUtils) {

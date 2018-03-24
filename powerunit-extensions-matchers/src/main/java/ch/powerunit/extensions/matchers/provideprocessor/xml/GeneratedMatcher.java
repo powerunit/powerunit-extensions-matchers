@@ -23,16 +23,22 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import ch.powerunit.extensions.matchers.provideprocessor.ProvideMatchersAnnotatedElementMirror;
+
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType
 public class GeneratedMatcher {
 	private String fullyQualifiedNameInputClass;
-	
+
 	private String simpleNameInputClass;
-	
+
 	private String fullyQualifiedNameGeneratedClass;
-	
+
 	private String simpleNameGeneratedClass;
+
+	private String dslMethodNameStart;
+
+	private transient ProvideMatchersAnnotatedElementMirror mirror;
 
 	public String getFullyQualifiedNameInputClass() {
 		return fullyQualifiedNameInputClass;
@@ -65,5 +71,21 @@ public class GeneratedMatcher {
 	public void setSimpleNameGeneratedClass(String simpleNameGeneratedClass) {
 		this.simpleNameGeneratedClass = simpleNameGeneratedClass;
 	}
-	
+
+	public String getDslMethodNameStart() {
+		return dslMethodNameStart;
+	}
+
+	public void setDslMethodNameStart(String dslMethodNameStart) {
+		this.dslMethodNameStart = dslMethodNameStart;
+	}
+
+	public ProvideMatchersAnnotatedElementMirror getMirror() {
+		return mirror;
+	}
+
+	public void setMirror(ProvideMatchersAnnotatedElementMirror mirror) {
+		this.mirror = mirror;
+	}
+
 }

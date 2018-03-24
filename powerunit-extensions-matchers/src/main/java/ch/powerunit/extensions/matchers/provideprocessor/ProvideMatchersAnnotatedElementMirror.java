@@ -10,14 +10,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import javax.annotation.processing.Filer;
-import javax.annotation.processing.Messager;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
-import javax.tools.JavaFileObject;
 import javax.tools.Diagnostic.Kind;
+import javax.tools.JavaFileObject;
 
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
@@ -25,10 +22,7 @@ import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 public class ProvideMatchersAnnotatedElementMirror {
 
 	private final TypeElement typeElementForClassAnnotatedWithProvideMatcher;
-	private final Elements elementsUtils;
-	private final Filer filerUtils;
-	private final Types typesUtils;
-	private final Messager messageUtils;
+	private final ProcessingEnvironment processingEnv;
 	private final TypeElement objectTE;
 	private final Predicate<Element> isInSameRound;
 	private final String fullyQualifiedNameOfClassAnnotatedWithProvideMatcher;
@@ -56,20 +50,17 @@ public class ProvideMatchersAnnotatedElementMirror {
 	private final String genericForChaining;
 	private final Set<? extends Element> elementsWithIgnore;
 
-	public ProvideMatchersAnnotatedElementMirror(TypeElement typeElement, Elements elementsUtils, Filer filerUtils,
-			Types typesUtils, Messager messageUtils, Predicate<Element> isInSameRound,
+	public ProvideMatchersAnnotatedElementMirror(TypeElement typeElement, ProcessingEnvironment processingEnv,
+			Predicate<Element> isInSameRound,
 			Function<String, ProvideMatchersAnnotatedElementMirror> findMirrorForTypeName,
 			Set<? extends Element> elementsWithIgnore) {
 		this.typeElementForClassAnnotatedWithProvideMatcher = typeElement;
-		this.elementsUtils = elementsUtils;
-		this.filerUtils = filerUtils;
-		this.typesUtils = typesUtils;
-		this.messageUtils = messageUtils;
+		this.processingEnv = processingEnv;
 		this.isInSameRound = isInSameRound;
 		this.elementsWithIgnore = elementsWithIgnore;
-		this.objectTE = elementsUtils.getTypeElement("java.lang.Object");
+		this.objectTE = processingEnv.getElementUtils().getTypeElement("java.lang.Object");
 		this.fullyQualifiedNameOfClassAnnotatedWithProvideMatcher = typeElement.getQualifiedName().toString();
-		String tpackageName = elementsUtils.getPackageOf(typeElement).getQualifiedName().toString();
+		String tpackageName = processingEnv.getElementUtils().getPackageOf(typeElement).getQualifiedName().toString();
 		String toutputClassName = fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + "Matchers";
 		String tsimpleNameOfGeneratedClass = typeElement.getSimpleName().toString() + "Matchers";
 		ProvideMatchers pm = typeElement.getAnnotation(ProvideMatchers.class);
@@ -91,7 +82,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 		this.hasParent = !objectTE.asType().equals(typeElement.getSuperclass());
 		this.hasParentInSameRound = isInSameRound.test(typeElement);
 		this.fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher = typeElement.getSuperclass().toString();
-		this.typeElementForSuperClassOfClassAnnotatedWithProvideMatcher = (TypeElement) typesUtils
+		this.typeElementForSuperClassOfClassAnnotatedWithProvideMatcher = (TypeElement) processingEnv.getTypeUtils()
 				.asElement(typeElement.getSuperclass());
 
 		if (typeElement.getTypeParameters().size() > 0) {
@@ -106,7 +97,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 			this.generic = "";
 			this.fullGeneric = "";
 		}
-		this.paramJavadoc = extractParamCommentFromJavadoc(elementsUtils.getDocComment(typeElement));
+		this.paramJavadoc = extractParamCommentFromJavadoc(processingEnv.getElementUtils().getDocComment(typeElement));
 		this.genericParent = getAddParentToGeneric(generic);
 		this.genericNoParent = getAddNoParentToGeneric(generic);
 		this.fullGenericParent = getAddParentToGeneric(fullGeneric);
@@ -123,10 +114,10 @@ public class ProvideMatchersAnnotatedElementMirror {
 		StringBuilder factories = new StringBuilder();
 
 		try {
-			messageUtils.printMessage(Kind.NOTE,
+			processingEnv.getMessager().printMessage(Kind.NOTE,
 					"The class `" + fullyQualifiedNameOfGeneratedClass + "` will be generated as a Matchers class.",
 					typeElementForClassAnnotatedWithProvideMatcher);
-			JavaFileObject jfo = filerUtils.createSourceFile(fullyQualifiedNameOfGeneratedClass,
+			JavaFileObject jfo = processingEnv.getFiler().createSourceFile(fullyQualifiedNameOfGeneratedClass,
 					typeElementForClassAnnotatedWithProvideMatcher);
 			try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
 				wjfo.println("package " + packageNameOfGeneratedClass + ";");
@@ -156,7 +147,8 @@ public class ProvideMatchersAnnotatedElementMirror {
 				wjfo.println("}");
 			}
 		} catch (IOException e1) {
-			messageUtils.printMessage(Kind.ERROR, "Unable to create the file containing the target class",
+			processingEnv.getMessager().printMessage(Kind.ERROR,
+					"Unable to create the file containing the target class",
 					typeElementForClassAnnotatedWithProvideMatcher);
 		}
 		return factories.toString();
@@ -164,7 +156,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 
 	private List<FieldDescription> generateAndExtractFieldAndParentPrivateMatcher(PrintWriter wjfo) {
 		ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor = new ProvidesMatchersSubElementVisitor(
-				elementsUtils, typesUtils, messageUtils, isInSameRound);
+				processingEnv, isInSameRound);
 		List<FieldDescription> fields = typeElementForClassAnnotatedWithProvideMatcher.getEnclosedElements().stream()
 				.map(ie -> ie.accept(providesMatchersSubElementVisitor,
 						this))
@@ -675,12 +667,18 @@ public class ProvideMatchersAnnotatedElementMirror {
 		return elementsWithIgnore.contains(e);
 	}
 
+	public TypeElement getTypeElementForClassAnnotatedWithProvideMatcher() {
+		return typeElementForClassAnnotatedWithProvideMatcher;
+	}
+
 	public GeneratedMatcher asXml() {
 		GeneratedMatcher gm = new GeneratedMatcher();
 		gm.setFullyQualifiedNameGeneratedClass(fullyQualifiedNameOfGeneratedClass);
 		gm.setFullyQualifiedNameInputClass(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher);
 		gm.setSimpleNameGeneratedClass(simpleNameOfGeneratedClass);
 		gm.setSimpleNameInputClass(simpleNameOfClassAnnotatedWithProvideMatcher);
+		gm.setDslMethodNameStart(methodShortClassName);
+		gm.setMirror(this);
 		return gm;
 	}
 
