@@ -149,11 +149,19 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		elementsWithPM.stream().filter(e -> roundEnv.getRootElements().contains(e))
 				.map(e -> e.accept(providesMatchersElementVisitor, null)).filter(Optional::isPresent)
 				.map(t -> new ProvideMatchersAnnotatedElementMirror(t.get(), elementsUtils, filerUtils, typesUtils,
-						messageUtils, isInSameRound(elementsWithPM, typesUtils), (n) -> alias.get(n)))
+						messageUtils, isInSameRound(elementsWithPM, typesUtils), (n) -> alias.get(n),
+						elementsWithIgnore))
 				.forEach(a -> alias.put(a.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher(), a));
 
 		factories.addAll(alias.values().stream().map(ProvideMatchersAnnotatedElementMirror::process)
 				.collect(Collectors.toList()));
+		elementsWithIgnore.stream()
+				.forEach(e -> messageUtils.printMessage(Kind.MANDATORY_WARNING,
+						"Annotation @IgnoreInMatcher not supported at this location ; The surrounding class is not annotated with @ProvideMatchers", e,
+						e.getAnnotationMirrors().stream()
+								.filter(a -> a.getAnnotationType().equals(elementsUtils
+										.getTypeElement(IgnoreInMatcher.class.getName().toString()).asType()))
+								.findAny().orElse(null)));
 	}
 
 	private Predicate<Element> isInSameRound(Set<? extends Element> elements, Types typesUtils) {

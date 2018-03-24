@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -52,16 +53,19 @@ public class ProvideMatchersAnnotatedElementMirror {
 	private final TypeElement typeElementForSuperClassOfClassAnnotatedWithProvideMatcher;
 	private final Function<String, ProvideMatchersAnnotatedElementMirror> findMirrorForTypeName;
 	private final String genericForChaining;
+	private final Set<? extends Element> elementsWithIgnore;
 
 	public ProvideMatchersAnnotatedElementMirror(TypeElement typeElement, Elements elementsUtils, Filer filerUtils,
 			Types typesUtils, Messager messageUtils, Predicate<Element> isInSameRound,
-			Function<String, ProvideMatchersAnnotatedElementMirror> findMirrorForTypeName) {
+			Function<String, ProvideMatchersAnnotatedElementMirror> findMirrorForTypeName,
+			Set<? extends Element> elementsWithIgnore) {
 		this.typeElementForClassAnnotatedWithProvideMatcher = typeElement;
 		this.elementsUtils = elementsUtils;
 		this.filerUtils = filerUtils;
 		this.typesUtils = typesUtils;
 		this.messageUtils = messageUtils;
 		this.isInSameRound = isInSameRound;
+		this.elementsWithIgnore = elementsWithIgnore;
 		this.objectTE = elementsUtils.getTypeElement("java.lang.Object");
 		this.fullyQualifiedNameOfClassAnnotatedWithProvideMatcher = typeElement.getQualifiedName().toString();
 		String tpackageName = elementsUtils.getPackageOf(typeElement).getQualifiedName().toString();
@@ -660,6 +664,14 @@ public class ProvideMatchersAnnotatedElementMirror {
 
 	public String getGeneric() {
 		return generic;
+	}
+
+	public void removeFromIgnoreList(Element e) {
+		elementsWithIgnore.remove(e);
+	}
+
+	public boolean isInsideIgnoreList(Element e) {
+		return elementsWithIgnore.contains(e);
 	}
 
 }
