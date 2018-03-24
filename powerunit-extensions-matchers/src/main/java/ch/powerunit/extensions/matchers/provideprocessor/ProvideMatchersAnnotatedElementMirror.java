@@ -49,6 +49,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 	private final Function<String, ProvideMatchersAnnotatedElementMirror> findMirrorForTypeName;
 	private final String genericForChaining;
 	private final Set<? extends Element> elementsWithIgnore;
+	private final List<FieldDescription> fields;
 
 	public ProvideMatchersAnnotatedElementMirror(TypeElement typeElement, ProcessingEnvironment processingEnv,
 			Predicate<Element> isInSameRound,
@@ -108,6 +109,21 @@ public class ProvideMatchersAnnotatedElementMirror {
 		this.findMirrorForTypeName = findMirrorForTypeName;
 		this.genericForChaining = genericParent.replaceAll("^<_PARENT", "<" + fullyQualifiedNameOfGeneratedClass + "."
 				+ simpleNameOfGeneratedInterfaceMatcher + genericNoParent);
+		ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor = new ProvidesMatchersSubElementVisitor(
+				processingEnv, isInSameRound);
+		this.fields = typeElement.getEnclosedElements().stream()
+				.map(ie -> ie.accept(providesMatchersSubElementVisitor,
+						this))
+				.filter(Optional::isPresent)
+				.map(t -> t
+						.get())
+				.collect(
+						Collectors.collectingAndThen(
+								Collectors.groupingBy(t -> t.getFieldName(),
+										Collectors.reducing(null,
+												(v1, v2) -> v1 == null ? v2 : v1.isIgnore() ? v1 : v2)),
+						c -> c.values().stream().collect(Collectors.toList())));
+		;
 	}
 
 	public String process() {
@@ -136,7 +152,8 @@ public class ProvideMatchersAnnotatedElementMirror {
 				wjfo.println();
 				wjfo.println("  private " + simpleNameOfGeneratedClass + "() {}");
 				wjfo.println();
-				List<FieldDescription> fields = generateAndExtractFieldAndParentPrivateMatcher(wjfo);
+				generateAndExtractFieldAndParentPrivateMatcher(wjfo);
+				wjfo.println();
 				generatePublicInterface(wjfo, fields);
 				wjfo.println();
 				generatePrivateImplementation(wjfo, fields);
@@ -154,21 +171,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 		return factories.toString();
 	}
 
-	private List<FieldDescription> generateAndExtractFieldAndParentPrivateMatcher(PrintWriter wjfo) {
-		ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor = new ProvidesMatchersSubElementVisitor(
-				processingEnv, isInSameRound);
-		List<FieldDescription> fields = typeElementForClassAnnotatedWithProvideMatcher.getEnclosedElements().stream()
-				.map(ie -> ie.accept(providesMatchersSubElementVisitor,
-						this))
-				.filter(Optional::isPresent)
-				.map(t -> t
-						.get())
-				.collect(
-						Collectors.collectingAndThen(
-								Collectors.groupingBy(t -> t.getFieldName(),
-										Collectors.reducing(null,
-												(v1, v2) -> v1 == null ? v2 : v1.isIgnore() ? v1 : v2)),
-								c -> c.values().stream().collect(Collectors.toList())));
+	private void generateAndExtractFieldAndParentPrivateMatcher(PrintWriter wjfo) {
 		wjfo.println(fields.stream().map(f -> f.getMatcherForField("  ")).collect(Collectors.joining("\n")));
 		if (hasParent) {
 			wjfo.println("  private static class SuperClassMatcher" + fullGeneric
@@ -189,7 +192,6 @@ public class ProvideMatchersAnnotatedElementMirror {
 			wjfo.println();
 			wjfo.println();
 		}
-		return fields;
 	}
 
 	private void generatePublicInterface(PrintWriter wjfo, List<FieldDescription> fields) {
@@ -678,6 +680,8 @@ public class ProvideMatchersAnnotatedElementMirror {
 		gm.setSimpleNameGeneratedClass(simpleNameOfGeneratedClass);
 		gm.setSimpleNameInputClass(simpleNameOfClassAnnotatedWithProvideMatcher);
 		gm.setDslMethodNameStart(methodShortClassName);
+		gm.setGeneratedMatcherField(
+				fields.stream().map(FieldDescription::asGeneratedMatcherField).collect(Collectors.toList()));
 		gm.setMirror(this);
 		return gm;
 	}
