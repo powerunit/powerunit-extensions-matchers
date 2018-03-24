@@ -22,7 +22,6 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -33,10 +32,8 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import javax.lang.model.util.Elements;
 import javax.lang.model.util.SimpleElementVisitor8;
 import javax.lang.model.util.TypeKindVisitor8;
-import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
@@ -121,6 +118,10 @@ public class ProvidesMatchersSubElementVisitor
 			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
 					.erasure(processingEnv.getElementUtils().getTypeElement("java.lang.Comparable").asType()))) {
 				return FieldDescription.Type.COMPARABLE;
+			}
+			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.function.Supplier").asType()))) {
+				return FieldDescription.Type.SUPPLIER;
 			}
 			return FieldDescription.Type.NA;
 		}
@@ -223,7 +224,7 @@ public class ProvidesMatchersSubElementVisitor
 				return Optional.of(new FieldDescription(p, fieldName, fieldName,
 						fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1), fieldType, type,
 						isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())),
-						processingEnv.getElementUtils(), e.getAnnotation(IgnoreInMatcher.class) != null, e));
+						processingEnv.getElementUtils(), e.getAnnotation(IgnoreInMatcher.class) != null, e,e.asType()));
 			}
 		}
 		if (p.isInsideIgnoreList(e)) {
@@ -276,7 +277,7 @@ public class ProvidesMatchersSubElementVisitor
 			p.removeFromIgnoreList(e);
 			return new FieldDescription(p, methodName + "()", fieldName, fieldNameDirect, fieldType, type,
 					isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())),
-					processingEnv.getElementUtils(), e.getAnnotation(IgnoreInMatcher.class) != null, e);
+					processingEnv.getElementUtils(), e.getAnnotation(IgnoreInMatcher.class) != null, e,e.getReturnType());
 		}
 		return null;
 	}
