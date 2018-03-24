@@ -27,7 +27,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation mark a field or a method as to be ignored in the generated
+ * This annotation marks a field or a method as to be ignored in the generated
  * matcher.
  * <p>
  * <b>With this option, the field will be marked as ignored in the resulting
