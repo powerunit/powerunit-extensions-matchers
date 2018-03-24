@@ -361,7 +361,8 @@ public class FieldDescription {
 	public String getDslForSupplier(String prefix) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getJavaDocFor(prefix,
-				Optional.of(" Validate that the result of the supplier is accepted by another matcher"),
+				Optional.of(
+						" Validate that the result of the supplier is accepted by another matcher (the result of the execution must be stable)"),
 				Optional.of("matcherOnResult a Matcher on result of the supplier execution"), Optional.empty()));
 		sb.append(prefix)
 				.append(containingElementMirror.getDefaultReturnMethod() + " " + fieldName
