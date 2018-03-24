@@ -7,7 +7,7 @@ import ch.powerunit.extensions.matchers.ProvideMatchers;
 
 @ProvideMatchers
 public class SampleOptional {
-	//only once must be added
+	// only once must be added
 	public Optional<String> opt;
 
 	public Optional<String> getOpt() {
@@ -17,8 +17,8 @@ public class SampleOptional {
 	public void setOpt(Optional<String> opt) {
 		this.opt = opt;
 	}
-	
-	@IgnoreInMatcher
+
+	@IgnoreInMatcher(comments = "Why not?")
 	public String ignoreMe;
 
 	public String getIgnoreMe() {
@@ -28,5 +28,5 @@ public class SampleOptional {
 	public void setIgnoreMe(String ignoreMe) {
 		this.ignoreMe = ignoreMe;
 	}
-	
+
 }

@@ -26,9 +26,11 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 
+import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 
 public class FieldDescription {
@@ -48,10 +50,11 @@ public class FieldDescription {
 	private final Elements elementsUtils;
 	private final ProvideMatchersAnnotatedElementMirror containingElementMirror;
 	private final boolean ignore;
+	private final Element fieldElement;
 
 	public FieldDescription(ProvideMatchersAnnotatedElementMirror containingElementMirror, String fieldAccessor,
 			String fieldName, String methodFieldName, String fieldType, Type type, boolean isInSameRound,
-			Elements elementsUtils, boolean ignore) {
+			Elements elementsUtils, boolean ignore, Element fieldElement) {
 		this.containingElementMirror = containingElementMirror;
 		this.fieldAccessor = fieldAccessor;
 		this.fieldName = fieldName;
@@ -60,6 +63,7 @@ public class FieldDescription {
 		this.type = type;
 		this.elementsUtils = elementsUtils;
 		this.ignore = ignore;
+		this.fieldElement = fieldElement;
 		if (isInSameRound) {
 			TypeElement typeElement = elementsUtils.getTypeElement(fieldType);
 			if (typeElement != null) {
@@ -527,29 +531,8 @@ public class FieldDescription {
 		return !ignore;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((fieldName == null) ? 0 : fieldName.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		FieldDescription other = (FieldDescription) obj;
-		if (fieldName == null) {
-			if (other.fieldName != null)
-				return false;
-		} else if (!fieldName.equals(other.fieldName))
-			return false;
-		return true;
+	public String getDescriptionForIgnoreIfApplicable() {
+		return Optional.ofNullable(fieldElement.getAnnotation(IgnoreInMatcher.class)).map(i -> i.comments()).orElse("");
 	}
 
 }

@@ -42,4 +42,12 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface IgnoreInMatcher {
 
+	/**
+	 * This attribute may be used to add a comments inside the generated matcher
+	 * report indicating why (for example) this field is ignored.
+	 * 
+	 * @return the comments or an empty string if not set.
+	 */
+	String comments() default "";
+
 }
