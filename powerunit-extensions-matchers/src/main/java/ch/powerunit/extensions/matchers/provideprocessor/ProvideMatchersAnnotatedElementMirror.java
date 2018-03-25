@@ -236,6 +236,17 @@ public class ProvideMatchersAnnotatedElementMirror {
 				+ simpleNameOfGeneratedInterfaceMatcher + "EndSyntaxicSugar " + genericParent + " {");
 		wjfo.println(fields.stream().filter(FieldDescription::isNotIgnore).map(f -> f.getDslInterface("    "))
 				.collect(Collectors.joining("\n")));
+		wjfo.println("\n");
+		wjfo.println("    /**");
+		wjfo.println("     * Add a matcher on the object itself and not on a specific field.");
+		wjfo.println("     * <p>");
+		wjfo.println("     * <i>This method, when used more than once, just add more matcher to the list.</i>");
+		wjfo.println("     * @param otherMatcher the matcher on the object itself.");
+		wjfo.println("     * @return the DSL to continue");
+		wjfo.println("     */");
+		wjfo.println("    " + simpleNameOfGeneratedInterfaceMatcher + " " + genericParent
+				+ " andWith(org.hamcrest.Matcher<? super " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
+				+ generic + "> otherMatcher);");
 		wjfo.println("  }");
 
 	}
@@ -255,6 +266,9 @@ public class ProvideMatchersAnnotatedElementMirror {
 						+ toJavaSyntax(f.getDescriptionForIgnoreIfApplicable()) + "));")
 				.forEach(wjfo::println);
 		wjfo.println("    private final _PARENT _parentBuilder;");
+		wjfo.println();
+		wjfo.println(
+				"    private final java.util.List<org.hamcrest.Matcher> nextMatchers = new java.util.ArrayList<>();");
 		if (hasParent) {
 			wjfo.println("    private SuperClassMatcher _parent;");
 			wjfo.println();
@@ -306,23 +320,46 @@ public class ProvideMatchersAnnotatedElementMirror {
 			wjfo.println("        result=false;");
 			wjfo.println("      }");
 		}
+		wjfo.println("      for(org.hamcrest.Matcher nMatcher : nextMatchers) {");
+		wjfo.println("        if(!nMatcher.matches(actual)) {");
+		wjfo.println(
+				"          mismatchDescription.appendText(\"[object itself \"); nMatcher.describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");");
+		wjfo.println("        result=false;");
+		wjfo.println("        }");
+		wjfo.println("      }");
 		wjfo.println("      return result;");
 		wjfo.println("    }");
 		wjfo.println();
+
 		wjfo.println("    @Override");
 		wjfo.println("    public void describeTo(org.hamcrest.Description description) {");
-		wjfo.println("        description.appendText(\"an instance of "
+		wjfo.println("      description.appendText(\"an instance of "
 				+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " with\\n\");");
 		if (hasParent) {
-			wjfo.println("        description.appendText(\"[\").appendDescriptionOf(_parent).appendText(\"]\\n\");");
+			wjfo.println("      description.appendText(\"[\").appendDescriptionOf(_parent).appendText(\"]\\n\");");
 		}
-		fields.stream().map(f -> "        description.appendText(\"[\").appendDescriptionOf(" + f.getFieldName()
+		fields.stream().map(f -> "      description.appendText(\"[\").appendDescriptionOf(" + f.getFieldName()
 				+ ").appendText(\"]\\n\");").forEach(wjfo::println);
+		wjfo.println("      for(org.hamcrest.Matcher nMatcher : nextMatchers) {");
+		wjfo.println(
+				"        description.appendText(\"[object itself \").appendDescriptionOf(nMatcher).appendText(\"]\\n\");");
+		wjfo.println("      }");
 		wjfo.println("    }");
 		wjfo.println();
+
 		wjfo.println("    @Override");
 		wjfo.println("    public _PARENT end() {");
 		wjfo.println("      return _parentBuilder;");
+		wjfo.println("    }");
+		wjfo.println();
+
+		wjfo.println("    @Override");
+		wjfo.println("    public " + simpleNameOfGeneratedInterfaceMatcher + " " + genericParent
+				+ " andWith(org.hamcrest.Matcher<? super " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
+				+ generic + "> otherMatcher) {");
+		wjfo.println(
+				"      nextMatchers.add(java.util.Objects.requireNonNull(otherMatcher,\"A matcher is expected\"));");
+		wjfo.println("      return this;");
 		wjfo.println("    }");
 
 		wjfo.println("  }");

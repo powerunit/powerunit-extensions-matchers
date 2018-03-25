@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 
 import ch.powerunit.Ignore;
 import ch.powerunit.Test;
@@ -55,6 +56,12 @@ public class Pojo1MatcherTest implements TestSuite {
 	public void testOKMatcher() {
 		Pojo1 p = new Pojo1();
 		assertThat(p).is(Pojo1Matchers.pojo1With());
+	}
+
+	@Test
+	public void testOKMatcherWithLinkedMatcher() {
+		Pojo1 p = new Pojo1();
+		assertThat(p).is(Pojo1Matchers.pojo1With().andWith(notNullValue()).andWith(hasToString(notNullValue())));
 	}
 
 	@Test
