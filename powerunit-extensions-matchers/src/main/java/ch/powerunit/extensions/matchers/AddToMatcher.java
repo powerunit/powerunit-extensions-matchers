@@ -30,6 +30,9 @@ import java.lang.annotation.Target;
 /**
  * This annotation may be use to add DSL syntax for this field to the generated
  * matcher.
+ * <p>
+ * The main purpose of this annotation is to allow developer to add, simple,
+ * DSL, to the generated one.
  * 
  * @author borettim
  * @since 0.0.7
@@ -66,5 +69,5 @@ public @interface AddToMatcher {
 	 * 
 	 * @return the body.
 	 */
-	String[] body();
+	String[]body();
 }

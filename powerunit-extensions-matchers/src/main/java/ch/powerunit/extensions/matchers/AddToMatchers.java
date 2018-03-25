@@ -33,6 +33,7 @@ import java.lang.annotation.Target;
  * Not usable, just here as the other annotation is repeatable.
  * 
  * @author borettim
+ * @see AddToMatcher Please refers to the main annotation itself.
  * @since 0.0.7
  */
 @Documented
