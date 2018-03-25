@@ -3,6 +3,7 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -114,15 +115,12 @@ public class ProvideMatchersAnnotatedElementMirror {
 		this.fields = typeElement.getEnclosedElements().stream()
 				.map(ie -> ie.accept(providesMatchersSubElementVisitor,
 						this))
-				.filter(Optional::isPresent)
-				.map(t -> t
-						.get())
-				.collect(
+				.filter(Optional::isPresent).map(t -> t.get()).collect(
 						Collectors.collectingAndThen(
 								Collectors.groupingBy(t -> t.getFieldName(),
 										Collectors.reducing(null,
 												(v1, v2) -> v1 == null ? v2 : v1.isIgnore() ? v1 : v2)),
-						c -> c.values().stream().collect(Collectors.toList())));
+						c -> c == null ? Collections.emptyList() : c.values().stream().collect(Collectors.toList())));
 		;
 	}
 

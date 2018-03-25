@@ -282,6 +282,11 @@ public class ProvidesMatchersSubElementVisitor
 		return null;
 	}
 
+	@Override
+	protected Optional<FieldDescription> defaultAction(Element e, ProvideMatchersAnnotatedElementMirror p) {
+		return Optional.empty();
+	}
+
 	private String parseType(TypeMirror type, boolean asPrimitif) {
 		return type.accept(extractNameVisitor, asPrimitif);
 	}
