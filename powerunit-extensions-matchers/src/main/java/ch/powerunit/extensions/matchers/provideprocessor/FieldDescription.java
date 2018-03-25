@@ -567,28 +567,40 @@ public class FieldDescription {
 		return sb.toString();
 	}
 
+	private String getFieldCopyDefault(String lhs, String rhs) {
+		return lhs + "." + fieldName + "(org.hamcrest.Matchers.is(" + rhs + "." + fieldAccessor + "))";
+	}
+
+	private String getSameValueMatcherFor(String target, TypeElement targetElement) {
+		String name = targetElement.getSimpleName().toString();
+		String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
+		return fullyQualifiedNameMatcherInSameRound + "." + lname + "WithSameValue(" + target + ")";
+	}
+
+	private String getFieldCopySameRound(String lhs, String rhs, TypeElement targetElement) {
+		return lhs + "." + fieldName + "(" + rhs + "." + fieldAccessor + "==null?org.hamcrest.Matchers.nullValue():"
+				+ getSameValueMatcherFor(rhs + "." + fieldAccessor, targetElement) + ")";
+	}
+
+	private String getFieldCopyForList(String lhs, String rhs) {
+		return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + fieldName
+				+ "(org.hamcrest.Matchers.nullValue()); } else if (" + rhs + "." + fieldAccessor + ".isEmpty()) {" + lhs
+				+ "." + fieldName + "IsEmptyIterable(); } else {" + lhs + "." + fieldName + "Contains(" + rhs + "."
+				+ fieldAccessor
+				+ ".stream().map(org.hamcrest.Matchers::is).collect(java.util.stream.Collectors.toList())); }";
+	}
+
 	public String getFieldCopy(String lhs, String rhs) {
 
-		if (type == Type.LIST || type == Type.SET || type == Type.COLLECTION) {
-			if (!"".equals(generic)) {
-				return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + fieldName
-						+ "(org.hamcrest.Matchers.nullValue()); } else if (" + rhs + "." + fieldAccessor
-						+ ".isEmpty()) {" + lhs + "." + fieldName + "IsEmptyIterable(); } else {" + lhs + "."
-						+ fieldName + "Contains(" + rhs + "." + fieldAccessor
-						+ ".stream().map(org.hamcrest.Matchers::is).collect(java.util.stream.Collectors.toList())); }";
-			}
+		if ((type == Type.LIST || type == Type.SET || type == Type.COLLECTION) && !"".equals(generic)) {
+			return getFieldCopyForList(lhs, rhs);
 		}
 
 		if (fullyQualifiedNameMatcherInSameRound != null
 				&& elementsUtils.getTypeElement(fieldType).getTypeParameters().isEmpty()) {
-			TypeElement targetElement = elementsUtils.getTypeElement(fieldType);
-			String name = targetElement.getSimpleName().toString();
-			String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
-			return lhs + "." + fieldName + "(" + rhs + "." + fieldAccessor + "==null?org.hamcrest.Matchers.nullValue():"
-					+ fullyQualifiedNameMatcherInSameRound + "." + lname + "WithSameValue(" + rhs + "." + fieldAccessor
-					+ ")" + ")";
+			return getFieldCopySameRound(lhs, rhs, elementsUtils.getTypeElement(fieldType));
 		}
-		return lhs + "." + fieldName + "(org.hamcrest.Matchers.is(" + rhs + "." + fieldAccessor + "))";
+		return getFieldCopyDefault(lhs, rhs);
 	}
 
 	public String getFieldAccessor() {
