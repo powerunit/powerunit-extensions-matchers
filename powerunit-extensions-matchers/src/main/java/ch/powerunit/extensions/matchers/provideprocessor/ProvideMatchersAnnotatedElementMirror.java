@@ -647,6 +647,10 @@ public class ProvideMatchersAnnotatedElementMirror {
 		return fullyQualifiedNameOfClassAnnotatedWithProvideMatcher;
 	}
 
+	public String getFullyQualifiedNameOfGeneratedClass() {
+		return fullyQualifiedNameOfGeneratedClass;
+	}
+
 	public String getDefaultReturnMethod() {
 		return defaultReturnMethod;
 	}
@@ -669,6 +673,14 @@ public class ProvideMatchersAnnotatedElementMirror {
 
 	public TypeElement getTypeElementForClassAnnotatedWithProvideMatcher() {
 		return typeElementForClassAnnotatedWithProvideMatcher;
+	}
+
+	public ProvideMatchersAnnotatedElementMirror findMirrorFor(String name) {
+		return findMirrorForTypeName.apply(name);
+	}
+
+	public String getMethodShortClassName() {
+		return methodShortClassName;
 	}
 
 	public GeneratedMatcher asXml() {

@@ -223,8 +223,8 @@ public class ProvidesMatchersSubElementVisitor
 				p.removeFromIgnoreList(e);
 				return Optional.of(new FieldDescription(p, fieldName, fieldName,
 						fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1), fieldType, type,
-						isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())),
-						processingEnv.getElementUtils(), e.getAnnotation(IgnoreInMatcher.class) != null, e,e.asType()));
+						isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())), processingEnv,
+						e.getAnnotation(IgnoreInMatcher.class) != null, e, e.asType()));
 			}
 		}
 		if (p.isInsideIgnoreList(e)) {
@@ -276,8 +276,8 @@ public class ProvidesMatchersSubElementVisitor
 			Type type = parseType(e.getReturnType());
 			p.removeFromIgnoreList(e);
 			return new FieldDescription(p, methodName + "()", fieldName, fieldNameDirect, fieldType, type,
-					isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())),
-					processingEnv.getElementUtils(), e.getAnnotation(IgnoreInMatcher.class) != null, e,e.getReturnType());
+					isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())), processingEnv,
+					e.getAnnotation(IgnoreInMatcher.class) != null, e, e.getReturnType());
 		}
 		return null;
 	}

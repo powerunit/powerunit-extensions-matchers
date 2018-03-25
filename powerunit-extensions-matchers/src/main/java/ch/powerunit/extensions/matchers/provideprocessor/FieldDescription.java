@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
@@ -53,7 +54,7 @@ public class FieldDescription {
 	private final Type type;
 	private final List<Function<String, String>> implGenerator;
 	private final List<Function<String, String>> dslGenerator;
-	private final Elements elementsUtils;
+	private final ProcessingEnvironment processingEnv;
 	private final ProvideMatchersAnnotatedElementMirror containingElementMirror;
 	private final boolean ignore;
 	private final Element fieldElement;
@@ -63,14 +64,14 @@ public class FieldDescription {
 
 	public FieldDescription(ProvideMatchersAnnotatedElementMirror containingElementMirror, String fieldAccessor,
 			String fieldName, String methodFieldName, String fieldType, Type type, boolean isInSameRound,
-			Elements elementsUtils, boolean ignore, Element fieldElement, TypeMirror fieldTypeMirror) {
+			ProcessingEnvironment processingEnv, boolean ignore, Element fieldElement, TypeMirror fieldTypeMirror) {
 		this.containingElementMirror = containingElementMirror;
 		this.fieldAccessor = fieldAccessor;
 		this.fieldName = fieldName;
 		this.methodFieldName = methodFieldName;
 		this.fieldType = fieldType;
 		this.type = type;
-		this.elementsUtils = elementsUtils;
+		this.processingEnv = processingEnv;
 		this.ignore = ignore;
 		this.fieldElement = fieldElement;
 		this.fieldTypeMirror = fieldTypeMirror;
@@ -82,10 +83,11 @@ public class FieldDescription {
 			this.generic = "";
 		}
 		if (isInSameRound) {
-			TypeElement typeElement = elementsUtils.getTypeElement(fieldType);
+			TypeElement typeElement = processingEnv.getElementUtils().getTypeElement(fieldType);
 			if (typeElement != null) {
 				String simpleName = typeElement.getSimpleName().toString() + "Matchers";
-				String packageName = elementsUtils.getPackageOf(typeElement).getQualifiedName().toString();
+				String packageName = processingEnv.getElementUtils().getPackageOf(typeElement).getQualifiedName()
+						.toString();
 				String fullyQualifiedNameMatcher = typeElement.getQualifiedName().toString() + "Matchers";
 				ProvideMatchers pm = typeElement.getAnnotation(ProvideMatchers.class);
 				if (!"".equals(pm.matchersClassName())) {
@@ -110,7 +112,7 @@ public class FieldDescription {
 		tmp1.add(this::getImplementationForDefault);
 		tmp2.add(this::getDslForDefault);
 		if (fullyQualifiedNameMatcherInSameRound != null
-				&& elementsUtils.getTypeElement(fieldType).getTypeParameters().isEmpty()) {
+				&& processingEnv.getElementUtils().getTypeElement(fieldType).getTypeParameters().isEmpty()) {
 			tmp1.add(this::getImplementationForDefaultChaining);
 			tmp2.add(this::getDslForDefaultChaining);
 		}
@@ -197,7 +199,7 @@ public class FieldDescription {
 
 	private String getImplementationForDefaultChaining(String prefix) {
 		// Can't use buildDeclaration here
-		TypeElement targetElement = elementsUtils.getTypeElement(fieldType);
+		TypeElement targetElement = processingEnv.getElementUtils().getTypeElement(fieldType);
 		String name = targetElement.getSimpleName().toString();
 		String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
 		return buildImplementation(prefix,
@@ -352,7 +354,7 @@ public class FieldDescription {
 
 	public String getDslForDefaultChaining(String prefix) {
 		// can'ut use generateDeclaration here
-		TypeElement targetElement = elementsUtils.getTypeElement(fieldType);
+		TypeElement targetElement = processingEnv.getElementUtils().getTypeElement(fieldType);
 		String name = targetElement.getSimpleName().toString();
 		return buildDsl(prefix,
 				getJavaDocFor(prefix, Optional.of("by starting a matcher for this field"), Optional.empty(),
@@ -582,12 +584,23 @@ public class FieldDescription {
 				+ getSameValueMatcherFor(rhs + "." + fieldAccessor, targetElement) + ")";
 	}
 
+	private String generateMatcherBuilderReferenceFor(String generic) {
+		ProvideMatchersAnnotatedElementMirror target = containingElementMirror.findMirrorFor(generic);
+		if (target != null) {
+			return target.getFullyQualifiedNameOfGeneratedClass() + "::" + target.getMethodShortClassName()
+					+ "WithSameValue";
+		}
+
+		return "org.hamcrest.Matchers::is";
+	}
+
 	private String getFieldCopyForList(String lhs, String rhs) {
+
 		return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + fieldName
 				+ "(org.hamcrest.Matchers.nullValue()); } else if (" + rhs + "." + fieldAccessor + ".isEmpty()) {" + lhs
 				+ "." + fieldName + "IsEmptyIterable(); } else {" + lhs + "." + fieldName + "Contains(" + rhs + "."
-				+ fieldAccessor
-				+ ".stream().map(org.hamcrest.Matchers::is).collect(java.util.stream.Collectors.toList())); }";
+				+ fieldAccessor + ".stream().map(" + generateMatcherBuilderReferenceFor(generic)
+				+ ").collect(java.util.stream.Collectors.toList())); }";
 	}
 
 	public String getFieldCopy(String lhs, String rhs) {
@@ -597,8 +610,8 @@ public class FieldDescription {
 		}
 
 		if (fullyQualifiedNameMatcherInSameRound != null
-				&& elementsUtils.getTypeElement(fieldType).getTypeParameters().isEmpty()) {
-			return getFieldCopySameRound(lhs, rhs, elementsUtils.getTypeElement(fieldType));
+				&& processingEnv.getElementUtils().getTypeElement(fieldType).getTypeParameters().isEmpty()) {
+			return getFieldCopySameRound(lhs, rhs, processingEnv.getElementUtils().getTypeElement(fieldType));
 		}
 		return getFieldCopyDefault(lhs, rhs);
 	}
