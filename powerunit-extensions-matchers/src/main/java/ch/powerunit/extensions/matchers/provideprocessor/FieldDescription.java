@@ -569,11 +569,12 @@ public class FieldDescription {
 
 	public String getFieldCopy(String lhs, String rhs) {
 
-		if ((type == Type.LIST)) {
-			if (!"".equals(generic) && !generic.endsWith("[]")) {
+		if (type == Type.LIST || type == Type.SET || type == Type.COLLECTION) {
+			if (!"".equals(generic)) {
 				return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + fieldName
-						+ "(org.hamcrest.Matchers.nullValue()); } else {" + lhs + "." + fieldName + "Contains(" + rhs
-						+ "." + fieldAccessor
+						+ "(org.hamcrest.Matchers.nullValue()); } else if (" + rhs + "." + fieldAccessor
+						+ ".isEmpty()) {" + lhs + "." + fieldName + "IsEmptyIterable(); } else {" + lhs + "."
+						+ fieldName + "Contains(" + rhs + "." + fieldAccessor
 						+ ".stream().map(org.hamcrest.Matchers::is).collect(java.util.stream.Collectors.toList())); }";
 			}
 		}
