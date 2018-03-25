@@ -25,5 +25,6 @@ import ch.powerunit.extensions.matchers.ProvideMatchers;
 @ProvideMatchers
 public class PojoWithOverrideField {
 	@AddToMatcher(suffix = "Suffix", argument = "", body = "// Does nothing, just for sample")
+	@AddToMatcher(suffix = "SuffixTest", argument = "java.lang.String test", body = "// Does nothing, just for sample")
 	public String field;
 }
