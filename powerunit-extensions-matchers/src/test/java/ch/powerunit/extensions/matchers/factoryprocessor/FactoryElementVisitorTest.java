@@ -1,6 +1,7 @@
 package ch.powerunit.extensions.matchers.factoryprocessor;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.EnumSet;
@@ -12,8 +13,10 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
+import javax.tools.Diagnostic.Kind;
 
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import ch.powerunit.Rule;
 import ch.powerunit.Test;
@@ -60,5 +63,7 @@ public class FactoryElementVisitorTest implements TestSuite {
 		Optional<ExecutableElement> visitResult = underTest.visitExecutable(ee, null);
 		assertThat(visitResult).isNotNull();
 		assertThat(visitResult.isPresent()).is(false);
+		verify(messageUtils).printMessage(Mockito.eq(Kind.MANDATORY_WARNING), Mockito.anyString(),
+				Mockito.same(ee), Mockito.anyVararg());
 	}
 }
