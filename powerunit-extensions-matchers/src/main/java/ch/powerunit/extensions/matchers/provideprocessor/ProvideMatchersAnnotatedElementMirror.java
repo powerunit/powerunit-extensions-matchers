@@ -236,7 +236,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 				+ simpleNameOfGeneratedInterfaceMatcher + "EndSyntaxicSugar " + genericParent + " {");
 		wjfo.println(fields.stream().filter(FieldDescription::isNotIgnore).map(f -> f.getDslInterface("    "))
 				.collect(Collectors.joining("\n")));
-		wjfo.println("\n");
+		wjfo.println();
 		wjfo.println("    /**");
 		wjfo.println("     * Add a matcher on the object itself and not on a specific field.");
 		wjfo.println("     * <p>");
@@ -247,6 +247,18 @@ public class ProvideMatchersAnnotatedElementMirror {
 		wjfo.println("    " + simpleNameOfGeneratedInterfaceMatcher + " " + genericParent
 				+ " andWith(org.hamcrest.Matcher<? super " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
 				+ generic + "> otherMatcher);");
+		wjfo.println();
+		wjfo.println(generateJavaDoc("  ",
+				"Method that return the matcher itself and accept one single Matcher on the object itself.",
+				Optional.of(
+						"<b>This method is a syntaxic sugar that end the DSL and make clear that the matcher can't be change anymore.</b>"),
+				Optional.of("otherMatcher the matcher on the object itself."), Optional.of("the matcher"), false,
+				false));
+		wjfo.println("    default org.hamcrest.Matcher<" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
+				+ generic + "> buildWith(org.hamcrest.Matcher<? super "
+				+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + generic + "> otherMatcher) {");
+		wjfo.println("      return andWith(otherMatcher);");
+		wjfo.println("    }");
 		wjfo.println("  }");
 
 	}

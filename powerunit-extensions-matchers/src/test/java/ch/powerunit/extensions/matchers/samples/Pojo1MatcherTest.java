@@ -61,7 +61,8 @@ public class Pojo1MatcherTest implements TestSuite {
 	@Test
 	public void testOKMatcherWithLinkedMatcher() {
 		Pojo1 p = new Pojo1();
-		assertThat(p).is(Pojo1Matchers.pojo1With().andWith(notNullValue()).andWith(hasToString(notNullValue())));
+		assertThat(p).is(Pojo1Matchers.pojo1With().andWith(notNullValue()).andWith(hasToString(notNullValue()))
+				.buildWith(anything()));
 	}
 
 	@Test
