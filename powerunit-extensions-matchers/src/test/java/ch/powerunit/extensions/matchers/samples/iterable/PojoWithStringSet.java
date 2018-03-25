@@ -19,6 +19,8 @@
  */
 package ch.powerunit.extensions.matchers.samples.iterable;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import ch.powerunit.extensions.matchers.ProvideMatchers;
@@ -33,6 +35,11 @@ public class PojoWithStringSet {
 
 	public PojoWithStringSet(Set<String> field) {
 		this.field = field;
+	}
+
+	@Override
+	public String toString() {
+		return "PojoWithStringList [field=" + Objects.toString(field) + "]";
 	}
 
 }

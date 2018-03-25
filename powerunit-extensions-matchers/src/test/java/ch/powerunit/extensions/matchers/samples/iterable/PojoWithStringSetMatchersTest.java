@@ -24,6 +24,7 @@ import static ch.powerunit.matchers.MatcherTester.value;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 
 import ch.powerunit.TestDelegate;
 import ch.powerunit.TestSuite;
@@ -33,32 +34,34 @@ import ch.powerunit.matchers.MatcherTester;
  * @author borettim
  *
  */
-public class PojoWithStringListMatchersTest implements TestSuite {
+public class PojoWithStringSetMatchersTest implements TestSuite {
 
 	private static final Object OTHER_TYPE = "";
 
-	private static final PojoWithStringList NULL_LIST = new PojoWithStringList(null);
+	private static final PojoWithStringSet NULL_LIST = new PojoWithStringSet(null);
 
-	private static final PojoWithStringList EMPTY_LIST = new PojoWithStringList(Collections.emptyList());
+	private static final PojoWithStringSet EMPTY_LIST = new PojoWithStringSet(Collections.emptySet());
 
-	private static final PojoWithStringList SINGLE_LIST_WITH_A = new PojoWithStringList(Arrays.asList("A"));
+	private static final PojoWithStringSet SINGLE_LIST_WITH_A = new PojoWithStringSet(Collections.singleton("A"));
 
-	private static final PojoWithStringList SINGLE_LIST_WITH_B = new PojoWithStringList(Arrays.asList("B"));
+	private static final PojoWithStringSet SINGLE_LIST_WITH_B = new PojoWithStringSet(Collections.singleton("B"));
 
-	private static final PojoWithStringList SINGLE_LIST_WITH_A_B = new PojoWithStringList(Arrays.asList("A", "B"));
+	private static final PojoWithStringSet SINGLE_LIST_WITH_A_B = new PojoWithStringSet(
+			new HashSet<>(Arrays.asList("A", "B")));
 
-	private static final PojoWithStringList SINGLE_LIST_WITH_B_A = new PojoWithStringList(Arrays.asList("B", "A"));
+	private static final PojoWithStringSet SINGLE_LIST_WITH_B_A = new PojoWithStringSet(
+			new HashSet<>(Arrays.asList("B", "A")));
 
 	@TestDelegate
 	public final MatcherTester<?> testMatcher = testerOfMatcher(//
-			PojoWithStringListMatchers.PojoWithStringListMatcher.class)//
+			PojoWithStringSetMatchers.PojoWithStringSetMatcher.class)//
 					.with(//
 							matcher(//
-									(PojoWithStringListMatchers.PojoWithStringListMatcher) PojoWithStringListMatchers
-											.pojoWithStringListWithSameValue(NULL_LIST))
+									(PojoWithStringSetMatchers.PojoWithStringSetMatcher) PojoWithStringSetMatchers
+											.pojoWithStringSetWithSameValue(NULL_LIST))
 													.//
 													describedAs(
-															"an instance of ch.powerunit.extensions.matchers.samples.iterable.PojoWithStringList with\n[field null]\n")
+															"an instance of ch.powerunit.extensions.matchers.samples.iterable.PojoWithStringSet with\n[field null]\n")
 													.//
 													nullRejected("was null").//
 													accepting(NULL_LIST).//
@@ -70,11 +73,11 @@ public class PojoWithStringListMatchersTest implements TestSuite {
 															value(SINGLE_LIST_WITH_A).//
 																	withMessage("[field was <[A]>]\n")), //
 							matcher(//
-									(PojoWithStringListMatchers.PojoWithStringListMatcher) PojoWithStringListMatchers
-											.pojoWithStringListWithSameValue(EMPTY_LIST))
+									(PojoWithStringSetMatchers.PojoWithStringSetMatcher) PojoWithStringSetMatchers
+											.pojoWithStringSetWithSameValue(EMPTY_LIST))
 													.//
 													describedAs(
-															"an instance of ch.powerunit.extensions.matchers.samples.iterable.PojoWithStringList with\n[field an empty iterable]\n")
+															"an instance of ch.powerunit.extensions.matchers.samples.iterable.PojoWithStringSet with\n[field an empty iterable]\n")
 													.//
 													nullRejected("was null").//
 													accepting(EMPTY_LIST).//
@@ -86,11 +89,11 @@ public class PojoWithStringListMatchersTest implements TestSuite {
 															value(SINGLE_LIST_WITH_A).//
 																	withMessage("[field [\"A\"]]\n")), //
 							matcher(//
-									(PojoWithStringListMatchers.PojoWithStringListMatcher) PojoWithStringListMatchers
-											.pojoWithStringListWithSameValue(SINGLE_LIST_WITH_A))
+									(PojoWithStringSetMatchers.PojoWithStringSetMatcher) PojoWithStringSetMatchers
+											.pojoWithStringSetWithSameValue(SINGLE_LIST_WITH_A))
 													.//
 													describedAs(
-															"an instance of ch.powerunit.extensions.matchers.samples.iterable.PojoWithStringList with\n[field iterable containing [is \"A\"]]\n")
+															"an instance of ch.powerunit.extensions.matchers.samples.iterable.PojoWithStringSet with\n[field iterable containing [is \"A\"]]\n")
 													.//
 													nullRejected("was null").//
 													accepting(SINGLE_LIST_WITH_A).//
@@ -104,11 +107,11 @@ public class PojoWithStringListMatchersTest implements TestSuite {
 															value(SINGLE_LIST_WITH_A_B).//
 																	withMessage("[field Not matched: \"B\"]\n")), //
 							matcher(//
-									(PojoWithStringListMatchers.PojoWithStringListMatcher) PojoWithStringListMatchers
-											.pojoWithStringListWithSameValue(SINGLE_LIST_WITH_A_B))
+									(PojoWithStringSetMatchers.PojoWithStringSetMatcher) PojoWithStringSetMatchers
+											.pojoWithStringSetWithSameValue(SINGLE_LIST_WITH_A_B))
 													.//
 													describedAs(
-															"an instance of ch.powerunit.extensions.matchers.samples.iterable.PojoWithStringList with\n[field iterable containing [is \"A\", is \"B\"]]\n")
+															"an instance of ch.powerunit.extensions.matchers.samples.iterable.PojoWithStringSet with\n[field iterable containing [is \"A\", is \"B\"]]\n")
 													.//
 													nullRejected("was null").//
 													accepting(SINGLE_LIST_WITH_A_B).//
@@ -122,9 +125,6 @@ public class PojoWithStringListMatchersTest implements TestSuite {
 															value(SINGLE_LIST_WITH_A).//
 																	withMessage("[field No item matched: is \"B\"]\n"), //
 															value(SINGLE_LIST_WITH_B).//
-																	withMessage("[field item 0: was \"B\"]\n"), //
-															value(SINGLE_LIST_WITH_B_A).//
-																	withMessage("[field item 0: was \"B\"]\n"))//
-	);
+																	withMessage("[field item 0: was \"B\"]\n")));
 
 }
