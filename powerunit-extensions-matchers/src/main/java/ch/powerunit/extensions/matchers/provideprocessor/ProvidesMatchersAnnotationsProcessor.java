@@ -22,6 +22,7 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.lang.annotation.Annotation;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,6 +53,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import ch.powerunit.extensions.matchers.AddToMatcher;
+import ch.powerunit.extensions.matchers.AddToMatchers;
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatchers;
@@ -61,7 +64,8 @@ import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatchers;
  *
  */
 @SupportedAnnotationTypes({ "ch.powerunit.extensions.matchers.ProvideMatchers",
-		"ch.powerunit.extensions.matchers.IgnoreInMatcher" })
+		"ch.powerunit.extensions.matchers.IgnoreInMatcher", "ch.powerunit.extensions.matchers.AddToMatcher",
+		"ch.powerunit.extensions.matchers.AddToMatchers" })
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedOptions({ "ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor.factory" })
 public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
@@ -170,6 +174,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			TypeElement objectTE) {
 		Set<? extends Element> elementsWithPM = roundEnv.getElementsAnnotatedWith(ProvideMatchers.class);
 		Set<? extends Element> elementsWithIgnore = roundEnv.getElementsAnnotatedWith(IgnoreInMatcher.class);
+		Set<? extends Element> elementsWithAddToMatcher = roundEnv.getElementsAnnotatedWith(AddToMatcher.class);
+		Set<? extends Element> elementsWithAddToMatchers = roundEnv.getElementsAnnotatedWith(AddToMatchers.class);
 
 		ProvidesMatchersElementVisitor providesMatchersElementVisitor = new ProvidesMatchersElementVisitor(this,
 				processingEnv, provideMatchersTE);
@@ -178,27 +184,30 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				.map(e -> e.accept(providesMatchersElementVisitor, null)).filter(Optional::isPresent)
 				.map(t -> new ProvideMatchersAnnotatedElementMirror(t.get(), processingEnv,
 						isInSameRound(elementsWithPM, processingEnv.getTypeUtils()), (n) -> alias.get(n),
-						elementsWithIgnore))
+						elementsWithIgnore, elementsWithAddToMatcher, elementsWithAddToMatchers))
 				.forEach(a -> alias.put(a.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher(), a));
 
 		factories.addAll(alias.values().stream().map(ProvideMatchersAnnotatedElementMirror::process)
 				.collect(Collectors.toList()));
 		allGeneratedMatchers.getGeneratedMatcher().addAll(
 				alias.values().stream().map(ProvideMatchersAnnotatedElementMirror::asXml).collect(Collectors.toList()));
-		elementsWithIgnore.stream()
+		doWarningForElement((Set) elementsWithIgnore, IgnoreInMatcher.class);
+		doWarningForElement((Set) elementsWithAddToMatcher, AddToMatcher.class);
+		doWarningForElement((Set) elementsWithAddToMatchers, AddToMatchers.class);
+	}
+
+	private void doWarningForElement(Set<Element> elements, Class aa) {
+		elements.stream()
 				.forEach(
-						e -> processingEnv.getMessager()
-								.printMessage(Kind.MANDATORY_WARNING,
-										"Annotation @IgnoreInMatcher not supported at this location ; The surrounding class is not annotated with @ProvideMatchers",
-										e,
-										e.getAnnotationMirrors()
-												.stream().filter(
-														a -> a.getAnnotationType()
-																.equals(processingEnv.getElementUtils()
-																		.getTypeElement(IgnoreInMatcher.class.getName()
-																				.toString())
-																		.asType()))
-												.findAny().orElse(null)));
+						e -> processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
+								"Annotation @" + aa.getName()
+										+ " not supported at this location ; The surrounding class is not annotated with @ProvideMatchers",
+								e,
+								e.getAnnotationMirrors().stream()
+										.filter(a -> a.getAnnotationType()
+												.equals(processingEnv.getElementUtils()
+														.getTypeElement(aa.getName().toString()).asType()))
+										.findAny().orElse(null)));
 	}
 
 	private Predicate<Element> isInSameRound(Set<? extends Element> elements, Types typesUtils) {

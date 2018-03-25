@@ -229,13 +229,8 @@ public class ProvidesMatchersSubElementVisitor
 		}
 		if (p.isInsideIgnoreList(e)) {
 			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
-					"The annotation @IgnoreInMatcher is not supported as this location ; Check that this field is public and not static",
-					e,
-					e.getAnnotationMirrors().stream()
-							.filter(a -> a.getAnnotationType()
-									.equals(processingEnv.getElementUtils()
-											.getTypeElement(IgnoreInMatcher.class.getName().toString()).asType()))
-							.findAny().orElse(null));
+					"One of the annotation is not supported as this location ; Check that this field is public and not static",
+					e);
 			p.removeFromIgnoreList(e);
 		}
 		return Optional.empty();
@@ -254,13 +249,8 @@ public class ProvidesMatchersSubElementVisitor
 		}
 		if (p.isInsideIgnoreList(e)) {
 			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
-					"The annotation @IgnoreInMatcher is not supported as this location ; CHeck that this method is public, doesn't have any parameter and is named isXXX or getXXX",
-					e,
-					e.getAnnotationMirrors().stream()
-							.filter(a -> a.getAnnotationType()
-									.equals(processingEnv.getElementUtils()
-											.getTypeElement(IgnoreInMatcher.class.getName().toString()).asType()))
-							.findAny().orElse(null));
+					"One of the annotation is not supported as this location ; CHeck that this method is public, doesn't have any parameter and is named isXXX or getXXX",
+					e);
 			p.removeFromIgnoreList(e);
 		}
 		return Optional.empty();
