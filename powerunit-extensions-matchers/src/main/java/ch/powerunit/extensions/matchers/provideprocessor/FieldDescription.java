@@ -242,6 +242,12 @@ public class FieldDescription {
 					generateDeclaration("ContainsInAnyOrder",
 							"org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
 					"return " + fieldName + "(org.hamcrest.Matchers.containsInAnyOrder(matchersOnElements));"));
+
+			sb.append(buildImplementation(prefix,
+					generateDeclaration("Contains",
+							"java.util.List<org.hamcrest.Matcher<? super " + generic + ">> matchersOnElements"),
+					"return " + fieldName + "(org.hamcrest.Matchers.contains(matchersOnElements));"));
+
 		}
 		return sb.toString();
 	}
@@ -413,6 +419,14 @@ public class FieldDescription {
 							Optional.of("org.hamcrest.Matchers#containsInAnyOrder(org.hamcrest.Matcher[])")),
 					generateDeclaration("ContainsInAnyOrder",
 							"org.hamcrest.Matcher<" + generic + ">... matchersOnElements")));
+
+			sb.append(buildDsl(prefix,
+					getJavaDocFor(prefix,
+							Optional.of("that the iterable contains the received elements, using list of matcher"),
+							Optional.of("matchersOnElements the matchers on the elements"),
+							Optional.of("org.hamcrest.Matchers#contains(java.util.List)")),
+					generateDeclaration("Contains",
+							"java.util.List<org.hamcrest.Matcher<? super " + generic + ">> matchersOnElements")));
 		}
 
 		return sb.toString();
@@ -554,12 +568,22 @@ public class FieldDescription {
 	}
 
 	public String getFieldCopy(String lhs, String rhs) {
+
+		if ((type == Type.LIST)) {
+			if (!"".equals(generic) && !generic.endsWith("[]")) {
+				return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + fieldName
+						+ "(org.hamcrest.Matchers.nullValue()); } else {" + lhs + "." + fieldName + "Contains(" + rhs
+						+ "." + fieldAccessor
+						+ ".stream().map(org.hamcrest.Matchers::is).collect(java.util.stream.Collectors.toList())); }";
+			}
+		}
+
 		if (fullyQualifiedNameMatcherInSameRound != null
 				&& elementsUtils.getTypeElement(fieldType).getTypeParameters().isEmpty()) {
 			TypeElement targetElement = elementsUtils.getTypeElement(fieldType);
 			String name = targetElement.getSimpleName().toString();
 			String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
-			return lhs + "." + fieldName + "(" + rhs + "==null?org.hamcrest.Matchers.nullValue():"
+			return lhs + "." + fieldName + "(" + rhs + "." + fieldAccessor + "==null?org.hamcrest.Matchers.nullValue():"
 					+ fullyQualifiedNameMatcherInSameRound + "." + lname + "WithSameValue(" + rhs + "." + fieldAccessor
 					+ ")" + ")";
 		}
