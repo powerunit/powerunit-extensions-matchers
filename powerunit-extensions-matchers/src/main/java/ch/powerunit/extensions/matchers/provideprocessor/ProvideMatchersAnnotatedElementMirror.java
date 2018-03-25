@@ -462,8 +462,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 		wjfo.println("    " + simpleNameOfGeneratedInterfaceMatcher + genericNoParent + " m=new "
 				+ simpleNameOfGeneratedImplementationMatcher + genericNoParent + "();");
 
-		fields.stream().filter(FieldDescription::isNotIgnore).map(
-				f -> "    m." + f.getFieldName() + "(org.hamcrest.Matchers.is(other." + f.getFieldAccessor() + "));")
+		fields.stream().filter(FieldDescription::isNotIgnore).map(f -> "    " + f.getFieldCopy("m", "other") + ";")
 				.forEach(wjfo::println);
 		wjfo.println("    return m;");
 		wjfo.println("  }");
@@ -510,8 +509,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 				+ parentMirror.fullyQualifiedNameOfGeneratedClass + "." + parentMirror.methodShortClassName
 				+ "WithSameValue(other));");
 
-		fields.stream().filter(FieldDescription::isNotIgnore).map(
-				f -> "    m." + f.getFieldName() + "(org.hamcrest.Matchers.is(other." + f.getFieldAccessor() + "));")
+		fields.stream().filter(FieldDescription::isNotIgnore).map(f -> "    " + f.getFieldCopy("m", "other") + ";")
 				.forEach(wjfo::println);
 		wjfo.println("    return m;");
 		wjfo.println("  }");
