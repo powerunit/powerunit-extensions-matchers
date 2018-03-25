@@ -508,7 +508,6 @@
 				<artifactId>coveralls-maven-plugin</artifactId>
 				<version>4.3.0</version>
 				<configuration>
-					<serviceJobId>travis-ci</serviceJobId>
 				</configuration>
 			</plugin>
 
