@@ -259,6 +259,17 @@ public class ProvideMatchersAnnotatedElementMirror {
 				+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + generic + "> otherMatcher) {");
 		wjfo.println("      return andWith(otherMatcher);");
 		wjfo.println("    }");
+		wjfo.println();
+		wjfo.println(generateJavaDoc("  ",
+				"Method that return the parent builder and accept one single Matcher on the object itself.",
+				Optional.of(
+						"<b>This method only works in the contexte of a parent builder. If the real type is Void, then nothing will be returned.</b>"),
+				Optional.of("otherMatcher the matcher on the object itself."),
+				Optional.of("the parent builder or null if not applicable"), false, false));
+		wjfo.println("    default _PARENT endWith(org.hamcrest.Matcher<? super "
+				+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + generic + "> otherMatcher){");
+		wjfo.println("      return andWith(otherMatcher).end();");
+		wjfo.println("    }");
 		wjfo.println("  }");
 
 	}
