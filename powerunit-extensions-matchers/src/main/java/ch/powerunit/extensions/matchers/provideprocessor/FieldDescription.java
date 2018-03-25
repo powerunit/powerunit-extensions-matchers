@@ -20,8 +20,10 @@
 package ch.powerunit.extensions.matchers.provideprocessor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -31,7 +33,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import javax.tools.Diagnostic.Kind;
 
+import ch.powerunit.extensions.matchers.AddToMatcher;
+import ch.powerunit.extensions.matchers.AddToMatchers;
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcherField;
@@ -60,6 +65,7 @@ public class FieldDescription {
 	private final TypeMirror fieldTypeMirror;
 	private final String generic;
 	private final String defaultReturnMethod;
+	private final AddToMatcher addToMatchers[];
 
 	public FieldDescription(ProvideMatchersAnnotatedElementMirror containingElementMirror, String fieldAccessor,
 			String fieldName, String methodFieldName, String fieldType, Type type, boolean isInSameRound,
@@ -75,6 +81,7 @@ public class FieldDescription {
 		this.fieldElement = fieldElement;
 		this.fieldTypeMirror = fieldTypeMirror;
 		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
+		this.addToMatchers = fieldElement.getAnnotationsByType(AddToMatcher.class);
 		if (fieldTypeMirror instanceof DeclaredType) {
 			DeclaredType dt = ((DeclaredType) fieldTypeMirror);
 			this.generic = dt.getTypeArguments().stream().map(Object::toString).collect(Collectors.joining(","));
@@ -158,8 +165,23 @@ public class FieldDescription {
 		default:
 			// Nothing
 		}
+		tmp1.addAll(Arrays.stream(addToMatchers).map(this::generateFunctionForImplementation).filter(t -> t != null)
+				.collect(Collectors.toList()));
+		tmp2.addAll(Arrays.stream(addToMatchers).map(this::generateFunctionForDSL).filter(t -> t != null)
+				.collect(Collectors.toList()));
 		implGenerator = Collections.unmodifiableList(tmp1);
 		dslGenerator = Collections.unmodifiableList(tmp2);
+	}
+
+	private Function<String, String> generateFunctionForDSL(AddToMatcher a) {
+		return prefix -> buildDsl(prefix, getJavaDocFor(Optional.empty(), Optional.empty(), Optional.empty()),
+				generateDeclaration(a.suffix(), a.argument()));
+	}
+
+	private Function<String, String> generateFunctionForImplementation(AddToMatcher a) {
+		return prefix -> buildImplementation(prefix, generateDeclaration(a.suffix(), a.argument()),
+				Arrays.stream(a.body()).map(l -> prefix + l).collect(Collectors.joining("\n")) + "\n" + prefix
+						+ "return this;");
 	}
 
 	private String getJavaDocFor(Optional<String> addToDescription, Optional<String> param, Optional<String> see) {

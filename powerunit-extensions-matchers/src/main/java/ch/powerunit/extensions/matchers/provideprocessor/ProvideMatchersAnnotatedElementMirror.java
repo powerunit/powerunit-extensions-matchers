@@ -3,6 +3,8 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -48,17 +50,17 @@ public class ProvideMatchersAnnotatedElementMirror {
 	private final TypeElement typeElementForSuperClassOfClassAnnotatedWithProvideMatcher;
 	private final Function<String, ProvideMatchersAnnotatedElementMirror> findMirrorForTypeName;
 	private final String genericForChaining;
-	private final Set<? extends Element> elementsWithIgnore;
+	private final Set<? extends Element> elementsWithOtherAnnotation[];
 	private final List<FieldDescription> fields;
 
 	public ProvideMatchersAnnotatedElementMirror(TypeElement typeElement, ProcessingEnvironment processingEnv,
 			Predicate<Element> isInSameRound,
 			Function<String, ProvideMatchersAnnotatedElementMirror> findMirrorForTypeName,
-			Set<? extends Element> elementsWithIgnore) {
+			Set<? extends Element>... elementsWithOtherAnnotation) {
 		this.typeElementForClassAnnotatedWithProvideMatcher = typeElement;
 		this.processingEnv = processingEnv;
 		this.isInSameRound = isInSameRound;
-		this.elementsWithIgnore = elementsWithIgnore;
+		this.elementsWithOtherAnnotation = elementsWithOtherAnnotation;
 		this.objectTE = processingEnv.getElementUtils().getTypeElement("java.lang.Object");
 		this.fullyQualifiedNameOfClassAnnotatedWithProvideMatcher = typeElement.getQualifiedName().toString();
 		String tpackageName = processingEnv.getElementUtils().getPackageOf(typeElement).getQualifiedName().toString();
@@ -114,15 +116,12 @@ public class ProvideMatchersAnnotatedElementMirror {
 		this.fields = typeElement.getEnclosedElements().stream()
 				.map(ie -> ie.accept(providesMatchersSubElementVisitor,
 						this))
-				.filter(Optional::isPresent)
-				.map(t -> t
-						.get())
-				.collect(
+				.filter(Optional::isPresent).map(t -> t.get()).collect(
 						Collectors.collectingAndThen(
 								Collectors.groupingBy(t -> t.getFieldName(),
 										Collectors.reducing(null,
 												(v1, v2) -> v1 == null ? v2 : v1.isIgnore() ? v1 : v2)),
-						c -> c.values().stream().collect(Collectors.toList())));
+						c -> c == null ? Collections.emptyList() : c.values().stream().collect(Collectors.toList())));
 		;
 	}
 
@@ -664,11 +663,12 @@ public class ProvideMatchersAnnotatedElementMirror {
 	}
 
 	public void removeFromIgnoreList(Element e) {
-		elementsWithIgnore.remove(e);
+		Arrays.stream(elementsWithOtherAnnotation).forEach(t -> t.remove(e));
 	}
 
 	public boolean isInsideIgnoreList(Element e) {
-		return elementsWithIgnore.contains(e);
+		return Arrays.stream(elementsWithOtherAnnotation).map(t -> t.contains(e)).filter(t -> t).findAny()
+				.orElse(false);
 	}
 
 	public TypeElement getTypeElementForClassAnnotatedWithProvideMatcher() {
