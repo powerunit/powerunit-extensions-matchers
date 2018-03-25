@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -33,10 +32,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
-import javax.tools.Diagnostic.Kind;
 
 import ch.powerunit.extensions.matchers.AddToMatcher;
-import ch.powerunit.extensions.matchers.AddToMatchers;
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcherField;
@@ -124,7 +121,6 @@ public class FieldDescription {
 		}
 		switch (type) {
 		case ARRAY:
-			tmp1.add(this::getImplementationForArray);
 			tmp2.add(this::getDslForArray);
 			break;
 		case OPTIONAL:
@@ -132,35 +128,25 @@ public class FieldDescription {
 			tmp2.add(this::getDslForOptional);
 			break;
 		case COMPARABLE:
-			tmp1.add(this::getImplementationForComparable);
 			tmp2.add(this::getDslForComparable);
 			break;
 		case STRING:
-			tmp1.add(this::getImplementationForComparable);
 			tmp2.add(this::getDslForComparable);
-			tmp1.add(this::getImplementationForString);
 			tmp2.add(this::getDslForString);
 			break;
 		case COLLECTION:
-			tmp1.add(this::getImplementationForIterable);
 			tmp2.add(this::getDslForIterable);
-			tmp1.add(this::getImplementationForCollection);
 			tmp2.add(this::getDslForCollection);
 			break;
 		case LIST:
-			tmp1.add(this::getImplementationForIterable);
 			tmp2.add(this::getDslForIterable);
-			tmp1.add(this::getImplementationForCollection);
 			tmp2.add(this::getDslForCollection);
 			break;
 		case SET:
-			tmp1.add(this::getImplementationForIterable);
 			tmp2.add(this::getDslForIterable);
-			tmp1.add(this::getImplementationForCollection);
 			tmp2.add(this::getDslForCollection);
 			break;
 		case SUPPLIER:
-			tmp1.add(this::getImplementationForSupplier);
 			tmp2.add(this::getDslForSupplier);
 		default:
 			// Nothing
@@ -223,15 +209,16 @@ public class FieldDescription {
 				.append(prefix).append(declaration).append(";\n").toString();
 	}
 
+	private String buildDefaultDsl(String prefix, String javadoc, String declaration, String innerMatcher) {
+		return new StringBuilder().append(prefix).append(javadoc.replaceAll("\\R", "\n" + prefix)).append("\n")
+				.append(prefix).append("default ").append(declaration).append("{\n").append(prefix).append(prefix)
+				.append("return ").append(fieldName).append("(").append(innerMatcher).append(");\n").append(prefix)
+				.append("}").toString();
+	}
+
 	private String generateDeclaration(String postFix, String arguments) {
 		return new StringBuilder().append(defaultReturnMethod).append(" ").append(fieldName).append(postFix).append("(")
 				.append(arguments).append(")").toString();
-	}
-
-	private String getImplementationForSupplier(String prefix) {
-		return buildImplementation(prefix,
-				generateDeclaration("SupplierResult", "org.hamcrest.Matcher<? super " + generic + "> matcherOnResult"),
-				"return " + fieldName + "(new " + methodFieldName + "MatcherSupplier(matcherOnResult));");
 	}
 
 	private String getImplementationForDefault(String prefix) {
@@ -239,9 +226,6 @@ public class FieldDescription {
 		sb.append(buildImplementation(prefix,
 				generateDeclaration("", "org.hamcrest.Matcher<? super " + fieldType + "> matcher"),
 				fieldName + "= new " + methodFieldName + "Matcher(matcher);\nreturn this;"));
-
-		sb.append(buildImplementation(prefix, generateDeclaration("", fieldType + " value"),
-				"return " + fieldName + "(org.hamcrest.Matchers.is(value));"));
 
 		return sb.toString();
 	}
@@ -259,60 +243,6 @@ public class FieldDescription {
 						+ "(tmp);\nreturn tmp;");
 	}
 
-	private String getImplementationForString(String prefix) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(buildImplementation(prefix, generateDeclaration("ContainsString", "String other"),
-				"return " + fieldName + "(org.hamcrest.Matchers.containsString(other));"));
-
-		sb.append(buildImplementation(prefix, generateDeclaration("StartsWith", "String other"),
-				"return " + fieldName + "(org.hamcrest.Matchers.startsWith(other));"));
-
-		sb.append(buildImplementation(prefix, generateDeclaration("EndsWith", "String other"),
-				"return " + fieldName + "(org.hamcrest.Matchers.endsWith(other));"));
-
-		return sb.toString();
-	}
-
-	private String getImplementationForIterable(String prefix) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(buildImplementation(prefix, generateDeclaration("IsEmptyIterable", ""),
-				"return " + fieldName + "((org.hamcrest.Matcher)org.hamcrest.Matchers.emptyIterable());"));
-
-		if (!"".equals(generic)) {
-			sb.append(buildImplementation(prefix, generateDeclaration("Contains", generic + "... elements"),
-					"return " + fieldName + "(org.hamcrest.Matchers.contains(elements));"));
-
-			sb.append(buildImplementation(prefix,
-					generateDeclaration("Contains", "org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
-					"return " + fieldName + "(org.hamcrest.Matchers.contains(matchersOnElements));"));
-
-			sb.append(buildImplementation(prefix, generateDeclaration("ContainsInAnyOrder", generic + "... elements"),
-					"return " + fieldName + "(org.hamcrest.Matchers.containsInAnyOrder(elements));"));
-
-			sb.append(buildImplementation(prefix,
-					generateDeclaration("ContainsInAnyOrder",
-							"org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
-					"return " + fieldName + "(org.hamcrest.Matchers.containsInAnyOrder(matchersOnElements));"));
-
-			sb.append(buildImplementation(prefix,
-					generateDeclaration("Contains",
-							"java.util.List<org.hamcrest.Matcher<? super " + generic + ">> matchersOnElements"),
-					"return " + fieldName + "(org.hamcrest.Matchers.contains(matchersOnElements));"));
-
-		}
-		return sb.toString();
-	}
-
-	private String getImplementationForArray(String prefix) {
-		return buildImplementation(prefix, generateDeclaration("IsEmpty", ""),
-				"return " + fieldName + "((org.hamcrest.Matcher)org.hamcrest.Matchers.emptyArray());");
-	}
-
-	private String getImplementationForCollection(String prefix) {
-		return buildImplementation(prefix, generateDeclaration("IsEmpty", ""),
-				"return " + fieldName + "((org.hamcrest.Matcher)org.hamcrest.Matchers.empty());");
-	}
-
 	private String getImplementationForOptional(String prefix) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(buildImplementation(prefix, generateDeclaration("IsPresent", ""),
@@ -324,37 +254,18 @@ public class FieldDescription {
 		return sb.toString();
 	}
 
-	private String getImplementationForComparable(String prefix) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(buildImplementation(prefix, generateDeclaration("ComparesEqualTo", fieldType + " value"),
-				"return " + fieldName + "(org.hamcrest.Matchers.comparesEqualTo(value));"));
-
-		sb.append(buildImplementation(prefix, generateDeclaration("LessThan", fieldType + " value"),
-				"return " + fieldName + "(org.hamcrest.Matchers.lessThan(value));"));
-
-		sb.append(buildImplementation(prefix, generateDeclaration("LessThanOrEqualTo", fieldType + " value"),
-				"return " + fieldName + "(org.hamcrest.Matchers.lessThanOrEqualTo(value));"));
-
-		sb.append(buildImplementation(prefix, generateDeclaration("GreaterThan", fieldType + " value"),
-				"return " + fieldName + "(org.hamcrest.Matchers.greaterThan(value));"));
-
-		sb.append(buildImplementation(prefix, generateDeclaration("GreaterThanOrEqualTo", fieldType + " value"),
-				"return " + fieldName + "(org.hamcrest.Matchers.greaterThanOrEqualTo(value));"));
-
-		return sb.toString();
-	}
-
 	public String getImplementationInterface(String prefix) {
 		return implGenerator.stream().map(g -> g.apply(prefix)).collect(Collectors.joining("\n"));
 	}
 
 	public String getDslForSupplier(String prefix) {
-		return buildDsl(prefix,
+		return buildDefaultDsl(prefix,
 				getJavaDocFor(
 						Optional.of(
 								" Validate that the result of the supplier is accepted by another matcher (the result of the execution must be stable)"),
 						Optional.of("matcherOnResult a Matcher on result of the supplier execution"), Optional.empty()),
-				generateDeclaration("SupplierResult", "org.hamcrest.Matcher<? super " + generic + "> matcherOnResult"));
+				generateDeclaration("SupplierResult", "org.hamcrest.Matcher<? super " + generic + "> matcherOnResult"),
+				"new " + methodFieldName + "MatcherSupplier(matcherOnResult)");
 	}
 
 	public String getDslForDefault(String prefix) {
@@ -364,12 +275,12 @@ public class FieldDescription {
 						Optional.of(SEE_TEXT_FOR_HAMCREST_MATCHER)),
 				generateDeclaration("", "org.hamcrest.Matcher<? super " + fieldType + "> matcher")));
 
-		sb.append(buildDsl(prefix,
+		sb.append(buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.empty(),
 						Optional.of(
 								"value an expected value for the field, which will be compared using the is matcher"),
 						Optional.of(SEE_TEXT_FOR_IS_MATCHER)),
-				generateDeclaration("", fieldType + " value")));
+				generateDeclaration("", fieldType + " value"), "org.hamcrest.Matchers.is(value)"));
 
 		return sb.toString();
 	}
@@ -385,85 +296,94 @@ public class FieldDescription {
 	}
 
 	private String getDslForString(String prefix) {
+
 		StringBuilder sb = new StringBuilder();
 
-		sb.append(buildDsl(prefix,
+		sb.append(buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("that the string contains another one"),
 						Optional.of("other the string is contains in the other one"),
 						Optional.of("org.hamcrest.Matchers#containsString(java.lang.String)")),
-				generateDeclaration("ContainsString", "String other")));
+				generateDeclaration("ContainsString", "String other"), "org.hamcrest.Matchers.containsString(other)"));
 
-		sb.append(buildDsl(prefix,
+		sb.append(buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("that the string starts with another one"),
 						Optional.of("other the string to use to compare"),
 						Optional.of("org.hamcrest.Matchers#startsWith(java.lang.String)")),
-				generateDeclaration("StartsWith", "String other")));
+				generateDeclaration("StartsWith", "String other"), "org.hamcrest.Matchers.startsWith(other)"));
 
-		sb.append(buildDsl(prefix,
+		sb.append(buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("that the string ends with another one"),
 						Optional.of("other the string to use to compare"),
 						Optional.of("org.hamcrest.Matchers#endsWith(java.lang.String)")),
-				generateDeclaration("EndsWith", "String other")));
+				generateDeclaration("EndsWith", "String other"), "org.hamcrest.Matchers.endsWith(other)"));
 
 		return sb.toString();
 	}
 
 	private String getDslForIterable(String prefix) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(buildDsl(prefix,
+		sb.append(buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("that the iterable is empty"), Optional.empty(), Optional.empty()),
-				generateDeclaration("IsEmptyIterable", "")));
+				generateDeclaration("IsEmptyIterable", ""),
+				"(org.hamcrest.Matcher)org.hamcrest.Matchers.emptyIterable()"));
 
 		if (!"".equals(generic)) {
-			sb.append(buildDsl(prefix,
+			sb.append(buildDefaultDsl(prefix,
 					getJavaDocFor(Optional.of("that the iterable contains the received elements"),
 							Optional.of("elements the elements"),
 							Optional.of("org.hamcrest.Matchers#contains(java.lang.Object[])")),
-					generateDeclaration("Contains", generic + "... elements")));
+					generateDeclaration("Contains", generic + "... elements"),
+					"org.hamcrest.Matchers.contains(elements)"));
 
-			sb.append(buildDsl(prefix,
+			sb.append(buildDefaultDsl(prefix,
 					getJavaDocFor(Optional.of("that the iterable contains the received elements, using matchers"),
 							Optional.of("matchersOnElements the matchers on the elements"),
 							Optional.of("org.hamcrest.Matchers#contains(org.hamcrest.Matcher[])")),
-					generateDeclaration("Contains", "org.hamcrest.Matcher<" + generic + ">... matchersOnElements")));
+					generateDeclaration("Contains", "org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
+					"org.hamcrest.Matchers.contains(matchersOnElements)"));
 
-			sb.append(buildDsl(prefix,
+			sb.append(buildDefaultDsl(prefix,
 					getJavaDocFor(Optional.of("that the iterable contains the received elements in any order"),
 							Optional.of("elements the elements"),
 							Optional.of("org.hamcrest.Matchers#containsInAnyOrder(java.lang.Object[])")),
-					generateDeclaration("ContainsInAnyOrder", generic + "... elements")));
+					generateDeclaration("ContainsInAnyOrder", generic + "... elements"),
+					"org.hamcrest.Matchers.containsInAnyOrder(elements)"));
 
-			sb.append(buildDsl(prefix,
+			sb.append(buildDefaultDsl(prefix,
 					getJavaDocFor(
 							Optional.of(
 									"that the iterable contains the received elements, using matchers in any order"),
 							Optional.of("matchersOnElements the matchers on the elements"),
 							Optional.of("org.hamcrest.Matchers#containsInAnyOrder(org.hamcrest.Matcher[])")),
 					generateDeclaration("ContainsInAnyOrder",
-							"org.hamcrest.Matcher<" + generic + ">... matchersOnElements")));
+							"org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
+					"org.hamcrest.Matchers.containsInAnyOrder(matchersOnElements)"));
 
-			sb.append(buildDsl(prefix,
-					getJavaDocFor(
-							Optional.of("that the iterable contains the received elements, using list of matcher"),
-							Optional.of("matchersOnElements the matchers on the elements"),
-							Optional.of("org.hamcrest.Matchers#contains(java.util.List)")),
-					generateDeclaration("Contains",
-							"java.util.List<org.hamcrest.Matcher<? super " + generic + ">> matchersOnElements")));
+			sb.append(
+					buildDefaultDsl(prefix,
+							getJavaDocFor(
+									Optional.of(
+											"that the iterable contains the received elements, using list of matcher"),
+									Optional.of("matchersOnElements the matchers on the elements"),
+									Optional.of("org.hamcrest.Matchers#contains(java.util.List)")),
+							generateDeclaration("Contains",
+									"java.util.List<org.hamcrest.Matcher<? super " + generic + ">> matchersOnElements"),
+					"org.hamcrest.Matchers.contains(matchersOnElements)"));
 		}
 
 		return sb.toString();
 	}
 
 	private String getDslForArray(String prefix) {
-		return buildDsl(prefix,
+		return buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("that the array is empty"), Optional.empty(), Optional.empty()),
-				generateDeclaration("IsEmpty", ""));
+				generateDeclaration("IsEmpty", ""), "(org.hamcrest.Matcher)org.hamcrest.Matchers.emptyArray()");
 	}
 
 	private String getDslForCollection(String prefix) {
-		return buildDsl(prefix,
+		return buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("that the collection is empty"), Optional.empty(), Optional.empty()),
-				generateDeclaration("IsEmpty", ""));
+				generateDeclaration("IsEmpty", ""), "(org.hamcrest.Matcher)org.hamcrest.Matchers.empty()");
 	}
 
 	private String getDslForOptional(String prefix) {
@@ -482,35 +402,38 @@ public class FieldDescription {
 
 	private String getDslForComparable(String prefix) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(buildDsl(prefix,
+		sb.append(buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("that this field is equals to another one, using the compareTo method"),
 						Optional.of("value the value to compare with"),
 						Optional.of("org.hamcrest.Matchers#comparesEqualTo(java.lang.Comparable)")),
-				generateDeclaration("ComparesEqualTo", fieldType + " value")));
+				generateDeclaration("ComparesEqualTo", fieldType + " value"),
+				"org.hamcrest.Matchers.comparesEqualTo(value)"));
 
-		sb.append(buildDsl(prefix,
+		sb.append(buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("that this field is less than another value"),
 						Optional.of("value the value to compare with"),
 						Optional.of("org.hamcrest.Matchers#lessThan(java.lang.Comparable)")),
-				generateDeclaration("LessThan", fieldType + " value")));
+				generateDeclaration("LessThan", fieldType + " value"), "org.hamcrest.Matchers.lessThan(value)"));
 
-		sb.append(buildDsl(prefix,
+		sb.append(buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("that this field is less or equal than another value"),
 						Optional.of("value the value to compare with"),
 						Optional.of("org.hamcrest.Matchers#lessThanOrEqualTo(java.lang.Comparable)")),
-				generateDeclaration("LessThanOrEqualTo", fieldType + " value")));
+				generateDeclaration("LessThanOrEqualTo", fieldType + " value"),
+				"org.hamcrest.Matchers.lessThanOrEqualTo(value)"));
 
-		sb.append(buildDsl(prefix,
+		sb.append(buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("that this field is greater than another value"),
 						Optional.of("value the value to compare with"),
 						Optional.of("org.hamcrest.Matchers#greaterThan(java.lang.Comparable)")),
-				generateDeclaration("GreaterThan", fieldType + " value")));
+				generateDeclaration("GreaterThan", fieldType + " value"), "org.hamcrest.Matchers.greaterThan(value)"));
 
-		sb.append(buildDsl(prefix,
+		sb.append(buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("that this field is greater or equal than another value"),
 						Optional.of("value the value to compare with"),
 						Optional.of("org.hamcrest.Matchers#greaterThanOrEqualTo(java.lang.Comparable)")),
-				generateDeclaration("GreaterThanOrEqualTo", fieldType + " value")));
+				generateDeclaration("GreaterThanOrEqualTo", fieldType + " value"),
+				"org.hamcrest.Matchers.greaterThanOrEqualTo(value)"));
 
 		return sb.toString();
 	}
