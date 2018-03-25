@@ -8,7 +8,7 @@ script:
   && travis_wait 60 mvn clean install site -Psite --settings ../target/travis/settings.xml)
   || (cd powerunit-extensions-matchers && mvn clean install --settings ../target/travis/settings.xml) "
 after_success:
-- "(cd powerunit-extensions-matchers && mvn jacoco:report coveralls:report)"
+- "(cd powerunit-extensions-matchers && mvn jacoco:report coveralls:report -DrepoToken=${repoToken})"
 env:
   global:
   - secure: micrjSRaEhZIKRIkVEaLlV1gENt4ME8hMtEg1yF4MIeThCQTG7LgUJke7T8zdS1D5E3ZEpabkueaWsdtaA375zvq/mqn6Y86SZgmussoqjp3WHm0Yu17BCKWK4G3yIIStD+yXR8zeCjh2YOV7JHztlxU/TAV1JVemroS0JCozg8=
