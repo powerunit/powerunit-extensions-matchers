@@ -91,10 +91,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 		TypeElement provideMatchersTE = processingEnv.getElementUtils()
 				.getTypeElement("ch.powerunit.extensions.matchers.ProvideMatchers");
-		TypeElement objectTE = processingEnv.getElementUtils().getTypeElement("java.lang.Object");
-
 		if (!roundEnv.processingOver()) {
-			processAnnotatedElements(roundEnv, provideMatchersTE, objectTE);
+			processAnnotatedElements(roundEnv, provideMatchersTE);
 
 		} else {
 			processReport();
@@ -169,8 +167,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		}
 	}
 
-	private void processAnnotatedElements(RoundEnvironment roundEnv, TypeElement provideMatchersTE,
-			TypeElement objectTE) {
+	private void processAnnotatedElements(RoundEnvironment roundEnv, TypeElement provideMatchersTE) {
 		Set<? extends Element> elementsWithPM = roundEnv.getElementsAnnotatedWith(ProvideMatchers.class);
 		Set<? extends Element> elementsWithIgnore = roundEnv.getElementsAnnotatedWith(IgnoreInMatcher.class);
 		Set<? extends Element> elementsWithAddToMatcher = roundEnv.getElementsAnnotatedWith(AddToMatcher.class);
