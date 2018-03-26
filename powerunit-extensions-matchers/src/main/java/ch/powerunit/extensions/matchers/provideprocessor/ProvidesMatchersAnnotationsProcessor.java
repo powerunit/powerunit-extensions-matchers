@@ -211,7 +211,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				: elements.stream().filter(e -> typesUtils.isSameType(e.asType(), t.asType())).findAny().isPresent();
 	}
 
-	AnnotationMirror getProvideMatchersAnnotation(TypeElement provideMatchersTE,
+	public AnnotationMirror getProvideMatchersAnnotation(TypeElement provideMatchersTE,
 			Collection<? extends AnnotationMirror> annotations) {
 		return annotations.stream().filter(a -> a.getAnnotationType().equals(provideMatchersTE.asType())).findAny()
 				.orElse(null);
