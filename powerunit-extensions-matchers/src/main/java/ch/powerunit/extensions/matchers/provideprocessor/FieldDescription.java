@@ -131,19 +131,14 @@ public class FieldDescription {
 			tmp2.add(this::getDslForString);
 			break;
 		case COLLECTION:
-			tmp2.add(this::getDslForIterable);
-			tmp2.add(this::getDslForCollection);
-			break;
 		case LIST:
-			tmp2.add(this::getDslForIterable);
-			tmp2.add(this::getDslForCollection);
-			break;
 		case SET:
 			tmp2.add(this::getDslForIterable);
 			tmp2.add(this::getDslForCollection);
 			break;
 		case SUPPLIER:
 			tmp2.add(this::getDslForSupplier);
+			break;
 		default:
 			// Nothing
 		}
