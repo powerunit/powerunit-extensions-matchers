@@ -59,7 +59,6 @@ public class FieldDescription {
 	private final ProvideMatchersAnnotatedElementMirror containingElementMirror;
 	private final boolean ignore;
 	private final Element fieldElement;
-	private final TypeMirror fieldTypeMirror;
 	private final String generic;
 	private final String defaultReturnMethod;
 	private final AddToMatcher addToMatchers[];
@@ -76,7 +75,6 @@ public class FieldDescription {
 		this.processingEnv = processingEnv;
 		this.ignore = ignore;
 		this.fieldElement = fieldElement;
-		this.fieldTypeMirror = fieldTypeMirror;
 		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
 		this.addToMatchers = fieldElement.getAnnotationsByType(AddToMatcher.class);
 		if (fieldTypeMirror instanceof DeclaredType) {
