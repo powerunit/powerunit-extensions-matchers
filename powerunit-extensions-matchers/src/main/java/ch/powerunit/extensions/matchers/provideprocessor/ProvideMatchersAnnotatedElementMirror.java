@@ -314,6 +314,19 @@ public class ProvideMatchersAnnotatedElementMirror {
 		wjfo.println(fields.stream().filter(FieldDescription::isNotIgnore)
 				.map(f -> f.getImplementationInterface("    ")).collect(Collectors.joining("\n")));
 
+		generatePrivateImplementationForMatchersSafely(wjfo, fields);
+
+		generatedPrivateImplementationForDescribeTo(wjfo, fields);
+		wjfo.println();
+
+		generatePrivateImplementationForEnd(wjfo);
+
+		generatePrivateImplementationForAndWith(wjfo);
+
+		wjfo.println("  }");
+	}
+
+	private void generatePrivateImplementationForMatchersSafely(PrintWriter wjfo, List<FieldDescription> fields) {
 		wjfo.println("    @Override");
 		wjfo.println("    protected boolean matchesSafely(" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
 				+ " actual, org.hamcrest.Description mismatchDescription) {");
@@ -337,7 +350,17 @@ public class ProvideMatchersAnnotatedElementMirror {
 		wjfo.println("      return result;");
 		wjfo.println("    }");
 		wjfo.println();
+	}
 
+	private void generatePrivateImplementationForEnd(PrintWriter wjfo) {
+		wjfo.println("    @Override");
+		wjfo.println("    public _PARENT end() {");
+		wjfo.println("      return _parentBuilder;");
+		wjfo.println("    }");
+		wjfo.println();
+	}
+
+	private void generatedPrivateImplementationForDescribeTo(PrintWriter wjfo, List<FieldDescription> fields) {
 		wjfo.println("    @Override");
 		wjfo.println("    public void describeTo(org.hamcrest.Description description) {");
 		wjfo.println("      description.appendText(\"an instance of "
@@ -351,14 +374,9 @@ public class ProvideMatchersAnnotatedElementMirror {
 				"        description.appendText(\"[object itself \").appendDescriptionOf(nMatcher).appendText(\"]\\n\");");
 		wjfo.println("      }");
 		wjfo.println("    }");
-		wjfo.println();
+	}
 
-		wjfo.println("    @Override");
-		wjfo.println("    public _PARENT end() {");
-		wjfo.println("      return _parentBuilder;");
-		wjfo.println("    }");
-		wjfo.println();
-
+	private void generatePrivateImplementationForAndWith(PrintWriter wjfo) {
 		wjfo.println("    @Override");
 		wjfo.println("    public " + simpleNameOfGeneratedInterfaceMatcher + " " + genericParent
 				+ " andWith(org.hamcrest.Matcher<? super " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
@@ -367,8 +385,6 @@ public class ProvideMatchersAnnotatedElementMirror {
 				"      nextMatchers.add(java.util.Objects.requireNonNull(otherMatcher,\"A matcher is expected\"));");
 		wjfo.println("      return this;");
 		wjfo.println("    }");
-
-		wjfo.println("  }");
 	}
 
 	private String generateDSLStarter(PrintWriter wjfo, List<FieldDescription> fields) {
