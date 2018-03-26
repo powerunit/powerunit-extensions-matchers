@@ -41,7 +41,6 @@ public class ProvideMatchersAnnotatedElementMirror {
 	private final String genericParent;
 	private final String genericNoParent;
 	private final String fullGenericParent;
-	private final String fullGenericNoParent;
 	private final String defaultReturnMethod;
 	private final String fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher;
 	private final String simpleNameOfGeneratedInterfaceMatcher;
@@ -103,7 +102,6 @@ public class ProvideMatchersAnnotatedElementMirror {
 		this.genericParent = getAddParentToGeneric(generic);
 		this.genericNoParent = getAddNoParentToGeneric(generic);
 		this.fullGenericParent = getAddParentToGeneric(fullGeneric);
-		this.fullGenericNoParent = getAddNoParentToGeneric(fullGeneric);
 		this.defaultReturnMethod = simpleNameOfClassAnnotatedWithProvideMatcher + "Matcher" + genericParent;
 		this.simpleNameOfGeneratedInterfaceMatcher = simpleNameOfClassAnnotatedWithProvideMatcher + "Matcher";
 		this.simpleNameOfGeneratedImplementationMatcher = simpleNameOfClassAnnotatedWithProvideMatcher + "MatcherImpl";
