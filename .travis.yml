@@ -11,7 +11,7 @@ after_success:
 - "(cd powerunit-extensions-matchers && mvn jacoco:report coveralls:report -DrepoToken=${repoToken})"
 - "bash <(curl -s https://codecov.io/bash)"
 - "(cd powerunit-extensions-matchers && mvn org.apache.maven.plugins:maven-dependency-plugin:copy -Dartifact=com.codacy:codacy-coverage-reporter:4.0.0:jar:assembly -Dtransitive)"
-- "(cd powerunit-extensions-matchers/target/dependency && java -jar codacy-coverage-reporter-4.0.0-assembly.jar report -l Java -r ../site/jacoco.xml)"
+- "(cd powerunit-extensions-matchers/target/dependency && java -jar codacy-coverage-reporter-4.0.0-assembly.jar report -l Java -r ../site/jacoco/jacoco.xml)"
 env:
   global:
   - secure: micrjSRaEhZIKRIkVEaLlV1gENt4ME8hMtEg1yF4MIeThCQTG7LgUJke7T8zdS1D5E3ZEpabkueaWsdtaA375zvq/mqn6Y86SZgmussoqjp3WHm0Yu17BCKWK4G3yIIStD+yXR8zeCjh2YOV7JHztlxU/TAV1JVemroS0JCozg8=
