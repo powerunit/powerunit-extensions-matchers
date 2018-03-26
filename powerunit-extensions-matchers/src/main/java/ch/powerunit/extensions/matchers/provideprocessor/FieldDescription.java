@@ -62,6 +62,14 @@ public class FieldDescription {
 	private final String generic;
 	private final String defaultReturnMethod;
 
+	public static final String computeGenericInformation(TypeMirror fieldTypeMirror) {
+		if (fieldTypeMirror instanceof DeclaredType) {
+			DeclaredType dt = ((DeclaredType) fieldTypeMirror);
+			return dt.getTypeArguments().stream().map(Object::toString).collect(Collectors.joining(","));
+		}
+		return "";
+	}
+
 	public FieldDescription(ProvideMatchersAnnotatedElementMirror containingElementMirror, String fieldAccessor,
 			String fieldName, String methodFieldName, String fieldType, Type type, boolean isInSameRound,
 			ProcessingEnvironment processingEnv, boolean ignore, Element fieldElement, TypeMirror fieldTypeMirror) {
@@ -75,12 +83,7 @@ public class FieldDescription {
 		this.ignore = ignore;
 		this.fieldElement = fieldElement;
 		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
-		if (fieldTypeMirror instanceof DeclaredType) {
-			DeclaredType dt = ((DeclaredType) fieldTypeMirror);
-			this.generic = dt.getTypeArguments().stream().map(Object::toString).collect(Collectors.joining(","));
-		} else {
-			this.generic = "";
-		}
+		this.generic = computeGenericInformation(fieldTypeMirror);
 		if (isInSameRound) {
 			TypeElement typeElement = processingEnv.getElementUtils().getTypeElement(fieldType);
 			if (typeElement != null) {
