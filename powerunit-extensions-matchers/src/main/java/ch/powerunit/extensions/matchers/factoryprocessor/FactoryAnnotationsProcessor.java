@@ -258,7 +258,7 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 		return result;
 	}
 
-	AnnotationMirror getFactoryAnnotation(TypeElement factoryAnnotationTE,
+	public AnnotationMirror getFactoryAnnotation(TypeElement factoryAnnotationTE,
 			Collection<? extends AnnotationMirror> annotations) {
 		return annotations.stream().filter(a -> a.getAnnotationType().equals(factoryAnnotationTE.asType())).findAny()
 				.orElse(null);
