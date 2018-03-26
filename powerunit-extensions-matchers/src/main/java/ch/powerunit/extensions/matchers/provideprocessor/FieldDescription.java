@@ -159,19 +159,18 @@ public class FieldDescription {
 		dslGenerator = Collections.unmodifiableList(tmp2);
 	}
 
-	/* package private */ Function<String, String> generateFunctionForDSL(AddToMatcher a) {
+	public Function<String, String> generateFunctionForDSL(AddToMatcher a) {
 		return prefix -> buildDsl(prefix, getJavaDocFor(Optional.empty(), Optional.empty(), Optional.empty()),
 				generateDeclaration(a.suffix(), a.argument()));
 	}
 
-	/* package private */ Function<String, String> generateFunctionForImplementation(AddToMatcher a) {
+	public Function<String, String> generateFunctionForImplementation(AddToMatcher a) {
 		return prefix -> buildImplementation(prefix, generateDeclaration(a.suffix(), a.argument()),
 				Arrays.stream(a.body()).map(l -> prefix + l).collect(Collectors.joining("\n")) + "\n" + prefix
 						+ "return this;");
 	}
 
-	/* package private */ String getJavaDocFor(Optional<String> addToDescription, Optional<String> param,
-			Optional<String> see) {
+	public String getJavaDocFor(Optional<String> addToDescription, Optional<String> param, Optional<String> see) {
 		String linkToAccessor = "{@link "
 				+ containingElementMirror.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher() + "#"
 				+ getFieldAccessor() + " This field is accessed by using this approach}.";
@@ -198,32 +197,31 @@ public class FieldDescription {
 		return sb.toString();
 	}
 
-	/* package private */ String buildImplementation(String prefix, String declaration, String body) {
+	public String buildImplementation(String prefix, String declaration, String body) {
 		return new StringBuilder().append(prefix).append("@Override").append("\n").append(prefix).append("public ")
 				.append(declaration).append(" {\n").append(prefix).append("  ")
 				.append(body.replaceAll("\\R", "\n" + prefix + "  ")).append("\n").append(prefix).append("}")
 				.append("\n").toString();
 	}
 
-	/* package private */ String buildDsl(String prefix, String javadoc, String declaration) {
+	public String buildDsl(String prefix, String javadoc, String declaration) {
 		return new StringBuilder().append(prefix).append(javadoc.replaceAll("\\R", "\n" + prefix)).append("\n")
 				.append(prefix).append(declaration).append(";\n").toString();
 	}
 
-	/* package private */ String buildDefaultDsl(String prefix, String javadoc, String declaration,
-			String innerMatcher) {
+	public String buildDefaultDsl(String prefix, String javadoc, String declaration, String innerMatcher) {
 		return new StringBuilder().append(prefix).append(javadoc.replaceAll("\\R", "\n" + prefix)).append("\n")
 				.append(prefix).append("default ").append(declaration).append("{\n").append(prefix).append(prefix)
 				.append("return ").append(fieldName).append("(").append(innerMatcher).append(");\n").append(prefix)
 				.append("}").toString();
 	}
 
-	/* package private */ String generateDeclaration(String postFix, String arguments) {
+	public String generateDeclaration(String postFix, String arguments) {
 		return new StringBuilder().append(defaultReturnMethod).append(" ").append(fieldName).append(postFix).append("(")
 				.append(arguments).append(")").toString();
 	}
 
-	/* package private */ String getImplementationForDefault(String prefix) {
+	public String getImplementationForDefault(String prefix) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(buildImplementation(prefix,
 				generateDeclaration("", "org.hamcrest.Matcher<? super " + fieldType + "> matcher"),
@@ -232,7 +230,7 @@ public class FieldDescription {
 		return sb.toString();
 	}
 
-	/* package private */ String getImplementationForDefaultChaining(String prefix) {
+	public String getImplementationForDefaultChaining(String prefix) {
 		// Can't use buildDeclaration here
 		TypeElement targetElement = processingEnv.getElementUtils().getTypeElement(fieldType);
 		String name = targetElement.getSimpleName().toString();
@@ -245,7 +243,7 @@ public class FieldDescription {
 						+ "(tmp);\nreturn tmp;");
 	}
 
-	/* package private */ String getImplementationForOptional(String prefix) {
+	public String getImplementationForOptional(String prefix) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(buildImplementation(prefix, generateDeclaration("IsPresent", ""),
 				fieldName + " = " + methodFieldName + "Matcher.isPresent();\nreturn this;"));
@@ -260,7 +258,7 @@ public class FieldDescription {
 		return implGenerator.stream().map(g -> g.apply(prefix)).collect(Collectors.joining("\n"));
 	}
 
-	/* package private */ String getDslForSupplier(String prefix) {
+	public String getDslForSupplier(String prefix) {
 		return buildDefaultDsl(prefix,
 				getJavaDocFor(
 						Optional.of(
@@ -270,7 +268,7 @@ public class FieldDescription {
 				"new " + methodFieldName + "MatcherSupplier(matcherOnResult)");
 	}
 
-	/* package private */ String getDslForDefault(String prefix) {
+	public String getDslForDefault(String prefix) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(buildDsl(prefix,
 				getJavaDocFor(Optional.empty(), Optional.of("matcher a Matcher on the field"),
@@ -287,7 +285,7 @@ public class FieldDescription {
 		return sb.toString();
 	}
 
-	/* package private */ String getDslForDefaultChaining(String prefix) {
+	public String getDslForDefaultChaining(String prefix) {
 		// can'ut use generateDeclaration here
 		TypeElement targetElement = processingEnv.getElementUtils().getTypeElement(fieldType);
 		String name = targetElement.getSimpleName().toString();
@@ -297,7 +295,7 @@ public class FieldDescription {
 						+ fieldName + "With()");
 	}
 
-	/* package private */ String getDslForString(String prefix) {
+	public String getDslForString(String prefix) {
 
 		StringBuilder sb = new StringBuilder();
 
@@ -322,7 +320,7 @@ public class FieldDescription {
 		return sb.toString();
 	}
 
-	/* package private */ String getDslForIterable(String prefix) {
+	public String getDslForIterable(String prefix) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("that the iterable is empty"), Optional.empty(), Optional.empty()),
@@ -376,19 +374,19 @@ public class FieldDescription {
 		return sb.toString();
 	}
 
-	/* package private */ String getDslForArray(String prefix) {
+	public String getDslForArray(String prefix) {
 		return buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("that the array is empty"), Optional.empty(), Optional.empty()),
 				generateDeclaration("IsEmpty", ""), "(org.hamcrest.Matcher)org.hamcrest.Matchers.emptyArray()");
 	}
 
-	/* package private */ String getDslForCollection(String prefix) {
+	public String getDslForCollection(String prefix) {
 		return buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("that the collection is empty"), Optional.empty(), Optional.empty()),
 				generateDeclaration("IsEmpty", ""), "(org.hamcrest.Matcher)org.hamcrest.Matchers.empty()");
 	}
 
-	/* package private */ String getDslForOptional(String prefix) {
+	public String getDslForOptional(String prefix) {
 		StringBuilder sb = new StringBuilder();
 
 		sb.append(buildDsl(prefix,
@@ -402,7 +400,7 @@ public class FieldDescription {
 		return sb.toString();
 	}
 
-	/* package private */ String getDslForComparable(String prefix) {
+	public String getDslForComparable(String prefix) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("that this field is equals to another one, using the compareTo method"),
@@ -513,22 +511,22 @@ public class FieldDescription {
 		return sb.toString();
 	}
 
-	/* package private */ String getFieldCopyDefault(String lhs, String rhs) {
+	public String getFieldCopyDefault(String lhs, String rhs) {
 		return lhs + "." + fieldName + "(org.hamcrest.Matchers.is(" + rhs + "." + fieldAccessor + "))";
 	}
 
-	/* package private */ String getSameValueMatcherFor(String target, TypeElement targetElement) {
+	public String getSameValueMatcherFor(String target, TypeElement targetElement) {
 		String name = targetElement.getSimpleName().toString();
 		String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
 		return fullyQualifiedNameMatcherInSameRound + "." + lname + "WithSameValue(" + target + ")";
 	}
 
-	/* package private */ String getFieldCopySameRound(String lhs, String rhs, TypeElement targetElement) {
+	public String getFieldCopySameRound(String lhs, String rhs, TypeElement targetElement) {
 		return lhs + "." + fieldName + "(" + rhs + "." + fieldAccessor + "==null?org.hamcrest.Matchers.nullValue():"
 				+ getSameValueMatcherFor(rhs + "." + fieldAccessor, targetElement) + ")";
 	}
 
-	/* package private */ String generateMatcherBuilderReferenceFor(String generic) {
+	public String generateMatcherBuilderReferenceFor(String generic) {
 		ProvideMatchersAnnotatedElementMirror target = containingElementMirror.findMirrorFor(generic);
 		if (target != null) {
 			return target.getFullyQualifiedNameOfGeneratedClass() + "::" + target.getMethodShortClassName()
@@ -538,7 +536,7 @@ public class FieldDescription {
 		return "org.hamcrest.Matchers::is";
 	}
 
-	/* package private */ String getFieldCopyForList(String lhs, String rhs) {
+	public String getFieldCopyForList(String lhs, String rhs) {
 
 		return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + fieldName
 				+ "(org.hamcrest.Matchers.nullValue()); } else if (" + rhs + "." + fieldAccessor + ".isEmpty()) {" + lhs
