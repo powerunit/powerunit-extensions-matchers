@@ -25,7 +25,6 @@ public class ProvideMatchersAnnotatedElementMirror {
 
 	private final TypeElement typeElementForClassAnnotatedWithProvideMatcher;
 	private final ProcessingEnvironment processingEnv;
-	private final Predicate<Element> isInSameRound;
 	private final String fullyQualifiedNameOfClassAnnotatedWithProvideMatcher;
 	private final String packageNameOfGeneratedClass;
 	private final String fullyQualifiedNameOfGeneratedClass;
@@ -57,7 +56,6 @@ public class ProvideMatchersAnnotatedElementMirror {
 			Set<? extends Element>... elementsWithOtherAnnotation) {
 		this.typeElementForClassAnnotatedWithProvideMatcher = typeElement;
 		this.processingEnv = processingEnv;
-		this.isInSameRound = isInSameRound;
 		this.elementsWithOtherAnnotation = elementsWithOtherAnnotation;
 		this.fullyQualifiedNameOfClassAnnotatedWithProvideMatcher = typeElement.getQualifiedName().toString();
 		String tpackageName = processingEnv.getElementUtils().getPackageOf(typeElement).getQualifiedName().toString();
