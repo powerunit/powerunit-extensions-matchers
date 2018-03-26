@@ -61,7 +61,6 @@ public class FieldDescription {
 	private final Element fieldElement;
 	private final String generic;
 	private final String defaultReturnMethod;
-	private final AddToMatcher addToMatchers[];
 
 	public FieldDescription(ProvideMatchersAnnotatedElementMirror containingElementMirror, String fieldAccessor,
 			String fieldName, String methodFieldName, String fieldType, Type type, boolean isInSameRound,
@@ -76,7 +75,6 @@ public class FieldDescription {
 		this.ignore = ignore;
 		this.fieldElement = fieldElement;
 		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
-		this.addToMatchers = fieldElement.getAnnotationsByType(AddToMatcher.class);
 		if (fieldTypeMirror instanceof DeclaredType) {
 			DeclaredType dt = ((DeclaredType) fieldTypeMirror);
 			this.generic = dt.getTypeArguments().stream().map(Object::toString).collect(Collectors.joining(","));
@@ -149,6 +147,7 @@ public class FieldDescription {
 		default:
 			// Nothing
 		}
+		AddToMatcher addToMatchers[] = fieldElement.getAnnotationsByType(AddToMatcher.class);
 		tmp1.addAll(Arrays.stream(addToMatchers).map(this::generateFunctionForImplementation).filter(t -> t != null)
 				.collect(Collectors.toList()));
 		tmp2.addAll(Arrays.stream(addToMatchers).map(this::generateFunctionForDSL).filter(t -> t != null)
