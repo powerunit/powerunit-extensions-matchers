@@ -30,8 +30,13 @@ import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.TypeKindVisitor8;
+import javax.tools.Diagnostic.Kind;
 
 import ch.powerunit.extensions.matchers.AddToMatcher;
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
@@ -62,6 +67,98 @@ public class FieldDescription {
 	private final Element fieldElement;
 	private final String generic;
 	private final String defaultReturnMethod;
+
+	private static final class ExtracTypeVisitor extends TypeKindVisitor8<Type, ProcessingEnvironment> {
+
+		@Override
+		public Type visitPrimitiveAsBoolean(PrimitiveType t, ProcessingEnvironment processingEnv) {
+			return Type.NA;
+		}
+
+		@Override
+		public Type visitPrimitiveAsByte(PrimitiveType t, ProcessingEnvironment processingEnv) {
+			return Type.NA;
+		}
+
+		@Override
+		public Type visitPrimitiveAsShort(PrimitiveType t, ProcessingEnvironment processingEnv) {
+			return Type.NA;
+		}
+
+		@Override
+		public Type visitPrimitiveAsInt(PrimitiveType t, ProcessingEnvironment processingEnv) {
+			return Type.NA;
+		}
+
+		@Override
+		public Type visitPrimitiveAsLong(PrimitiveType t, ProcessingEnvironment processingEnv) {
+			return Type.NA;
+		}
+
+		@Override
+		public Type visitPrimitiveAsChar(PrimitiveType t, ProcessingEnvironment processingEnv) {
+			return Type.NA;
+		}
+
+		@Override
+		public Type visitPrimitiveAsFloat(PrimitiveType t, ProcessingEnvironment processingEnv) {
+			return Type.NA;
+		}
+
+		@Override
+		public Type visitPrimitiveAsDouble(PrimitiveType t, ProcessingEnvironment processingEnv) {
+			return Type.NA;
+		}
+
+		@Override
+		public Type visitArray(ArrayType t, ProcessingEnvironment processingEnv) {
+			return Type.ARRAY;
+		}
+
+		@Override
+		public Type visitDeclared(DeclaredType t, ProcessingEnvironment processingEnv) {
+			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Optional").asType()))) {
+				return Type.OPTIONAL;
+			}
+			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Set").asType()))) {
+				return Type.SET;
+			}
+			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.List").asType()))) {
+				return Type.LIST;
+			}
+			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Collection").asType()))) {
+				return Type.COLLECTION;
+			}
+			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+					.erasure(processingEnv.getElementUtils().getTypeElement("java.lang.String").asType()))) {
+				return Type.STRING;
+			}
+			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+					.erasure(processingEnv.getElementUtils().getTypeElement("java.lang.Comparable").asType()))) {
+				return Type.COMPARABLE;
+			}
+			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.function.Supplier").asType()))) {
+				return Type.SUPPLIER;
+			}
+			return Type.NA;
+		}
+
+		@Override
+		public Type visitTypeVariable(TypeVariable t, ProcessingEnvironment processingEnv) {
+			return Type.NA;
+		}
+
+		@Override
+		public Type visitUnknown(TypeMirror t, ProcessingEnvironment processingEnv) {
+			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING, "Unsupported type element");
+			return Type.NA;
+		}
+	}
 
 	public static final String computeGenericInformation(TypeMirror fieldTypeMirror) {
 		if (fieldTypeMirror instanceof DeclaredType) {
@@ -98,14 +195,14 @@ public class FieldDescription {
 	}
 
 	public FieldDescription(ProvideMatchersAnnotatedElementMirror containingElementMirror, String fieldAccessor,
-			String fieldName, String fieldType, Type type, boolean isInSameRound, ProcessingEnvironment processingEnv,
+			String fieldName, String fieldType, boolean isInSameRound, ProcessingEnvironment processingEnv,
 			Element fieldElement, TypeMirror fieldTypeMirror) {
 		this.containingElementMirror = containingElementMirror;
 		this.fieldAccessor = fieldAccessor;
 		this.fieldName = fieldName;
 		this.methodFieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
 		this.fieldType = fieldType;
-		this.type = type;
+		this.type = new ExtracTypeVisitor().visit(fieldTypeMirror, processingEnv);
 		this.processingEnv = processingEnv;
 		this.ignore = fieldElement.getAnnotation(IgnoreInMatcher.class) != null;
 		this.fieldElement = fieldElement;

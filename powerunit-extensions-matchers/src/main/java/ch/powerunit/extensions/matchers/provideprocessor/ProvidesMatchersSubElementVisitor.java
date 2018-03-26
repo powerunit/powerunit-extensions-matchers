@@ -47,100 +47,7 @@ public class ProvidesMatchersSubElementVisitor
 
 	private final ProcessingEnvironment processingEnv;
 	private final Predicate<Element> isInSameRound;
-	private final ExtracTypeVisitor extractTypeVisitor = new ExtracTypeVisitor();
 	private final ExtractNameVisitor extractNameVisitor = new ExtractNameVisitor();
-
-	private final class ExtracTypeVisitor extends TypeKindVisitor8<FieldDescription.Type, Void> {
-
-		@Override
-		public FieldDescription.Type visitPrimitiveAsBoolean(PrimitiveType t, Void p) {
-			return FieldDescription.Type.NA;
-		}
-
-		@Override
-		public FieldDescription.Type visitPrimitiveAsByte(PrimitiveType t, Void p) {
-			return FieldDescription.Type.NA;
-		}
-
-		@Override
-		public FieldDescription.Type visitPrimitiveAsShort(PrimitiveType t, Void p) {
-			return FieldDescription.Type.NA;
-		}
-
-		@Override
-		public FieldDescription.Type visitPrimitiveAsInt(PrimitiveType t, Void p) {
-			return FieldDescription.Type.NA;
-		}
-
-		@Override
-		public FieldDescription.Type visitPrimitiveAsLong(PrimitiveType t, Void p) {
-			return FieldDescription.Type.NA;
-		}
-
-		@Override
-		public FieldDescription.Type visitPrimitiveAsChar(PrimitiveType t, Void p) {
-			return FieldDescription.Type.NA;
-		}
-
-		@Override
-		public FieldDescription.Type visitPrimitiveAsFloat(PrimitiveType t, Void p) {
-			return FieldDescription.Type.NA;
-		}
-
-		@Override
-		public FieldDescription.Type visitPrimitiveAsDouble(PrimitiveType t, Void p) {
-			return FieldDescription.Type.NA;
-		}
-
-		@Override
-		public FieldDescription.Type visitArray(ArrayType t, Void p) {
-			return FieldDescription.Type.ARRAY;
-		}
-
-		@Override
-		public FieldDescription.Type visitDeclared(DeclaredType t, Void p) {
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Optional").asType()))) {
-				return FieldDescription.Type.OPTIONAL;
-			}
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Set").asType()))) {
-				return FieldDescription.Type.SET;
-			}
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.List").asType()))) {
-				return FieldDescription.Type.LIST;
-			}
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Collection").asType()))) {
-				return FieldDescription.Type.COLLECTION;
-			}
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.lang.String").asType()))) {
-				return FieldDescription.Type.STRING;
-			}
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.lang.Comparable").asType()))) {
-				return FieldDescription.Type.COMPARABLE;
-			}
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.function.Supplier").asType()))) {
-				return FieldDescription.Type.SUPPLIER;
-			}
-			return FieldDescription.Type.NA;
-		}
-
-		@Override
-		public FieldDescription.Type visitTypeVariable(TypeVariable t, Void p) {
-			return FieldDescription.Type.NA;
-		}
-
-		@Override
-		public FieldDescription.Type visitUnknown(TypeMirror t, Void p) {
-			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING, "Unsupported type element");
-			return FieldDescription.Type.NA;
-		}
-	}
 
 	private final class ExtractNameVisitor extends TypeKindVisitor8<String, Boolean> {
 
@@ -218,9 +125,8 @@ public class ProvidesMatchersSubElementVisitor
 			String fieldName = e.getSimpleName().toString();
 			String fieldType = parseType(e.asType(), false);
 			if (fieldType != null) {
-				Type type = parseType(e.asType());
 				p.removeFromIgnoreList(e);
-				return Optional.of(new FieldDescription(p, fieldName, fieldName, fieldType, type,
+				return Optional.of(new FieldDescription(p, fieldName, fieldName, fieldType,
 						isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())), processingEnv, e,
 						e.asType()));
 			}
@@ -261,9 +167,8 @@ public class ProvidesMatchersSubElementVisitor
 		String fieldName = fieldNameDirect.substring(0, 1).toLowerCase() + fieldNameDirect.substring(1);
 		String fieldType = parseType(e.getReturnType(), false);
 		if (fieldType != null) {
-			Type type = parseType(e.getReturnType());
 			p.removeFromIgnoreList(e);
-			return new FieldDescription(p, methodName + "()", fieldName, fieldType, type,
+			return new FieldDescription(p, methodName + "()", fieldName, fieldType,
 					isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())), processingEnv, e,
 					e.getReturnType());
 		}
@@ -277,10 +182,6 @@ public class ProvidesMatchersSubElementVisitor
 
 	private String parseType(TypeMirror type, boolean asPrimitif) {
 		return type.accept(extractNameVisitor, asPrimitif);
-	}
-
-	private FieldDescription.Type parseType(TypeMirror type) {
-		return type.accept(extractTypeVisitor, null);
 	}
 
 }
