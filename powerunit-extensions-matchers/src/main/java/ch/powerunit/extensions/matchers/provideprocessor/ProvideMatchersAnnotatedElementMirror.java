@@ -19,6 +19,7 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
 import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 
 public class ProvideMatchersAnnotatedElementMirror {
@@ -140,7 +141,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 				wjfo.println(" */");
 				wjfo.println("@javax.annotation.Generated(value=\""
 						+ ProvidesMatchersAnnotationsProcessor.class.getName() + "\",date=\"" + Instant.now().toString()
-						+ "\",comments=" + toJavaSyntax(comments) + ")");
+						+ "\",comments=" + CommonUtils.toJavaSyntax(comments) + ")");
 				wjfo.println("public final class " + simpleNameOfGeneratedClass + " {");
 				wjfo.println();
 				wjfo.println("  private " + simpleNameOfGeneratedClass + "() {}");
@@ -273,13 +274,9 @@ public class ProvideMatchersAnnotatedElementMirror {
 				+ fullGenericParent + " extends org.hamcrest.TypeSafeDiagnosingMatcher<"
 				+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + generic + "> implements "
 				+ simpleNameOfGeneratedInterfaceMatcher + genericParent + " {");
-		fields.stream()
-				.map(f -> "    private " + f.getMethodFieldName() + "Matcher " + f
-						.getFieldName() + " = new "
-				+ f.getMethodFieldName()
-				+ "Matcher(org.hamcrest.Matchers.anything(" + (f.isIgnore()
-						? "\"This field is ignored \"+" + toJavaSyntax(f.getDescriptionForIgnoreIfApplicable()) : "")
-				+ "));").forEach(wjfo::println);
+		wjfo.println(
+				"    " + fields.stream().map(FieldDescription::asMatcherField).collect(Collectors.joining("\n    ")));
+
 		wjfo.println("    private final _PARENT _parentBuilder;");
 		wjfo.println();
 		wjfo.println(
@@ -591,31 +588,6 @@ public class ProvideMatchersAnnotatedElementMirror {
 		returnDescription.ifPresent(t -> sb.append(prefix).append(" * @return ").append(t).append("\n"));
 		sb.append(prefix).append(" */").append("\n");
 		return sb.toString();
-	}
-
-	private static String toJavaSyntax(String unformatted) {
-		StringBuilder sb = new StringBuilder();
-		sb.append('"');
-		for (char c : unformatted.toCharArray()) {
-			sb.append(toJavaSyntax(c));
-		}
-		sb.append('"');
-		return sb.toString();
-	}
-
-	private static String toJavaSyntax(char ch) {
-		switch (ch) {
-		case '"':
-			return "\\\"";
-		case '\n':
-			return "\\n";
-		case '\r':
-			return "\\r";
-		case '\t':
-			return "\\t";
-		default:
-			return "" + ch;
-		}
 	}
 
 	private static String extractParamCommentFromJavadoc(String docComment) {

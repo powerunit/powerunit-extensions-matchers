@@ -36,6 +36,7 @@ import javax.lang.model.type.TypeMirror;
 import ch.powerunit.extensions.matchers.AddToMatcher;
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcherField;
 
 public class FieldDescription {
@@ -567,6 +568,13 @@ public class FieldDescription {
 		return new StringBuilder().append(prefix)
 				.append("description.appendText(\"[\").appendDescriptionOf(" + fieldName + ").appendText(\"]\\n\");")
 				.toString();
+	}
+
+	public String asMatcherField() {
+		return "private " + methodFieldName + "Matcher " + fieldName + " = new " + methodFieldName
+				+ "Matcher(org.hamcrest.Matchers.anything(" + (ignore ? "\"This field is ignored \"+"
+						+ CommonUtils.toJavaSyntax(getDescriptionForIgnoreIfApplicable()) : "")
+				+ "));";
 	}
 
 	public String getFieldAccessor() {
