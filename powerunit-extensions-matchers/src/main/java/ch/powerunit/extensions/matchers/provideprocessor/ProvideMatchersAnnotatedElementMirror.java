@@ -328,13 +328,8 @@ public class ProvideMatchersAnnotatedElementMirror {
 			wjfo.println("        result=false;");
 			wjfo.println("      }");
 		}
-		for (FieldDescription f : fields) {
-			wjfo.println("      if(!" + f.getFieldName() + ".matches(actual)) {");
-			wjfo.println("        mismatchDescription.appendText(\"[\"); " + f.getFieldName()
-					+ ".describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");");
-			wjfo.println("        result=false;");
-			wjfo.println("      }");
-		}
+		fields.stream().map(f -> f.asMatchesSafely("      ")).forEach(wjfo::println);
+
 		wjfo.println("      for(org.hamcrest.Matcher nMatcher : nextMatchers) {");
 		wjfo.println("        if(!nMatcher.matches(actual)) {");
 		wjfo.println(
@@ -353,8 +348,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 		if (hasParent) {
 			wjfo.println("      description.appendText(\"[\").appendDescriptionOf(_parent).appendText(\"]\\n\");");
 		}
-		fields.stream().map(f -> "      description.appendText(\"[\").appendDescriptionOf(" + f.getFieldName()
-				+ ").appendText(\"]\\n\");").forEach(wjfo::println);
+		fields.stream().map(f -> f.asDescribeTo("      ")).forEach(wjfo::println);
 		wjfo.println("      for(org.hamcrest.Matcher nMatcher : nextMatchers) {");
 		wjfo.println(
 				"        description.appendText(\"[object itself \").appendDescriptionOf(nMatcher).appendText(\"]\\n\");");

@@ -556,6 +556,19 @@ public class FieldDescription {
 		return getFieldCopyDefault(lhs, rhs);
 	}
 
+	public String asMatchesSafely(String prefix) {
+		return new StringBuilder().append(prefix).append("if(!").append(fieldName).append(".matches(actual)) {\n")
+				.append(prefix).append("  mismatchDescription.appendText(\"[\"); ").append(fieldName)
+				.append(".describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");\n")
+				.append(prefix).append("  result=false;\n").append(prefix).append("}").toString();
+	}
+
+	public String asDescribeTo(String prefix) {
+		return new StringBuilder().append(prefix)
+				.append("description.appendText(\"[\").appendDescriptionOf(" + fieldName + ").appendText(\"]\\n\");")
+				.toString();
+	}
+
 	public String getFieldAccessor() {
 		return fieldAccessor;
 	}
