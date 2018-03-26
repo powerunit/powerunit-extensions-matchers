@@ -98,16 +98,16 @@ public class FieldDescription {
 	}
 
 	public FieldDescription(ProvideMatchersAnnotatedElementMirror containingElementMirror, String fieldAccessor,
-			String fieldName, String methodFieldName, String fieldType, Type type, boolean isInSameRound,
-			ProcessingEnvironment processingEnv, boolean ignore, Element fieldElement, TypeMirror fieldTypeMirror) {
+			String fieldName, String fieldType, Type type, boolean isInSameRound, ProcessingEnvironment processingEnv,
+			Element fieldElement, TypeMirror fieldTypeMirror) {
 		this.containingElementMirror = containingElementMirror;
 		this.fieldAccessor = fieldAccessor;
 		this.fieldName = fieldName;
-		this.methodFieldName = methodFieldName;
+		this.methodFieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
 		this.fieldType = fieldType;
 		this.type = type;
 		this.processingEnv = processingEnv;
-		this.ignore = ignore;
+		this.ignore = fieldElement.getAnnotation(IgnoreInMatcher.class) != null;
 		this.fieldElement = fieldElement;
 		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
 		this.generic = computeGenericInformation(fieldTypeMirror);

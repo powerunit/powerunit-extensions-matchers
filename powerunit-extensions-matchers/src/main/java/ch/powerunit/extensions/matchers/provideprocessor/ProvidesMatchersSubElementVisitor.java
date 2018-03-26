@@ -36,7 +36,6 @@ import javax.lang.model.util.SimpleElementVisitor8;
 import javax.lang.model.util.TypeKindVisitor8;
 import javax.tools.Diagnostic.Kind;
 
-import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.provideprocessor.FieldDescription.Type;
 
 /**
@@ -221,10 +220,9 @@ public class ProvidesMatchersSubElementVisitor
 			if (fieldType != null) {
 				Type type = parseType(e.asType());
 				p.removeFromIgnoreList(e);
-				return Optional.of(new FieldDescription(p, fieldName, fieldName,
-						fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1), fieldType, type,
-						isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())), processingEnv,
-						e.getAnnotation(IgnoreInMatcher.class) != null, e, e.asType()));
+				return Optional.of(new FieldDescription(p, fieldName, fieldName, fieldType, type,
+						isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())), processingEnv, e,
+						e.asType()));
 			}
 		}
 		if (p.isInsideIgnoreList(e)) {
@@ -265,9 +263,9 @@ public class ProvidesMatchersSubElementVisitor
 		if (fieldType != null) {
 			Type type = parseType(e.getReturnType());
 			p.removeFromIgnoreList(e);
-			return new FieldDescription(p, methodName + "()", fieldName, fieldNameDirect, fieldType, type,
-					isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())), processingEnv,
-					e.getAnnotation(IgnoreInMatcher.class) != null, e, e.getReturnType());
+			return new FieldDescription(p, methodName + "()", fieldName, fieldType, type,
+					isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())), processingEnv, e,
+					e.getReturnType());
 		}
 		return null;
 	}
