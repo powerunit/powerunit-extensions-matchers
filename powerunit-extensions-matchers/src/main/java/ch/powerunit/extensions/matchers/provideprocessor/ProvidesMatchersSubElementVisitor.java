@@ -46,6 +46,11 @@ import ch.powerunit.extensions.matchers.provideprocessor.FieldDescription.Type;
 public class ProvidesMatchersSubElementVisitor
 		extends SimpleElementVisitor8<Optional<FieldDescription>, ProvideMatchersAnnotatedElementMirror> {
 
+	private final ProcessingEnvironment processingEnv;
+	private final Predicate<Element> isInSameRound;
+	private final ExtracTypeVisitor extractTypeVisitor = new ExtracTypeVisitor();
+	private final ExtractNameVisitor extractNameVisitor = new ExtractNameVisitor();
+
 	private final class ExtracTypeVisitor extends TypeKindVisitor8<FieldDescription.Type, Void> {
 
 		@Override
@@ -202,11 +207,6 @@ public class ProvidesMatchersSubElementVisitor
 			return null;
 		}
 	}
-
-	private final ProcessingEnvironment processingEnv;
-	private final Predicate<Element> isInSameRound;
-	private final ExtracTypeVisitor extractTypeVisitor = new ExtracTypeVisitor();
-	private final ExtractNameVisitor extractNameVisitor = new ExtractNameVisitor();
 
 	public ProvidesMatchersSubElementVisitor(ProcessingEnvironment processingEnv, Predicate<Element> isInSameRound) {
 		this.processingEnv = processingEnv;
