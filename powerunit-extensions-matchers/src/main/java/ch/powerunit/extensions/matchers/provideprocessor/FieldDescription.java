@@ -70,20 +70,8 @@ public class FieldDescription {
 		return "";
 	}
 
-	public FieldDescription(ProvideMatchersAnnotatedElementMirror containingElementMirror, String fieldAccessor,
-			String fieldName, String methodFieldName, String fieldType, Type type, boolean isInSameRound,
-			ProcessingEnvironment processingEnv, boolean ignore, Element fieldElement, TypeMirror fieldTypeMirror) {
-		this.containingElementMirror = containingElementMirror;
-		this.fieldAccessor = fieldAccessor;
-		this.fieldName = fieldName;
-		this.methodFieldName = methodFieldName;
-		this.fieldType = fieldType;
-		this.type = type;
-		this.processingEnv = processingEnv;
-		this.ignore = ignore;
-		this.fieldElement = fieldElement;
-		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
-		this.generic = computeGenericInformation(fieldTypeMirror);
+	public static final String computeFullyQualifiedNameMatcherInSameRound(ProcessingEnvironment processingEnv,
+			boolean isInSameRound, String fieldType) {
 		if (isInSameRound) {
 			TypeElement typeElement = processingEnv.getElementUtils().getTypeElement(fieldType);
 			if (typeElement != null) {
@@ -102,13 +90,28 @@ public class FieldDescription {
 							pm.matchersPackageName());
 					packageName = pm.matchersPackageName();
 				}
-				this.fullyQualifiedNameMatcherInSameRound = fullyQualifiedNameMatcher;
-			} else {
-				this.fullyQualifiedNameMatcherInSameRound = null;
+				return fullyQualifiedNameMatcher;
 			}
-		} else {
-			this.fullyQualifiedNameMatcherInSameRound = null;
 		}
+		return null;
+	}
+
+	public FieldDescription(ProvideMatchersAnnotatedElementMirror containingElementMirror, String fieldAccessor,
+			String fieldName, String methodFieldName, String fieldType, Type type, boolean isInSameRound,
+			ProcessingEnvironment processingEnv, boolean ignore, Element fieldElement, TypeMirror fieldTypeMirror) {
+		this.containingElementMirror = containingElementMirror;
+		this.fieldAccessor = fieldAccessor;
+		this.fieldName = fieldName;
+		this.methodFieldName = methodFieldName;
+		this.fieldType = fieldType;
+		this.type = type;
+		this.processingEnv = processingEnv;
+		this.ignore = ignore;
+		this.fieldElement = fieldElement;
+		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
+		this.generic = computeGenericInformation(fieldTypeMirror);
+		this.fullyQualifiedNameMatcherInSameRound = computeFullyQualifiedNameMatcherInSameRound(processingEnv,
+				isInSameRound, fieldType);
 		List<Function<String, String>> tmp1 = new ArrayList<>();
 		List<Function<String, String>> tmp2 = new ArrayList<>();
 		tmp1.add(this::getImplementationForDefault);
