@@ -50,6 +50,8 @@ import javax.tools.JavaFileObject;
 
 import org.hamcrest.Factory;
 
+import ch.powerunit.extensions.matchers.common.CommonConstants;
+
 @SupportedAnnotationTypes({ "org.hamcrest.Factory" })
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedOptions({ "ch.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets" })
@@ -137,17 +139,8 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 				String cName = fullName.substring(fullName.lastIndexOf('.') + 1);
 				wjfo.println("package " + pName + ";");
 				wjfo.println();
-				wjfo.println("/**");
-				wjfo.println(" * Factories generated.");
-				wjfo.println(" * <p> ");
-				wjfo.println(" * This DSL can be use in several way : ");
-				wjfo.println(" * <ul> ");
-				wjfo.println(
-						" *  <li>By implementing this interface. In this case, all the methods of this interface will be available inside the implementing class.</li>");
-				wjfo.println(
-						" *  <li>By refering the static field named {@link #DSL} which expose all the DSL method.</li>");
-				wjfo.println(" * </ul> ");
-				wjfo.println(" */");
+				wjfo.println(CommonConstants.DEFAULT_JAVADOC_FOR_FACTORY);
+
 				wjfo.println("@javax.annotation.Generated(value=\"" + FactoryAnnotationsProcessor.class.getName()
 						+ "\",date=\"" + Instant.now().toString() + "\")");
 				wjfo.println("public interface " + cName + " {");

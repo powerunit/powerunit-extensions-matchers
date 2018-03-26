@@ -56,6 +56,7 @@ import ch.powerunit.extensions.matchers.AddToMatcher;
 import ch.powerunit.extensions.matchers.AddToMatchers;
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.common.CommonConstants;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatchers;
 
 /**
@@ -134,17 +135,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
 				wjfo.println("package " + factory.replaceAll("\\.[^.]+$", "") + ";");
 				wjfo.println();
-				wjfo.println("/**");
-				wjfo.println(" * Factories generated.");
-				wjfo.println(" * <p> ");
-				wjfo.println(" * This DSL can be use in several way : ");
-				wjfo.println(" * <ul> ");
-				wjfo.println(
-						" *  <li>By implementing this interface. In this case, all the methods of this interface will be available inside the implementing class.</li>");
-				wjfo.println(
-						" *  <li>By refering the static field named {@link #DSL} which expose all the DSL method.</li>");
-				wjfo.println(" * </ul> ");
-				wjfo.println(" */");
+				wjfo.println(CommonConstants.DEFAULT_JAVADOC_FOR_FACTORY);
 				wjfo.println(
 						"@javax.annotation.Generated(value=\"" + ProvidesMatchersAnnotationsProcessor.class.getName()
 								+ "\",date=\"" + Instant.now().toString() + "\")");
