@@ -25,7 +25,6 @@ public class ProvideMatchersAnnotatedElementMirror {
 
 	private final TypeElement typeElementForClassAnnotatedWithProvideMatcher;
 	private final ProcessingEnvironment processingEnv;
-	private final TypeElement objectTE;
 	private final Predicate<Element> isInSameRound;
 	private final String fullyQualifiedNameOfClassAnnotatedWithProvideMatcher;
 	private final String packageNameOfGeneratedClass;
@@ -61,7 +60,6 @@ public class ProvideMatchersAnnotatedElementMirror {
 		this.processingEnv = processingEnv;
 		this.isInSameRound = isInSameRound;
 		this.elementsWithOtherAnnotation = elementsWithOtherAnnotation;
-		this.objectTE = processingEnv.getElementUtils().getTypeElement("java.lang.Object");
 		this.fullyQualifiedNameOfClassAnnotatedWithProvideMatcher = typeElement.getQualifiedName().toString();
 		String tpackageName = processingEnv.getElementUtils().getPackageOf(typeElement).getQualifiedName().toString();
 		String toutputClassName = fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + "Matchers";
@@ -82,6 +80,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 		this.simpleNameOfClassAnnotatedWithProvideMatcher = typeElement.getSimpleName().toString();
 		this.methodShortClassName = simpleNameOfClassAnnotatedWithProvideMatcher.substring(0, 1).toLowerCase()
 				+ simpleNameOfClassAnnotatedWithProvideMatcher.substring(1);
+		TypeElement objectTE = processingEnv.getElementUtils().getTypeElement("java.lang.Object");
 		this.hasParent = !objectTE.asType().equals(typeElement.getSuperclass());
 		this.hasParentInSameRound = isInSameRound.test(typeElement);
 		this.fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher = typeElement.getSuperclass().toString();
