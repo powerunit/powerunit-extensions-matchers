@@ -395,7 +395,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 		wjfo.println();
 
 		if (!hasParent) {
-			factories.append(generateNoParentDSLStarter(wjfo, fields));
+			factories.append(generateParentValueDSLStarter(wjfo, fields, ""));
 		}
 		if (hasParent && hasParentInSameRound) {
 			factories.append(generateParentInSameRoundDSLStarter(wjfo, fields));
@@ -498,43 +498,12 @@ public class ProvideMatchersAnnotatedElementMirror {
 		return factories.toString();
 	}
 
-	private String generateNoParentDSLStarter(PrintWriter wjfo, List<FieldDescription> fields) {
-		StringBuilder factories = new StringBuilder();
-		StringBuilder javadoc = new StringBuilder();
-		javadoc.append(generateJavaDoc("  ",
-				"Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}",
-				Optional.empty(), Optional.of("other the other object to be used as a reference."),
-				Optional.of("the DSL matcher"), true, false));
-		wjfo.println(javadoc.toString());
-		factories.append(javadoc.toString());
-		wjfo.println("  @org.hamcrest.Factory");
-		wjfo.println("  public static " + fullGeneric + " " + simpleNameOfGeneratedInterfaceMatcher + genericNoParent
-				+ " " + methodShortClassName + "WithSameValue(" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
-				+ " " + generic + " other) {");
-		wjfo.println("    " + simpleNameOfGeneratedInterfaceMatcher + genericNoParent + " m=new "
-				+ simpleNameOfGeneratedImplementationMatcher + genericNoParent + "();");
-
-		fields.stream().filter(FieldDescription::isNotIgnore).map(f -> "    " + f.getFieldCopy("m", "other") + ";")
-				.forEach(wjfo::println);
-		wjfo.println("    return m;");
-		wjfo.println("  }");
-
-		factories.append("  default " + fullGeneric + " " + fullyQualifiedNameOfGeneratedClass + "."
-				+ simpleNameOfGeneratedInterfaceMatcher + genericNoParent + " " + methodShortClassName
-				+ "WithSameValue(" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " " + generic + " other)"
-				+ " {").append("\n");
-		factories.append("    return " + fullyQualifiedNameOfGeneratedClass + "." + methodShortClassName
-				+ "WithSameValue(other);").append("\n");
-		factories.append("  }").append("\n");
-		return factories.toString();
-	}
-
 	private String generateParentInSameRoundDSLStarter(PrintWriter wjfo, List<FieldDescription> fields) {
 		StringBuilder factories = new StringBuilder();
 		ProvideMatchersAnnotatedElementMirror parentMirror = findMirrorForTypeName
 				.apply(typeElementForSuperClassOfClassAnnotatedWithProvideMatcher.getQualifiedName().toString());
-		factories.append(generateParentInSameRoundSameValueDSLStarter(wjfo, fields, parentMirror));
+		factories.append(generateParentValueDSLStarter(wjfo, fields, parentMirror.fullyQualifiedNameOfGeneratedClass
+				+ "." + parentMirror.methodShortClassName + "WithSameValue(other)"));
 
 		if (typeElementForSuperClassOfClassAnnotatedWithProvideMatcher.getTypeParameters().isEmpty()) {
 			factories.append(generateParentInSameRoundWithChaningDSLStarter(wjfo, parentMirror));
@@ -542,8 +511,8 @@ public class ProvideMatchersAnnotatedElementMirror {
 		return factories.toString();
 	}
 
-	private String generateParentInSameRoundSameValueDSLStarter(PrintWriter wjfo, List<FieldDescription> fields,
-			ProvideMatchersAnnotatedElementMirror parentMirror) {
+	private String generateParentValueDSLStarter(PrintWriter wjfo, List<FieldDescription> fields,
+			String argumentForParentBuilder) {
 		StringBuilder factories = new StringBuilder();
 		StringBuilder javadoc = new StringBuilder();
 		javadoc.append(generateJavaDoc("  ",
@@ -558,9 +527,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 				+ " " + methodShortClassName + "WithSameValue(" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
 				+ " " + generic + " other) {");
 		wjfo.println("    " + simpleNameOfGeneratedInterfaceMatcher + genericNoParent + " m=new "
-				+ simpleNameOfGeneratedImplementationMatcher + genericNoParent + "("
-				+ parentMirror.fullyQualifiedNameOfGeneratedClass + "." + parentMirror.methodShortClassName
-				+ "WithSameValue(other));");
+				+ simpleNameOfGeneratedImplementationMatcher + genericNoParent + "(" + argumentForParentBuilder + ");");
 
 		fields.stream().filter(FieldDescription::isNotIgnore).map(f -> "    " + f.getFieldCopy("m", "other") + ";")
 				.forEach(wjfo::println);
