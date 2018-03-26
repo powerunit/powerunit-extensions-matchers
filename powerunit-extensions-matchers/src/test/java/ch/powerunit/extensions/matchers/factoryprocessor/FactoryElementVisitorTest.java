@@ -8,6 +8,7 @@ import java.util.EnumSet;
 import java.util.Optional;
 
 import javax.annotation.processing.Messager;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -29,6 +30,9 @@ public class FactoryElementVisitorTest implements TestSuite {
 	private FactoryAnnotationsProcessor factoryAnnotationsProcessor;
 
 	@Mock
+	private ProcessingEnvironment processingEnv;
+
+	@Mock
 	private Elements elements;
 
 	@Mock
@@ -37,10 +41,14 @@ public class FactoryElementVisitorTest implements TestSuite {
 	@Mock
 	private TypeElement factoryTE;
 
+	private void prepareMock() {
+		when(processingEnv.getElementUtils()).thenReturn(elements);
+		when(processingEnv.getMessager()).thenReturn(messageUtils);
+	}
+
 	@Rule
-	public final TestRule rules = mockitoRule()
-			.around(before(() -> underTest = new FactoryElementVisitor(factoryAnnotationsProcessor, elements,
-					messageUtils, factoryTE)));
+	public final TestRule rules = mockitoRule().around(before(this::prepareMock)).around(
+			before(() -> underTest = new FactoryElementVisitor(factoryAnnotationsProcessor, processingEnv, factoryTE)));
 
 	private FactoryElementVisitor underTest;
 
@@ -63,7 +71,7 @@ public class FactoryElementVisitorTest implements TestSuite {
 		Optional<ExecutableElement> visitResult = underTest.visitExecutable(ee, null);
 		assertThat(visitResult).isNotNull();
 		assertThat(visitResult.isPresent()).is(false);
-		verify(messageUtils).printMessage(Mockito.eq(Kind.MANDATORY_WARNING), Mockito.anyString(),
-				Mockito.same(ee), Mockito.anyVararg());
+		verify(messageUtils).printMessage(Mockito.eq(Kind.MANDATORY_WARNING), Mockito.anyString(), Mockito.same(ee),
+				Mockito.anyVararg());
 	}
 }

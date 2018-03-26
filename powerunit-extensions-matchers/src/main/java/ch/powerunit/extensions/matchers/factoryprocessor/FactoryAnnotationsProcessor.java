@@ -32,8 +32,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.Filer;
-import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -47,9 +45,8 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
-import javax.tools.JavaFileObject;
 import javax.tools.Diagnostic.Kind;
+import javax.tools.JavaFileObject;
 
 import org.hamcrest.Factory;
 
@@ -61,6 +58,8 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 	private String targets;
 
 	private List<String[]> targetClass;
+
+	private Map<String, Collection<Entry>> build;
 
 	private class Entry {
 		private final ExecutableElement element;
@@ -81,8 +80,6 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 		}
 
 	}
-
-	private Map<String, Collection<Entry>> build;
 
 	@Override
 	public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -113,33 +110,26 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 		Elements elementsUtils = processingEnv.getElementUtils();
-		Filer filerUtils = processingEnv.getFiler();
-		Types typesUtils = processingEnv.getTypeUtils();
-		Messager messageUtils = processingEnv.getMessager();
 		TypeElement factoryAnnotationTE = elementsUtils.getTypeElement("org.hamcrest.Factory");
 		if (targets == null || targets.trim().equals("")) {
 			return false;
 		}
 
 		if (!roundEnv.processingOver()) {
-			processFactoryAnnotation(roundEnv, elementsUtils, filerUtils, typesUtils, messageUtils,
-					factoryAnnotationTE);
+			processFactoryAnnotation(roundEnv, factoryAnnotationTE);
 		} else {
-			processGenerationOfFinalClasses(elementsUtils, filerUtils, typesUtils, messageUtils);
+			processGenerationOfFinalClasses();
 		}
 		return true;
 	}
 
-	private void processGenerationOfFinalClasses(Elements elementsUtils, Filer filerUtils, Types typesUtils,
-			Messager messageUtils) {
-		build.entrySet().forEach(target -> processGenerateOneFactoryInterface(elementsUtils, filerUtils, typesUtils,
-				messageUtils, target.getKey(), target.getValue()));
+	private void processGenerationOfFinalClasses() {
+		build.entrySet().forEach(target -> processGenerateOneFactoryInterface(target.getKey(), target.getValue()));
 	}
 
-	private void processGenerateOneFactoryInterface(Elements elementsUtils, Filer filerUtils, Types typesUtils,
-			Messager messageUtils, String targetName, Collection<Entry> entries) {
+	private void processGenerateOneFactoryInterface(String targetName, Collection<Entry> entries) {
 		try {
-			JavaFileObject jfo = filerUtils.createSourceFile(targetName,
+			JavaFileObject jfo = processingEnv.getFiler().createSourceFile(targetName,
 					entries.stream().map((e) -> e.getElement()).toArray(ExecutableElement[]::new));
 			try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
 				String fullName = targetName;
@@ -174,7 +164,7 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 					String doc = entry.getDoc().map(t -> t.replaceAll("\n", "\n   * "))
 							.orElse("No javadoc found from the source method.");
 					wjfo.println("  /**\n   * " + doc);
-					wjfo.println("   * @see " + getSeeValue(typesUtils, ee) + "\n   */");
+					wjfo.println("   * @see " + getSeeValue(ee) + "\n   */");
 					wjfo.print("  default ");
 					if (!ee.getTypeParameters().isEmpty()) {
 						wjfo.print("<");
@@ -200,7 +190,8 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 					} else {
 						wjfo.print("    ");
 					}
-					wjfo.print(elementsUtils.getPackageOf(ee.getEnclosingElement()).getQualifiedName().toString());
+					wjfo.print(processingEnv.getElementUtils().getPackageOf(ee.getEnclosingElement()).getQualifiedName()
+							.toString());
 					wjfo.print(".");
 					wjfo.print(ee.getEnclosingElement().getSimpleName().toString());
 					wjfo.print(".");
@@ -215,15 +206,15 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 				wjfo.println("}");
 			}
 		} catch (IOException e) {
-			messageUtils.printMessage(Kind.ERROR, "Unable to create the file containing the target class `" + targetName
-					+ "`, because of " + e.getMessage());
+			processingEnv.getMessager().printMessage(Kind.ERROR,
+					"Unable to create the file containing the target class `" + targetName + "`, because of "
+							+ e.getMessage());
 		}
 	}
 
-	private void processFactoryAnnotation(RoundEnvironment roundEnv, Elements elementsUtils, Filer filerUtils,
-			Types typesUtils, Messager messageUtils, TypeElement factoryAnnotationTE) {
+	private void processFactoryAnnotation(RoundEnvironment roundEnv, TypeElement factoryAnnotationTE) {
 		Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(Factory.class);
-		FactoryElementVisitor factoryElementVisitor = new FactoryElementVisitor(this, elementsUtils, messageUtils,
+		FactoryElementVisitor factoryElementVisitor = new FactoryElementVisitor(this, processingEnv,
 				factoryAnnotationTE);
 		for (Element e : elements) {
 			if (!roundEnv.getRootElements().contains(e.getEnclosingElement())) {
@@ -232,7 +223,7 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 			e.accept(factoryElementVisitor, null).ifPresent(ee -> {
 				for (String regex[] : targetClass) {
 					if (ee.getEnclosingElement().asType().toString().matches(regex[0])) {
-						build.get(regex[1]).add(new Entry(ee, elementsUtils.getDocComment(ee)));
+						build.get(regex[1]).add(new Entry(ee, processingEnv.getElementUtils().getDocComment(ee)));
 						break;
 					}
 				}
@@ -241,7 +232,7 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 		}
 	}
 
-	private String getSeeValue(Types typeutils, ExecutableElement ee) {
+	private String getSeeValue(ExecutableElement ee) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(processingEnv.getElementUtils().getPackageOf(ee.getEnclosingElement()).getQualifiedName()).append(".")
 				.append(ee.getEnclosingElement().getSimpleName().toString()).append("#")
@@ -249,10 +240,10 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 		sb.append(ee.getParameters().stream().map((ve) -> {
 			Element e = processingEnv.getTypeUtils().asElement(ve.asType());
 			if (e == null) {
-				return typeutils.erasure(ve.asType()).toString();
+				return processingEnv.getTypeUtils().erasure(ve.asType()).toString();
 			} else {
 				if (ve.asType().getKind() == TypeKind.TYPEVAR) {
-					return typeutils.erasure(ve.asType()).toString();
+					return processingEnv.getTypeUtils().erasure(ve.asType()).toString();
 				}
 
 				PackageElement pe = processingEnv.getElementUtils().getPackageOf(e);

@@ -122,7 +122,6 @@ public class ProvideMatchersAnnotatedElementMirror {
 										Collectors.reducing(null,
 												(v1, v2) -> v1 == null ? v2 : v1.isIgnore() ? v1 : v2)),
 						c -> c == null ? Collections.emptyList() : c.values().stream().collect(Collectors.toList())));
-		;
 	}
 
 	public String process() {
