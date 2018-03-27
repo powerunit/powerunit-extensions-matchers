@@ -19,6 +19,7 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
 import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 
 public class ProvideMatchersAnnotatedElementMirror {
@@ -140,7 +141,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 				wjfo.println(" */");
 				wjfo.println("@javax.annotation.Generated(value=\""
 						+ ProvidesMatchersAnnotationsProcessor.class.getName() + "\",date=\"" + Instant.now().toString()
-						+ "\",comments=" + toJavaSyntax(comments) + ")");
+						+ "\",comments=" + CommonUtils.toJavaSyntax(comments) + ")");
 				wjfo.println("public final class " + simpleNameOfGeneratedClass + " {");
 				wjfo.println();
 				wjfo.println("  private " + simpleNameOfGeneratedClass + "() {}");
@@ -273,15 +274,9 @@ public class ProvideMatchersAnnotatedElementMirror {
 				+ fullGenericParent + " extends org.hamcrest.TypeSafeDiagnosingMatcher<"
 				+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + generic + "> implements "
 				+ simpleNameOfGeneratedInterfaceMatcher + genericParent + " {");
-		fields.stream().filter(FieldDescription::isNotIgnore)
-				.map(f -> "    private " + f.getMethodFieldName() + "Matcher " + f.getFieldName() + " = new "
-						+ f.getMethodFieldName() + "Matcher(org.hamcrest.Matchers.anything());")
-				.forEach(wjfo::println);
-		fields.stream().filter(FieldDescription::isIgnore)
-				.map(f -> "    private " + f.getMethodFieldName() + "Matcher " + f.getFieldName() + " = new "
-						+ f.getMethodFieldName() + "Matcher(org.hamcrest.Matchers.anything(\"This field is ignored \"+"
-						+ toJavaSyntax(f.getDescriptionForIgnoreIfApplicable()) + "));")
-				.forEach(wjfo::println);
+		wjfo.println(
+				"    " + fields.stream().map(FieldDescription::asMatcherField).collect(Collectors.joining("\n    ")));
+
 		wjfo.println("    private final _PARENT _parentBuilder;");
 		wjfo.println();
 		wjfo.println(
@@ -319,6 +314,19 @@ public class ProvideMatchersAnnotatedElementMirror {
 		wjfo.println(fields.stream().filter(FieldDescription::isNotIgnore)
 				.map(f -> f.getImplementationInterface("    ")).collect(Collectors.joining("\n")));
 
+		generatePrivateImplementationForMatchersSafely(wjfo, fields);
+
+		generatedPrivateImplementationForDescribeTo(wjfo, fields);
+		wjfo.println();
+
+		generatePrivateImplementationForEnd(wjfo);
+
+		generatePrivateImplementationForAndWith(wjfo);
+
+		wjfo.println("  }");
+	}
+
+	private void generatePrivateImplementationForMatchersSafely(PrintWriter wjfo, List<FieldDescription> fields) {
 		wjfo.println("    @Override");
 		wjfo.println("    protected boolean matchesSafely(" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
 				+ " actual, org.hamcrest.Description mismatchDescription) {");
@@ -330,13 +338,8 @@ public class ProvideMatchersAnnotatedElementMirror {
 			wjfo.println("        result=false;");
 			wjfo.println("      }");
 		}
-		for (FieldDescription f : fields) {
-			wjfo.println("      if(!" + f.getFieldName() + ".matches(actual)) {");
-			wjfo.println("        mismatchDescription.appendText(\"[\"); " + f.getFieldName()
-					+ ".describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");");
-			wjfo.println("        result=false;");
-			wjfo.println("      }");
-		}
+		fields.stream().map(f -> f.asMatchesSafely("      ")).forEach(wjfo::println);
+
 		wjfo.println("      for(org.hamcrest.Matcher nMatcher : nextMatchers) {");
 		wjfo.println("        if(!nMatcher.matches(actual)) {");
 		wjfo.println(
@@ -347,7 +350,17 @@ public class ProvideMatchersAnnotatedElementMirror {
 		wjfo.println("      return result;");
 		wjfo.println("    }");
 		wjfo.println();
+	}
 
+	private void generatePrivateImplementationForEnd(PrintWriter wjfo) {
+		wjfo.println("    @Override");
+		wjfo.println("    public _PARENT end() {");
+		wjfo.println("      return _parentBuilder;");
+		wjfo.println("    }");
+		wjfo.println();
+	}
+
+	private void generatedPrivateImplementationForDescribeTo(PrintWriter wjfo, List<FieldDescription> fields) {
 		wjfo.println("    @Override");
 		wjfo.println("    public void describeTo(org.hamcrest.Description description) {");
 		wjfo.println("      description.appendText(\"an instance of "
@@ -355,21 +368,15 @@ public class ProvideMatchersAnnotatedElementMirror {
 		if (hasParent) {
 			wjfo.println("      description.appendText(\"[\").appendDescriptionOf(_parent).appendText(\"]\\n\");");
 		}
-		fields.stream().map(f -> "      description.appendText(\"[\").appendDescriptionOf(" + f.getFieldName()
-				+ ").appendText(\"]\\n\");").forEach(wjfo::println);
+		fields.stream().map(f -> f.asDescribeTo("      ")).forEach(wjfo::println);
 		wjfo.println("      for(org.hamcrest.Matcher nMatcher : nextMatchers) {");
 		wjfo.println(
 				"        description.appendText(\"[object itself \").appendDescriptionOf(nMatcher).appendText(\"]\\n\");");
 		wjfo.println("      }");
 		wjfo.println("    }");
-		wjfo.println();
+	}
 
-		wjfo.println("    @Override");
-		wjfo.println("    public _PARENT end() {");
-		wjfo.println("      return _parentBuilder;");
-		wjfo.println("    }");
-		wjfo.println();
-
+	private void generatePrivateImplementationForAndWith(PrintWriter wjfo) {
 		wjfo.println("    @Override");
 		wjfo.println("    public " + simpleNameOfGeneratedInterfaceMatcher + " " + genericParent
 				+ " andWith(org.hamcrest.Matcher<? super " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
@@ -378,8 +385,6 @@ public class ProvideMatchersAnnotatedElementMirror {
 				"      nextMatchers.add(java.util.Objects.requireNonNull(otherMatcher,\"A matcher is expected\"));");
 		wjfo.println("      return this;");
 		wjfo.println("    }");
-
-		wjfo.println("  }");
 	}
 
 	private String generateDSLStarter(PrintWriter wjfo, List<FieldDescription> fields) {
@@ -599,31 +604,6 @@ public class ProvideMatchersAnnotatedElementMirror {
 		returnDescription.ifPresent(t -> sb.append(prefix).append(" * @return ").append(t).append("\n"));
 		sb.append(prefix).append(" */").append("\n");
 		return sb.toString();
-	}
-
-	private static String toJavaSyntax(String unformatted) {
-		StringBuilder sb = new StringBuilder();
-		sb.append('"');
-		for (char c : unformatted.toCharArray()) {
-			sb.append(toJavaSyntax(c));
-		}
-		sb.append('"');
-		return sb.toString();
-	}
-
-	private static String toJavaSyntax(char ch) {
-		switch (ch) {
-		case '"':
-			return "\\\"";
-		case '\n':
-			return "\\n";
-		case '\r':
-			return "\\r";
-		case '\t':
-			return "\\t";
-		default:
-			return "" + ch;
-		}
 	}
 
 	private static String extractParamCommentFromJavadoc(String docComment) {
