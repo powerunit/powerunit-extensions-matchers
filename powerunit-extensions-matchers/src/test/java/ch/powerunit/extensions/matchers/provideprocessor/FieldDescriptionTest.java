@@ -2,7 +2,6 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 
 import static org.mockito.Mockito.when;
 
-import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,6 +20,7 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import ch.powerunit.Ignore;
 import ch.powerunit.Rule;
 import ch.powerunit.Test;
 import ch.powerunit.TestRule;
@@ -89,6 +89,22 @@ public class FieldDescriptionTest implements TestSuite {
 		when(fieldTypeMirrorAsDeclaredType.getTypeArguments())
 				.thenReturn((List) Arrays.asList(fieldTypeMirror1, fieldTypeMirror2));
 		assertThatFunction(FieldDescription::computeGenericInformation, fieldTypeMirrorAsDeclaredType).is("X,Y");
+	}
+
+	@Test
+	public void testAsMatcherSafely() {
+		FieldDescription undertest = new FieldDescription(provideMatchersAnnotatedElementMirror, "is", "field",
+				"boolean", false, processingEnv, executableElement, primitiveType);
+		assertThatFunction(undertest::asMatchesSafely, " ").is(
+				" if(!field.matches(actual)) {\n   mismatchDescription.appendText(\"[\"); field.describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");\n   result=false;\n }");
+	}
+
+	@Test
+	public void testAsDescribeTo() {
+		FieldDescription undertest = new FieldDescription(provideMatchersAnnotatedElementMirror, "is", "field",
+				"boolean", false, processingEnv, executableElement, primitiveType);
+		assertThatFunction(undertest::asDescribeTo, " ")
+				.is(" description.appendText(\"[\").appendDescriptionOf(field).appendText(\"]\\n\");");
 	}
 
 	@Test
