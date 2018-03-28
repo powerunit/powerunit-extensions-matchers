@@ -36,8 +36,6 @@ import javax.lang.model.util.SimpleElementVisitor8;
 import javax.lang.model.util.TypeKindVisitor8;
 import javax.tools.Diagnostic.Kind;
 
-import ch.powerunit.extensions.matchers.provideprocessor.FieldDescription.Type;
-
 /**
  * @author borettim
  *
