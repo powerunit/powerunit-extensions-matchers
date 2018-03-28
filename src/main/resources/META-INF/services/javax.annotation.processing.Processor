@@ -1,0 +1,2 @@
+ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor
+ch.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor

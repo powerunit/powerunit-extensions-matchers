@@ -1,0 +1,43 @@
+<assembly
+	xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+	<id>only-factory</id>
+	<formats>
+		<format>jar</format>
+	</formats>
+	<includeBaseDirectory>false</includeBaseDirectory>
+	<dependencySets>
+		<dependencySet>
+			<outputDirectory>/</outputDirectory>
+			<useProjectArtifact>true</useProjectArtifact>
+			<unpack>true</unpack>
+			<scope>runtime</scope>
+			<includes>
+				<include>org.hamcrest:hamcrest-all</include>
+			</includes>
+			<unpackOptions>
+				<includes>
+					<include>**/Factory.class</include>
+				</includes>
+			</unpackOptions>
+		</dependencySet>
+	</dependencySets>
+
+	<fileSets>
+		<fileSet>
+			<directory>target/classes</directory>
+			<outputDirectory>/</outputDirectory>
+			<excludes>
+				<exclude>**/provideprocessor/**</exclude>
+				<exclude>**/ProvideMatchers*</exclude>
+				<exclude>**/*Matcher*</exclude>
+				<exclude>META-INF/services/javax.annotation.processing.Processor</exclude>
+			</excludes>
+		</fileSet>
+		<fileSet>
+			<directory>src/main/dedicated-jar/factory</directory>
+			<outputDirectory>/</outputDirectory>
+		</fileSet>
+	</fileSets>
+</assembly>
