@@ -292,7 +292,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<excludePackageNames>ch.powerunit.extensions.matchers.factoryprocessor*:ch.powerunit.extensions.matchers.provideprocessor*</excludePackageNames>
+					<excludePackageNames>ch.powerunit.extensions.matchers.factoryprocessor*:ch.powerunit.extensions.matchers.provideprocessor*:ch.powerunit.extensions.matchers.common*</excludePackageNames>
 					<docfilessubdirs>true</docfilessubdirs>
 					<linksource>true</linksource>
 					<links>
@@ -641,7 +641,7 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.0.0</version>
 				<configuration>
-					<excludePackageNames>ch.powerunit.extensions.matchers.factoryprocessor*:ch.powerunit.extensions.matchers.provideprocessor*</excludePackageNames>
+					<excludePackageNames>ch.powerunit.extensions.matchers.factoryprocessor*:ch.powerunit.extensions.matchers.provideprocessor*:ch.powerunit.extensions.matchers.common*</excludePackageNames>
 					<docfilessubdirs>true</docfilessubdirs>
 					<linksource>true</linksource>
 					<links>
