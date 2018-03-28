@@ -4,7 +4,7 @@
   <skin>
     <groupId>org.apache.maven.skins</groupId>
     <artifactId>maven-fluido-skin</artifactId>
-    <version>1.3.1</version>
+    <version>1.7</version>
   </skin>
   <custom>
     <fluidoSkin>
@@ -23,12 +23,17 @@
           img="http://www.powerunit.ch/powerunit/logo.png"/>
     <logo name="Travis-ci" href="https://travis-ci.org/powerunit/powerunit-extensions-matchers"
           img="https://travis-ci.org/powerunit/powerunit-extensions-matchers.svg?branch=master"/>
+    <logo name="Codacy" href="https://www.codacy.com/app/mathieu.boretti/powerunit-extensions-matchers?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=powerunit/powerunit-extensions-matchers&amp;utm_campaign=Badge_Grades"
+          img="https://api.codacy.com/project/badge/Grade/54e6f34a650147e48b1864a420695a1c"/>
+    <logo name="Codacy / Coverage" href="https://www.codacy.com/app/mathieu.boretti/powerunit-extensions-matchers?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=powerunit/powerunit-extensions-matchers&amp;utm_campaign=Badge_Coverage"
+          img="https://api.codacy.com/project/badge/Coverage/54e6f34a650147e48b1864a420695a1c"/>
   </poweredBy>
+  
   <body>
-  	<head>
+  	<head><![CDATA[
   		<link rel="icon" type="image/png" href="logo.png" />
   		<link rel="shortcut icon" type="image/png" href="logo.png" />
-  	</head>
+  	]]></head>
     <menu ref="reports" />
     <menu name="Linked projects">
       <item name="PowerUnit" href="http://www.powerunit.ch/powerunit"/>
