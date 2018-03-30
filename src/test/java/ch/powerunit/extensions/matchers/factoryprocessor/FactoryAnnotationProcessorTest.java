@@ -13,6 +13,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 
+import org.hamcrest.Matcher;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -65,6 +66,8 @@ public class FactoryAnnotationProcessorTest implements TestSuite {
 		assertThat(underTest.getElementUtils()).is(sameInstance(elements));
 		assertThat(underTest.getFiler()).is(sameInstance(filer));
 		assertThat(underTest.getTypeUtils()).is(sameInstance(typeUtils));
+		assertThat(underTest.getMessager()).is(sameInstance(messageUtils));
+		assertThat(underTest.getOptions().keySet()).is(empty());
 	}
 
 	@Test
