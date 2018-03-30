@@ -41,7 +41,7 @@ import javax.tools.Diagnostic.Kind;
  *
  */
 public class ProvidesMatchersSubElementVisitor
-		extends SimpleElementVisitor8<Optional<FieldDescription>, ProvideMatchersAnnotatedElementMirror> {
+		extends SimpleElementVisitor8<Optional<FieldDescription>, ProvidesMatchersAnnotatedElementMirror> {
 
 	private final ProcessingEnvironment processingEnv;
 	private final Predicate<Element> isInSameRound;
@@ -118,7 +118,7 @@ public class ProvidesMatchersSubElementVisitor
 	}
 
 	@Override
-	public Optional<FieldDescription> visitVariable(VariableElement e, ProvideMatchersAnnotatedElementMirror p) {
+	public Optional<FieldDescription> visitVariable(VariableElement e, ProvidesMatchersAnnotatedElementMirror p) {
 		if (e.getModifiers().contains(Modifier.PUBLIC) && !e.getModifiers().contains(Modifier.STATIC)) {
 			String fieldName = e.getSimpleName().toString();
 			String fieldType = parseType(e.asType(), false);
@@ -139,7 +139,7 @@ public class ProvidesMatchersSubElementVisitor
 	}
 
 	@Override
-	public Optional<FieldDescription> visitExecutable(ExecutableElement e, ProvideMatchersAnnotatedElementMirror p) {
+	public Optional<FieldDescription> visitExecutable(ExecutableElement e, ProvidesMatchersAnnotatedElementMirror p) {
 		if (e.getModifiers().contains(Modifier.PUBLIC) && e.getParameters().size() == 0
 				&& !e.getModifiers().contains(Modifier.STATIC)) {
 			String simpleName = e.getSimpleName().toString();
@@ -159,7 +159,7 @@ public class ProvidesMatchersSubElementVisitor
 	}
 
 	private FieldDescription visiteExecutableGet(ExecutableElement e, String prefix,
-			ProvideMatchersAnnotatedElementMirror p) {
+			ProvidesMatchersAnnotatedElementMirror p) {
 		String methodName = e.getSimpleName().toString();
 		String fieldNameDirect = methodName.replaceFirst(prefix, "");
 		String fieldName = fieldNameDirect.substring(0, 1).toLowerCase() + fieldNameDirect.substring(1);
@@ -174,7 +174,7 @@ public class ProvidesMatchersSubElementVisitor
 	}
 
 	@Override
-	protected Optional<FieldDescription> defaultAction(Element e, ProvideMatchersAnnotatedElementMirror p) {
+	protected Optional<FieldDescription> defaultAction(Element e, ProvidesMatchersAnnotatedElementMirror p) {
 		return Optional.empty();
 	}
 

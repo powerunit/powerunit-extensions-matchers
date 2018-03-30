@@ -22,7 +22,7 @@ import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 
-public class ProvideMatchersAnnotatedElementMirror {
+public class ProvidesMatchersAnnotatedElementMirror {
 
 	private final TypeElement typeElementForClassAnnotatedWithProvideMatcher;
 	private final ProcessingEnvironment processingEnv;
@@ -46,14 +46,14 @@ public class ProvideMatchersAnnotatedElementMirror {
 	private final String simpleNameOfGeneratedInterfaceMatcher;
 	private final String simpleNameOfGeneratedImplementationMatcher;
 	private final TypeElement typeElementForSuperClassOfClassAnnotatedWithProvideMatcher;
-	private final Function<String, ProvideMatchersAnnotatedElementMirror> findMirrorForTypeName;
+	private final Function<String, ProvidesMatchersAnnotatedElementMirror> findMirrorForTypeName;
 	private final String genericForChaining;
 	private final Set<? extends Element> elementsWithOtherAnnotation[];
 	private final List<FieldDescription> fields;
 
-	public ProvideMatchersAnnotatedElementMirror(TypeElement typeElement, ProcessingEnvironment processingEnv,
+	public ProvidesMatchersAnnotatedElementMirror(TypeElement typeElement, ProcessingEnvironment processingEnv,
 			Predicate<Element> isInSameRound,
-			Function<String, ProvideMatchersAnnotatedElementMirror> findMirrorForTypeName,
+			Function<String, ProvidesMatchersAnnotatedElementMirror> findMirrorForTypeName,
 			Set<? extends Element>... elementsWithOtherAnnotation) {
 		this.typeElementForClassAnnotatedWithProvideMatcher = typeElement;
 		this.processingEnv = processingEnv;
@@ -146,7 +146,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 				wjfo.println();
 				wjfo.println("  private " + simpleNameOfGeneratedClass + "() {}");
 				wjfo.println();
-				generateAndExtractFieldAndParentPrivateMatcher(wjfo);
+				wjfo.println(generateAndExtractFieldAndParentPrivateMatcher());
 				wjfo.println();
 				generatePublicInterface(wjfo, fields);
 				wjfo.println();
@@ -165,27 +165,41 @@ public class ProvideMatchersAnnotatedElementMirror {
 		return factories.toString();
 	}
 
-	private void generateAndExtractFieldAndParentPrivateMatcher(PrintWriter wjfo) {
-		wjfo.println(fields.stream().map(f -> f.getMatcherForField("  ")).collect(Collectors.joining("\n")));
+	public String generateAndExtractFieldAndParentPrivateMatcher() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("\n");
+		sb.append(
+				"  private static <_TARGET,_SOURCE> org.hamcrest.Matcher<_SOURCE> asFeatureMatcher(String msg,java.util.function.Function<_SOURCE,_TARGET> converter,org.hamcrest.Matcher<? super _TARGET> matcher) {")
+				.append("\n");
+		sb.append("   return new org.hamcrest.FeatureMatcher<_SOURCE,_TARGET>(matcher, msg, msg) {").append("\n");
+		sb.append("     protected _TARGET featureValueOf(_SOURCE actual) {").append("\n");
+		sb.append("      return converter.apply(actual);").append("\n");
+		sb.append("    }};").append("\n");
+
+		sb.append("  }").append("\n").append("\n");
+		sb.append(fields.stream().map(f -> f.getMatcherForField("  ")).collect(Collectors.joining("\n")));
+		sb.append("\n");
 		if (hasParent) {
-			wjfo.println("  private static class SuperClassMatcher" + fullGeneric
-					+ " extends org.hamcrest.FeatureMatcher<" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
-					+ "," + fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher + "> {");
-			wjfo.println();
-			wjfo.println("    public SuperClassMatcher(org.hamcrest.Matcher<? super "
-					+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher + "> matcher) {");
-			wjfo.println("      super(matcher,\"parent\",\"parent\");");
-			wjfo.println("  }");
-			wjfo.println();
-			wjfo.println("    protected " + fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher
-					+ " featureValueOf(" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " actual) {");
-			wjfo.println("      return actual;");
-			wjfo.println("    }");
-			wjfo.println();
-			wjfo.println("  }");
-			wjfo.println();
-			wjfo.println();
+			sb.append("  private static class SuperClassMatcher" + fullGeneric + " extends org.hamcrest.FeatureMatcher<"
+					+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + ","
+					+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher + "> {").append("\n");
+			sb.append("\n");
+			sb.append("    public SuperClassMatcher(org.hamcrest.Matcher<? super "
+					+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher + "> matcher) {").append("\n");
+			sb.append("      super(matcher,\"parent\",\"parent\");").append("\n");
+			sb.append("  }").append("\n");
+			sb.append("\n").append("\n");
+			sb.append("    protected " + fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher
+					+ " featureValueOf(" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " actual) {")
+					.append("\n");
+			sb.append("      return actual;").append("\n");
+			sb.append("    }").append("\n");
+			sb.append("\n");
+			sb.append("  }").append("\n");
+			sb.append("\n");
+			sb.append("\n");
 		}
+		return sb.toString();
 	}
 
 	private void generatePublicInterface(PrintWriter wjfo, List<FieldDescription> fields) {
@@ -505,7 +519,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 
 	private String generateParentInSameRoundDSLStarter(PrintWriter wjfo, List<FieldDescription> fields) {
 		StringBuilder factories = new StringBuilder();
-		ProvideMatchersAnnotatedElementMirror parentMirror = findMirrorForTypeName
+		ProvidesMatchersAnnotatedElementMirror parentMirror = findMirrorForTypeName
 				.apply(typeElementForSuperClassOfClassAnnotatedWithProvideMatcher.getQualifiedName().toString());
 		factories.append(generateParentValueDSLStarter(wjfo, fields, parentMirror.fullyQualifiedNameOfGeneratedClass
 				+ "." + parentMirror.methodShortClassName + "WithSameValue(other)"));
@@ -550,7 +564,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 	}
 
 	private String generateParentInSameRoundWithChaningDSLStarter(PrintWriter wjfo,
-			ProvideMatchersAnnotatedElementMirror parentMirror) {
+			ProvidesMatchersAnnotatedElementMirror parentMirror) {
 		StringBuilder factories = new StringBuilder();
 		StringBuilder javadoc = new StringBuilder();
 		javadoc.append(generateJavaDoc("  ",
@@ -676,7 +690,7 @@ public class ProvideMatchersAnnotatedElementMirror {
 		return typeElementForClassAnnotatedWithProvideMatcher;
 	}
 
-	public ProvideMatchersAnnotatedElementMirror findMirrorFor(String name) {
+	public ProvidesMatchersAnnotatedElementMirror findMirrorFor(String name) {
 		return findMirrorForTypeName.apply(name);
 	}
 

@@ -166,18 +166,18 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
 		ProvidesMatchersElementVisitor providesMatchersElementVisitor = new ProvidesMatchersElementVisitor(this,
 				processingEnv, provideMatchersTE);
-		Map<String, ProvideMatchersAnnotatedElementMirror> alias = new HashMap<>();
+		Map<String, ProvidesMatchersAnnotatedElementMirror> alias = new HashMap<>();
 		elementsWithPM.stream().filter(e -> roundEnv.getRootElements().contains(e))
 				.map(e -> e.accept(providesMatchersElementVisitor, null)).filter(Optional::isPresent)
-				.map(t -> new ProvideMatchersAnnotatedElementMirror(t.get(), processingEnv,
+				.map(t -> new ProvidesMatchersAnnotatedElementMirror(t.get(), processingEnv,
 						isInSameRound(elementsWithPM, processingEnv.getTypeUtils()), (n) -> alias.get(n),
 						elementsWithIgnore, elementsWithAddToMatcher, elementsWithAddToMatchers))
 				.forEach(a -> alias.put(a.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher(), a));
 
-		factories.addAll(alias.values().stream().map(ProvideMatchersAnnotatedElementMirror::process)
+		factories.addAll(alias.values().stream().map(ProvidesMatchersAnnotatedElementMirror::process)
 				.collect(Collectors.toList()));
 		allGeneratedMatchers.getGeneratedMatcher().addAll(
-				alias.values().stream().map(ProvideMatchersAnnotatedElementMirror::asXml).collect(Collectors.toList()));
+				alias.values().stream().map(ProvidesMatchersAnnotatedElementMirror::asXml).collect(Collectors.toList()));
 		doWarningForElement((Set) elementsWithIgnore, IgnoreInMatcher.class);
 		doWarningForElement((Set) elementsWithAddToMatcher, AddToMatcher.class);
 		doWarningForElement((Set) elementsWithAddToMatchers, AddToMatchers.class);

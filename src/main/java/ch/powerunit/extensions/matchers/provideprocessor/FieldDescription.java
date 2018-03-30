@@ -62,7 +62,7 @@ public class FieldDescription {
 	private final List<Function<String, String>> implGenerator;
 	private final List<Function<String, String>> dslGenerator;
 	private final ProcessingEnvironment processingEnv;
-	private final ProvideMatchersAnnotatedElementMirror containingElementMirror;
+	private final ProvidesMatchersAnnotatedElementMirror containingElementMirror;
 	private final boolean ignore;
 	private final Element fieldElement;
 	private final String generic;
@@ -194,7 +194,7 @@ public class FieldDescription {
 		return null;
 	}
 
-	public FieldDescription(ProvideMatchersAnnotatedElementMirror containingElementMirror, String fieldAccessor,
+	public FieldDescription(ProvidesMatchersAnnotatedElementMirror containingElementMirror, String fieldAccessor,
 			String fieldName, String fieldType, boolean isInSameRound, ProcessingEnvironment processingEnv,
 			Element fieldElement, TypeMirror fieldTypeMirror) {
 		this.containingElementMirror = containingElementMirror;
@@ -387,9 +387,7 @@ public class FieldDescription {
 				"<_TARGETFIELD> " + generateDeclaration("As",
 						"java.util.function.Function<" + fieldType
 								+ ",_TARGETFIELD> converter,org.hamcrest.Matcher<? super _TARGETFIELD> matcher"),
-				"new org.hamcrest.FeatureMatcher<" + fieldType
-						+ ",_TARGETFIELD>(matcher, \"converting the field\", \"converting the field\") { protected _TARGETFIELD featureValueOf("
-						+ fieldType + " actual) {return converter.apply(actual);}}"));
+				"asFeatureMatcher(\" <field is converted> \",converter,matcher)"));
 
 		return sb.toString();
 	}
@@ -636,7 +634,7 @@ public class FieldDescription {
 	}
 
 	public String generateMatcherBuilderReferenceFor(String generic) {
-		ProvideMatchersAnnotatedElementMirror target = containingElementMirror.findMirrorFor(generic);
+		ProvidesMatchersAnnotatedElementMirror target = containingElementMirror.findMirrorFor(generic);
 		if (target != null) {
 			return target.getFullyQualifiedNameOfGeneratedClass() + "::" + target.getMethodShortClassName()
 					+ "WithSameValue";
