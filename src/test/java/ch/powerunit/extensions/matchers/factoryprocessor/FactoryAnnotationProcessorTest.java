@@ -6,6 +6,7 @@ import java.util.Collections;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
@@ -30,6 +31,9 @@ public class FactoryAnnotationProcessorTest implements TestSuite {
 	private ProcessingEnvironment processingEnv;
 
 	@Mock
+	private RoundEnvironment roundEnv;
+
+	@Mock
 	private TypeElement factoryTE;
 
 	private void prepareMock() {
@@ -49,5 +53,12 @@ public class FactoryAnnotationProcessorTest implements TestSuite {
 		underTest.init(processingEnv);
 		Mockito.verify(messageUtils).printMessage(Kind.MANDATORY_WARNING, "The parameter `"
 				+ FactoryAnnotationsProcessor.class.getName() + ".targets` is missing, please use it.");
+	}
+
+	@Test
+	public void testProcessNoTarget() {
+		when(processingEnv.getOptions()).thenReturn(Collections.emptyMap());
+		underTest.init(processingEnv);
+		assertThat(underTest.process(Collections.emptySet(), roundEnv)).is(false);
 	}
 }

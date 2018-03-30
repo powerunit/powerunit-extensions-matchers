@@ -61,6 +61,7 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor implements Pr
 		if (targets == null || targets.trim().equals("")) {
 			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING, "The parameter `"
 					+ FactoryAnnotationsProcessor.class.getName() + ".targets` is missing, please use it.");
+			build = Collections.emptyList();
 		} else {
 			build = Arrays.stream(targets.split("\\s*;\\s*")).map(e -> new FactoryGroup(this, e))
 					.collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
