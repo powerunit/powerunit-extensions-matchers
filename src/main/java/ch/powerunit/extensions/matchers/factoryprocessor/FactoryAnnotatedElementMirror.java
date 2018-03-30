@@ -49,10 +49,6 @@ class FactoryAnnotatedElementMirror {
 		return element;
 	}
 
-	public Optional<String> getDoc() {
-		return doc;
-	}
-
 	public String getSurroundingFullyQualifiedName() {
 		return surroundingFullyQualifiedName;
 	}
