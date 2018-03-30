@@ -12,9 +12,9 @@ after_success:
 - "bash <(curl -s https://codecov.io/bash) -c -Fcompiler"
 - "mvn org.apache.maven.plugins:maven-dependency-plugin:copy -Dartifact=com.codacy:codacy-coverage-reporter:4.0.0:jar:assembly -Dtransitive"
 - "mvn jacoco:report jacoco:report-integration"
-- "mvn jacoco:report-aggregate"
+- "mvn jacoco:merge -Djacoco.destFile=${project.reporting.outputDirectory}/jacoco-aggregate/jacoco.xml"
 - "(cd target/dependency && java -jar codacy-coverage-reporter-4.0.0-assembly.jar report -l Java -r ../site/jacoco-aggregate/jacoco.xml)"
-- "[ ${TRAVIS_PULL_REQUEST} = 'false' -a ${TRAVIS_BRANCH} = 'master' ] && travis_wait 60 mvn site -Psite --settings settings/travis/settings.xml"
+- "[ ${TRAVIS_PULL_REQUEST} = 'false' -a ${TRAVIS_BRANCH} = 'master' ] && travis_wait 60 mvn site -Psite --settings settings/travis/settings.xml || echo ignore"
 env:
   global:
   - secure: j9eN+/hZEB/aXZDh8ZcaV4iFb+zEtgRP8PwRydX44GKwQFMx1Qp7u2UySj3YbbuBRqLDUgdLDTGIdVhzCdm1H646pHhGnBvmHnvTXgofuVzr/QPYLMpIuPn8dc6EOoo4qvffEJX3I2hb2IQ0ELIU+1MNKztorkidA5fCeYa+uiU=

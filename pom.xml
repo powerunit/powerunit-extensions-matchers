@@ -271,6 +271,17 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
+				<configuration>
+					<fileSets>
+						<fileSet>
+							<directory>${project.build.directory}</directory>
+							<includes>
+								<include>*.exec</include>
+							</includes>
+						</fileSet>
+					</fileSets>
+
+				</configuration>
 				<executions>
 					<execution>
 						<id>default-prepare-agent-1</id>
@@ -710,6 +721,8 @@
 					<reportSet>
 						<reports>
 							<report>report</report>
+							<report>report-integration</report>
+							<report>report-aggregate</report>
 						</reports>
 					</reportSet>
 				</reportSets>
