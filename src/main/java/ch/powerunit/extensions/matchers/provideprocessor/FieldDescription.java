@@ -38,6 +38,8 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.TypeKindVisitor8;
 import javax.tools.Diagnostic.Kind;
 
+import org.hamcrest.FeatureMatcher;
+
 import ch.powerunit.extensions.matchers.AddToMatcher;
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
@@ -286,7 +288,8 @@ public class FieldDescription {
 				" * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.")
 				.append("\n");
 		sb.append(" *").append("\n");
-		param.ifPresent(t -> sb.append(" * @param ").append(t).append(".").append("\n"));
+		param.ifPresent(t -> Arrays.stream(t.split("\n"))
+				.forEach(l -> sb.append(" * @param ").append(l).append(".").append("\n")));
 		sb.append(" * @return the DSL to continue the construction of the matcher.").append("\n");
 		see.ifPresent(t -> sb.append(" * @see ").append(t).append("\n"));
 		sb.append(" */");
@@ -377,6 +380,18 @@ public class FieldDescription {
 								"value an expected value for the field, which will be compared using the is matcher"),
 						Optional.of(SEE_TEXT_FOR_IS_MATCHER)),
 				generateDeclaration("", fieldType + " value"), "org.hamcrest.Matchers.is(value)"));
+
+		sb.append(buildDefaultDsl(prefix,
+				getJavaDocFor(Optional.of("by converting the received field before validat it"),
+						Optional.of(
+								"converter a function to convert the field.\nmatcher a matcher on the resulting"),
+				Optional.empty()),
+				"<_TARGETFIELD> " + generateDeclaration("As",
+						"java.util.function.Function<" + fieldType
+								+ ",_TARGETFIELD> converter,org.hamcrest.Matcher<? super _TARGETFIELD> matcher"),
+				"new org.hamcrest.FeatureMatcher<" + fieldType
+						+ ",_TARGETFIELD>(matcher, \"converting the field\", \"converting the field\") { protected _TARGETFIELD featureValueOf("
+						+ fieldType + " actual) {return converter.apply(actual);}}"));
 
 		return sb.toString();
 	}
