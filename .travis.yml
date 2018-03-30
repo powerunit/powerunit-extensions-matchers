@@ -7,7 +7,7 @@ script:
 - "mvn clean install --settings settings/travis/settings.xml"
 after_success:
 - "mvn jacoco:report coveralls:report -DrepoToken=${repoToken}"
-- "bash <(curl -s https://codecov.io/bash) -C -Funit"
+- "bash <(curl -s https://codecov.io/bash) -c -Funit"
 - "mvn jacoco:report-integration"
 - "bash <(curl -s https://codecov.io/bash) -c -Fcompiler"
 - "mvn org.apache.maven.plugins:maven-dependency-plugin:copy -Dartifact=com.codacy:codacy-coverage-reporter:4.0.0:jar:assembly -Dtransitive"
