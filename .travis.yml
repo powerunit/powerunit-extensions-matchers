@@ -11,9 +11,9 @@ after_success:
 - "mvn jacoco:report-integration"
 - "bash <(curl -s https://codecov.io/bash) -c -Fcompiler"
 - "mvn org.apache.maven.plugins:maven-dependency-plugin:copy -Dartifact=com.codacy:codacy-coverage-reporter:4.0.0:jar:assembly -Dtransitive"
-- "mvn jacoco:report jacoco:report-integration"
-- "mvn jacoco:merge -Djacoco.destFile=target/site/jacoco-aggregate/jacoco.xml"
-- "(cd target/dependency && java -jar codacy-coverage-reporter-4.0.0-assembly.jar report -l Java -r ../site/jacoco-aggregate/jacoco.xml)"
+- "mvn jacoco:merge -Djacoco.destFile=target/jacoco-aggregate.exe"
+- "mvn jacoco:report -Djacoco.dataFile=target/jacoco-aggregate.exe"
+- "(cd target/dependency && java -jar codacy-coverage-reporter-4.0.0-assembly.jar report -l Java -r ../site/jacoco/jacoco.xml)"
 - "[ ${TRAVIS_PULL_REQUEST} = 'false' -a ${TRAVIS_BRANCH} = 'master' ] && travis_wait 60 mvn site -Psite --settings settings/travis/settings.xml || echo ignore"
 env:
   global:
