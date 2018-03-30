@@ -382,7 +382,7 @@ public class FieldDescription {
 		sb.append(buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("by converting the received field before validat it"),
 						Optional.of(
-								"converter a function to convert the field.\nmatcher a matcher on the resulting"),
+								"converter a function to convert the field\nmatcher a matcher on the resulting\n<_TARGETFIELD> The type which this field must be converter"),
 				Optional.empty()),
 				"<_TARGETFIELD> " + generateDeclaration("As",
 						"java.util.function.Function<" + fieldType
