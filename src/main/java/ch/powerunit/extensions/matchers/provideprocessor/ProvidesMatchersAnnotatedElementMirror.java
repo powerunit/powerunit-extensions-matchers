@@ -205,37 +205,9 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	public String generatePublicInterface() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append(generateJavaDoc("  ",
-				"DSL interface for matcher on {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "} to support the build syntaxic sugar",
-				Optional.empty(), Optional.empty(), Optional.empty(), true, false)).append("\n");
-		sb.append("  public static interface " + simpleNameOfGeneratedInterfaceMatcher + "BuildSyntaxicSugar"
-				+ fullGeneric + " extends org.hamcrest.Matcher<" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
-				+ generic + "> {").append("\n");
-		sb.append(generateJavaDoc("  ", "Method that return the matcher itself.",
-				Optional.of(
-						"<b>This method is a syntaxic sugar that end the DSL and make clear that the matcher can't be change anymore.</b>"),
-				Optional.empty(), Optional.of("the matcher"), false, false)).append("\n");
-		sb.append("    default org.hamcrest.Matcher<" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + generic
-				+ "> build() {").append("\n");
-		sb.append("      return this;").append("\n");
-		sb.append("    }").append("\n");
-		sb.append("  }").append("\n");
+		sb.append(generateMainBuildPublicInterface());
 
-		sb.append(generateJavaDoc("  ",
-				"DSL interface for matcher on {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "} to support the end syntaxic sugar",
-				Optional.empty(), Optional.empty(), Optional.empty(), true, true)).append("\n");
-		sb.append("  public static interface " + simpleNameOfGeneratedInterfaceMatcher + "EndSyntaxicSugar"
-				+ fullGenericParent + " extends org.hamcrest.Matcher<"
-				+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + generic + "> {").append("\n");
-		sb.append(generateJavaDoc("  ", "Method that return the parent builder",
-				Optional.of(
-						"<b>This method only works in the contexte of a parent builder. If the real type is Void, then nothing will be returned.</b>"),
-				Optional.empty(), Optional.of("the parent builder or null if not applicable"), false, false))
-				.append("\n");
-		sb.append("    _PARENT end();").append("\n");
-		sb.append("  }").append("\n");
+		sb.append(generateMainParentPublicInterface());
 
 		sb.append(generateJavaDoc("  ",
 				"DSL interface for matcher on {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
@@ -245,10 +217,20 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				+ " extends org.hamcrest.Matcher<" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + generic
 				+ ">," + simpleNameOfGeneratedInterfaceMatcher + "BuildSyntaxicSugar " + generic + ","
 				+ simpleNameOfGeneratedInterfaceMatcher + "EndSyntaxicSugar " + genericParent + " {").append("\n");
+
 		sb.append(fields.stream().filter(FieldDescription::isNotIgnore).map(f -> f.getDslInterface("    "))
 				.collect(Collectors.joining("\n"))).append("\n");
 		sb.append("\n");
 
+		sb.append(generateAsPublicInterface());
+		sb.append("  }").append("\n");
+
+		return sb.toString();
+
+	}
+
+	private String generateAsPublicInterface() {
+		StringBuilder sb = new StringBuilder();
 		sb.append("    /**").append("\n");
 		sb.append("     * Add a matcher on the object itself and not on a specific field.").append("\n");
 		sb.append("     * <p>").append("\n");
@@ -306,10 +288,47 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + generic + "> otherMatcher){").append("\n");
 		sb.append("      return andWith(otherMatcher).end();").append("\n");
 		sb.append("    }").append("\n");
-		sb.append("  }").append("\n");
-
 		return sb.toString();
+	}
 
+	private String generateMainParentPublicInterface() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(generateJavaDoc("  ",
+				"DSL interface for matcher on {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
+						+ simpleNameOfClassAnnotatedWithProvideMatcher + "} to support the end syntaxic sugar",
+				Optional.empty(), Optional.empty(), Optional.empty(), true, true)).append("\n");
+		sb.append("  public static interface " + simpleNameOfGeneratedInterfaceMatcher + "EndSyntaxicSugar"
+				+ fullGenericParent + " extends org.hamcrest.Matcher<"
+				+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + generic + "> {").append("\n");
+		sb.append(generateJavaDoc("  ", "Method that return the parent builder",
+				Optional.of(
+						"<b>This method only works in the contexte of a parent builder. If the real type is Void, then nothing will be returned.</b>"),
+				Optional.empty(), Optional.of("the parent builder or null if not applicable"), false, false))
+				.append("\n");
+		sb.append("    _PARENT end();").append("\n");
+		sb.append("  }").append("\n");
+		return sb.toString();
+	}
+
+	private String generateMainBuildPublicInterface() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(generateJavaDoc("  ",
+				"DSL interface for matcher on {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
+						+ simpleNameOfClassAnnotatedWithProvideMatcher + "} to support the build syntaxic sugar",
+				Optional.empty(), Optional.empty(), Optional.empty(), true, false)).append("\n");
+		sb.append("  public static interface " + simpleNameOfGeneratedInterfaceMatcher + "BuildSyntaxicSugar"
+				+ fullGeneric + " extends org.hamcrest.Matcher<" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
+				+ generic + "> {").append("\n");
+		sb.append(generateJavaDoc("  ", "Method that return the matcher itself.",
+				Optional.of(
+						"<b>This method is a syntaxic sugar that end the DSL and make clear that the matcher can't be change anymore.</b>"),
+				Optional.empty(), Optional.of("the matcher"), false, false)).append("\n");
+		sb.append("    default org.hamcrest.Matcher<" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + generic
+				+ "> build() {").append("\n");
+		sb.append("      return this;").append("\n");
+		sb.append("    }").append("\n");
+		sb.append("  }").append("\n");
+		return sb.toString();
 	}
 
 	private void generatePrivateImplementation(PrintWriter wjfo, List<FieldDescription> fields) {
