@@ -273,10 +273,20 @@
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>default-prepare-agent</id>
+						<id>default-prepare-agent-1</id>
 						<goals>
 							<goal>prepare-agent</goal>
 						</goals>
+					</execution>
+					<execution>
+						<id>default-prepare-agent-2</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>prepare-agent-integration</goal>
+						</goals>
+						<configuration>
+							<propertyName>testcompileargs</propertyName>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -321,19 +331,29 @@
 				<configuration>
 					<source>${java.source.version}</source>
 					<target>${java.target.version}</target>
-					<compilerArgs>
-						<compilerArg>-Ach.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets=.*:ch.powerunit.extensions.matchers.samples.AllMatchers</compilerArg>
-						<compilerArg>-Ach.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor.factory=ch.powerunit.extensions.matchers.samples.AllMatchersAlternate</compilerArg>
-
-					</compilerArgs>
 				</configuration>
 				<executions>
 					<execution>
+						<id>default-compile</id>
 						<goals>
 							<goal>compile</goal>
 						</goals>
 						<configuration>
 							<proc>none</proc>
+						</configuration>
+					</execution>
+					<execution>
+						<id>default-testCompile</id>
+						<goals>
+							<goal>testCompile</goal>
+						</goals>
+						<configuration>
+							<fork>true</fork>
+							<compilerArgs>
+								<compilerArg>-J${testcompileargs}</compilerArg>
+								<compilerArg>-Ach.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets=.*:ch.powerunit.extensions.matchers.samples.AllMatchers</compilerArg>
+								<compilerArg>-Ach.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor.factory=ch.powerunit.extensions.matchers.samples.AllMatchersAlternate</compilerArg>
+							</compilerArgs>
 						</configuration>
 					</execution>
 				</executions>
