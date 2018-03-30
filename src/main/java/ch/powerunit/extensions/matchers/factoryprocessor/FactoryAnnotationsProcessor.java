@@ -95,13 +95,11 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor implements Pr
 	public void processFactoryAnnotation(RoundEnvironment roundEnv) {
 		Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(Factory.class);
 		FactoryElementVisitor factoryElementVisitor = new FactoryElementVisitor();
-		for (Element e : elements) {
-			if (!roundEnv.getRootElements().contains(e.getEnclosingElement())) {
-				break;
-			}
-			e.accept(factoryElementVisitor, this).map(ee -> new FactoryAnnotatedElementMirror(this, ee))
-					.ifPresent(faem -> build.stream().filter(f -> f.isAccepted(faem)).forEach(f -> f.addMethod(faem)));
-		}
+		elements.stream().filter(e -> roundEnv.getRootElements().contains(e.getEnclosingElement()))
+				.forEach(e -> e
+						.accept(factoryElementVisitor, this).map(
+								ee -> new FactoryAnnotatedElementMirror(this, ee))
+				.ifPresent(faem -> build.stream().filter(f -> f.isAccepted(faem)).forEach(f -> f.addMethod(faem))));
 	}
 
 	public AnnotationMirror getFactoryAnnotation(Element e) {
