@@ -38,8 +38,6 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.TypeKindVisitor8;
 import javax.tools.Diagnostic.Kind;
 
-import org.hamcrest.FeatureMatcher;
-
 import ch.powerunit.extensions.matchers.AddToMatcher;
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
