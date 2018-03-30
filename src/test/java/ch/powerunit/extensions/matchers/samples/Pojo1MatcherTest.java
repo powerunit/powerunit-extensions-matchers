@@ -59,6 +59,13 @@ public class Pojo1MatcherTest implements TestSuite {
 	}
 
 	@Test
+	public void testOKMatcherWithConvert() {
+		Pojo1 p = new Pojo1();
+		p.msg2 = "12";
+		assertThat(p).is(Pojo1Matchers.pojo1With().msg2As(s -> Integer.valueOf(s) + 1l, is(13l)));
+	}
+
+	@Test
 	public void testOKMatcherWithLinkedMatcher() {
 		Pojo1 p = new Pojo1();
 		assertThat(p).is(Pojo1Matchers.pojo1With().andWith(notNullValue()).andWith(hasToString(notNullValue()))
