@@ -8,7 +8,6 @@ import java.util.EnumSet;
 import java.util.Optional;
 
 import javax.annotation.processing.Messager;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -30,9 +29,6 @@ public class FactoryElementVisitorTest implements TestSuite {
 	private FactoryAnnotationsProcessor factoryAnnotationsProcessor;
 
 	@Mock
-	private ProcessingEnvironment processingEnv;
-
-	@Mock
 	private Elements elements;
 
 	@Mock
@@ -42,13 +38,13 @@ public class FactoryElementVisitorTest implements TestSuite {
 	private TypeElement factoryTE;
 
 	private void prepareMock() {
-		when(processingEnv.getElementUtils()).thenReturn(elements);
-		when(processingEnv.getMessager()).thenReturn(messageUtils);
+		when(factoryAnnotationsProcessor.getElementUtils()).thenReturn(elements);
+		when(factoryAnnotationsProcessor.getMessager()).thenReturn(messageUtils);
 	}
 
 	@Rule
-	public final TestRule rules = mockitoRule().around(before(this::prepareMock)).around(
-			before(() -> underTest = new FactoryElementVisitor(factoryAnnotationsProcessor, processingEnv, factoryTE)));
+	public final TestRule rules = mockitoRule().around(before(this::prepareMock))
+			.around(before(() -> underTest = new FactoryElementVisitor()));
 
 	private FactoryElementVisitor underTest;
 
@@ -57,18 +53,30 @@ public class FactoryElementVisitorTest implements TestSuite {
 		ExecutableElement ee = mock(ExecutableElement.class);
 		when(ee.getModifiers()).thenReturn(EnumSet.of(Modifier.STATIC, Modifier.PUBLIC));
 		when(ee.getKind()).thenReturn(ElementKind.METHOD);
-		Optional<ExecutableElement> visitResult = underTest.visitExecutable(ee, null);
+		Optional<ExecutableElement> visitResult = underTest.visitExecutable(ee, factoryAnnotationsProcessor);
 		assertThat(visitResult).isNotNull();
 		assertThat(visitResult.isPresent()).is(true);
 		assertThat(visitResult.get()).is(sameInstance(ee));
 	}
 
 	@Test
-	public void testVisitExecutablePublicAndNotStaticThenResultIsPresent() {
+	public void testVisitExecutableNotPublicAndStaticThenResultIsNotPresent() {
 		ExecutableElement ee = mock(ExecutableElement.class);
 		when(ee.getModifiers()).thenReturn(EnumSet.of(Modifier.STATIC));
 		when(ee.getKind()).thenReturn(ElementKind.METHOD);
-		Optional<ExecutableElement> visitResult = underTest.visitExecutable(ee, null);
+		Optional<ExecutableElement> visitResult = underTest.visitExecutable(ee, factoryAnnotationsProcessor);
+		assertThat(visitResult).isNotNull();
+		assertThat(visitResult.isPresent()).is(false);
+		verify(messageUtils).printMessage(Mockito.eq(Kind.MANDATORY_WARNING), Mockito.anyString(), Mockito.same(ee),
+				Mockito.anyVararg());
+	}
+	
+	@Test
+	public void testVisitExecutablePublicAndNotStaticThenResultIsNotPresent() {
+		ExecutableElement ee = mock(ExecutableElement.class);
+		when(ee.getModifiers()).thenReturn(EnumSet.of(Modifier.PUBLIC));
+		when(ee.getKind()).thenReturn(ElementKind.METHOD);
+		Optional<ExecutableElement> visitResult = underTest.visitExecutable(ee, factoryAnnotationsProcessor);
 		assertThat(visitResult).isNotNull();
 		assertThat(visitResult.isPresent()).is(false);
 		verify(messageUtils).printMessage(Mockito.eq(Kind.MANDATORY_WARNING), Mockito.anyString(), Mockito.same(ee),
