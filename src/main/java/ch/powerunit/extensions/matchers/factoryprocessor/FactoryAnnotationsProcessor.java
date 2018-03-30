@@ -19,19 +19,17 @@
  */
 package ch.powerunit.extensions.matchers.factoryprocessor;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Filer;
+import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -40,67 +38,34 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
-import javax.tools.JavaFileObject;
 
 import org.hamcrest.Factory;
-
-import ch.powerunit.extensions.matchers.common.CommonConstants;
 
 @SupportedAnnotationTypes({ "org.hamcrest.Factory" })
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedOptions({ "ch.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets" })
-public class FactoryAnnotationsProcessor extends AbstractProcessor {
+public class FactoryAnnotationsProcessor extends AbstractProcessor implements ProcessingEnvironment {
 
-	private String targets;
+	private List<FactoryGroup> build;
 
-	private List<String[]> targetClass;
-
-	private Map<String, Collection<Entry>> build;
-
-	private class Entry {
-		private final ExecutableElement element;
-
-		private final Optional<String> doc;
-
-		public Entry(ExecutableElement element, String doc) {
-			this.element = element;
-			this.doc = Optional.ofNullable(doc);
-		}
-
-		public ExecutableElement getElement() {
-			return element;
-		}
-
-		public Optional<String> getDoc() {
-			return doc;
-		}
-
-	}
+	private TypeElement factoryAnnotationTE;
 
 	@Override
 	public synchronized void init(ProcessingEnvironment processingEnv) {
 		super.init(processingEnv);
-		targets = processingEnv.getOptions().get(FactoryAnnotationsProcessor.class.getName() + ".targets");
+		String targets = processingEnv.getOptions().get(FactoryAnnotationsProcessor.class.getName() + ".targets");
 		if (targets == null || targets.trim().equals("")) {
 			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING, "The parameter `"
 					+ FactoryAnnotationsProcessor.class.getName() + ".targets` is missing, please use it.");
 		} else {
-			targetClass = new ArrayList<>();
-			build = new HashMap<>();
-			for (String s : targets.split("\\s*;\\s*")) {
-				String l1[] = s.split("\\s*:\\s*");
-				build.put(l1[1], new ArrayList<>());
-				for (String l2 : l1[0].split("\\s*,\\s*")) {
-					targetClass.add(new String[] { l2, l1[1] });
-				}
-			}
+			build = Arrays.stream(targets.split("\\s*;\\s*")).map(e -> new FactoryGroup(this, e))
+					.collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
 		}
+		factoryAnnotationTE = processingEnv.getElementUtils().getTypeElement("org.hamcrest.Factory");
 	}
 
 	/*
@@ -111,149 +76,71 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 	 */
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-		Elements elementsUtils = processingEnv.getElementUtils();
-		TypeElement factoryAnnotationTE = elementsUtils.getTypeElement("org.hamcrest.Factory");
-		if (targets == null || targets.trim().equals("")) {
+		if (build.isEmpty()) {
 			return false;
 		}
 
 		if (!roundEnv.processingOver()) {
-			processFactoryAnnotation(roundEnv, factoryAnnotationTE);
+			processFactoryAnnotation(roundEnv);
 		} else {
 			processGenerationOfFinalClasses();
 		}
 		return true;
 	}
 
-	private void processGenerationOfFinalClasses() {
-		build.entrySet().forEach(target -> processGenerateOneFactoryInterface(target.getKey(), target.getValue()));
+	public void processGenerationOfFinalClasses() {
+		build.forEach(FactoryGroup::processGenerateOneFactoryInterface);
 	}
 
-	private void processGenerateOneFactoryInterface(String targetName, Collection<Entry> entries) {
-		try {
-			JavaFileObject jfo = processingEnv.getFiler().createSourceFile(targetName,
-					entries.stream().map((e) -> e.getElement()).toArray(ExecutableElement[]::new));
-			try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
-				String fullName = targetName;
-				String pName = fullName.replaceAll("\\.[^.]+$", "");
-				String cName = fullName.substring(fullName.lastIndexOf('.') + 1);
-				wjfo.println("package " + pName + ";");
-				wjfo.println();
-				wjfo.println(CommonConstants.DEFAULT_JAVADOC_FOR_FACTORY);
-
-				wjfo.println("@javax.annotation.Generated(value=\"" + FactoryAnnotationsProcessor.class.getName()
-						+ "\",date=\"" + Instant.now().toString() + "\")");
-				wjfo.println("public interface " + cName + " {");
-				wjfo.println();
-				wjfo.println("  /**");
-				wjfo.println(
-						"   * Use this static field to access all the DSL syntax, without be required to implements this interface.");
-				wjfo.println("   */");
-				wjfo.println("  public static final " + cName + " DSL = new " + cName + "() {};");
-				wjfo.println();
-				for (Entry entry : entries) {
-					ExecutableElement ee = entry.getElement();
-					wjfo.println("  // " + ee.getSimpleName());
-					String doc = entry.getDoc().map(t -> t.replaceAll("\n", "\n   * "))
-							.orElse("No javadoc found from the source method.");
-					wjfo.println("  /**\n   * " + doc);
-					wjfo.println("   * @see " + getSeeValue(ee) + "\n   */");
-					wjfo.print("  default ");
-					if (!ee.getTypeParameters().isEmpty()) {
-						wjfo.print("<");
-						wjfo.print(
-								ee.getTypeParameters().stream()
-										.map((ve) -> ve.getSimpleName().toString() + (ve.getBounds().isEmpty() ? ""
-												: (" extends " + ve.getBounds().stream().map((b) -> b.toString())
-														.collect(Collectors.joining("&")))))
-										.collect(Collectors.joining(",")));
-						wjfo.print("> ");
-					}
-					wjfo.print(ee.getReturnType().toString());
-					wjfo.print(" ");
-					wjfo.print(ee.getSimpleName().toString());
-					wjfo.print("(");
-					String param = ee.getParameters().stream()
-							.map((ve) -> ve.asType().toString() + " " + ve.getSimpleName().toString())
-							.collect(Collectors.joining(","));
-					wjfo.print(ee.isVarArgs() ? param.replaceAll("\\[\\](\\s[0-9a-zA-Z_]*$)??", "...") : param);
-					wjfo.println(") {");
-					if (TypeKind.VOID != ee.getReturnType().getKind()) {
-						wjfo.print("    return ");
-					} else {
-						wjfo.print("    ");
-					}
-					wjfo.print(processingEnv.getElementUtils().getPackageOf(ee.getEnclosingElement()).getQualifiedName()
-							.toString());
-					wjfo.print(".");
-					wjfo.print(ee.getEnclosingElement().getSimpleName().toString());
-					wjfo.print(".");
-					wjfo.print(ee.getSimpleName().toString());
-					wjfo.print("(");
-					wjfo.print(ee.getParameters().stream().map((ve) -> ve.getSimpleName().toString())
-							.collect(Collectors.joining(",")));
-					wjfo.println(");");
-					wjfo.println("  }");
-					wjfo.println();
-				}
-				wjfo.println("}");
-			}
-		} catch (IOException e) {
-			processingEnv.getMessager().printMessage(Kind.ERROR,
-					"Unable to create the file containing the target class `" + targetName + "`, because of "
-							+ e.getMessage());
-		}
-	}
-
-	private void processFactoryAnnotation(RoundEnvironment roundEnv, TypeElement factoryAnnotationTE) {
+	public void processFactoryAnnotation(RoundEnvironment roundEnv) {
 		Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(Factory.class);
-		FactoryElementVisitor factoryElementVisitor = new FactoryElementVisitor(this, processingEnv,
-				factoryAnnotationTE);
+		FactoryElementVisitor factoryElementVisitor = new FactoryElementVisitor();
 		for (Element e : elements) {
 			if (!roundEnv.getRootElements().contains(e.getEnclosingElement())) {
 				break;
 			}
-			e.accept(factoryElementVisitor, null).ifPresent(ee -> {
-				for (String regex[] : targetClass) {
-					if (ee.getEnclosingElement().asType().toString().matches(regex[0])) {
-						build.get(regex[1]).add(new Entry(ee, processingEnv.getElementUtils().getDocComment(ee)));
-						break;
-					}
-				}
-
-			});
+			e.accept(factoryElementVisitor, this).map(ee -> new FactoryAnnotatedElementMirror(this, ee))
+					.ifPresent(faem -> build.stream().filter(f -> f.isAccepted(faem)).forEach(f -> f.addMethod(faem)));
 		}
 	}
 
-	private String getSeeValue(ExecutableElement ee) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(processingEnv.getElementUtils().getPackageOf(ee.getEnclosingElement()).getQualifiedName()).append(".")
-				.append(ee.getEnclosingElement().getSimpleName().toString()).append("#")
-				.append(ee.getSimpleName().toString()).append("(");
-		sb.append(ee.getParameters().stream().map((ve) -> {
-			Element e = processingEnv.getTypeUtils().asElement(ve.asType());
-			if (e == null) {
-				return processingEnv.getTypeUtils().erasure(ve.asType()).toString();
-			} else {
-				if (ve.asType().getKind() == TypeKind.TYPEVAR) {
-					return processingEnv.getTypeUtils().erasure(ve.asType()).toString();
-				}
-
-				PackageElement pe = processingEnv.getElementUtils().getPackageOf(e);
-				return pe.toString() + "." + processingEnv.getTypeUtils().asElement(ve.asType()).getSimpleName();
-			}
-		}).collect(Collectors.joining(",")));
-		sb.append(")");
-		String result = sb.toString();
-		if (ee.isVarArgs()) {
-			result = result.replaceAll("\\[\\](\\s[0-9a-zA-Z_]*$)??", "...");
-		}
-		return result;
+	public AnnotationMirror getFactoryAnnotation(Element e) {
+		return getElementUtils().getAllAnnotationMirrors(e).stream()
+				.filter(a -> a.getAnnotationType().equals(factoryAnnotationTE.asType())).findAny().orElse(null);
 	}
 
-	public AnnotationMirror getFactoryAnnotation(TypeElement factoryAnnotationTE,
-			Collection<? extends AnnotationMirror> annotations) {
-		return annotations.stream().filter(a -> a.getAnnotationType().equals(factoryAnnotationTE.asType())).findAny()
-				.orElse(null);
+	@Override
+	public Elements getElementUtils() {
+		return processingEnv.getElementUtils();
+	}
+
+	@Override
+	public Filer getFiler() {
+		return processingEnv.getFiler();
+	}
+
+	@Override
+	public Locale getLocale() {
+		return processingEnv.getLocale();
+	}
+
+	@Override
+	public Messager getMessager() {
+		return processingEnv.getMessager();
+	}
+
+	@Override
+	public Map<String, String> getOptions() {
+		return processingEnv.getOptions();
+	}
+
+	@Override
+	public SourceVersion getSourceVersion() {
+		return processingEnv.getSourceVersion();
+	}
+
+	@Override
+	public Types getTypeUtils() {
+		return processingEnv.getTypeUtils();
 	}
 }
