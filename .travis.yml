@@ -2,9 +2,10 @@ language: java
 jdk:
 - oraclejdk8
 sudo: false
-before_install: git clone -b travis `git config --get remote.origin.url` settings/travis
+install:
+- "mvn dependency:resolve dependency:resolve-plugins"
 script:
-- "mvn clean install --settings settings/travis/settings.xml"
+- "mvn clean install"
 after_success:
 - "mvn jacoco:report coveralls:report -DrepoToken=${repoToken}"
 - "bash <(curl -s https://codecov.io/bash) -c -Funit"
@@ -14,6 +15,7 @@ after_success:
 - "mvn jacoco:merge -Djacoco.destFile=target/jacoco-aggregate.exe"
 - "mvn jacoco:report -Djacoco.dataFile=target/jacoco-aggregate.exe"
 - "(cd target/dependency && java -jar codacy-coverage-reporter-4.0.0-assembly.jar report -l Java -r ../site/jacoco/jacoco.xml)"
+- "git clone -b travis `git config --get remote.origin.url` settings/travis"
 - "[ ${TRAVIS_PULL_REQUEST} = 'false' -a ${TRAVIS_BRANCH} = 'master' ] && travis_wait 60 mvn site -Psite --settings settings/travis/settings.xml || echo ignore"
 env:
   global:
