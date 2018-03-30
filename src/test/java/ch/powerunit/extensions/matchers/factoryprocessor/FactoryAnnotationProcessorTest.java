@@ -4,11 +4,13 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
+import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 
 import org.mockito.Mock;
@@ -28,6 +30,12 @@ public class FactoryAnnotationProcessorTest implements TestSuite {
 	private Messager messageUtils;
 
 	@Mock
+	private Filer filer;
+
+	@Mock
+	private Types typeUtils;
+
+	@Mock
 	private ProcessingEnvironment processingEnv;
 
 	@Mock
@@ -38,6 +46,8 @@ public class FactoryAnnotationProcessorTest implements TestSuite {
 
 	private void prepareMock() {
 		when(processingEnv.getMessager()).thenReturn(messageUtils);
+		when(processingEnv.getFiler()).thenReturn(filer);
+		when(processingEnv.getTypeUtils()).thenReturn(typeUtils);
 		when(processingEnv.getElementUtils()).thenReturn(elements);
 	}
 
@@ -46,6 +56,16 @@ public class FactoryAnnotationProcessorTest implements TestSuite {
 			.around(before(() -> underTest = new FactoryAnnotationsProcessor()));
 
 	private FactoryAnnotationsProcessor underTest;
+
+	@Test
+	public void testHelperMethod() {
+		when(processingEnv.getOptions()).thenReturn(Collections.emptyMap());
+		underTest.init(processingEnv);
+
+		assertThat(underTest.getElementUtils()).is(sameInstance(elements));
+		assertThat(underTest.getFiler()).is(sameInstance(filer));
+		assertThat(underTest.getTypeUtils()).is(sameInstance(typeUtils));
+	}
 
 	@Test
 	public void testInitNoTarget() {
