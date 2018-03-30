@@ -4,8 +4,7 @@ jdk:
 sudo: false
 before_install: git clone -b travis `git config --get remote.origin.url` settings/travis
 script:
-- "[ ${TRAVIS_PULL_REQUEST} = 'false' -a ${TRAVIS_BRANCH} = 'master' ] && travis_wait 60 mvn clean install site -Psite --settings settings/travis/settings.xml
-  || mvn clean install --settings settings/travis/settings.xml "
+- "mvn clean install --settings settings/travis/settings.xml"
 after_success:
 - "mvn jacoco:report coveralls:report -DrepoToken=${repoToken}"
 - "bash <(curl -s https://codecov.io/bash) -C -Funit"
@@ -15,7 +14,7 @@ after_success:
 - "mvn jacoco:report jacoco:report-integration"
 - "mvn jacoco:report-aggregate"
 - "(cd target/dependency && java -jar codacy-coverage-reporter-4.0.0-assembly.jar report -l Java -r ../site/jacoco-aggregate/jacoco.xml)"
+- "[ ${TRAVIS_PULL_REQUEST} = 'false' -a ${TRAVIS_BRANCH} = 'master' ] && travis_wait 60 mvn site -Psite --settings settings/travis/settings.xml"
 env:
   global:
   - secure: micrjSRaEhZIKRIkVEaLlV1gENt4ME8hMtEg1yF4MIeThCQTG7LgUJke7T8zdS1D5E3ZEpabkueaWsdtaA375zvq/mqn6Y86SZgmussoqjp3WHm0Yu17BCKWK4G3yIIStD+yXR8zeCjh2YOV7JHztlxU/TAV1JVemroS0JCozg8=
-  - secure: j9eN+/hZEB/aXZDh8ZcaV4iFb+zEtgRP8PwRydX44GKwQFMx1Qp7u2UySj3YbbuBRqLDUgdLDTGIdVhzCdm1H646pHhGnBvmHnvTXgofuVzr/QPYLMpIuPn8dc6EOoo4qvffEJX3I2hb2IQ0ELIU+1MNKztorkidA5fCeYa+uiU=
