@@ -48,7 +48,7 @@ public class ProvidesMatchersSubElementVisitor
 		this.extractNameVisitor = new NameExtractorVisitor(processingEnv);
 	}
 
-	private Optional<FieldDescription> removeIfNeededAndThenReturn(Optional<FieldDescription> fieldDescription,
+	public static Optional<FieldDescription> removeIfNeededAndThenReturn(Optional<FieldDescription> fieldDescription,
 			ProvidesMatchersAnnotatedElementMirror p) {
 		fieldDescription.ifPresent(f -> p.removeFromIgnoreList(f.getFieldElement()));
 		return fieldDescription;
@@ -58,9 +58,8 @@ public class ProvidesMatchersSubElementVisitor
 	public Optional<FieldDescription> visitVariable(VariableElement e, ProvidesMatchersAnnotatedElementMirror p) {
 		if (e.getModifiers().contains(Modifier.PUBLIC) && !e.getModifiers().contains(Modifier.STATIC)) {
 			String fieldName = e.getSimpleName().toString();
-			return removeIfNeededAndThenReturn(parseType(e.asType(), false).map(f -> new FieldDescription(p, fieldName,
-					fieldName, f, isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())), processingEnv,
-					e, e.asType())), p);
+			return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, fieldName, fieldName,
+					e.asType());
 		}
 		if (p.isInsideIgnoreList(e)) {
 			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
@@ -96,18 +95,23 @@ public class ProvidesMatchersSubElementVisitor
 		String methodName = e.getSimpleName().toString();
 		String fieldNameDirect = methodName.replaceFirst(prefix, "");
 		String fieldName = fieldNameDirect.substring(0, 1).toLowerCase() + fieldNameDirect.substring(1);
-		return removeIfNeededAndThenReturn(parseType(e.getReturnType(), false).map(f -> new FieldDescription(p,
-				methodName + "()", fieldName, f, isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())),
-				processingEnv, e, e.getReturnType())), p);
+		return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, methodName + "()",
+				fieldName, e.getReturnType());
+	}
+
+	public Optional<FieldDescription> createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(
+			Element e, ProvidesMatchersAnnotatedElementMirror p, String methodName, String fieldName,
+			TypeMirror typeMirrorForField) {
+		return removeIfNeededAndThenReturn(typeMirrorForField.accept(extractNameVisitor, false)
+				.map(f -> new FieldDescription(p, methodName, fieldName, f,
+						isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())), processingEnv, e,
+						typeMirrorForField)),
+				p);
 	}
 
 	@Override
 	protected Optional<FieldDescription> defaultAction(Element e, ProvidesMatchersAnnotatedElementMirror p) {
 		return Optional.empty();
-	}
-
-	Optional<String> parseType(TypeMirror type, boolean asPrimitif) {
-		return type.accept(extractNameVisitor, asPrimitif);
 	}
 
 }
