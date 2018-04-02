@@ -38,7 +38,7 @@ import javax.tools.Diagnostic.Kind;
 public class ProvidesMatchersSubElementVisitor
 		extends SimpleElementVisitor8<Optional<FieldDescription>, ProvidesMatchersAnnotatedElementMirror> {
 
-	final ProcessingEnvironment processingEnv;
+	private final ProcessingEnvironment processingEnv;
 	private final Predicate<Element> isInSameRound;
 	private final NameExtractorVisitor extractNameVisitor;
 
