@@ -1,6 +1,5 @@
 package ch.powerunit.extensions.matchers.factoryprocessor;
 
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
