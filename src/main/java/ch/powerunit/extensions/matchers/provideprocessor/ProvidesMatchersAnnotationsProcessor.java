@@ -22,7 +22,6 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -56,7 +55,7 @@ import ch.powerunit.extensions.matchers.AddToMatcher;
 import ch.powerunit.extensions.matchers.AddToMatchers;
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
-import ch.powerunit.extensions.matchers.common.CommonConstants;
+import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatchers;
 
 /**
@@ -133,23 +132,9 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 							.map(g -> g.getMirror().getTypeElementForClassAnnotatedWithProvideMatcher())
 							.collect(Collectors.toList()).toArray(new Element[0]));
 			try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
-				wjfo.println("package " + factory.replaceAll("\\.[^.]+$", "") + ";");
-				wjfo.println();
-				wjfo.println(CommonConstants.DEFAULT_JAVADOC_FOR_FACTORY);
-				wjfo.println(
-						"@javax.annotation.Generated(value=\"" + ProvidesMatchersAnnotationsProcessor.class.getName()
-								+ "\",date=\"" + Instant.now().toString() + "\")");
 				String cName = factory.replaceAll("^([^.]+\\.)*", "");
-				wjfo.println("public interface " + cName + " {");
-				wjfo.println();
-				wjfo.println("  /**");
-				wjfo.println(
-						"   * Use this static field to access all the DSL syntax, without be required to implements this interface.");
-				wjfo.println("   */");
-				wjfo.println("  public static final " + cName + " DSL = new " + cName + "() {};");
-				wjfo.println();
-				factories.stream().forEach(wjfo::println);
-				wjfo.println("}");
+				CommonUtils.generateFactoryClass(wjfo, ProvidesMatchersAnnotationsProcessor.class,
+						factory.replaceAll("\\.[^.]+$", ""), cName, () -> factories.stream());
 			}
 		} catch (IOException e1) {
 			processingEnv.getMessager().printMessage(Kind.ERROR,
@@ -176,8 +161,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
 		factories.addAll(alias.values().stream().map(ProvidesMatchersAnnotatedElementMirror::process)
 				.collect(Collectors.toList()));
-		allGeneratedMatchers.getGeneratedMatcher().addAll(
-				alias.values().stream().map(ProvidesMatchersAnnotatedElementMirror::asXml).collect(Collectors.toList()));
+		allGeneratedMatchers.getGeneratedMatcher().addAll(alias.values().stream()
+				.map(ProvidesMatchersAnnotatedElementMirror::asXml).collect(Collectors.toList()));
 		doWarningForElement((Set) elementsWithIgnore, IgnoreInMatcher.class);
 		doWarningForElement((Set) elementsWithAddToMatcher, AddToMatcher.class);
 		doWarningForElement((Set) elementsWithAddToMatchers, AddToMatchers.class);
