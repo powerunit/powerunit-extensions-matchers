@@ -48,17 +48,19 @@ public class ProvidesMatchersSubElementVisitor
 		this.extractNameVisitor = new NameExtractorVisitor(processingEnv);
 	}
 
+	private Optional<FieldDescription> removeIfNeededAndThenReturn(Optional<FieldDescription> fieldDescription,
+			ProvidesMatchersAnnotatedElementMirror p) {
+		fieldDescription.ifPresent(f -> p.removeFromIgnoreList(f.getFieldElement()));
+		return fieldDescription;
+	}
+
 	@Override
 	public Optional<FieldDescription> visitVariable(VariableElement e, ProvidesMatchersAnnotatedElementMirror p) {
 		if (e.getModifiers().contains(Modifier.PUBLIC) && !e.getModifiers().contains(Modifier.STATIC)) {
 			String fieldName = e.getSimpleName().toString();
-			Optional<String> fieldType = parseType(e.asType(), false);
-			if (fieldType.isPresent()) {
-				p.removeFromIgnoreList(e);
-				return Optional.of(new FieldDescription(p, fieldName, fieldName, fieldType.get(),
-						isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())), processingEnv, e,
-						e.asType()));
-			}
+			return removeIfNeededAndThenReturn(parseType(e.asType(), false).map(f -> new FieldDescription(p, fieldName,
+					fieldName, f, isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())), processingEnv,
+					e, e.asType())), p);
 		}
 		if (p.isInsideIgnoreList(e)) {
 			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
@@ -75,33 +77,28 @@ public class ProvidesMatchersSubElementVisitor
 				&& !e.getModifiers().contains(Modifier.STATIC)) {
 			String simpleName = e.getSimpleName().toString();
 			if (simpleName.startsWith("get")) {
-				return Optional.ofNullable(visiteExecutableGet(e, "get", p));
+				return visiteExecutableGet(e, "get", p);
 			} else if (simpleName.startsWith("is")) {
-				return Optional.ofNullable(visiteExecutableGet(e, "is", p));
+				return visiteExecutableGet(e, "is", p);
 			}
 		}
 		if (p.isInsideIgnoreList(e)) {
 			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
-					"One of the annotation is not supported as this location ; CHeck that this method is public, doesn't have any parameter and is named isXXX or getXXX",
+					"One of the annotation is not supported as this location ; Check that this method is public, doesn't have any parameter and is named isXXX or getXXX",
 					e);
 			p.removeFromIgnoreList(e);
 		}
 		return Optional.empty();
 	}
 
-	private FieldDescription visiteExecutableGet(ExecutableElement e, String prefix,
+	private Optional<FieldDescription> visiteExecutableGet(ExecutableElement e, String prefix,
 			ProvidesMatchersAnnotatedElementMirror p) {
 		String methodName = e.getSimpleName().toString();
 		String fieldNameDirect = methodName.replaceFirst(prefix, "");
 		String fieldName = fieldNameDirect.substring(0, 1).toLowerCase() + fieldNameDirect.substring(1);
-		Optional<String> fieldType = parseType(e.getReturnType(), false);
-		if (fieldType.isPresent()) {
-			p.removeFromIgnoreList(e);
-			return new FieldDescription(p, methodName + "()", fieldName, fieldType.get(),
-					isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())), processingEnv, e,
-					e.getReturnType());
-		}
-		return null;
+		return removeIfNeededAndThenReturn(parseType(e.getReturnType(), false).map(f -> new FieldDescription(p,
+				methodName + "()", fieldName, f, isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())),
+				processingEnv, e, e.getReturnType())), p);
 	}
 
 	@Override

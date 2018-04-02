@@ -713,6 +713,10 @@ public class FieldDescription {
 		return !ignore;
 	}
 
+	public Element getFieldElement() {
+		return fieldElement;
+	}
+
 	public String getDescriptionForIgnoreIfApplicable() {
 		return Optional.ofNullable(fieldElement.getAnnotation(IgnoreInMatcher.class)).map(i -> i.comments()).orElse("");
 	}
