@@ -17,8 +17,6 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVisitor;
 import javax.lang.model.util.Types;
 
 import org.mockito.Mock;
@@ -55,6 +53,9 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 	private Name variableName;
 
 	@Mock
+	private Name executableName;
+
+	@Mock
 	private PrimitiveType typeMirror;
 
 	@Mock
@@ -77,6 +78,7 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 		when(types.asElement(typeMirror)).thenReturn(elementType);
 		when(variableElement.getSimpleName()).thenReturn(variableName);
 		when(variableName.toString()).thenReturn("fn");
+		when(executableElement.getSimpleName()).thenReturn(executableName);
 		when(variableElement.getAnnotationsByType(AddToMatcher.class)).thenReturn(new AddToMatcher[] {});
 		when(variableElement.asType()).thenReturn(typeMirror);
 		when(typeMirror.getKind()).thenReturn(TypeKind.BOOLEAN);
@@ -84,6 +86,8 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 				.thenReturn(Optional.of("x"));
 		when(typeMirror.accept(Mockito.argThat(instanceOf(FieldDescription.ExtracTypeVisitor.class)), Mockito.any()))
 				.thenReturn(Type.NA);
+		when(executableElement.getReturnType()).thenReturn(typeMirror);
+		when(executableElement.getAnnotationsByType(AddToMatcher.class)).thenReturn(new AddToMatcher[] {});
 	}
 
 	private ProvidesMatchersSubElementVisitor underTest;
@@ -242,6 +246,30 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 		assertThat(ofd).isNotNull();
 		assertThat(ofd.isPresent()).is(true);
 		assertThat(ofd.get().getFieldName()).is("fn");
+	}
+
+	@Test
+	public void testVisitExecutablePublicAndNotStaticAndZize0AndNamedGetThenReturnFieldDescription() {
+		when(executableName.toString()).thenReturn("getXXX");
+		when(executableElement.getModifiers()).thenReturn(Collections.singleton(Modifier.PUBLIC));
+		when(executableElement.getParameters()).thenReturn(Collections.emptyList());
+		Optional<FieldDescription> ofd = underTest.visitExecutable(executableElement,
+				providesMatchersAnnotatedElementMirror);
+		assertThat(ofd).isNotNull();
+		assertThat(ofd.isPresent()).is(true);
+		assertThat(ofd.get().getFieldName()).is("xXX");
+	}
+
+	@Test
+	public void testVisitExecutablePublicAndNotStaticAndZize0AndNamedIsThenReturnFieldDescription() {
+		when(executableName.toString()).thenReturn("isXy");
+		when(executableElement.getModifiers()).thenReturn(Collections.singleton(Modifier.PUBLIC));
+		when(executableElement.getParameters()).thenReturn(Collections.emptyList());
+		Optional<FieldDescription> ofd = underTest.visitExecutable(executableElement,
+				providesMatchersAnnotatedElementMirror);
+		assertThat(ofd).isNotNull();
+		assertThat(ofd.isPresent()).is(true);
+		assertThat(ofd.get().getFieldName()).is("xy");
 	}
 
 }
