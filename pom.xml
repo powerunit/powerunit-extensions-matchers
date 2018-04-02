@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ch.powerunit.extensions</groupId>
 	<artifactId>powerunit-extensions-matchers</artifactId>
-	<version>0.0.9-SNAPSHOT</version>
+	<version>0.1.0-SNAPSHOT</version>
 
 	<name>Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</name>
 	<description>This is a test framework for the JDK 1.8 - Extension to provide matchers based on annotation.</description>
@@ -662,30 +662,6 @@
 
 	<reporting>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-changes-plugin</artifactId>
-				<version>2.12.1</version>
-				<reportSets>
-					<reportSet>
-						<reports>
-							<report>github-report</report>
-						</reports>
-					</reportSet>
-				</reportSets>
-			</plugin>
-		    <plugin>
-		        <groupId>org.apache.maven.plugins</groupId>
-		        <artifactId>maven-changelog-plugin</artifactId>
-		        <version>2.3</version>
-		        <reportSets>
-		        	<reportSet>
-		        		<reports>
-		        			<report>changelog</report>
-		        		</reports>
-		        	</reportSet>
-		        </reportSets>
-		    </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
