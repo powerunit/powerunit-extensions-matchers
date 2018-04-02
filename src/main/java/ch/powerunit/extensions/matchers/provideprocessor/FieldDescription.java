@@ -61,6 +61,8 @@ public class FieldDescription {
 	private final Type type;
 	private final List<Function<String, String>> implGenerator;
 	private final List<Function<String, String>> dslGenerator;
+	private final List<Function<String, String>> additionalMatcherGenerator;
+	private final List<Function<String, String>> additionalMatcherFactoryGenerator;
 	private final ProcessingEnvironment processingEnv;
 	private final ProvidesMatchersAnnotatedElementMirror containingElementMirror;
 	private final boolean ignore;
@@ -212,6 +214,8 @@ public class FieldDescription {
 				isInSameRound, fieldType);
 		List<Function<String, String>> tmp1 = new ArrayList<>();
 		List<Function<String, String>> tmp2 = new ArrayList<>();
+		List<Function<String, String>> tmp3 = new ArrayList<>();
+		List<Function<String, String>> tmp4 = new ArrayList<>();
 		tmp1.add(this::getImplementationForDefault);
 		tmp2.add(this::getDslForDefault);
 		if (fullyQualifiedNameMatcherInSameRound != null
@@ -226,6 +230,7 @@ public class FieldDescription {
 		case OPTIONAL:
 			tmp1.add(this::getImplementationForOptional);
 			tmp2.add(this::getDslForOptional);
+			tmp4.add(this::getOptionalFactoryMatcher);
 			break;
 		case COMPARABLE:
 			tmp2.add(this::getDslForComparable);
@@ -242,6 +247,7 @@ public class FieldDescription {
 			break;
 		case SUPPLIER:
 			tmp2.add(this::getDslForSupplier);
+			tmp3.add(this::getSupplierMatcher);
 			break;
 		default:
 			// Nothing
@@ -253,6 +259,8 @@ public class FieldDescription {
 				.collect(Collectors.toList()));
 		implGenerator = Collections.unmodifiableList(tmp1);
 		dslGenerator = Collections.unmodifiableList(tmp2);
+		additionalMatcherGenerator = Collections.unmodifiableList(tmp3);
+		additionalMatcherFactoryGenerator = Collections.unmodifiableList(tmp4);
 	}
 
 	public Function<String, String> generateFunctionForDSL(AddToMatcher a) {
@@ -549,6 +557,46 @@ public class FieldDescription {
 		return dslGenerator.stream().map(g -> g.apply(prefix)).collect(Collectors.joining("\n"));
 	}
 
+	public String getSupplierMatcher(String prefix) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(prefix)
+				.append("private static class " + methodFieldName + "MatcherSupplier"
+						+ containingElementMirror.getFullGeneric()
+						+ " extends org.hamcrest.FeatureMatcher<java.util.function.Supplier<" + generic + ">," + generic
+						+ "> {")
+				.append("\n");
+		sb.append(prefix).append("  public " + methodFieldName + "MatcherSupplier(org.hamcrest.Matcher<? super "
+				+ generic + "> matcher) {").append("\n");
+		sb.append(prefix).append("    super(matcher,\"with supplier result\",\"with supplier result\");").append("\n");
+		sb.append(prefix).append("  }").append("\n");
+		sb.append(prefix).append(
+				"  protected " + generic + " featureValueOf(java.util.function.Supplier<" + generic + "> actual) {")
+				.append("\n");
+		sb.append(prefix).append("    return actual.get();").append("\n");
+		sb.append(prefix).append("  }").append("\n");
+		sb.append(prefix).append("}").append("\n");
+		return sb.toString();
+	}
+
+	public String getOptionalFactoryMatcher(String prefix) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(prefix).append("  public static " + methodFieldName + "Matcher isPresent() {").append("\n");
+		sb.append(prefix).append("    return new " + methodFieldName + "Matcher(new org.hamcrest.CustomTypeSafeMatcher<"
+				+ fieldType + ">(\"optional is present\"){").append("\n");
+		sb.append(prefix).append("      public boolean matchesSafely(" + fieldType + " o) {return o.isPresent();}")
+				.append("\n");
+		sb.append(prefix).append("    });").append("\n");
+		sb.append(prefix).append("  }").append("\n");
+		sb.append(prefix).append("  public static " + methodFieldName + "Matcher isNotPresent() {").append("\n");
+		sb.append(prefix).append("    return new " + methodFieldName + "Matcher(new org.hamcrest.CustomTypeSafeMatcher<"
+				+ fieldType + ">(\"optional is not present\"){").append("\n");
+		sb.append(prefix).append("      public boolean matchesSafely(" + fieldType + " o) {return !o.isPresent();}")
+				.append("\n");
+		sb.append(prefix).append("    });").append("\n");
+		sb.append(prefix).append("  }").append("\n");
+		return sb.toString();
+	}
+
 	public String getMatcherForField(String prefix) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(prefix)
@@ -562,28 +610,9 @@ public class FieldDescription {
 				.append("\n");
 		sb.append(prefix).append("    super(matcher,\"" + fieldName + "\",\"" + fieldName + "\");").append("\n");
 		sb.append(prefix).append("  }").append("\n");
-		switch (type) {
-		case OPTIONAL:
-			sb.append(prefix).append("  public static " + methodFieldName + "Matcher isPresent() {").append("\n");
-			sb.append(prefix).append("    return new " + methodFieldName
-					+ "Matcher(new org.hamcrest.CustomTypeSafeMatcher<" + fieldType + ">(\"optional is present\"){")
-					.append("\n");
-			sb.append(prefix).append("      public boolean matchesSafely(" + fieldType + " o) {return o.isPresent();}")
-					.append("\n");
-			sb.append(prefix).append("    });").append("\n");
-			sb.append(prefix).append("  }").append("\n");
-			sb.append(prefix).append("  public static " + methodFieldName + "Matcher isNotPresent() {").append("\n");
-			sb.append(prefix).append("    return new " + methodFieldName
-					+ "Matcher(new org.hamcrest.CustomTypeSafeMatcher<" + fieldType + ">(\"optional is not present\"){")
-					.append("\n");
-			sb.append(prefix).append("      public boolean matchesSafely(" + fieldType + " o) {return !o.isPresent();}")
-					.append("\n");
-			sb.append(prefix).append("    });").append("\n");
-			sb.append(prefix).append("  }").append("\n");
-			break;
-		default:
-			// Nothing
-		}
+
+		additionalMatcherFactoryGenerator.stream().map(f -> f.apply(prefix)).forEach(sb::append);
+
 		sb.append(prefix)
 				.append("  protected " + fieldType + " featureValueOf("
 						+ containingElementMirror.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher()
@@ -592,29 +621,9 @@ public class FieldDescription {
 		sb.append(prefix).append("    return actual." + fieldAccessor + ";").append("\n");
 		sb.append(prefix).append("  }").append("\n");
 		sb.append(prefix).append("}").append("\n");
-		switch (type) {
-		case SUPPLIER:
-			sb.append(prefix)
-					.append("private static class " + methodFieldName + "MatcherSupplier"
-							+ containingElementMirror.getFullGeneric()
-							+ " extends org.hamcrest.FeatureMatcher<java.util.function.Supplier<" + generic + ">,"
-							+ generic + "> {")
-					.append("\n");
-			sb.append(prefix).append("  public " + methodFieldName + "MatcherSupplier(org.hamcrest.Matcher<? super "
-					+ generic + "> matcher) {").append("\n");
-			sb.append(prefix).append("    super(matcher,\"with supplier result\",\"with supplier result\");")
-					.append("\n");
-			sb.append(prefix).append("  }").append("\n");
-			sb.append(prefix).append(
-					"  protected " + generic + " featureValueOf(java.util.function.Supplier<" + generic + "> actual) {")
-					.append("\n");
-			sb.append(prefix).append("    return actual.get();").append("\n");
-			sb.append(prefix).append("  }").append("\n");
-			sb.append(prefix).append("}").append("\n");
-			break;
-		default:
-			// NOTHING
-		}
+
+		additionalMatcherGenerator.stream().map(f -> f.apply(prefix)).forEach(sb::append);
+
 		return sb.toString();
 	}
 
