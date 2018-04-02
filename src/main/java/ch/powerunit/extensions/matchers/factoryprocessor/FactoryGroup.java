@@ -21,7 +21,6 @@ package ch.powerunit.extensions.matchers.factoryprocessor;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,7 +29,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
-import ch.powerunit.extensions.matchers.common.CommonConstants;
+import ch.powerunit.extensions.matchers.common.CommonUtils;
 
 class FactoryGroup {
 
@@ -73,22 +72,8 @@ class FactoryGroup {
 			try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
 				String pName = fullyQualifiedTargetName.replaceAll("\\.[^.]+$", "");
 				String cName = fullyQualifiedTargetName.substring(fullyQualifiedTargetName.lastIndexOf('.') + 1);
-				wjfo.println("package " + pName + ";");
-				wjfo.println();
-				wjfo.println(CommonConstants.DEFAULT_JAVADOC_FOR_FACTORY);
-
-				wjfo.println("@javax.annotation.Generated(value=\"" + FactoryAnnotationsProcessor.class.getName()
-						+ "\",date=\"" + Instant.now().toString() + "\")");
-				wjfo.println("public interface " + cName + " {");
-				wjfo.println();
-				wjfo.println("  /**");
-				wjfo.println(
-						"   * Use this static field to access all the DSL syntax, without be required to implements this interface.");
-				wjfo.println("   */");
-				wjfo.println("  public static final " + cName + " DSL = new " + cName + "() {};");
-				wjfo.println();
-				method.stream().map(FactoryAnnotatedElementMirror::generateFactory).forEach(wjfo::println);
-				wjfo.println("}");
+				CommonUtils.generateFactoryClass(wjfo, FactoryAnnotationsProcessor.class, pName, cName,
+						() -> method.stream().map(FactoryAnnotatedElementMirror::generateFactory));
 			}
 		} catch (IOException e) {
 			parent.getMessager().printMessage(Kind.ERROR, "Unable to create the file containing the target class `"
