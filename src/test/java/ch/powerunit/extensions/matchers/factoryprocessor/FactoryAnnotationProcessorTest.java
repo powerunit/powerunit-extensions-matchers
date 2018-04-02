@@ -12,10 +12,16 @@ import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ElementVisitor;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
@@ -60,6 +66,27 @@ public class FactoryAnnotationProcessorTest implements TestSuite {
 	@Mock
 	private ExecutableElement executableElement;
 
+	@Mock
+	private Element classElement;
+
+	@Mock
+	private TypeMirror classTypeMirror;
+
+	@Mock
+	private Name className;
+
+	@Mock
+	private Name elementName;
+
+	@Mock
+	private TypeMirror returnType;
+
+	@Mock
+	private PackageElement packageElement;
+
+	@Mock
+	private Name packageName;
+
 	@Spy
 	private StringWriter outputStream = new StringWriter();
 
@@ -71,6 +98,25 @@ public class FactoryAnnotationProcessorTest implements TestSuite {
 		when(elements.getTypeElement("org.hamcrest.Factory")).thenReturn(factoryTE);
 		when(executableElement.getModifiers()).thenReturn(EnumSet.of(Modifier.STATIC, Modifier.PUBLIC));
 		when(executableElement.getKind()).thenReturn(ElementKind.METHOD);
+		when(executableElement.getEnclosingElement()).thenReturn(classElement);
+		when(executableElement.getSimpleName()).thenReturn(elementName);
+		when(executableElement.getReturnType()).thenReturn(returnType);
+		when(executableElement.accept(Mockito.any(), Mockito.any()))
+				.thenAnswer(ip -> ip.getArgumentAt(0, ElementVisitor.class).visitExecutable(executableElement,
+						ip.getArgumentAt(1, Object.class)));
+		when(classElement.asType()).thenReturn(classTypeMirror);
+		when(classElement.getSimpleName()).thenReturn(className);
+		when(elements.getPackageOf(classElement)).thenReturn(packageElement);
+		when(packageElement.getQualifiedName()).thenReturn(packageName);
+
+		when(classTypeMirror.toString()).thenReturn("fqn.sn");
+		when(className.toString()).thenReturn("sn");
+		when(elementName.toString()).thenReturn("method");
+		when(returnType.getKind()).thenReturn(TypeKind.VOID);
+		when(returnType.toString()).thenReturn("void");
+		when(packageName.toString()).thenReturn("fqn");
+		when(elementName.toString()).thenReturn("method");
+
 	}
 
 	@Rule
@@ -138,6 +184,7 @@ public class FactoryAnnotationProcessorTest implements TestSuite {
 		when(roundEnv.processingOver()).thenReturn(false, true);
 		when(roundEnv.getElementsAnnotatedWith(Factory.class))
 				.thenReturn((Set) Collections.singleton(executableElement));
+		when(roundEnv.getRootElements()).thenReturn((Set) Collections.singleton(classElement));
 		// First round
 		assertThat(underTest.process(Collections.emptySet(), roundEnv)).is(true);
 		// Second round
