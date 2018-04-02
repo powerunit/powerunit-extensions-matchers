@@ -68,7 +68,7 @@ public class FieldDescription {
 	private final String generic;
 	private final String defaultReturnMethod;
 
-	private static final class ExtracTypeVisitor extends TypeKindVisitor8<Type, ProcessingEnvironment> {
+	public static final class ExtracTypeVisitor extends TypeKindVisitor8<Type, ProcessingEnvironment> {
 
 		@Override
 		public Type visitPrimitiveAsBoolean(PrimitiveType t, ProcessingEnvironment processingEnv) {
@@ -711,6 +711,10 @@ public class FieldDescription {
 
 	public boolean isNotIgnore() {
 		return !ignore;
+	}
+
+	public Element getFieldElement() {
+		return fieldElement;
 	}
 
 	public String getDescriptionForIgnoreIfApplicable() {
