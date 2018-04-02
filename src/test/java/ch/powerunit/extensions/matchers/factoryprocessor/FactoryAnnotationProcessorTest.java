@@ -5,17 +5,23 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
 import javax.tools.Diagnostic.Kind;
 
+import org.hamcrest.Factory;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
@@ -51,6 +57,9 @@ public class FactoryAnnotationProcessorTest implements TestSuite {
 	@Mock
 	private JavaFileObject javaFileObject;
 
+	@Mock
+	private ExecutableElement executableElement;
+
 	@Spy
 	private StringWriter outputStream = new StringWriter();
 
@@ -60,6 +69,8 @@ public class FactoryAnnotationProcessorTest implements TestSuite {
 		when(processingEnv.getTypeUtils()).thenReturn(typeUtils);
 		when(processingEnv.getElementUtils()).thenReturn(elements);
 		when(elements.getTypeElement("org.hamcrest.Factory")).thenReturn(factoryTE);
+		when(executableElement.getModifiers()).thenReturn(EnumSet.of(Modifier.STATIC, Modifier.PUBLIC));
+		when(executableElement.getKind()).thenReturn(ElementKind.METHOD);
 	}
 
 	@Rule
@@ -103,6 +114,30 @@ public class FactoryAnnotationProcessorTest implements TestSuite {
 				Collections.singletonMap(FactoryAnnotationsProcessor.class.getName() + ".targets", ".*:target"));
 		underTest.init(processingEnv);
 		when(roundEnv.processingOver()).thenReturn(false, true);
+		// First round
+		assertThat(underTest.process(Collections.emptySet(), roundEnv)).is(true);
+		// Second round
+		assertThat(underTest.process(Collections.emptySet(), roundEnv)).is(true);
+
+		// Validate
+		String target = outputStream.toString().replace('\r', '\n');
+		assertThat(target).is(containsString("package target"));
+		assertThat(target).is(containsString(
+				"@javax.annotation.Generated(value=\"ch.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor\","));
+		assertThat(target).is(containsString("public interface target {"));
+		assertThat(target).is(containsString("public static final target DSL = new target() {}"));
+	}
+
+	@Test
+	public void testProcessOneTargetOneAnnotatedElement() throws IOException {
+		when(filer.createSourceFile(Mockito.eq("target"), Mockito.anyVararg())).thenReturn(javaFileObject);
+		when(javaFileObject.openWriter()).thenReturn(outputStream);
+		when(processingEnv.getOptions()).thenReturn(
+				Collections.singletonMap(FactoryAnnotationsProcessor.class.getName() + ".targets", ".*:target"));
+		underTest.init(processingEnv);
+		when(roundEnv.processingOver()).thenReturn(false, true);
+		when(roundEnv.getElementsAnnotatedWith(Factory.class))
+				.thenReturn((Set) Collections.singleton(executableElement));
 		// First round
 		assertThat(underTest.process(Collections.emptySet(), roundEnv)).is(true);
 		// Second round
