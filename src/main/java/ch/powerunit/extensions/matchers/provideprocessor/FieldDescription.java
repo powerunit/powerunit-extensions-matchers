@@ -374,14 +374,14 @@ public class FieldDescription {
 		sb.append(buildDsl(prefix,
 				getJavaDocFor(Optional.empty(), Optional.of("matcher a Matcher on the field"),
 						Optional.of(SEE_TEXT_FOR_HAMCREST_MATCHER)),
-				generateDeclaration("", "org.hamcrest.Matcher<? super " + fieldType + "> matcher")));
+				generateDeclaration("", "org.hamcrest.Matcher<? super " + fieldType + "> matcher"))).append("\n");
 
 		sb.append(buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.empty(),
 						Optional.of(
 								"value an expected value for the field, which will be compared using the is matcher"),
 						Optional.of(SEE_TEXT_FOR_IS_MATCHER)),
-				generateDeclaration("", fieldType + " value"), "org.hamcrest.Matchers.is(value)"));
+				generateDeclaration("", fieldType + " value"), "org.hamcrest.Matchers.is(value)")).append("\n");
 
 		sb.append(buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("by converting the received field before validat it"),
@@ -391,7 +391,7 @@ public class FieldDescription {
 				"<_TARGETFIELD> " + generateDeclaration("As",
 						"java.util.function.Function<" + fieldType
 								+ ",_TARGETFIELD> converter,org.hamcrest.Matcher<? super _TARGETFIELD> matcher"),
-				"asFeatureMatcher(\" <field is converted> \",converter,matcher)"));
+				"asFeatureMatcher(\" <field is converted> \",converter,matcher)")).append("\n");
 
 		return sb.toString();
 	}
@@ -651,15 +651,15 @@ public class FieldDescription {
 		return getFieldCopyDefault(lhs, rhs);
 	}
 
-	public String asMatchesSafely(String prefix) {
-		return new StringBuilder().append(prefix).append("if(!").append(fieldName).append(".matches(actual)) {\n")
-				.append(prefix).append("  mismatchDescription.appendText(\"[\"); ").append(fieldName)
+	public String asMatchesSafely() {
+		return new StringBuilder().append("if(!").append(fieldName).append(".matches(actual)) {\n")
+				.append("  mismatchDescription.appendText(\"[\"); ").append(fieldName)
 				.append(".describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");\n")
-				.append(prefix).append("  result=false;\n").append(prefix).append("}").toString();
+				.append("  result=false;\n").append("}").toString();
 	}
 
-	public String asDescribeTo(String prefix) {
-		return new StringBuilder().append(prefix)
+	public String asDescribeTo() {
+		return new StringBuilder()
 				.append("description.appendText(\"[\").appendDescriptionOf(" + fieldName + ").appendText(\"]\\n\");")
 				.toString();
 	}
