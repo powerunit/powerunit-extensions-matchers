@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
@@ -195,8 +196,9 @@ public class FieldDescription {
 	}
 
 	public FieldDescription(ProvidesMatchersAnnotatedElementMirror containingElementMirror, String fieldAccessor,
-			String fieldName, String fieldType, boolean isInSameRound, Element fieldElement,
-			TypeMirror fieldTypeMirror) {
+			String fieldName, String fieldType, boolean isInSameRound, Element fieldElement) {
+		TypeMirror fieldTypeMirror = (fieldElement instanceof ExecutableElement)
+				? ((ExecutableElement) fieldElement).getReturnType() : fieldElement.asType();
 		this.containingElementMirror = containingElementMirror;
 		this.fieldAccessor = fieldAccessor;
 		this.fieldName = fieldName;
@@ -238,6 +240,9 @@ public class FieldDescription {
 		case SET:
 			tmp2.add(this::getDslForIterable);
 			tmp2.add(this::getDslForCollection);
+			if (!"".equals(generic)) {
+				tmp2.add(this::getDslForIterableWithGeneric);
+			}
 			break;
 		case SUPPLIER:
 			tmp2.add(this::getDslForSupplier);
@@ -426,49 +431,50 @@ public class FieldDescription {
 				generateDeclaration("IsEmptyIterable", ""),
 				"(org.hamcrest.Matcher)org.hamcrest.Matchers.emptyIterable()"));
 
-		if (!"".equals(generic)) {
-			sb.append(buildDefaultDsl(prefix,
-					getJavaDocFor(Optional.of("that the iterable contains the received elements"),
-							Optional.of("elements the elements"),
-							Optional.of("org.hamcrest.Matchers#contains(java.lang.Object[])")),
-					generateDeclaration("Contains", generic + "... elements"),
-					"org.hamcrest.Matchers.contains(elements)"));
+		return sb.toString();
+	}
 
-			sb.append(buildDefaultDsl(prefix,
-					getJavaDocFor(Optional.of("that the iterable contains the received elements, using matchers"),
-							Optional.of("matchersOnElements the matchers on the elements"),
-							Optional.of("org.hamcrest.Matchers#contains(org.hamcrest.Matcher[])")),
-					generateDeclaration("Contains", "org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
-					"org.hamcrest.Matchers.contains(matchersOnElements)"));
+	public String getDslForIterableWithGeneric(String prefix) {
+		StringBuilder sb = new StringBuilder();
 
-			sb.append(buildDefaultDsl(prefix,
-					getJavaDocFor(Optional.of("that the iterable contains the received elements in any order"),
-							Optional.of("elements the elements"),
-							Optional.of("org.hamcrest.Matchers#containsInAnyOrder(java.lang.Object[])")),
-					generateDeclaration("ContainsInAnyOrder", generic + "... elements"),
-					"org.hamcrest.Matchers.containsInAnyOrder(elements)"));
+		sb.append(buildDefaultDsl(prefix,
+				getJavaDocFor(Optional.of("that the iterable contains the received elements"),
+						Optional.of("elements the elements"),
+						Optional.of("org.hamcrest.Matchers#contains(java.lang.Object[])")),
+				generateDeclaration("Contains", generic + "... elements"), "org.hamcrest.Matchers.contains(elements)"));
 
-			sb.append(buildDefaultDsl(prefix,
-					getJavaDocFor(
-							Optional.of(
-									"that the iterable contains the received elements, using matchers in any order"),
-							Optional.of("matchersOnElements the matchers on the elements"),
-							Optional.of("org.hamcrest.Matchers#containsInAnyOrder(org.hamcrest.Matcher[])")),
-					generateDeclaration("ContainsInAnyOrder",
-							"org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
-					"org.hamcrest.Matchers.containsInAnyOrder(matchersOnElements)"));
+		sb.append(buildDefaultDsl(prefix,
+				getJavaDocFor(Optional.of("that the iterable contains the received elements, using matchers"),
+						Optional.of("matchersOnElements the matchers on the elements"),
+						Optional.of("org.hamcrest.Matchers#contains(org.hamcrest.Matcher[])")),
+				generateDeclaration("Contains", "org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
+				"org.hamcrest.Matchers.contains(matchersOnElements)"));
 
-			sb.append(
-					buildDefaultDsl(prefix,
-							getJavaDocFor(
-									Optional.of(
-											"that the iterable contains the received elements, using list of matcher"),
-									Optional.of("matchersOnElements the matchers on the elements"),
-									Optional.of("org.hamcrest.Matchers#contains(java.util.List)")),
-							generateDeclaration("Contains",
-									"java.util.List<org.hamcrest.Matcher<? super " + generic + ">> matchersOnElements"),
-					"org.hamcrest.Matchers.contains(matchersOnElements)"));
-		}
+		sb.append(buildDefaultDsl(prefix,
+				getJavaDocFor(Optional.of("that the iterable contains the received elements in any order"),
+						Optional.of("elements the elements"),
+						Optional.of("org.hamcrest.Matchers#containsInAnyOrder(java.lang.Object[])")),
+				generateDeclaration("ContainsInAnyOrder", generic + "... elements"),
+				"org.hamcrest.Matchers.containsInAnyOrder(elements)"));
+
+		sb.append(
+				buildDefaultDsl(prefix,
+						getJavaDocFor(
+								Optional.of(
+										"that the iterable contains the received elements, using matchers in any order"),
+								Optional.of("matchersOnElements the matchers on the elements"),
+								Optional.of("org.hamcrest.Matchers#containsInAnyOrder(org.hamcrest.Matcher[])")),
+						generateDeclaration("ContainsInAnyOrder",
+								"org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
+				"org.hamcrest.Matchers.containsInAnyOrder(matchersOnElements)"));
+
+		sb.append(buildDefaultDsl(prefix,
+				getJavaDocFor(Optional.of("that the iterable contains the received elements, using list of matcher"),
+						Optional.of("matchersOnElements the matchers on the elements"),
+						Optional.of("org.hamcrest.Matchers#contains(java.util.List)")),
+				generateDeclaration("Contains",
+						"java.util.List<org.hamcrest.Matcher<? super " + generic + ">> matchersOnElements"),
+				"org.hamcrest.Matchers.contains(matchersOnElements)"));
 
 		return sb.toString();
 	}
