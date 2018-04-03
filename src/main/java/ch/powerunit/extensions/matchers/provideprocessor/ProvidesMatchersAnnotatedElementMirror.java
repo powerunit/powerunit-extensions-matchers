@@ -231,8 +231,8 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				.append(simpleNameOfGeneratedInterfaceMatcher).append("EndSyntaxicSugar ").append(genericParent)
 				.append(" {").append("\n");
 
-		sb.append(fields.stream().filter(FieldDescription::isNotIgnore).map(f -> f.getDslInterface("    "))
-				.collect(Collectors.joining("\n"))).append("\n\n");
+		sb.append(fields.stream().filter(FieldDescription::isNotIgnore).map(f -> f.getDslInterface())
+				.map(s -> addPrefix("    ", s)).collect(Collectors.joining("\n"))).append("\n\n");
 
 		sb.append(generateAsPublicInterface());
 		sb.append("  }").append("\n");
@@ -381,8 +381,8 @@ public class ProvidesMatchersAnnotatedElementMirror {
 					.append("\n\n");
 		}
 
-		sb.append(fields.stream().filter(FieldDescription::isNotIgnore).map(f -> f.getImplementationInterface("    "))
-				.collect(Collectors.joining("\n"))).append("\n");
+		sb.append(fields.stream().filter(FieldDescription::isNotIgnore).map(f -> f.getImplementationInterface())
+				.map(s -> addPrefix("    ", s)).collect(Collectors.joining("\n"))).append("\n");
 
 		sb.append(generatePrivateImplementationForMatchersSafely()).append("\n")
 				.append(generatedPrivateImplementationForDescribeTo()).append("\n\n")
