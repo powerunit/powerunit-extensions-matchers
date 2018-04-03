@@ -759,4 +759,8 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		return gm;
 	}
 
+	public ProcessingEnvironment getProcessingEnv() {
+		return processingEnv;
+	}
+
 }

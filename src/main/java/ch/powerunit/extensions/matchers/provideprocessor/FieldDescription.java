@@ -62,8 +62,6 @@ public class FieldDescription {
 	private final List<Function<String, String>> implGenerator;
 	private final List<Function<String, String>> dslGenerator;
 	private final List<Function<String, String>> additionalMatcherGenerator;
-	private final List<Function<String, String>> additionalMatcherFactoryGenerator;
-	private final ProcessingEnvironment processingEnv;
 	private final ProvidesMatchersAnnotatedElementMirror containingElementMirror;
 	private final boolean ignore;
 	private final Element fieldElement;
@@ -197,29 +195,27 @@ public class FieldDescription {
 	}
 
 	public FieldDescription(ProvidesMatchersAnnotatedElementMirror containingElementMirror, String fieldAccessor,
-			String fieldName, String fieldType, boolean isInSameRound, ProcessingEnvironment processingEnv,
-			Element fieldElement, TypeMirror fieldTypeMirror) {
+			String fieldName, String fieldType, boolean isInSameRound, Element fieldElement,
+			TypeMirror fieldTypeMirror) {
 		this.containingElementMirror = containingElementMirror;
 		this.fieldAccessor = fieldAccessor;
 		this.fieldName = fieldName;
 		this.methodFieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
 		this.fieldType = fieldType;
-		this.type = new ExtracTypeVisitor().visit(fieldTypeMirror, processingEnv);
-		this.processingEnv = processingEnv;
+		this.type = new ExtracTypeVisitor().visit(fieldTypeMirror, containingElementMirror.getProcessingEnv());
 		this.ignore = fieldElement.getAnnotation(IgnoreInMatcher.class) != null;
 		this.fieldElement = fieldElement;
 		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
 		this.generic = computeGenericInformation(fieldTypeMirror);
-		this.fullyQualifiedNameMatcherInSameRound = computeFullyQualifiedNameMatcherInSameRound(processingEnv,
-				isInSameRound, fieldType);
+		this.fullyQualifiedNameMatcherInSameRound = computeFullyQualifiedNameMatcherInSameRound(
+				containingElementMirror.getProcessingEnv(), isInSameRound, fieldType);
 		List<Function<String, String>> tmp1 = new ArrayList<>();
 		List<Function<String, String>> tmp2 = new ArrayList<>();
 		List<Function<String, String>> tmp3 = new ArrayList<>();
-		List<Function<String, String>> tmp4 = new ArrayList<>();
 		tmp1.add(this::getImplementationForDefault);
 		tmp2.add(this::getDslForDefault);
-		if (fullyQualifiedNameMatcherInSameRound != null
-				&& processingEnv.getElementUtils().getTypeElement(fieldType).getTypeParameters().isEmpty()) {
+		if (fullyQualifiedNameMatcherInSameRound != null && containingElementMirror.getProcessingEnv().getElementUtils()
+				.getTypeElement(fieldType).getTypeParameters().isEmpty()) {
 			tmp1.add(this::getImplementationForDefaultChaining);
 			tmp2.add(this::getDslForDefaultChaining);
 		}
@@ -228,9 +224,7 @@ public class FieldDescription {
 			tmp2.add(this::getDslForArray);
 			break;
 		case OPTIONAL:
-			tmp1.add(this::getImplementationForOptional);
 			tmp2.add(this::getDslForOptional);
-			tmp4.add(this::getOptionalFactoryMatcher);
 			break;
 		case COMPARABLE:
 			tmp2.add(this::getDslForComparable);
@@ -260,7 +254,6 @@ public class FieldDescription {
 		implGenerator = Collections.unmodifiableList(tmp1);
 		dslGenerator = Collections.unmodifiableList(tmp2);
 		additionalMatcherGenerator = Collections.unmodifiableList(tmp3);
-		additionalMatcherFactoryGenerator = Collections.unmodifiableList(tmp4);
 	}
 
 	public Function<String, String> generateFunctionForDSL(AddToMatcher a) {
@@ -337,7 +330,8 @@ public class FieldDescription {
 
 	public String getImplementationForDefaultChaining(String prefix) {
 		// Can't use buildDeclaration here
-		TypeElement targetElement = processingEnv.getElementUtils().getTypeElement(fieldType);
+		TypeElement targetElement = containingElementMirror.getProcessingEnv().getElementUtils()
+				.getTypeElement(fieldType);
 		String name = targetElement.getSimpleName().toString();
 		String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
 		return buildImplementation(prefix,
@@ -346,17 +340,6 @@ public class FieldDescription {
 				fullyQualifiedNameMatcherInSameRound + "." + name + "Matcher tmp = "
 						+ fullyQualifiedNameMatcherInSameRound + "." + lname + "WithParent(this);\n" + fieldName
 						+ "(tmp);\nreturn tmp;");
-	}
-
-	public String getImplementationForOptional(String prefix) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(buildImplementation(prefix, generateDeclaration("IsPresent", ""),
-				fieldName + " = " + methodFieldName + "Matcher.isPresent();\nreturn this;"));
-
-		sb.append(buildImplementation(prefix, generateDeclaration("IsNotPresent", ""),
-				fieldName + " = " + methodFieldName + "Matcher.isNotPresent();\nreturn this;"));
-
-		return sb.toString();
 	}
 
 	public String getImplementationInterface(String prefix) {
@@ -402,7 +385,8 @@ public class FieldDescription {
 
 	public String getDslForDefaultChaining(String prefix) {
 		// can'ut use generateDeclaration here
-		TypeElement targetElement = processingEnv.getElementUtils().getTypeElement(fieldType);
+		TypeElement targetElement = containingElementMirror.getProcessingEnv().getElementUtils()
+				.getTypeElement(fieldType);
 		String name = targetElement.getSimpleName().toString();
 		return buildDsl(prefix,
 				getJavaDocFor(Optional.of("by starting a matcher for this field"), Optional.empty(), Optional.empty()),
@@ -504,13 +488,19 @@ public class FieldDescription {
 	public String getDslForOptional(String prefix) {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append(buildDsl(prefix,
+		sb.append(buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("with a present optional"), Optional.empty(), Optional.empty()),
-				generateDeclaration("IsPresent", "")));
+				generateDeclaration("IsPresent", ""),
+				"new org.hamcrest.CustomTypeSafeMatcher<" + fieldType
+						+ ">(\"optional is present\"){ public boolean matchesSafely(" + fieldType
+						+ " o) {return o.isPresent();}}"));
 
-		sb.append(buildDsl(prefix,
+		sb.append(buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("with a not present optional"), Optional.empty(), Optional.empty()),
-				generateDeclaration("IsNotPresent", "")));
+				generateDeclaration("IsNotPresent", ""),
+				"new org.hamcrest.CustomTypeSafeMatcher<" + fieldType
+						+ ">(\"optional is not present\"){ public boolean matchesSafely(" + fieldType
+						+ " o) {return !o.isPresent();}}"));
 
 		return sb.toString();
 	}
@@ -578,25 +568,6 @@ public class FieldDescription {
 		return sb.toString();
 	}
 
-	public String getOptionalFactoryMatcher(String prefix) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(prefix).append("  public static " + methodFieldName + "Matcher isPresent() {").append("\n");
-		sb.append(prefix).append("    return new " + methodFieldName + "Matcher(new org.hamcrest.CustomTypeSafeMatcher<"
-				+ fieldType + ">(\"optional is present\"){").append("\n");
-		sb.append(prefix).append("      public boolean matchesSafely(" + fieldType + " o) {return o.isPresent();}")
-				.append("\n");
-		sb.append(prefix).append("    });").append("\n");
-		sb.append(prefix).append("  }").append("\n");
-		sb.append(prefix).append("  public static " + methodFieldName + "Matcher isNotPresent() {").append("\n");
-		sb.append(prefix).append("    return new " + methodFieldName + "Matcher(new org.hamcrest.CustomTypeSafeMatcher<"
-				+ fieldType + ">(\"optional is not present\"){").append("\n");
-		sb.append(prefix).append("      public boolean matchesSafely(" + fieldType + " o) {return !o.isPresent();}")
-				.append("\n");
-		sb.append(prefix).append("    });").append("\n");
-		sb.append(prefix).append("  }").append("\n");
-		return sb.toString();
-	}
-
 	public String getMatcherForField(String prefix) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(prefix)
@@ -610,8 +581,6 @@ public class FieldDescription {
 				.append("\n");
 		sb.append(prefix).append("    super(matcher,\"" + fieldName + "\",\"" + fieldName + "\");").append("\n");
 		sb.append(prefix).append("  }").append("\n");
-
-		additionalMatcherFactoryGenerator.stream().map(f -> f.apply(prefix)).forEach(sb::append);
 
 		sb.append(prefix)
 				.append("  protected " + fieldType + " featureValueOf("
@@ -667,9 +636,10 @@ public class FieldDescription {
 			return getFieldCopyForList(lhs, rhs);
 		}
 
-		if (fullyQualifiedNameMatcherInSameRound != null
-				&& processingEnv.getElementUtils().getTypeElement(fieldType).getTypeParameters().isEmpty()) {
-			return getFieldCopySameRound(lhs, rhs, processingEnv.getElementUtils().getTypeElement(fieldType));
+		if (fullyQualifiedNameMatcherInSameRound != null && containingElementMirror.getProcessingEnv().getElementUtils()
+				.getTypeElement(fieldType).getTypeParameters().isEmpty()) {
+			return getFieldCopySameRound(lhs, rhs,
+					containingElementMirror.getProcessingEnv().getElementUtils().getTypeElement(fieldType));
 		}
 		return getFieldCopyDefault(lhs, rhs);
 	}
