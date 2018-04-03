@@ -68,6 +68,7 @@ public class FieldDescription {
 	private final Element fieldElement;
 	private final String generic;
 	private final String defaultReturnMethod;
+	private final String fullyQualifiedNameEnclodingClassOfField;
 
 	public static final class ExtracTypeVisitor extends TypeKindVisitor8<Type, ProcessingEnvironment> {
 
@@ -200,6 +201,8 @@ public class FieldDescription {
 		TypeMirror fieldTypeMirror = (fieldElement instanceof ExecutableElement)
 				? ((ExecutableElement) fieldElement).getReturnType() : fieldElement.asType();
 		this.containingElementMirror = containingElementMirror;
+		this.fullyQualifiedNameEnclodingClassOfField = containingElementMirror
+				.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher();
 		this.fieldAccessor = fieldAccessor;
 		this.fieldName = fieldName;
 		this.methodFieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
@@ -273,9 +276,8 @@ public class FieldDescription {
 	}
 
 	public String getJavaDocFor(Optional<String> addToDescription, Optional<String> param, Optional<String> see) {
-		String linkToAccessor = "{@link "
-				+ containingElementMirror.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher() + "#"
-				+ getFieldAccessor() + " This field is accessed by using this approach}.";
+		String linkToAccessor = "{@link " + fullyQualifiedNameEnclodingClassOfField + "#" + getFieldAccessor()
+				+ " This field is accessed by using this approach}.";
 		StringBuilder sb = new StringBuilder();
 		sb.append("/**").append("\n");
 		sb.append(" * Add a validation on the field `").append(fieldName).append("`");
@@ -578,8 +580,7 @@ public class FieldDescription {
 		StringBuilder sb = new StringBuilder();
 		sb.append(prefix)
 				.append("private static class " + methodFieldName + "Matcher" + containingElementMirror.getFullGeneric()
-						+ " extends org.hamcrest.FeatureMatcher<"
-						+ containingElementMirror.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher()
+						+ " extends org.hamcrest.FeatureMatcher<" + fullyQualifiedNameEnclodingClassOfField
 						+ containingElementMirror.getGeneric() + "," + fieldType + "> {")
 				.append("\n");
 		sb.append(prefix).append(
@@ -588,10 +589,8 @@ public class FieldDescription {
 		sb.append(prefix).append("    super(matcher,\"" + fieldName + "\",\"" + fieldName + "\");").append("\n");
 		sb.append(prefix).append("  }").append("\n");
 
-		sb.append(prefix)
-				.append("  protected " + fieldType + " featureValueOf("
-						+ containingElementMirror.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher()
-						+ containingElementMirror.getGeneric() + " actual) {")
+		sb.append(prefix).append("  protected " + fieldType + " featureValueOf("
+				+ fullyQualifiedNameEnclodingClassOfField + containingElementMirror.getGeneric() + " actual) {")
 				.append("\n");
 		sb.append(prefix).append("    return actual." + fieldAccessor + ";").append("\n");
 		sb.append(prefix).append("  }").append("\n");
