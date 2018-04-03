@@ -24,6 +24,10 @@ import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 
 public class ProvidesMatchersAnnotatedElementMirror {
 
+	public static final String JAVADOC_WARNING_SYNTAXIC_SUGAR_NO_CHANGE_ANYMORE = "<b>This method is a syntaxic sugar that end the DSL and make clear that the matcher can't be change anymore.</b>";
+
+	public static final String JAVADOC_WARNING_PARENT_MAY_BE_VOID = "<b>This method only works in the contexte of a parent builder. If the real type is Void, then nothing will be returned.</b>";
+
 	private final TypeElement typeElementForClassAnnotatedWithProvideMatcher;
 	private final ProcessingEnvironment processingEnv;
 	private final String fullyQualifiedNameOfClassAnnotatedWithProvideMatcher;
@@ -191,7 +195,8 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				.append("      return converter.apply(actual);").append("\n").append("    }};").append("\n")
 				.append("  }").append("\n").append("\n");
 
-		sb.append(fields.stream().map(f -> f.getMatcherForField("  ")).collect(Collectors.joining("\n"))).append("\n");
+		sb.append(fields.stream().map(f -> f.getMatcherForField()).map(f -> addPrefix("  ", f))
+				.collect(Collectors.joining("\n"))).append("\n");
 		if (hasParent) {
 			sb.append("  private static class SuperClassMatcher").append(fullGeneric)
 					.append(" extends org.hamcrest.FeatureMatcher<")
@@ -216,17 +221,18 @@ public class ProvidesMatchersAnnotatedElementMirror {
 
 		sb.append(generateMainParentPublicInterface());
 
-		sb.append(generateJavaDoc("  ", "DSL interface for matcher on " + getDefaultLinkForMatcher(), Optional.empty(),
-				Optional.empty(), Optional.empty(), true, true)).append("\n").append("  public static interface ")
-				.append(simpleNameOfGeneratedInterfaceMatcher).append(fullGenericParent)
-				.append(" extends org.hamcrest.Matcher<")
+		sb.append(addPrefix("  ",
+				generateJavaDoc("DSL interface for matcher on " + getDefaultLinkForAnnotatedClass(), Optional.empty(),
+						Optional.empty(), Optional.empty(), true, true)))
+				.append("\n").append("  public static interface ").append(simpleNameOfGeneratedInterfaceMatcher)
+				.append(fullGenericParent).append(" extends org.hamcrest.Matcher<")
 				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append(">,")
 				.append(simpleNameOfGeneratedInterfaceMatcher).append("BuildSyntaxicSugar ").append(generic).append(",")
 				.append(simpleNameOfGeneratedInterfaceMatcher).append("EndSyntaxicSugar ").append(genericParent)
 				.append(" {").append("\n");
 
-		sb.append(fields.stream().filter(FieldDescription::isNotIgnore).map(f -> f.getDslInterface("    "))
-				.collect(Collectors.joining("\n"))).append("\n\n");
+		sb.append(fields.stream().filter(FieldDescription::isNotIgnore).map(f -> f.getDslInterface())
+				.map(s -> addPrefix("    ", s)).collect(Collectors.joining("\n"))).append("\n\n");
 
 		sb.append(generateAsPublicInterface());
 		sb.append("  }").append("\n");
@@ -272,24 +278,22 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				.append("\n");
 		sb.append("    }").append("\n\n");
 
-		sb.append(generateJavaDoc("  ",
-				"Method that return the matcher itself and accept one single Matcher on the object itself.",
-				Optional.of(
-						"<b>This method is a syntaxic sugar that end the DSL and make clear that the matcher can't be change anymore.</b>"),
-				Optional.of("otherMatcher the matcher on the object itself."), Optional.of("the matcher"), false,
-				false)).append("\n");
+		sb.append(addPrefix("  ",
+				generateJavaDocWithoutParamNeitherParent(
+						"Method that return the matcher itself and accept one single Matcher on the object itself.",
+						JAVADOC_WARNING_SYNTAXIC_SUGAR_NO_CHANGE_ANYMORE,
+						Optional.of("otherMatcher the matcher on the object itself."), Optional.of("the matcher"))))
+				.append("\n");
 		sb.append("    default org.hamcrest.Matcher<")
 				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append("> buildWith(")
 				.append(otherMatcher).append(") {").append("\n");
 		sb.append("      return andWith(otherMatcher);").append("\n");
 		sb.append("    }").append("\n\n");
 
-		sb.append(generateJavaDoc("  ",
+		sb.append(addPrefix("  ", generateJavaDocWithoutParamNeitherParent(
 				"Method that return the parent builder and accept one single Matcher on the object itself.",
-				Optional.of(
-						"<b>This method only works in the contexte of a parent builder. If the real type is Void, then nothing will be returned.</b>"),
-				Optional.of("otherMatcher the matcher on the object itself."),
-				Optional.of("the parent builder or null if not applicable"), false, false));
+				JAVADOC_WARNING_PARENT_MAY_BE_VOID, Optional.of("otherMatcher the matcher on the object itself."),
+				Optional.of("the parent builder or null if not applicable"))));
 		sb.append("    default _PARENT endWith(").append(otherMatcher).append("){").append("\n");
 		sb.append("      return andWith(otherMatcher).end();").append("\n");
 		sb.append("    }").append("\n");
@@ -298,16 +302,19 @@ public class ProvidesMatchersAnnotatedElementMirror {
 
 	private String generateMainParentPublicInterface() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(generateJavaDoc("  ",
-				"DSL interface for matcher on " + getDefaultLinkForMatcher() + " to support the end syntaxic sugar",
-				Optional.empty(), Optional.empty(), Optional.empty(), true, true)).append("\n");
+		sb.append(addPrefix("  ",
+				generateJavaDoc(
+						"DSL interface for matcher on " + getDefaultLinkForAnnotatedClass()
+								+ " to support the end syntaxic sugar",
+						Optional.empty(), Optional.empty(), Optional.empty(), true, true)))
+				.append("\n");
 		sb.append("  public static interface " + simpleNameOfGeneratedInterfaceMatcher + "EndSyntaxicSugar"
 				+ fullGenericParent + " extends org.hamcrest.Matcher<"
 				+ getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + "> {").append("\n");
-		sb.append(generateJavaDoc("  ", "Method that return the parent builder",
-				Optional.of(
-						"<b>This method only works in the contexte of a parent builder. If the real type is Void, then nothing will be returned.</b>"),
-				Optional.empty(), Optional.of("the parent builder or null if not applicable"), false, false))
+		sb.append(addPrefix("  ",
+				generateJavaDocWithoutParamNeitherParent("Method that return the parent builder",
+						JAVADOC_WARNING_PARENT_MAY_BE_VOID, Optional.empty(),
+						Optional.of("the parent builder or null if not applicable"))))
 				.append("\n");
 		sb.append("    _PARENT end();").append("\n");
 		sb.append("  }").append("\n");
@@ -316,16 +323,18 @@ public class ProvidesMatchersAnnotatedElementMirror {
 
 	private String generateMainBuildPublicInterface() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(generateJavaDoc("  ",
-				"DSL interface for matcher on " + getDefaultLinkForMatcher() + " to support the build syntaxic sugar",
-				Optional.empty(), Optional.empty(), Optional.empty(), true, false)).append("\n");
+		sb.append(addPrefix("  ",
+				generateJavaDoc(
+						"DSL interface for matcher on " + getDefaultLinkForAnnotatedClass()
+								+ " to support the build syntaxic sugar",
+						Optional.empty(), Optional.empty(), Optional.empty(), true, false)))
+				.append("\n");
 		sb.append("  public static interface " + simpleNameOfGeneratedInterfaceMatcher + "BuildSyntaxicSugar"
 				+ fullGeneric + " extends org.hamcrest.Matcher<"
 				+ getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + "> {").append("\n");
-		sb.append(generateJavaDoc("  ", "Method that return the matcher itself.",
-				Optional.of(
-						"<b>This method is a syntaxic sugar that end the DSL and make clear that the matcher can't be change anymore.</b>"),
-				Optional.empty(), Optional.of("the matcher"), false, false)).append("\n");
+		sb.append(addPrefix("  ", generateJavaDocWithoutParamNeitherParent("Method that return the matcher itself.",
+				JAVADOC_WARNING_SYNTAXIC_SUGAR_NO_CHANGE_ANYMORE, Optional.empty(), Optional.of("the matcher"))))
+				.append("\n");
 		sb.append("    default org.hamcrest.Matcher<"
 				+ getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + "> build() {").append("\n");
 		sb.append("      return this;").append("\n");
@@ -372,8 +381,8 @@ public class ProvidesMatchersAnnotatedElementMirror {
 					.append("\n\n");
 		}
 
-		sb.append(fields.stream().filter(FieldDescription::isNotIgnore).map(f -> f.getImplementationInterface("    "))
-				.collect(Collectors.joining("\n"))).append("\n");
+		sb.append(fields.stream().filter(FieldDescription::isNotIgnore).map(f -> f.getImplementationInterface())
+				.map(s -> addPrefix("    ", s)).collect(Collectors.joining("\n"))).append("\n");
 
 		sb.append(generatePrivateImplementationForMatchersSafely()).append("\n")
 				.append(generatedPrivateImplementationForDescribeTo()).append("\n\n")
@@ -393,7 +402,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 					.append("        mismatchDescription.appendText(\"[\"); _parent.describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");\n")
 					.append("        result=false;\n").append("      }\n");
 		}
-		fields.stream().map(f -> f.asMatchesSafely("      ") + "\n").forEach(sb::append);
+		fields.stream().map(f -> f.asMatchesSafely() + "\n").map(f -> addPrefix("      ", f)).forEach(sb::append);
 
 		sb.append("      for(org.hamcrest.Matcher nMatcher : nextMatchers) {\n")
 				.append("        if(!nMatcher.matches(actual)) {\n")
@@ -416,7 +425,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		if (hasParent) {
 			sb.append("      description.appendText(\"[\").appendDescriptionOf(_parent).appendText(\"]\\n\");\n");
 		}
-		fields.stream().map(f -> f.asDescribeTo("      ") + "\n").forEach(sb::append);
+		fields.stream().map(f -> f.asDescribeTo() + "\n").map(f -> addPrefix("      ", f)).forEach(sb::append);
 		sb.append("      for(org.hamcrest.Matcher nMatcher : nextMatchers) {\n")
 				.append("        description.appendText(\"[object itself \").appendDescriptionOf(nMatcher).appendText(\"]\\n\");\n")
 				.append("      }\n").append("    }\n");
@@ -456,19 +465,18 @@ public class ProvidesMatchersAnnotatedElementMirror {
 
 	private String generateDefaultDSLStarter(PrintWriter wjfo) {
 		StringBuilder factories = new StringBuilder();
-		StringBuilder javadoc = new StringBuilder();
 		String methodName = fullGeneric + " " + getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " "
 				+ methodShortClassName + "With()";
 
-		javadoc.append(generateJavaDoc("  ", getDefaultDescriptionForDsl(),
-				Optional.of(
-						"The returned builder (which is also a Matcher), at this point accepts any object that is a {@link "
-								+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-								+ simpleNameOfClassAnnotatedWithProvideMatcher + "}."),
-				Optional.empty(), Optional.of("the DSL matcher"), true, false));
+		String javadoc = addPrefix("  ",
+				generateJavaDoc(getDefaultDescriptionForDsl(),
+						Optional.of(
+								"The returned builder (which is also a Matcher), at this point accepts any object that is a "
+										+ getDefaultLinkForAnnotatedClass() + "."),
+						Optional.empty(), Optional.of("the DSL matcher"), true, false));
 
-		wjfo.println(javadoc.toString());
-		factories.append(javadoc.toString());
+		wjfo.println(javadoc);
+		factories.append(javadoc);
 
 		wjfo.println("  @org.hamcrest.Factory");
 		wjfo.println("  public static " + methodName + " {");
@@ -490,17 +498,15 @@ public class ProvidesMatchersAnnotatedElementMirror {
 
 	private String generateDefaultForChainingDSLStarter(PrintWriter wjfo) {
 		StringBuilder factories = new StringBuilder();
-		StringBuilder javadoc = new StringBuilder();
 		String methodName = fullGenericParent + " " + getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + " "
 				+ methodShortClassName + "WithParent(_PARENT parentBuilder)";
-		javadoc.append(generateJavaDoc("  ", getDefaultDescriptionForDsl(),
-				Optional.of(
-						"The returned builder (which is also a Matcher), at this point accepts any object that is a {@link "
-								+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-								+ simpleNameOfClassAnnotatedWithProvideMatcher + "}."),
-				Optional.of("parentBuilder the parentBuilder."), Optional.of("the DSL matcher"), true, true));
 
-		wjfo.println(javadoc.toString());
+		wjfo.println(addPrefix("  ",
+				generateJavaDoc(getDefaultDescriptionForDsl(),
+						Optional.of(
+								"The returned builder (which is also a Matcher), at this point accepts any object that is a "
+										+ getDefaultLinkForAnnotatedClass() + "."),
+						Optional.of("parentBuilder the parentBuilder."), Optional.of("the DSL matcher"), true, true)));
 
 		wjfo.println("  public static " + methodName + " {");
 		if (hasParent) {
@@ -516,13 +522,13 @@ public class ProvidesMatchersAnnotatedElementMirror {
 
 	private String generateParentDSLStarter(PrintWriter wjfo) {
 		StringBuilder factories = new StringBuilder();
-		StringBuilder javadoc = new StringBuilder();
-		javadoc.append(generateJavaDoc("  ", getDefaultDescriptionForDsl(), Optional.empty(),
-				Optional.of("matcherOnParent the matcher on the parent data."), Optional.of("the DSL matcher"), true,
-				false));
+		String javadoc = addPrefix("  ",
+				generateJavaDoc(getDefaultDescriptionForDsl(), Optional.empty(),
+						Optional.of("matcherOnParent the matcher on the parent data."), Optional.of("the DSL matcher"),
+						true, false));
 
-		wjfo.println(javadoc.toString());
-		factories.append(javadoc.toString());
+		wjfo.println(javadoc);
+		factories.append(javadoc);
 
 		wjfo.println("  @org.hamcrest.Factory");
 		wjfo.println(
@@ -559,12 +565,12 @@ public class ProvidesMatchersAnnotatedElementMirror {
 
 	private String generateParentValueDSLStarter(PrintWriter wjfo, String argumentForParentBuilder) {
 		StringBuilder factories = new StringBuilder();
-		StringBuilder javadoc = new StringBuilder();
-		javadoc.append(generateJavaDoc("  ", getDefaultDescriptionForDsl(), Optional.empty(),
-				Optional.of("other the other object to be used as a reference."), Optional.of("the DSL matcher"), true,
-				false));
-		wjfo.println(javadoc.toString());
-		factories.append(javadoc.toString());
+		String javadoc = addPrefix("  ",
+				generateJavaDoc(getDefaultDescriptionForDsl(), Optional.empty(),
+						Optional.of("other the other object to be used as a reference."),
+						Optional.of("the DSL matcher"), true, false));
+		wjfo.println(javadoc);
+		factories.append(javadoc);
 		wjfo.println("  @org.hamcrest.Factory");
 		wjfo.println(
 				"  public static " + fullGeneric + " " + getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent()
@@ -591,12 +597,11 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private String generateParentInSameRoundWithChaningDSLStarter(PrintWriter wjfo,
 			ProvidesMatchersAnnotatedElementMirror parentMirror) {
 		StringBuilder factories = new StringBuilder();
-		StringBuilder javadoc = new StringBuilder();
-		javadoc.append(generateJavaDoc("  ", getDefaultDescriptionForDsl(), Optional.empty(), Optional.empty(),
-				Optional.of("the DSL matcher"), true, false));
+		String javadoc = addPrefix("  ", generateJavaDoc(getDefaultDescriptionForDsl(), Optional.empty(),
+				Optional.empty(), Optional.of("the DSL matcher"), true, false));
 
-		wjfo.println(javadoc.toString());
-		factories.append(javadoc.toString());
+		wjfo.println(javadoc);
+		factories.append(javadoc);
 		wjfo.println("  @org.hamcrest.Factory");
 		wjfo.println("  public static " + fullGeneric + " " + parentMirror.fullyQualifiedNameOfGeneratedClass + "."
 				+ parentMirror.simpleNameOfGeneratedInterfaceMatcher + genericForChaining + " " + methodShortClassName
@@ -622,33 +627,40 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		return factories.toString();
 	}
 
-	private String getDefaultLinkForMatcher() {
+	private String getDefaultLinkForAnnotatedClass() {
 		return "{@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
 				+ simpleNameOfClassAnnotatedWithProvideMatcher + "}";
 	}
 
 	private String getDefaultDescriptionForDsl() {
-		return "Start a DSL matcher for the " + getDefaultLinkForMatcher();
+		return "Start a DSL matcher for the " + getDefaultLinkForAnnotatedClass();
 	}
 
-	private String generateJavaDoc(String prefix, String description, Optional<String> moreDetails,
-			Optional<String> param, Optional<String> returnDescription, boolean withParam, boolean withParent) {
+	private String addPrefix(String prefix, String input) {
+		return "\n" + Arrays.stream(input.split("\\R")).map(l -> prefix + l).collect(Collectors.joining("\n")) + "\n";
+	}
+
+	private String generateJavaDocWithoutParamNeitherParent(String description, String moreDetails,
+			Optional<String> param, Optional<String> returnDescription) {
+		return generateJavaDoc(description, Optional.of(moreDetails), param, returnDescription, false, false);
+	}
+
+	private String generateJavaDoc(String description, Optional<String> moreDetails, Optional<String> param,
+			Optional<String> returnDescription, boolean withParam, boolean withParent) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(prefix).append("/**").append("\n");
-		sb.append(prefix).append(" * ").append(description).append(".\n");
-		moreDetails.ifPresent(
-				t -> sb.append(prefix).append(" * <p>\n").append(prefix).append(" * ").append(t).append("\n"));
-		param.ifPresent(t -> sb.append(prefix).append(" * @param ").append(t).append("\n"));
+		sb.append("/**").append("\n");
+		sb.append(" * ").append(description).append(".\n");
+		moreDetails.ifPresent(t -> sb.append(" * <p>\n").append(" * ").append(t).append("\n"));
+		param.ifPresent(t -> sb.append(" * @param ").append(t).append("\n"));
 		if (withParam) {
-			sb.append(prefix).append(paramJavadoc.replaceAll("\\R", "\n" + prefix)).append(" * \n");
+			sb.append(paramJavadoc.replaceAll("\\R", "\n")).append(" * \n");
 		}
 		if (withParent) {
-			sb.append(prefix)
-					.append(" * @param <_PARENT> used to reference, if necessary, a parent for this builder. By default Void is used an indicate no parent builder")
-					.append("\n");
+			sb.append(
+					" * @param <_PARENT> used to reference, if necessary, a parent for this builder. By default Void is used an indicate no parent builder.\n");
 		}
-		returnDescription.ifPresent(t -> sb.append(prefix).append(" * @return ").append(t).append("\n"));
-		sb.append(prefix).append(" */").append("\n");
+		returnDescription.ifPresent(t -> sb.append(" * @return ").append(t).append("\n"));
+		sb.append(" */\n");
 		return sb.toString();
 	}
 
