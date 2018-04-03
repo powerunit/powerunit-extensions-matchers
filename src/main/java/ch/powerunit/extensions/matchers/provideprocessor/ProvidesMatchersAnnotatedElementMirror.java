@@ -216,12 +216,10 @@ public class ProvidesMatchersAnnotatedElementMirror {
 
 		sb.append(generateMainParentPublicInterface());
 
-		sb.append(generateJavaDoc("  ",
-				"DSL interface for matcher on {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}",
-				Optional.empty(), Optional.empty(), Optional.empty(), true, true)).append("\n")
-				.append("  public static interface ").append(simpleNameOfGeneratedInterfaceMatcher)
-				.append(fullGenericParent).append(" extends org.hamcrest.Matcher<")
+		sb.append(generateJavaDoc("  ", "DSL interface for matcher on " + getDefaultLinkForMatcher(), Optional.empty(),
+				Optional.empty(), Optional.empty(), true, true)).append("\n").append("  public static interface ")
+				.append(simpleNameOfGeneratedInterfaceMatcher).append(fullGenericParent)
+				.append(" extends org.hamcrest.Matcher<")
 				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append(">,")
 				.append(simpleNameOfGeneratedInterfaceMatcher).append("BuildSyntaxicSugar ").append(generic).append(",")
 				.append(simpleNameOfGeneratedInterfaceMatcher).append("EndSyntaxicSugar ").append(genericParent)
@@ -301,8 +299,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private String generateMainParentPublicInterface() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(generateJavaDoc("  ",
-				"DSL interface for matcher on {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "} to support the end syntaxic sugar",
+				"DSL interface for matcher on " + getDefaultLinkForMatcher() + " to support the end syntaxic sugar",
 				Optional.empty(), Optional.empty(), Optional.empty(), true, true)).append("\n");
 		sb.append("  public static interface " + simpleNameOfGeneratedInterfaceMatcher + "EndSyntaxicSugar"
 				+ fullGenericParent + " extends org.hamcrest.Matcher<"
@@ -320,8 +317,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private String generateMainBuildPublicInterface() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(generateJavaDoc("  ",
-				"DSL interface for matcher on {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "} to support the build syntaxic sugar",
+				"DSL interface for matcher on " + getDefaultLinkForMatcher() + " to support the build syntaxic sugar",
 				Optional.empty(), Optional.empty(), Optional.empty(), true, false)).append("\n");
 		sb.append("  public static interface " + simpleNameOfGeneratedInterfaceMatcher + "BuildSyntaxicSugar"
 				+ fullGeneric + " extends org.hamcrest.Matcher<"
@@ -464,9 +460,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		String methodName = fullGeneric + " " + getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " "
 				+ methodShortClassName + "With()";
 
-		javadoc.append(generateJavaDoc("  ",
-				"Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}",
+		javadoc.append(generateJavaDoc("  ", getDefaultDescriptionForDsl(),
 				Optional.of(
 						"The returned builder (which is also a Matcher), at this point accepts any object that is a {@link "
 								+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
@@ -499,9 +493,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		StringBuilder javadoc = new StringBuilder();
 		String methodName = fullGenericParent + " " + getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + " "
 				+ methodShortClassName + "WithParent(_PARENT parentBuilder)";
-		javadoc.append(generateJavaDoc("  ",
-				"Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}",
+		javadoc.append(generateJavaDoc("  ", getDefaultDescriptionForDsl(),
 				Optional.of(
 						"The returned builder (which is also a Matcher), at this point accepts any object that is a {@link "
 								+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
@@ -525,11 +517,9 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private String generateParentDSLStarter(PrintWriter wjfo) {
 		StringBuilder factories = new StringBuilder();
 		StringBuilder javadoc = new StringBuilder();
-		javadoc.append(generateJavaDoc("  ",
-				"Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}",
-				Optional.empty(), Optional.of("matcherOnParent the matcher on the parent data."),
-				Optional.of("the DSL matcher"), true, false));
+		javadoc.append(generateJavaDoc("  ", getDefaultDescriptionForDsl(), Optional.empty(),
+				Optional.of("matcherOnParent the matcher on the parent data."), Optional.of("the DSL matcher"), true,
+				false));
 
 		wjfo.println(javadoc.toString());
 		factories.append(javadoc.toString());
@@ -570,11 +560,9 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private String generateParentValueDSLStarter(PrintWriter wjfo, String argumentForParentBuilder) {
 		StringBuilder factories = new StringBuilder();
 		StringBuilder javadoc = new StringBuilder();
-		javadoc.append(generateJavaDoc("  ",
-				"Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}",
-				Optional.empty(), Optional.of("other the other object to be used as a reference."),
-				Optional.of("the DSL matcher"), true, false));
+		javadoc.append(generateJavaDoc("  ", getDefaultDescriptionForDsl(), Optional.empty(),
+				Optional.of("other the other object to be used as a reference."), Optional.of("the DSL matcher"), true,
+				false));
 		wjfo.println(javadoc.toString());
 		factories.append(javadoc.toString());
 		wjfo.println("  @org.hamcrest.Factory");
@@ -604,10 +592,8 @@ public class ProvidesMatchersAnnotatedElementMirror {
 			ProvidesMatchersAnnotatedElementMirror parentMirror) {
 		StringBuilder factories = new StringBuilder();
 		StringBuilder javadoc = new StringBuilder();
-		javadoc.append(generateJavaDoc("  ",
-				"Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}",
-				Optional.empty(), Optional.empty(), Optional.of("the DSL matcher"), true, false));
+		javadoc.append(generateJavaDoc("  ", getDefaultDescriptionForDsl(), Optional.empty(), Optional.empty(),
+				Optional.of("the DSL matcher"), true, false));
 
 		wjfo.println(javadoc.toString());
 		factories.append(javadoc.toString());
@@ -634,6 +620,15 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				.append("\n");
 		factories.append("  }").append("\n");
 		return factories.toString();
+	}
+
+	private String getDefaultLinkForMatcher() {
+		return "{@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
+				+ simpleNameOfClassAnnotatedWithProvideMatcher + "}";
+	}
+
+	private String getDefaultDescriptionForDsl() {
+		return "Start a DSL matcher for the " + getDefaultLinkForMatcher();
 	}
 
 	private String generateJavaDoc(String prefix, String description, Optional<String> moreDetails,
