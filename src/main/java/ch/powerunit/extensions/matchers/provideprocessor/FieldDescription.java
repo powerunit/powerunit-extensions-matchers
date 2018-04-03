@@ -55,6 +55,7 @@ public class FieldDescription {
 	}
 
 	private final String fieldAccessor;
+	private final ProcessingEnvironment processingEnv;
 	private final String fieldName;
 	private final String methodFieldName;
 	private final String fieldType;
@@ -68,7 +69,9 @@ public class FieldDescription {
 	private final Element fieldElement;
 	private final String generic;
 	private final String defaultReturnMethod;
-	private final String fullyQualifiedNameEnclodingClassOfField;
+	private final String fullyQualifiedNameEnclosingClassOfField;
+	private final String enclosingClassOfFieldFullGeneric;
+	private final String enclosingClassOfFieldGeneric;
 
 	public static final class ExtracTypeVisitor extends TypeKindVisitor8<Type, ProcessingEnvironment> {
 
@@ -201,26 +204,29 @@ public class FieldDescription {
 		TypeMirror fieldTypeMirror = (fieldElement instanceof ExecutableElement)
 				? ((ExecutableElement) fieldElement).getReturnType() : fieldElement.asType();
 		this.containingElementMirror = containingElementMirror;
-		this.fullyQualifiedNameEnclodingClassOfField = containingElementMirror
+		this.enclosingClassOfFieldFullGeneric = containingElementMirror.getFullGeneric();
+		this.enclosingClassOfFieldGeneric = containingElementMirror.getGeneric();
+		this.fullyQualifiedNameEnclosingClassOfField = containingElementMirror
 				.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher();
+		this.processingEnv = containingElementMirror.getProcessingEnv();
 		this.fieldAccessor = fieldAccessor;
 		this.fieldName = fieldName;
 		this.methodFieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
 		this.fieldType = fieldType;
-		this.type = new ExtracTypeVisitor().visit(fieldTypeMirror, containingElementMirror.getProcessingEnv());
+		this.type = new ExtracTypeVisitor().visit(fieldTypeMirror, processingEnv);
 		this.ignore = fieldElement.getAnnotation(IgnoreInMatcher.class) != null;
 		this.fieldElement = fieldElement;
 		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
 		this.generic = computeGenericInformation(fieldTypeMirror);
-		this.fullyQualifiedNameMatcherInSameRound = computeFullyQualifiedNameMatcherInSameRound(
-				containingElementMirror.getProcessingEnv(), isInSameRound, fieldType);
+		this.fullyQualifiedNameMatcherInSameRound = computeFullyQualifiedNameMatcherInSameRound(processingEnv,
+				isInSameRound, fieldType);
 		List<Function<String, String>> tmp1 = new ArrayList<>();
 		List<Function<String, String>> tmp2 = new ArrayList<>();
 		List<Function<String, String>> tmp3 = new ArrayList<>();
 		tmp1.add(this::getImplementationForDefault);
 		tmp2.add(this::getDslForDefault);
-		if (fullyQualifiedNameMatcherInSameRound != null && containingElementMirror.getProcessingEnv().getElementUtils()
-				.getTypeElement(fieldType).getTypeParameters().isEmpty()) {
+		if (fullyQualifiedNameMatcherInSameRound != null
+				&& processingEnv.getElementUtils().getTypeElement(fieldType).getTypeParameters().isEmpty()) {
 			tmp1.add(this::getImplementationForDefaultChaining);
 			tmp2.add(this::getDslForDefaultChaining);
 		}
@@ -276,7 +282,7 @@ public class FieldDescription {
 	}
 
 	public String getJavaDocFor(Optional<String> addToDescription, Optional<String> param, Optional<String> see) {
-		String linkToAccessor = "{@link " + fullyQualifiedNameEnclodingClassOfField + "#" + getFieldAccessor()
+		String linkToAccessor = "{@link " + fullyQualifiedNameEnclosingClassOfField + "#" + getFieldAccessor()
 				+ " This field is accessed by using this approach}.";
 		StringBuilder sb = new StringBuilder();
 		sb.append("/**").append("\n");
@@ -337,8 +343,7 @@ public class FieldDescription {
 
 	public String getImplementationForDefaultChaining(String prefix) {
 		// Can't use buildDeclaration here
-		TypeElement targetElement = containingElementMirror.getProcessingEnv().getElementUtils()
-				.getTypeElement(fieldType);
+		TypeElement targetElement = processingEnv.getElementUtils().getTypeElement(fieldType);
 		String name = targetElement.getSimpleName().toString();
 		String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
 		return buildImplementation(prefix,
@@ -392,8 +397,7 @@ public class FieldDescription {
 
 	public String getDslForDefaultChaining(String prefix) {
 		// can'ut use generateDeclaration here
-		TypeElement targetElement = containingElementMirror.getProcessingEnv().getElementUtils()
-				.getTypeElement(fieldType);
+		TypeElement targetElement = processingEnv.getElementUtils().getTypeElement(fieldType);
 		String name = targetElement.getSimpleName().toString();
 		return buildDsl(prefix,
 				getJavaDocFor(Optional.of("by starting a matcher for this field"), Optional.empty(), Optional.empty()),
@@ -558,8 +562,7 @@ public class FieldDescription {
 	public String getSupplierMatcher(String prefix) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(prefix)
-				.append("private static class " + methodFieldName + "MatcherSupplier"
-						+ containingElementMirror.getFullGeneric()
+				.append("private static class " + methodFieldName + "MatcherSupplier" + enclosingClassOfFieldFullGeneric
 						+ " extends org.hamcrest.FeatureMatcher<java.util.function.Supplier<" + generic + ">," + generic
 						+ "> {")
 				.append("\n");
@@ -579,9 +582,9 @@ public class FieldDescription {
 	public String getMatcherForField(String prefix) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(prefix)
-				.append("private static class " + methodFieldName + "Matcher" + containingElementMirror.getFullGeneric()
-						+ " extends org.hamcrest.FeatureMatcher<" + fullyQualifiedNameEnclodingClassOfField
-						+ containingElementMirror.getGeneric() + "," + fieldType + "> {")
+				.append("private static class " + methodFieldName + "Matcher" + enclosingClassOfFieldFullGeneric
+						+ " extends org.hamcrest.FeatureMatcher<" + fullyQualifiedNameEnclosingClassOfField
+						+ enclosingClassOfFieldGeneric + "," + fieldType + "> {")
 				.append("\n");
 		sb.append(prefix).append(
 				"  public " + methodFieldName + "Matcher(org.hamcrest.Matcher<? super " + fieldType + "> matcher) {")
@@ -590,7 +593,7 @@ public class FieldDescription {
 		sb.append(prefix).append("  }").append("\n");
 
 		sb.append(prefix).append("  protected " + fieldType + " featureValueOf("
-				+ fullyQualifiedNameEnclodingClassOfField + containingElementMirror.getGeneric() + " actual) {")
+				+ fullyQualifiedNameEnclosingClassOfField + enclosingClassOfFieldGeneric + " actual) {")
 				.append("\n");
 		sb.append(prefix).append("    return actual." + fieldAccessor + ";").append("\n");
 		sb.append(prefix).append("  }").append("\n");
@@ -641,10 +644,9 @@ public class FieldDescription {
 			return getFieldCopyForList(lhs, rhs);
 		}
 
-		if (fullyQualifiedNameMatcherInSameRound != null && containingElementMirror.getProcessingEnv().getElementUtils()
-				.getTypeElement(fieldType).getTypeParameters().isEmpty()) {
-			return getFieldCopySameRound(lhs, rhs,
-					containingElementMirror.getProcessingEnv().getElementUtils().getTypeElement(fieldType));
+		if (fullyQualifiedNameMatcherInSameRound != null
+				&& processingEnv.getElementUtils().getTypeElement(fieldType).getTypeParameters().isEmpty()) {
+			return getFieldCopySameRound(lhs, rhs, processingEnv.getElementUtils().getTypeElement(fieldType));
 		}
 		return getFieldCopyDefault(lhs, rhs);
 	}
