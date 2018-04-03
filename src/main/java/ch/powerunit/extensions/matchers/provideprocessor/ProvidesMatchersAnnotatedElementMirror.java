@@ -51,6 +51,19 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private final Set<? extends Element> elementsWithOtherAnnotation[];
 	private final List<FieldDescription> fields;
 
+	private List<FieldDescription> generateFields(TypeElement typeElement,
+			ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor) {
+		return typeElement.getEnclosedElements().stream()
+				.map(ie -> ie.accept(providesMatchersSubElementVisitor,
+						this))
+				.filter(Optional::isPresent).map(t -> t.get()).collect(
+						Collectors.collectingAndThen(
+								Collectors.groupingBy(t -> t.getFieldName(),
+										Collectors.reducing(null,
+												(v1, v2) -> v1 == null ? v2 : v1.isIgnore() ? v1 : v2)),
+						c -> c == null ? Collections.emptyList() : c.values().stream().collect(Collectors.toList())));
+	}
+
 	public ProvidesMatchersAnnotatedElementMirror(TypeElement typeElement, ProcessingEnvironment processingEnv,
 			Predicate<Element> isInSameRound,
 			Function<String, ProvidesMatchersAnnotatedElementMirror> findMirrorForTypeName,
@@ -109,15 +122,19 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				+ simpleNameOfGeneratedInterfaceMatcher + genericNoParent);
 		ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor = new ProvidesMatchersSubElementVisitor(
 				processingEnv, isInSameRound);
-		this.fields = typeElement.getEnclosedElements().stream()
-				.map(ie -> ie.accept(providesMatchersSubElementVisitor,
-						this))
-				.filter(Optional::isPresent).map(t -> t.get()).collect(
-						Collectors.collectingAndThen(
-								Collectors.groupingBy(t -> t.getFieldName(),
-										Collectors.reducing(null,
-												(v1, v2) -> v1 == null ? v2 : v1.isIgnore() ? v1 : v2)),
-						c -> c == null ? Collections.emptyList() : c.values().stream().collect(Collectors.toList())));
+		this.fields = generateFields(typeElement, providesMatchersSubElementVisitor);
+	}
+
+	public String getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() {
+		return simpleNameOfGeneratedInterfaceMatcher + " " + genericParent;
+	}
+
+	public String getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() {
+		return simpleNameOfGeneratedInterfaceMatcher + " " + genericNoParent;
+	}
+
+	public String getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() {
+		return fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " " + generic;
 	}
 
 	public String process() {
@@ -150,11 +167,11 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				wjfo.println();
 				wjfo.println(generatePublicInterface());
 				wjfo.println();
-				generatePrivateImplementation(wjfo, fields);
+				wjfo.println(generatePrivateImplementation());
 
 				wjfo.println();
 
-				factories.append(generateDSLStarter(wjfo, fields));
+				factories.append(generateDSLStarter(wjfo));
 				wjfo.println("}");
 			}
 		} catch (IOException e1) {
@@ -167,37 +184,27 @@ public class ProvidesMatchersAnnotatedElementMirror {
 
 	public String generateAndExtractFieldAndParentPrivateMatcher() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("\n");
-		sb.append(
-				"  private static <_TARGET,_SOURCE> org.hamcrest.Matcher<_SOURCE> asFeatureMatcher(String msg,java.util.function.Function<_SOURCE,_TARGET> converter,org.hamcrest.Matcher<? super _TARGET> matcher) {")
-				.append("\n");
-		sb.append("   return new org.hamcrest.FeatureMatcher<_SOURCE,_TARGET>(matcher, msg, msg) {").append("\n");
-		sb.append("     protected _TARGET featureValueOf(_SOURCE actual) {").append("\n");
-		sb.append("      return converter.apply(actual);").append("\n");
-		sb.append("    }};").append("\n");
+		sb.append("\n")
+				.append("  private static <_TARGET,_SOURCE> org.hamcrest.Matcher<_SOURCE> asFeatureMatcher(String msg,java.util.function.Function<_SOURCE,_TARGET> converter,org.hamcrest.Matcher<? super _TARGET> matcher) {")
+				.append("\n").append("   return new org.hamcrest.FeatureMatcher<_SOURCE,_TARGET>(matcher, msg, msg) {")
+				.append("\n").append("     protected _TARGET featureValueOf(_SOURCE actual) {").append("\n")
+				.append("      return converter.apply(actual);").append("\n").append("    }};").append("\n")
+				.append("  }").append("\n").append("\n");
 
-		sb.append("  }").append("\n").append("\n");
-		sb.append(fields.stream().map(f -> f.getMatcherForField("  ")).collect(Collectors.joining("\n")));
-		sb.append("\n");
+		sb.append(fields.stream().map(f -> f.getMatcherForField("  ")).collect(Collectors.joining("\n"))).append("\n");
 		if (hasParent) {
-			sb.append("  private static class SuperClassMatcher" + fullGeneric + " extends org.hamcrest.FeatureMatcher<"
-					+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + ","
-					+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher + "> {").append("\n");
-			sb.append("\n");
-			sb.append("    public SuperClassMatcher(org.hamcrest.Matcher<? super "
-					+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher + "> matcher) {").append("\n");
-			sb.append("      super(matcher,\"parent\",\"parent\");").append("\n");
-			sb.append("  }").append("\n");
-			sb.append("\n").append("\n");
-			sb.append("    protected " + fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher
-					+ " featureValueOf(" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " actual) {")
-					.append("\n");
-			sb.append("      return actual;").append("\n");
-			sb.append("    }").append("\n");
-			sb.append("\n");
-			sb.append("  }").append("\n");
-			sb.append("\n");
-			sb.append("\n");
+			sb.append("  private static class SuperClassMatcher").append(fullGeneric)
+					.append(" extends org.hamcrest.FeatureMatcher<")
+					.append(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher).append(",")
+					.append(fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher + "> {").append("\n\n")
+					.append("    public SuperClassMatcher(org.hamcrest.Matcher<? super ")
+					.append(fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher).append("> matcher) {")
+					.append("\n").append("      super(matcher,\"parent\",\"parent\");").append("\n").append("  }")
+					.append("\n\n\n").append("    protected ")
+					.append(fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher).append(" featureValueOf(")
+					.append(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher).append(" actual) {").append("\n")
+					.append("      return actual;").append("\n").append("    }").append("\n\n").append("  }")
+					.append("\n\n\n");
 		}
 		return sb.toString();
 	}
@@ -209,18 +216,17 @@ public class ProvidesMatchersAnnotatedElementMirror {
 
 		sb.append(generateMainParentPublicInterface());
 
-		sb.append(generateJavaDoc("  ",
-				"DSL interface for matcher on {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}",
-				Optional.empty(), Optional.empty(), Optional.empty(), true, true)).append("\n");
-		sb.append("  public static interface " + simpleNameOfGeneratedInterfaceMatcher + fullGenericParent
-				+ " extends org.hamcrest.Matcher<" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + generic
-				+ ">," + simpleNameOfGeneratedInterfaceMatcher + "BuildSyntaxicSugar " + generic + ","
-				+ simpleNameOfGeneratedInterfaceMatcher + "EndSyntaxicSugar " + genericParent + " {").append("\n");
+		sb.append(generateJavaDoc("  ", "DSL interface for matcher on " + getDefaultLinkForMatcher(), Optional.empty(),
+				Optional.empty(), Optional.empty(), true, true)).append("\n").append("  public static interface ")
+				.append(simpleNameOfGeneratedInterfaceMatcher).append(fullGenericParent)
+				.append(" extends org.hamcrest.Matcher<")
+				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append(">,")
+				.append(simpleNameOfGeneratedInterfaceMatcher).append("BuildSyntaxicSugar ").append(generic).append(",")
+				.append(simpleNameOfGeneratedInterfaceMatcher).append("EndSyntaxicSugar ").append(genericParent)
+				.append(" {").append("\n");
 
 		sb.append(fields.stream().filter(FieldDescription::isNotIgnore).map(f -> f.getDslInterface("    "))
-				.collect(Collectors.joining("\n"))).append("\n");
-		sb.append("\n");
+				.collect(Collectors.joining("\n"))).append("\n\n");
 
 		sb.append(generateAsPublicInterface());
 		sb.append("  }").append("\n");
@@ -230,6 +236,9 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	}
 
 	private String generateAsPublicInterface() {
+		String otherMatcher = "org.hamcrest.Matcher<? super "
+				+ getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + "> otherMatcher";
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("    /**").append("\n");
 		sb.append("     * Add a matcher on the object itself and not on a specific field.").append("\n");
@@ -239,10 +248,8 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		sb.append("     * @param otherMatcher the matcher on the object itself.").append("\n");
 		sb.append("     * @return the DSL to continue").append("\n");
 		sb.append("     */").append("\n");
-		sb.append("    " + simpleNameOfGeneratedInterfaceMatcher + " " + genericParent
-				+ " andWith(org.hamcrest.Matcher<? super " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
-				+ generic + "> otherMatcher);").append("\n");
-		sb.append("\n");
+		sb.append("    ").append(getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent()).append(" andWith(")
+				.append(otherMatcher).append(");").append("\n\n");
 
 		sb.append("    /**").append("\n");
 		sb.append(
@@ -256,14 +263,14 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		sb.append("     * @param <_TARGETOBJECT> the type of the target object").append("\n");
 		sb.append("     * @return the DSL to continue").append("\n");
 		sb.append("     */").append("\n");
-		sb.append("    default <_TARGETOBJECT> " + simpleNameOfGeneratedInterfaceMatcher + " " + genericParent
-				+ " andWithAs(java.util.function.Function<" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-				+ generic + ",_TARGETOBJECT> converter,org.hamcrest.Matcher<? super _TARGETOBJECT> otherMatcher) {")
+		sb.append("    default <_TARGETOBJECT> ").append(getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent())
+				.append(" andWithAs(java.util.function.Function<")
+				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric())
+				.append(",_TARGETOBJECT> converter,org.hamcrest.Matcher<? super _TARGETOBJECT> otherMatcher) {")
 				.append("\n");
 		sb.append("      return andWith(asFeatureMatcher(\" <object is converted> \",converter,otherMatcher));")
 				.append("\n");
-		sb.append("    }").append("\n");
-		sb.append("\n");
+		sb.append("    }").append("\n\n");
 
 		sb.append(generateJavaDoc("  ",
 				"Method that return the matcher itself and accept one single Matcher on the object itself.",
@@ -271,12 +278,11 @@ public class ProvidesMatchersAnnotatedElementMirror {
 						"<b>This method is a syntaxic sugar that end the DSL and make clear that the matcher can't be change anymore.</b>"),
 				Optional.of("otherMatcher the matcher on the object itself."), Optional.of("the matcher"), false,
 				false)).append("\n");
-		sb.append("    default org.hamcrest.Matcher<" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + generic
-				+ "> buildWith(org.hamcrest.Matcher<? super " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
-				+ generic + "> otherMatcher) {").append("\n");
+		sb.append("    default org.hamcrest.Matcher<")
+				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append("> buildWith(")
+				.append(otherMatcher).append(") {").append("\n");
 		sb.append("      return andWith(otherMatcher);").append("\n");
-		sb.append("    }").append("\n");
-		sb.append("\n");
+		sb.append("    }").append("\n\n");
 
 		sb.append(generateJavaDoc("  ",
 				"Method that return the parent builder and accept one single Matcher on the object itself.",
@@ -284,8 +290,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 						"<b>This method only works in the contexte of a parent builder. If the real type is Void, then nothing will be returned.</b>"),
 				Optional.of("otherMatcher the matcher on the object itself."),
 				Optional.of("the parent builder or null if not applicable"), false, false));
-		sb.append("    default _PARENT endWith(org.hamcrest.Matcher<? super "
-				+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + generic + "> otherMatcher){").append("\n");
+		sb.append("    default _PARENT endWith(").append(otherMatcher).append("){").append("\n");
 		sb.append("      return andWith(otherMatcher).end();").append("\n");
 		sb.append("    }").append("\n");
 		return sb.toString();
@@ -294,12 +299,11 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private String generateMainParentPublicInterface() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(generateJavaDoc("  ",
-				"DSL interface for matcher on {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "} to support the end syntaxic sugar",
+				"DSL interface for matcher on " + getDefaultLinkForMatcher() + " to support the end syntaxic sugar",
 				Optional.empty(), Optional.empty(), Optional.empty(), true, true)).append("\n");
 		sb.append("  public static interface " + simpleNameOfGeneratedInterfaceMatcher + "EndSyntaxicSugar"
 				+ fullGenericParent + " extends org.hamcrest.Matcher<"
-				+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + generic + "> {").append("\n");
+				+ getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + "> {").append("\n");
 		sb.append(generateJavaDoc("  ", "Method that return the parent builder",
 				Optional.of(
 						"<b>This method only works in the contexte of a parent builder. If the real type is Void, then nothing will be returned.</b>"),
@@ -313,143 +317,123 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private String generateMainBuildPublicInterface() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(generateJavaDoc("  ",
-				"DSL interface for matcher on {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "} to support the build syntaxic sugar",
+				"DSL interface for matcher on " + getDefaultLinkForMatcher() + " to support the build syntaxic sugar",
 				Optional.empty(), Optional.empty(), Optional.empty(), true, false)).append("\n");
 		sb.append("  public static interface " + simpleNameOfGeneratedInterfaceMatcher + "BuildSyntaxicSugar"
-				+ fullGeneric + " extends org.hamcrest.Matcher<" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
-				+ generic + "> {").append("\n");
+				+ fullGeneric + " extends org.hamcrest.Matcher<"
+				+ getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + "> {").append("\n");
 		sb.append(generateJavaDoc("  ", "Method that return the matcher itself.",
 				Optional.of(
 						"<b>This method is a syntaxic sugar that end the DSL and make clear that the matcher can't be change anymore.</b>"),
 				Optional.empty(), Optional.of("the matcher"), false, false)).append("\n");
-		sb.append("    default org.hamcrest.Matcher<" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + generic
-				+ "> build() {").append("\n");
+		sb.append("    default org.hamcrest.Matcher<"
+				+ getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + "> build() {").append("\n");
 		sb.append("      return this;").append("\n");
 		sb.append("    }").append("\n");
 		sb.append("  }").append("\n");
 		return sb.toString();
 	}
 
-	private void generatePrivateImplementation(PrintWriter wjfo, List<FieldDescription> fields) {
-		wjfo.println("  /* package protected */ static class " + simpleNameOfGeneratedImplementationMatcher
-				+ fullGenericParent + " extends org.hamcrest.TypeSafeDiagnosingMatcher<"
-				+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + generic + "> implements "
-				+ simpleNameOfGeneratedInterfaceMatcher + genericParent + " {");
-		wjfo.println(
-				"    " + fields.stream().map(FieldDescription::asMatcherField).collect(Collectors.joining("\n    ")));
+	public String generatePrivateImplementationConstructor(String argument, String... body) {
+		return new StringBuilder().append("    public ").append(simpleNameOfGeneratedImplementationMatcher).append("(")
+				.append(argument).append(") {\n")
+				.append(Arrays.stream(body).map(l -> "      " + l).collect(Collectors.joining("\n"))).append("    }")
+				.toString();
+	}
 
-		wjfo.println("    private final _PARENT _parentBuilder;");
-		wjfo.println();
-		wjfo.println(
-				"    private final java.util.List<org.hamcrest.Matcher> nextMatchers = new java.util.ArrayList<>();");
+	private String generatePrivateImplementation() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("  /* package protected */ static class ").append(simpleNameOfGeneratedImplementationMatcher)
+				.append(fullGenericParent).append(" extends org.hamcrest.TypeSafeDiagnosingMatcher<")
+				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append("> implements ")
+				.append(getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + " {\n");
+		sb.append("    " + fields.stream().map(FieldDescription::asMatcherField).collect(Collectors.joining("\n    ")))
+				.append("\n");
+
+		sb.append("    private final _PARENT _parentBuilder;\n\n").append(
+				"    private final java.util.List<org.hamcrest.Matcher> nextMatchers = new java.util.ArrayList<>();\n");
 		if (hasParent) {
-			wjfo.println("    private SuperClassMatcher _parent;");
-			wjfo.println();
-			wjfo.println("    public " + simpleNameOfGeneratedImplementationMatcher + "(org.hamcrest.Matcher<? super "
-					+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher + "> parent) {");
-			wjfo.println("      this._parent=new SuperClassMatcher(parent);");
-			wjfo.println("      this._parentBuilder=null;");
-			wjfo.println("    }");
-			wjfo.println();
-			wjfo.println();
-			wjfo.println("    public " + simpleNameOfGeneratedImplementationMatcher + "(org.hamcrest.Matcher<? super "
-					+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher
-					+ "> parent,_PARENT parentBuilder) {");
-			wjfo.println("      this._parent=new SuperClassMatcher(parent);");
-			wjfo.println("      this._parentBuilder=parentBuilder;");
-			wjfo.println("    }");
-			wjfo.println();
+			sb.append("    private SuperClassMatcher _parent;\n\n")
+					.append(generatePrivateImplementationConstructor(
+							"org.hamcrest.Matcher<? super "
+									+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher + "> parent",
+							"this._parent=new SuperClassMatcher(parent);", "this._parentBuilder=null;"))
+					.append("\n\n")
+					.append(generatePrivateImplementationConstructor(
+							"org.hamcrest.Matcher<? super "
+									+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher
+									+ "> parent,_PARENT parentBuilder",
+							"this._parent=new SuperClassMatcher(parent);", "this._parentBuilder=parentBuilder;"))
+					.append("\n\n");
 		} else {
-			wjfo.println();
-			wjfo.println("    public " + simpleNameOfClassAnnotatedWithProvideMatcher + "MatcherImpl() {");
-			wjfo.println("      this._parentBuilder=null;");
-			wjfo.println("    }");
-			wjfo.println();
-			wjfo.println();
-			wjfo.println("    public " + simpleNameOfGeneratedImplementationMatcher + "(_PARENT parentBuilder) {");
-			wjfo.println("      this._parentBuilder=parentBuilder;");
-			wjfo.println("    }");
-			wjfo.println();
+			sb.append(generatePrivateImplementationConstructor("", "this._parentBuilder=null;")).append("\n\n")
+					.append(generatePrivateImplementationConstructor("_PARENT parentBuilder",
+							"this._parentBuilder=parentBuilder;"))
+					.append("\n\n");
 		}
 
-		wjfo.println(fields.stream().filter(FieldDescription::isNotIgnore)
-				.map(f -> f.getImplementationInterface("    ")).collect(Collectors.joining("\n")));
+		sb.append(fields.stream().filter(FieldDescription::isNotIgnore).map(f -> f.getImplementationInterface("    "))
+				.collect(Collectors.joining("\n"))).append("\n");
 
-		generatePrivateImplementationForMatchersSafely(wjfo, fields);
-
-		generatedPrivateImplementationForDescribeTo(wjfo, fields);
-		wjfo.println();
-
-		generatePrivateImplementationForEnd(wjfo);
-
-		generatePrivateImplementationForAndWith(wjfo);
-
-		wjfo.println("  }");
+		sb.append(generatePrivateImplementationForMatchersSafely()).append("\n")
+				.append(generatedPrivateImplementationForDescribeTo()).append("\n\n")
+				.append(generatePrivateImplementationForEnd()).append("\n")
+				.append(generatePrivateImplementationForAndWith()).append("\n").append("  }\n");
+		return sb.toString();
 	}
 
-	private void generatePrivateImplementationForMatchersSafely(PrintWriter wjfo, List<FieldDescription> fields) {
-		wjfo.println("    @Override");
-		wjfo.println("    protected boolean matchesSafely(" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
-				+ " actual, org.hamcrest.Description mismatchDescription) {");
-		wjfo.println("      boolean result=true;");
+	private String generatePrivateImplementationForMatchersSafely() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("    @Override\n").append("    protected boolean matchesSafely(")
+				.append(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher)
+				.append(" actual, org.hamcrest.Description mismatchDescription) {\n")
+				.append("      boolean result=true;\n");
 		if (hasParent) {
-			wjfo.println("      if(!_parent.matches(actual)) {");
-			wjfo.println(
-					"        mismatchDescription.appendText(\"[\"); _parent.describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");");
-			wjfo.println("        result=false;");
-			wjfo.println("      }");
+			sb.append("      if(!_parent.matches(actual)) {\n")
+					.append("        mismatchDescription.appendText(\"[\"); _parent.describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");\n")
+					.append("        result=false;\n").append("      }\n");
 		}
-		fields.stream().map(f -> f.asMatchesSafely("      ")).forEach(wjfo::println);
+		fields.stream().map(f -> f.asMatchesSafely("      ") + "\n").forEach(sb::append);
 
-		wjfo.println("      for(org.hamcrest.Matcher nMatcher : nextMatchers) {");
-		wjfo.println("        if(!nMatcher.matches(actual)) {");
-		wjfo.println(
-				"          mismatchDescription.appendText(\"[object itself \"); nMatcher.describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");");
-		wjfo.println("        result=false;");
-		wjfo.println("        }");
-		wjfo.println("      }");
-		wjfo.println("      return result;");
-		wjfo.println("    }");
-		wjfo.println();
+		sb.append("      for(org.hamcrest.Matcher nMatcher : nextMatchers) {\n")
+				.append("        if(!nMatcher.matches(actual)) {\n")
+				.append("          mismatchDescription.appendText(\"[object itself \"); nMatcher.describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");\n")
+				.append("        result=false;\n").append("        }\n").append("      }\n")
+				.append("      return result;\n").append("    }\n\n");
+		return sb.toString();
 	}
 
-	private void generatePrivateImplementationForEnd(PrintWriter wjfo) {
-		wjfo.println("    @Override");
-		wjfo.println("    public _PARENT end() {");
-		wjfo.println("      return _parentBuilder;");
-		wjfo.println("    }");
-		wjfo.println();
+	private String generatePrivateImplementationForEnd() {
+		return new StringBuilder().append("    @Override\n").append("    public _PARENT end() {\n")
+				.append("      return _parentBuilder;\n").append("    }\n\n").toString();
 	}
 
-	private void generatedPrivateImplementationForDescribeTo(PrintWriter wjfo, List<FieldDescription> fields) {
-		wjfo.println("    @Override");
-		wjfo.println("    public void describeTo(org.hamcrest.Description description) {");
-		wjfo.println("      description.appendText(\"an instance of "
-				+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " with\\n\");");
+	private String generatedPrivateImplementationForDescribeTo() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("    @Override\n").append("    public void describeTo(org.hamcrest.Description description) {\n")
+				.append("      description.appendText(\"an instance of ")
+				.append(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher).append(" with\\n\");\n");
 		if (hasParent) {
-			wjfo.println("      description.appendText(\"[\").appendDescriptionOf(_parent).appendText(\"]\\n\");");
+			sb.append("      description.appendText(\"[\").appendDescriptionOf(_parent).appendText(\"]\\n\");\n");
 		}
-		fields.stream().map(f -> f.asDescribeTo("      ")).forEach(wjfo::println);
-		wjfo.println("      for(org.hamcrest.Matcher nMatcher : nextMatchers) {");
-		wjfo.println(
-				"        description.appendText(\"[object itself \").appendDescriptionOf(nMatcher).appendText(\"]\\n\");");
-		wjfo.println("      }");
-		wjfo.println("    }");
+		fields.stream().map(f -> f.asDescribeTo("      ") + "\n").forEach(sb::append);
+		sb.append("      for(org.hamcrest.Matcher nMatcher : nextMatchers) {\n")
+				.append("        description.appendText(\"[object itself \").appendDescriptionOf(nMatcher).appendText(\"]\\n\");\n")
+				.append("      }\n").append("    }\n");
+		return sb.toString();
 	}
 
-	private void generatePrivateImplementationForAndWith(PrintWriter wjfo) {
-		wjfo.println("    @Override");
-		wjfo.println("    public " + simpleNameOfGeneratedInterfaceMatcher + " " + genericParent
-				+ " andWith(org.hamcrest.Matcher<? super " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
-				+ generic + "> otherMatcher) {");
-		wjfo.println(
-				"      nextMatchers.add(java.util.Objects.requireNonNull(otherMatcher,\"A matcher is expected\"));");
-		wjfo.println("      return this;");
-		wjfo.println("    }");
+	private String generatePrivateImplementationForAndWith() {
+		return new StringBuilder().append("    @Override\n").append("    public ")
+				.append(getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent())
+				.append(" andWith(org.hamcrest.Matcher<? super ")
+				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric())
+				.append("> otherMatcher) {\n")
+				.append("      nextMatchers.add(java.util.Objects.requireNonNull(otherMatcher,\"A matcher is expected\"));\n")
+				.append("      return this;\n").append("    }\n").toString();
 	}
 
-	private String generateDSLStarter(PrintWriter wjfo, List<FieldDescription> fields) {
+	private String generateDSLStarter(PrintWriter wjfo) {
 		StringBuilder factories = new StringBuilder();
 		factories.append(generateDefaultDSLStarter(wjfo));
 
@@ -462,10 +446,10 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		wjfo.println();
 
 		if (!hasParent) {
-			factories.append(generateParentValueDSLStarter(wjfo, fields, ""));
+			factories.append(generateParentValueDSLStarter(wjfo, ""));
 		}
 		if (hasParent && hasParentInSameRound) {
-			factories.append(generateParentInSameRoundDSLStarter(wjfo, fields));
+			factories.append(generateParentInSameRoundDSLStarter(wjfo));
 		}
 		return factories.toString();
 	}
@@ -473,12 +457,10 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private String generateDefaultDSLStarter(PrintWriter wjfo) {
 		StringBuilder factories = new StringBuilder();
 		StringBuilder javadoc = new StringBuilder();
-		String methodName = fullGeneric + " " + simpleNameOfGeneratedInterfaceMatcher + genericNoParent + " "
+		String methodName = fullGeneric + " " + getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " "
 				+ methodShortClassName + "With()";
 
-		javadoc.append(generateJavaDoc("  ",
-				"Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}",
+		javadoc.append(generateJavaDoc("  ", getDefaultDescriptionForDsl(),
 				Optional.of(
 						"The returned builder (which is also a Matcher), at this point accepts any object that is a {@link "
 								+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
@@ -491,7 +473,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		wjfo.println("  @org.hamcrest.Factory");
 		wjfo.println("  public static " + methodName + " {");
 		factories.append("  default " + fullGeneric + " " + fullyQualifiedNameOfGeneratedClass + "."
-				+ simpleNameOfGeneratedInterfaceMatcher + genericNoParent + " " + methodShortClassName + "With()"
+				+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " " + methodShortClassName + "With()"
 				+ " {").append("\n");
 		factories.append("    return " + fullyQualifiedNameOfGeneratedClass + "." + methodShortClassName + "With();")
 				.append("\n");
@@ -509,11 +491,9 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private String generateDefaultForChainingDSLStarter(PrintWriter wjfo) {
 		StringBuilder factories = new StringBuilder();
 		StringBuilder javadoc = new StringBuilder();
-		String methodName = fullGenericParent + " " + simpleNameOfGeneratedInterfaceMatcher + genericParent + " "
+		String methodName = fullGenericParent + " " + getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + " "
 				+ methodShortClassName + "WithParent(_PARENT parentBuilder)";
-		javadoc.append(generateJavaDoc("  ",
-				"Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}",
+		javadoc.append(generateJavaDoc("  ", getDefaultDescriptionForDsl(),
 				Optional.of(
 						"The returned builder (which is also a Matcher), at this point accepts any object that is a {@link "
 								+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
@@ -537,25 +517,24 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private String generateParentDSLStarter(PrintWriter wjfo) {
 		StringBuilder factories = new StringBuilder();
 		StringBuilder javadoc = new StringBuilder();
-		javadoc.append(generateJavaDoc("  ",
-				"Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}",
-				Optional.empty(), Optional.of("matcherOnParent the matcher on the parent data."),
-				Optional.of("the DSL matcher"), true, false));
+		javadoc.append(generateJavaDoc("  ", getDefaultDescriptionForDsl(), Optional.empty(),
+				Optional.of("matcherOnParent the matcher on the parent data."), Optional.of("the DSL matcher"), true,
+				false));
 
 		wjfo.println(javadoc.toString());
 		factories.append(javadoc.toString());
 
 		wjfo.println("  @org.hamcrest.Factory");
-		wjfo.println("  public static " + fullGeneric + " " + simpleNameOfGeneratedInterfaceMatcher + genericNoParent
-				+ " " + methodShortClassName + "With(org.hamcrest.Matcher<? super "
-				+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher + "> matcherOnParent) {");
+		wjfo.println(
+				"  public static " + fullGeneric + " " + getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent()
+						+ " " + methodShortClassName + "With(org.hamcrest.Matcher<? super "
+						+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher + "> matcherOnParent) {");
 		wjfo.println("    return new " + simpleNameOfGeneratedImplementationMatcher + genericNoParent
 				+ "(matcherOnParent);");
 		wjfo.println("  }");
 
 		factories.append("  default " + fullGeneric + " " + fullyQualifiedNameOfGeneratedClass + "."
-				+ simpleNameOfGeneratedInterfaceMatcher + genericNoParent + " " + methodShortClassName
+				+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " " + methodShortClassName
 				+ "With(org.hamcrest.Matcher<? super "
 				+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher + "> matcherOnParent)" + " {")
 				.append("\n");
@@ -565,12 +544,12 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		return factories.toString();
 	}
 
-	private String generateParentInSameRoundDSLStarter(PrintWriter wjfo, List<FieldDescription> fields) {
+	private String generateParentInSameRoundDSLStarter(PrintWriter wjfo) {
 		StringBuilder factories = new StringBuilder();
 		ProvidesMatchersAnnotatedElementMirror parentMirror = findMirrorForTypeName
 				.apply(typeElementForSuperClassOfClassAnnotatedWithProvideMatcher.getQualifiedName().toString());
-		factories.append(generateParentValueDSLStarter(wjfo, fields, parentMirror.fullyQualifiedNameOfGeneratedClass
-				+ "." + parentMirror.methodShortClassName + "WithSameValue(other)"));
+		factories.append(generateParentValueDSLStarter(wjfo, parentMirror.fullyQualifiedNameOfGeneratedClass + "."
+				+ parentMirror.methodShortClassName + "WithSameValue(other)"));
 
 		if (typeElementForSuperClassOfClassAnnotatedWithProvideMatcher.getTypeParameters().isEmpty()) {
 			factories.append(generateParentInSameRoundWithChaningDSLStarter(wjfo, parentMirror));
@@ -578,22 +557,20 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		return factories.toString();
 	}
 
-	private String generateParentValueDSLStarter(PrintWriter wjfo, List<FieldDescription> fields,
-			String argumentForParentBuilder) {
+	private String generateParentValueDSLStarter(PrintWriter wjfo, String argumentForParentBuilder) {
 		StringBuilder factories = new StringBuilder();
 		StringBuilder javadoc = new StringBuilder();
-		javadoc.append(generateJavaDoc("  ",
-				"Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}",
-				Optional.empty(), Optional.of("other the other object to be used as a reference."),
-				Optional.of("the DSL matcher"), true, false));
+		javadoc.append(generateJavaDoc("  ", getDefaultDescriptionForDsl(), Optional.empty(),
+				Optional.of("other the other object to be used as a reference."), Optional.of("the DSL matcher"), true,
+				false));
 		wjfo.println(javadoc.toString());
 		factories.append(javadoc.toString());
 		wjfo.println("  @org.hamcrest.Factory");
-		wjfo.println("  public static " + fullGeneric + " " + simpleNameOfGeneratedInterfaceMatcher + genericNoParent
-				+ " " + methodShortClassName + "WithSameValue(" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
-				+ " " + generic + " other) {");
-		wjfo.println("    " + simpleNameOfGeneratedInterfaceMatcher + genericNoParent + " m=new "
+		wjfo.println(
+				"  public static " + fullGeneric + " " + getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent()
+						+ " " + methodShortClassName + "WithSameValue("
+						+ getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + " other) {");
+		wjfo.println("    " + getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " m=new "
 				+ simpleNameOfGeneratedImplementationMatcher + genericNoParent + "(" + argumentForParentBuilder + ");");
 
 		fields.stream().filter(FieldDescription::isNotIgnore).map(f -> "    " + f.getFieldCopy("m", "other") + ";")
@@ -602,8 +579,8 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		wjfo.println("  }");
 
 		factories.append("  default " + fullGeneric + " " + fullyQualifiedNameOfGeneratedClass + "."
-				+ simpleNameOfGeneratedInterfaceMatcher + genericNoParent + " " + methodShortClassName
-				+ "WithSameValue(" + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " " + generic + " other)"
+				+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " " + methodShortClassName
+				+ "WithSameValue(" + getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + " other)"
 				+ " {").append("\n");
 		factories.append("    return " + fullyQualifiedNameOfGeneratedClass + "." + methodShortClassName
 				+ "WithSameValue(other);").append("\n");
@@ -615,10 +592,8 @@ public class ProvidesMatchersAnnotatedElementMirror {
 			ProvidesMatchersAnnotatedElementMirror parentMirror) {
 		StringBuilder factories = new StringBuilder();
 		StringBuilder javadoc = new StringBuilder();
-		javadoc.append(generateJavaDoc("  ",
-				"Start a DSL matcher for the {@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-						+ simpleNameOfClassAnnotatedWithProvideMatcher + "}",
-				Optional.empty(), Optional.empty(), Optional.of("the DSL matcher"), true, false));
+		javadoc.append(generateJavaDoc("  ", getDefaultDescriptionForDsl(), Optional.empty(), Optional.empty(),
+				Optional.of("the DSL matcher"), true, false));
 
 		wjfo.println(javadoc.toString());
 		factories.append(javadoc.toString());
@@ -645,6 +620,15 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				.append("\n");
 		factories.append("  }").append("\n");
 		return factories.toString();
+	}
+
+	private String getDefaultLinkForMatcher() {
+		return "{@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
+				+ simpleNameOfClassAnnotatedWithProvideMatcher + "}";
+	}
+
+	private String getDefaultDescriptionForDsl() {
+		return "Start a DSL matcher for the " + getDefaultLinkForMatcher();
 	}
 
 	private String generateJavaDoc(String prefix, String description, Optional<String> moreDetails,
