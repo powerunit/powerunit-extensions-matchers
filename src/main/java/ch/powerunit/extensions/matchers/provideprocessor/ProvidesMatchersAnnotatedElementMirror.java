@@ -195,7 +195,8 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				.append("      return converter.apply(actual);").append("\n").append("    }};").append("\n")
 				.append("  }").append("\n").append("\n");
 
-		sb.append(fields.stream().map(f -> f.getMatcherForField("  ")).collect(Collectors.joining("\n"))).append("\n");
+		sb.append(fields.stream().map(f -> f.getMatcherForField()).map(f -> addPrefix("  ", f))
+				.collect(Collectors.joining("\n"))).append("\n");
 		if (hasParent) {
 			sb.append("  private static class SuperClassMatcher").append(fullGeneric)
 					.append(" extends org.hamcrest.FeatureMatcher<")

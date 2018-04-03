@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -63,7 +64,7 @@ public class FieldDescription {
 	private final Type type;
 	private final List<Function<String, String>> implGenerator;
 	private final List<Function<String, String>> dslGenerator;
-	private final List<Function<String, String>> additionalMatcherGenerator;
+	private final List<Supplier<String>> additionalMatcherGenerator;
 	private final ProvidesMatchersAnnotatedElementMirror containingElementMirror;
 	private final boolean ignore;
 	private final Element fieldElement;
@@ -223,7 +224,7 @@ public class FieldDescription {
 				isInSameRound, fieldType);
 		List<Function<String, String>> tmp1 = new ArrayList<>();
 		List<Function<String, String>> tmp2 = new ArrayList<>();
-		List<Function<String, String>> tmp3 = new ArrayList<>();
+		List<Supplier<String>> tmp3 = new ArrayList<>();
 		tmp1.add(this::getImplementationForDefault);
 		tmp2.add(this::getDslForDefault);
 		if (fullyQualifiedNameMatcherInSameRound != null
@@ -560,46 +561,40 @@ public class FieldDescription {
 		return dslGenerator.stream().map(g -> g.apply(prefix)).collect(Collectors.joining("\n"));
 	}
 
-	public String getSupplierMatcher(String prefix) {
+	public String getSupplierMatcher() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(prefix)
-				.append("private static class " + methodFieldName + "MatcherSupplier" + enclosingClassOfFieldFullGeneric
-						+ " extends org.hamcrest.FeatureMatcher<java.util.function.Supplier<" + generic + ">," + generic
-						+ "> {")
+		sb.append("private static class " + methodFieldName + "MatcherSupplier" + enclosingClassOfFieldFullGeneric
+				+ " extends org.hamcrest.FeatureMatcher<java.util.function.Supplier<" + generic + ">," + generic
+				+ "> {").append("\n");
+		sb.append("  public " + methodFieldName + "MatcherSupplier(org.hamcrest.Matcher<? super " + generic
+				+ "> matcher) {").append("\n");
+		sb.append("    super(matcher,\"with supplier result\",\"with supplier result\");").append("\n");
+		sb.append("  }").append("\n");
+		sb.append("  protected " + generic + " featureValueOf(java.util.function.Supplier<" + generic + "> actual) {")
 				.append("\n");
-		sb.append(prefix).append("  public " + methodFieldName + "MatcherSupplier(org.hamcrest.Matcher<? super "
-				+ generic + "> matcher) {").append("\n");
-		sb.append(prefix).append("    super(matcher,\"with supplier result\",\"with supplier result\");").append("\n");
-		sb.append(prefix).append("  }").append("\n");
-		sb.append(prefix).append(
-				"  protected " + generic + " featureValueOf(java.util.function.Supplier<" + generic + "> actual) {")
-				.append("\n");
-		sb.append(prefix).append("    return actual.get();").append("\n");
-		sb.append(prefix).append("  }").append("\n");
-		sb.append(prefix).append("}").append("\n");
+		sb.append("    return actual.get();").append("\n");
+		sb.append("  }").append("\n");
+		sb.append("}").append("\n");
 		return sb.toString();
 	}
 
-	public String getMatcherForField(String prefix) {
+	public String getMatcherForField() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(prefix)
-				.append("private static class " + methodFieldName + "Matcher" + enclosingClassOfFieldFullGeneric
-						+ " extends org.hamcrest.FeatureMatcher<" + fullyQualifiedNameEnclosingClassOfField
-						+ enclosingClassOfFieldGeneric + "," + fieldType + "> {")
+		sb.append("private static class " + methodFieldName + "Matcher" + enclosingClassOfFieldFullGeneric
+				+ " extends org.hamcrest.FeatureMatcher<" + fullyQualifiedNameEnclosingClassOfField
+				+ enclosingClassOfFieldGeneric + "," + fieldType + "> {").append("\n");
+		sb.append("  public " + methodFieldName + "Matcher(org.hamcrest.Matcher<? super " + fieldType + "> matcher) {")
 				.append("\n");
-		sb.append(prefix).append(
-				"  public " + methodFieldName + "Matcher(org.hamcrest.Matcher<? super " + fieldType + "> matcher) {")
-				.append("\n");
-		sb.append(prefix).append("    super(matcher,\"" + fieldName + "\",\"" + fieldName + "\");").append("\n");
-		sb.append(prefix).append("  }").append("\n");
+		sb.append("    super(matcher,\"" + fieldName + "\",\"" + fieldName + "\");").append("\n");
+		sb.append("  }").append("\n");
 
-		sb.append(prefix).append("  protected " + fieldType + " featureValueOf("
-				+ fullyQualifiedNameEnclosingClassOfField + enclosingClassOfFieldGeneric + " actual) {").append("\n");
-		sb.append(prefix).append("    return actual." + fieldAccessor + ";").append("\n");
-		sb.append(prefix).append("  }").append("\n");
-		sb.append(prefix).append("}").append("\n");
+		sb.append("  protected " + fieldType + " featureValueOf(" + fullyQualifiedNameEnclosingClassOfField
+				+ enclosingClassOfFieldGeneric + " actual) {").append("\n");
+		sb.append("    return actual." + fieldAccessor + ";").append("\n");
+		sb.append("  }").append("\n");
+		sb.append("}").append("\n");
 
-		additionalMatcherGenerator.stream().map(f -> f.apply(prefix)).forEach(sb::append);
+		additionalMatcherGenerator.stream().map(f -> f.get()).forEach(sb::append);
 
 		return sb.toString();
 	}
