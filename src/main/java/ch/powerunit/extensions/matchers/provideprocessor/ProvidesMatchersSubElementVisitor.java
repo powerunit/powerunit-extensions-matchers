@@ -58,7 +58,7 @@ public class ProvidesMatchersSubElementVisitor
 	public Optional<FieldDescription> visitVariable(VariableElement e, ProvidesMatchersAnnotatedElementMirror p) {
 		if (e.getModifiers().contains(Modifier.PUBLIC) && !e.getModifiers().contains(Modifier.STATIC)) {
 			String fieldName = e.getSimpleName().toString();
-			return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, fieldName, fieldName);
+			return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, fieldName);
 		}
 		if (p.isInsideIgnoreList(e)) {
 			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
@@ -94,15 +94,14 @@ public class ProvidesMatchersSubElementVisitor
 		String methodName = e.getSimpleName().toString();
 		String fieldNameDirect = methodName.replaceFirst(prefix, "");
 		String fieldName = fieldNameDirect.substring(0, 1).toLowerCase() + fieldNameDirect.substring(1);
-		return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, methodName + "()",
-				fieldName);
+		return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, fieldName);
 	}
 
 	public Optional<FieldDescription> createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(
-			Element e, ProvidesMatchersAnnotatedElementMirror p, String methodName, String fieldName) {
+			Element e, ProvidesMatchersAnnotatedElementMirror p, String fieldName) {
 		return removeIfNeededAndThenReturn(
 				((e instanceof ExecutableElement) ? ((ExecutableElement) e).getReturnType() : e.asType())
-						.accept(extractNameVisitor, false).map(f -> new FieldDescription(p, methodName, fieldName, f,
+						.accept(extractNameVisitor, false).map(f -> new FieldDescription(p, fieldName, f,
 								isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())), e)),
 				p);
 	}

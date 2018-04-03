@@ -199,8 +199,8 @@ public class FieldDescription {
 		return null;
 	}
 
-	public FieldDescription(ProvidesMatchersAnnotatedElementMirror containingElementMirror, String fieldAccessor,
-			String fieldName, String fieldType, boolean isInSameRound, Element fieldElement) {
+	public FieldDescription(ProvidesMatchersAnnotatedElementMirror containingElementMirror, String fieldName,
+			String fieldType, boolean isInSameRound, Element fieldElement) {
 		TypeMirror fieldTypeMirror = (fieldElement instanceof ExecutableElement)
 				? ((ExecutableElement) fieldElement).getReturnType() : fieldElement.asType();
 		this.containingElementMirror = containingElementMirror;
@@ -209,7 +209,8 @@ public class FieldDescription {
 		this.fullyQualifiedNameEnclosingClassOfField = containingElementMirror
 				.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher();
 		this.processingEnv = containingElementMirror.getProcessingEnv();
-		this.fieldAccessor = fieldAccessor;
+		this.fieldAccessor = fieldElement.getSimpleName().toString()
+				+ ((fieldElement instanceof ExecutableElement) ? "()" : "");
 		this.fieldName = fieldName;
 		this.methodFieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
 		this.fieldType = fieldType;
@@ -593,8 +594,7 @@ public class FieldDescription {
 		sb.append(prefix).append("  }").append("\n");
 
 		sb.append(prefix).append("  protected " + fieldType + " featureValueOf("
-				+ fullyQualifiedNameEnclosingClassOfField + enclosingClassOfFieldGeneric + " actual) {")
-				.append("\n");
+				+ fullyQualifiedNameEnclosingClassOfField + enclosingClassOfFieldGeneric + " actual) {").append("\n");
 		sb.append(prefix).append("    return actual." + fieldAccessor + ";").append("\n");
 		sb.append(prefix).append("  }").append("\n");
 		sb.append(prefix).append("}").append("\n");
