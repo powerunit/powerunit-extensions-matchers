@@ -104,8 +104,7 @@ public class ProvidesMatchersSubElementVisitor
 			TypeMirror typeMirrorForField) {
 		return removeIfNeededAndThenReturn(typeMirrorForField.accept(extractNameVisitor, false)
 				.map(f -> new FieldDescription(p, methodName, fieldName, f,
-						isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())), processingEnv, e,
-						typeMirrorForField)),
+						isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())), e)),
 				p);
 	}
 

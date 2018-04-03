@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
@@ -54,6 +55,7 @@ public class FieldDescription {
 	}
 
 	private final String fieldAccessor;
+	private final ProcessingEnvironment processingEnv;
 	private final String fieldName;
 	private final String methodFieldName;
 	private final String fieldType;
@@ -62,13 +64,14 @@ public class FieldDescription {
 	private final List<Function<String, String>> implGenerator;
 	private final List<Function<String, String>> dslGenerator;
 	private final List<Function<String, String>> additionalMatcherGenerator;
-	private final List<Function<String, String>> additionalMatcherFactoryGenerator;
-	private final ProcessingEnvironment processingEnv;
 	private final ProvidesMatchersAnnotatedElementMirror containingElementMirror;
 	private final boolean ignore;
 	private final Element fieldElement;
 	private final String generic;
 	private final String defaultReturnMethod;
+	private final String fullyQualifiedNameEnclosingClassOfField;
+	private final String enclosingClassOfFieldFullGeneric;
+	private final String enclosingClassOfFieldGeneric;
 
 	public static final class ExtracTypeVisitor extends TypeKindVisitor8<Type, ProcessingEnvironment> {
 
@@ -197,15 +200,20 @@ public class FieldDescription {
 	}
 
 	public FieldDescription(ProvidesMatchersAnnotatedElementMirror containingElementMirror, String fieldAccessor,
-			String fieldName, String fieldType, boolean isInSameRound, ProcessingEnvironment processingEnv,
-			Element fieldElement, TypeMirror fieldTypeMirror) {
+			String fieldName, String fieldType, boolean isInSameRound, Element fieldElement) {
+		TypeMirror fieldTypeMirror = (fieldElement instanceof ExecutableElement)
+				? ((ExecutableElement) fieldElement).getReturnType() : fieldElement.asType();
 		this.containingElementMirror = containingElementMirror;
+		this.enclosingClassOfFieldFullGeneric = containingElementMirror.getFullGeneric();
+		this.enclosingClassOfFieldGeneric = containingElementMirror.getGeneric();
+		this.fullyQualifiedNameEnclosingClassOfField = containingElementMirror
+				.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher();
+		this.processingEnv = containingElementMirror.getProcessingEnv();
 		this.fieldAccessor = fieldAccessor;
 		this.fieldName = fieldName;
 		this.methodFieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
 		this.fieldType = fieldType;
 		this.type = new ExtracTypeVisitor().visit(fieldTypeMirror, processingEnv);
-		this.processingEnv = processingEnv;
 		this.ignore = fieldElement.getAnnotation(IgnoreInMatcher.class) != null;
 		this.fieldElement = fieldElement;
 		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
@@ -215,7 +223,6 @@ public class FieldDescription {
 		List<Function<String, String>> tmp1 = new ArrayList<>();
 		List<Function<String, String>> tmp2 = new ArrayList<>();
 		List<Function<String, String>> tmp3 = new ArrayList<>();
-		List<Function<String, String>> tmp4 = new ArrayList<>();
 		tmp1.add(this::getImplementationForDefault);
 		tmp2.add(this::getDslForDefault);
 		if (fullyQualifiedNameMatcherInSameRound != null
@@ -228,9 +235,7 @@ public class FieldDescription {
 			tmp2.add(this::getDslForArray);
 			break;
 		case OPTIONAL:
-			tmp1.add(this::getImplementationForOptional);
 			tmp2.add(this::getDslForOptional);
-			tmp4.add(this::getOptionalFactoryMatcher);
 			break;
 		case COMPARABLE:
 			tmp2.add(this::getDslForComparable);
@@ -244,6 +249,9 @@ public class FieldDescription {
 		case SET:
 			tmp2.add(this::getDslForIterable);
 			tmp2.add(this::getDslForCollection);
+			if (!"".equals(generic)) {
+				tmp2.add(this::getDslForIterableWithGeneric);
+			}
 			break;
 		case SUPPLIER:
 			tmp2.add(this::getDslForSupplier);
@@ -260,7 +268,6 @@ public class FieldDescription {
 		implGenerator = Collections.unmodifiableList(tmp1);
 		dslGenerator = Collections.unmodifiableList(tmp2);
 		additionalMatcherGenerator = Collections.unmodifiableList(tmp3);
-		additionalMatcherFactoryGenerator = Collections.unmodifiableList(tmp4);
 	}
 
 	public Function<String, String> generateFunctionForDSL(AddToMatcher a) {
@@ -275,9 +282,8 @@ public class FieldDescription {
 	}
 
 	public String getJavaDocFor(Optional<String> addToDescription, Optional<String> param, Optional<String> see) {
-		String linkToAccessor = "{@link "
-				+ containingElementMirror.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher() + "#"
-				+ getFieldAccessor() + " This field is accessed by using this approach}.";
+		String linkToAccessor = "{@link " + fullyQualifiedNameEnclosingClassOfField + "#" + getFieldAccessor()
+				+ " This field is accessed by using this approach}.";
 		StringBuilder sb = new StringBuilder();
 		sb.append("/**").append("\n");
 		sb.append(" * Add a validation on the field `").append(fieldName).append("`");
@@ -346,17 +352,6 @@ public class FieldDescription {
 				fullyQualifiedNameMatcherInSameRound + "." + name + "Matcher tmp = "
 						+ fullyQualifiedNameMatcherInSameRound + "." + lname + "WithParent(this);\n" + fieldName
 						+ "(tmp);\nreturn tmp;");
-	}
-
-	public String getImplementationForOptional(String prefix) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(buildImplementation(prefix, generateDeclaration("IsPresent", ""),
-				fieldName + " = " + methodFieldName + "Matcher.isPresent();\nreturn this;"));
-
-		sb.append(buildImplementation(prefix, generateDeclaration("IsNotPresent", ""),
-				fieldName + " = " + methodFieldName + "Matcher.isNotPresent();\nreturn this;"));
-
-		return sb.toString();
 	}
 
 	public String getImplementationInterface(String prefix) {
@@ -442,49 +437,50 @@ public class FieldDescription {
 				generateDeclaration("IsEmptyIterable", ""),
 				"(org.hamcrest.Matcher)org.hamcrest.Matchers.emptyIterable()"));
 
-		if (!"".equals(generic)) {
-			sb.append(buildDefaultDsl(prefix,
-					getJavaDocFor(Optional.of("that the iterable contains the received elements"),
-							Optional.of("elements the elements"),
-							Optional.of("org.hamcrest.Matchers#contains(java.lang.Object[])")),
-					generateDeclaration("Contains", generic + "... elements"),
-					"org.hamcrest.Matchers.contains(elements)"));
+		return sb.toString();
+	}
 
-			sb.append(buildDefaultDsl(prefix,
-					getJavaDocFor(Optional.of("that the iterable contains the received elements, using matchers"),
-							Optional.of("matchersOnElements the matchers on the elements"),
-							Optional.of("org.hamcrest.Matchers#contains(org.hamcrest.Matcher[])")),
-					generateDeclaration("Contains", "org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
-					"org.hamcrest.Matchers.contains(matchersOnElements)"));
+	public String getDslForIterableWithGeneric(String prefix) {
+		StringBuilder sb = new StringBuilder();
 
-			sb.append(buildDefaultDsl(prefix,
-					getJavaDocFor(Optional.of("that the iterable contains the received elements in any order"),
-							Optional.of("elements the elements"),
-							Optional.of("org.hamcrest.Matchers#containsInAnyOrder(java.lang.Object[])")),
-					generateDeclaration("ContainsInAnyOrder", generic + "... elements"),
-					"org.hamcrest.Matchers.containsInAnyOrder(elements)"));
+		sb.append(buildDefaultDsl(prefix,
+				getJavaDocFor(Optional.of("that the iterable contains the received elements"),
+						Optional.of("elements the elements"),
+						Optional.of("org.hamcrest.Matchers#contains(java.lang.Object[])")),
+				generateDeclaration("Contains", generic + "... elements"), "org.hamcrest.Matchers.contains(elements)"));
 
-			sb.append(buildDefaultDsl(prefix,
-					getJavaDocFor(
-							Optional.of(
-									"that the iterable contains the received elements, using matchers in any order"),
-							Optional.of("matchersOnElements the matchers on the elements"),
-							Optional.of("org.hamcrest.Matchers#containsInAnyOrder(org.hamcrest.Matcher[])")),
-					generateDeclaration("ContainsInAnyOrder",
-							"org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
-					"org.hamcrest.Matchers.containsInAnyOrder(matchersOnElements)"));
+		sb.append(buildDefaultDsl(prefix,
+				getJavaDocFor(Optional.of("that the iterable contains the received elements, using matchers"),
+						Optional.of("matchersOnElements the matchers on the elements"),
+						Optional.of("org.hamcrest.Matchers#contains(org.hamcrest.Matcher[])")),
+				generateDeclaration("Contains", "org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
+				"org.hamcrest.Matchers.contains(matchersOnElements)"));
 
-			sb.append(
-					buildDefaultDsl(prefix,
-							getJavaDocFor(
-									Optional.of(
-											"that the iterable contains the received elements, using list of matcher"),
-									Optional.of("matchersOnElements the matchers on the elements"),
-									Optional.of("org.hamcrest.Matchers#contains(java.util.List)")),
-							generateDeclaration("Contains",
-									"java.util.List<org.hamcrest.Matcher<? super " + generic + ">> matchersOnElements"),
-					"org.hamcrest.Matchers.contains(matchersOnElements)"));
-		}
+		sb.append(buildDefaultDsl(prefix,
+				getJavaDocFor(Optional.of("that the iterable contains the received elements in any order"),
+						Optional.of("elements the elements"),
+						Optional.of("org.hamcrest.Matchers#containsInAnyOrder(java.lang.Object[])")),
+				generateDeclaration("ContainsInAnyOrder", generic + "... elements"),
+				"org.hamcrest.Matchers.containsInAnyOrder(elements)"));
+
+		sb.append(
+				buildDefaultDsl(prefix,
+						getJavaDocFor(
+								Optional.of(
+										"that the iterable contains the received elements, using matchers in any order"),
+								Optional.of("matchersOnElements the matchers on the elements"),
+								Optional.of("org.hamcrest.Matchers#containsInAnyOrder(org.hamcrest.Matcher[])")),
+						generateDeclaration("ContainsInAnyOrder",
+								"org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
+				"org.hamcrest.Matchers.containsInAnyOrder(matchersOnElements)"));
+
+		sb.append(buildDefaultDsl(prefix,
+				getJavaDocFor(Optional.of("that the iterable contains the received elements, using list of matcher"),
+						Optional.of("matchersOnElements the matchers on the elements"),
+						Optional.of("org.hamcrest.Matchers#contains(java.util.List)")),
+				generateDeclaration("Contains",
+						"java.util.List<org.hamcrest.Matcher<? super " + generic + ">> matchersOnElements"),
+				"org.hamcrest.Matchers.contains(matchersOnElements)"));
 
 		return sb.toString();
 	}
@@ -504,13 +500,19 @@ public class FieldDescription {
 	public String getDslForOptional(String prefix) {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append(buildDsl(prefix,
+		sb.append(buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("with a present optional"), Optional.empty(), Optional.empty()),
-				generateDeclaration("IsPresent", "")));
+				generateDeclaration("IsPresent", ""),
+				"new org.hamcrest.CustomTypeSafeMatcher<" + fieldType
+						+ ">(\"optional is present\"){ public boolean matchesSafely(" + fieldType
+						+ " o) {return o.isPresent();}}"));
 
-		sb.append(buildDsl(prefix,
+		sb.append(buildDefaultDsl(prefix,
 				getJavaDocFor(Optional.of("with a not present optional"), Optional.empty(), Optional.empty()),
-				generateDeclaration("IsNotPresent", "")));
+				generateDeclaration("IsNotPresent", ""),
+				"new org.hamcrest.CustomTypeSafeMatcher<" + fieldType
+						+ ">(\"optional is not present\"){ public boolean matchesSafely(" + fieldType
+						+ " o) {return !o.isPresent();}}"));
 
 		return sb.toString();
 	}
@@ -560,8 +562,7 @@ public class FieldDescription {
 	public String getSupplierMatcher(String prefix) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(prefix)
-				.append("private static class " + methodFieldName + "MatcherSupplier"
-						+ containingElementMirror.getFullGeneric()
+				.append("private static class " + methodFieldName + "MatcherSupplier" + enclosingClassOfFieldFullGeneric
 						+ " extends org.hamcrest.FeatureMatcher<java.util.function.Supplier<" + generic + ">," + generic
 						+ "> {")
 				.append("\n");
@@ -578,32 +579,12 @@ public class FieldDescription {
 		return sb.toString();
 	}
 
-	public String getOptionalFactoryMatcher(String prefix) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(prefix).append("  public static " + methodFieldName + "Matcher isPresent() {").append("\n");
-		sb.append(prefix).append("    return new " + methodFieldName + "Matcher(new org.hamcrest.CustomTypeSafeMatcher<"
-				+ fieldType + ">(\"optional is present\"){").append("\n");
-		sb.append(prefix).append("      public boolean matchesSafely(" + fieldType + " o) {return o.isPresent();}")
-				.append("\n");
-		sb.append(prefix).append("    });").append("\n");
-		sb.append(prefix).append("  }").append("\n");
-		sb.append(prefix).append("  public static " + methodFieldName + "Matcher isNotPresent() {").append("\n");
-		sb.append(prefix).append("    return new " + methodFieldName + "Matcher(new org.hamcrest.CustomTypeSafeMatcher<"
-				+ fieldType + ">(\"optional is not present\"){").append("\n");
-		sb.append(prefix).append("      public boolean matchesSafely(" + fieldType + " o) {return !o.isPresent();}")
-				.append("\n");
-		sb.append(prefix).append("    });").append("\n");
-		sb.append(prefix).append("  }").append("\n");
-		return sb.toString();
-	}
-
 	public String getMatcherForField(String prefix) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(prefix)
-				.append("private static class " + methodFieldName + "Matcher" + containingElementMirror.getFullGeneric()
-						+ " extends org.hamcrest.FeatureMatcher<"
-						+ containingElementMirror.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher()
-						+ containingElementMirror.getGeneric() + "," + fieldType + "> {")
+				.append("private static class " + methodFieldName + "Matcher" + enclosingClassOfFieldFullGeneric
+						+ " extends org.hamcrest.FeatureMatcher<" + fullyQualifiedNameEnclosingClassOfField
+						+ enclosingClassOfFieldGeneric + "," + fieldType + "> {")
 				.append("\n");
 		sb.append(prefix).append(
 				"  public " + methodFieldName + "Matcher(org.hamcrest.Matcher<? super " + fieldType + "> matcher) {")
@@ -611,12 +592,8 @@ public class FieldDescription {
 		sb.append(prefix).append("    super(matcher,\"" + fieldName + "\",\"" + fieldName + "\");").append("\n");
 		sb.append(prefix).append("  }").append("\n");
 
-		additionalMatcherFactoryGenerator.stream().map(f -> f.apply(prefix)).forEach(sb::append);
-
-		sb.append(prefix)
-				.append("  protected " + fieldType + " featureValueOf("
-						+ containingElementMirror.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher()
-						+ containingElementMirror.getGeneric() + " actual) {")
+		sb.append(prefix).append("  protected " + fieldType + " featureValueOf("
+				+ fullyQualifiedNameEnclosingClassOfField + enclosingClassOfFieldGeneric + " actual) {")
 				.append("\n");
 		sb.append(prefix).append("    return actual." + fieldAccessor + ";").append("\n");
 		sb.append(prefix).append("  }").append("\n");
