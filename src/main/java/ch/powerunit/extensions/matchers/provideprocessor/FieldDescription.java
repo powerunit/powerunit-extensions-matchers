@@ -228,28 +228,25 @@ public class FieldDescription {
 				Arrays.stream(a.body()).map(l -> l).collect(joining("\n")) + "\n" + "return this;");
 	}
 
+	public String getJavaDocFor(String addToDescription, String param, String see) {
+		return getJavaDocFor(Optional.of(addToDescription), Optional.of(param), Optional.of(see));
+	}
+
 	public String getJavaDocFor(Optional<String> addToDescription, Optional<String> param, Optional<String> see) {
 		String linkToAccessor = "{@link " + fullyQualifiedNameEnclosingClassOfField + "#" + getFieldAccessor()
 				+ " This field is accessed by using this approach}.";
 		StringBuilder sb = new StringBuilder();
-		sb.append("/**").append("\n");
-		sb.append(" * Add a validation on the field `").append(fieldName).append("`");
+		sb.append("/**\n * Add a validation on the field `").append(fieldName).append("`");
 		addToDescription.ifPresent(t -> sb.append(" ").append(t));
-		sb.append(".").append("\n");
-		sb.append(" * <p>").append("\n");
-		sb.append(" *").append("\n");
-		sb.append(" * <i>").append(linkToAccessor).append("</i>").append("\n");
-		sb.append(" * <p>").append("\n");
+		sb.append(".\n * <p>").append("\n *\n * <i>").append(linkToAccessor).append("</i>\n * <p>\n");
 		sb.append(
-				" * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> ")
-				.append("\n");
+				" * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n");
 		sb.append(
-				" * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.")
-				.append("\n");
-		sb.append(" *").append("\n");
-		param.ifPresent(t -> Arrays.stream(t.split("\n"))
-				.forEach(l -> sb.append(" * @param ").append(l).append(".").append("\n")));
-		sb.append(" * @return the DSL to continue the construction of the matcher.").append("\n");
+				" * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n");
+		sb.append(" *\n");
+		param.ifPresent(
+				t -> Arrays.stream(t.split("\n")).forEach(l -> sb.append(" * @param ").append(l).append(".\n")));
+		sb.append(" * @return the DSL to continue the construction of the matcher.\n");
 		see.ifPresent(t -> sb.append(" * @see ").append(t).append("\n"));
 		sb.append(" */");
 		return sb.toString();
@@ -346,21 +343,18 @@ public class FieldDescription {
 		StringBuilder sb = new StringBuilder();
 
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that the string contains another one"),
-						Optional.of("other the string is contains in the other one"),
-						Optional.of("org.hamcrest.Matchers#containsString(java.lang.String)")),
+				getJavaDocFor("that the string contains another one", "other the string is contains in the other one",
+						"org.hamcrest.Matchers#containsString(java.lang.String)"),
 				generateDeclaration("ContainsString", "String other"), "org.hamcrest.Matchers.containsString(other)"));
 
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that the string starts with another one"),
-						Optional.of("other the string to use to compare"),
-						Optional.of("org.hamcrest.Matchers#startsWith(java.lang.String)")),
+				getJavaDocFor("that the string starts with another one", "other the string to use to compare",
+						"org.hamcrest.Matchers#startsWith(java.lang.String)"),
 				generateDeclaration("StartsWith", "String other"), "org.hamcrest.Matchers.startsWith(other)"));
 
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that the string ends with another one"),
-						Optional.of("other the string to use to compare"),
-						Optional.of("org.hamcrest.Matchers#endsWith(java.lang.String)")),
+				getJavaDocFor("that the string ends with another one", "other the string to use to compare",
+						"org.hamcrest.Matchers#endsWith(java.lang.String)"),
 				generateDeclaration("EndsWith", "String other"), "org.hamcrest.Matchers.endsWith(other)"));
 
 		return sb.toString();
@@ -380,42 +374,38 @@ public class FieldDescription {
 		StringBuilder sb = new StringBuilder();
 
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that the iterable contains the received elements"),
-						Optional.of("elements the elements"),
-						Optional.of("org.hamcrest.Matchers#contains(java.lang.Object[])")),
+				getJavaDocFor("that the iterable contains the received elements", "elements the elements",
+						"org.hamcrest.Matchers#contains(java.lang.Object[])"),
 				generateDeclaration("Contains", generic + "... elements"), "org.hamcrest.Matchers.contains(elements)"));
 
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that the iterable contains the received elements, using matchers"),
-						Optional.of("matchersOnElements the matchers on the elements"),
-						Optional.of("org.hamcrest.Matchers#contains(org.hamcrest.Matcher[])")),
+				getJavaDocFor("that the iterable contains the received elements, using matchers",
+						"matchersOnElements the matchers on the elements",
+						"org.hamcrest.Matchers#contains(org.hamcrest.Matcher[])"),
 				generateDeclaration("Contains", "org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
 				"org.hamcrest.Matchers.contains(matchersOnElements)"));
 
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that the iterable contains the received elements in any order"),
-						Optional.of("elements the elements"),
-						Optional.of("org.hamcrest.Matchers#containsInAnyOrder(java.lang.Object[])")),
+				getJavaDocFor("that the iterable contains the received elements in any order", "elements the elements",
+						"org.hamcrest.Matchers#containsInAnyOrder(java.lang.Object[])"),
 				generateDeclaration("ContainsInAnyOrder", generic + "... elements"),
 				"org.hamcrest.Matchers.containsInAnyOrder(elements)"));
 
-		sb.append(
-				buildDefaultDsl(
-						getJavaDocFor(
-								Optional.of(
-										"that the iterable contains the received elements, using matchers in any order"),
-								Optional.of("matchersOnElements the matchers on the elements"),
-								Optional.of("org.hamcrest.Matchers#containsInAnyOrder(org.hamcrest.Matcher[])")),
-						generateDeclaration("ContainsInAnyOrder",
-								"org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
+		sb.append(buildDefaultDsl(
+				getJavaDocFor("that the iterable contains the received elements, using matchers in any order",
+						"matchersOnElements the matchers on the elements",
+						"org.hamcrest.Matchers#containsInAnyOrder(org.hamcrest.Matcher[])"),
+				generateDeclaration("ContainsInAnyOrder",
+						"org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
 				"org.hamcrest.Matchers.containsInAnyOrder(matchersOnElements)"));
 
-		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that the iterable contains the received elements, using list of matcher"),
-						Optional.of("matchersOnElements the matchers on the elements"),
-						Optional.of("org.hamcrest.Matchers#contains(java.util.List)")),
-				generateDeclaration("Contains",
-						"java.util.List<org.hamcrest.Matcher<? super " + generic + ">> matchersOnElements"),
+		sb.append(
+				buildDefaultDsl(
+						getJavaDocFor("that the iterable contains the received elements, using list of matcher",
+								"matchersOnElements the matchers on the elements",
+								"org.hamcrest.Matchers#contains(java.util.List)"),
+						generateDeclaration("Contains",
+								"java.util.List<org.hamcrest.Matcher<? super " + generic + ">> matchersOnElements"),
 				"org.hamcrest.Matchers.contains(matchersOnElements)"));
 
 		return sb.toString();
@@ -455,36 +445,29 @@ public class FieldDescription {
 
 	public String getDslForComparable() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that this field is equals to another one, using the compareTo method"),
-						Optional.of("value the value to compare with"),
-						Optional.of("org.hamcrest.Matchers#comparesEqualTo(java.lang.Comparable)")),
+		sb.append(buildDefaultDsl(getJavaDocFor("that this field is equals to another one, using the compareTo method",
+				"value the value to compare with", "org.hamcrest.Matchers#comparesEqualTo(java.lang.Comparable)"),
 				generateDeclaration("ComparesEqualTo", fieldType + " value"),
 				"org.hamcrest.Matchers.comparesEqualTo(value)"));
 
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that this field is less than another value"),
-						Optional.of("value the value to compare with"),
-						Optional.of("org.hamcrest.Matchers#lessThan(java.lang.Comparable)")),
+				getJavaDocFor("that this field is less than another value", "value the value to compare with",
+						"org.hamcrest.Matchers#lessThan(java.lang.Comparable)"),
 				generateDeclaration("LessThan", fieldType + " value"), "org.hamcrest.Matchers.lessThan(value)"));
 
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that this field is less or equal than another value"),
-						Optional.of("value the value to compare with"),
-						Optional.of("org.hamcrest.Matchers#lessThanOrEqualTo(java.lang.Comparable)")),
+				getJavaDocFor("that this field is less or equal than another value", "value the value to compare with",
+						"org.hamcrest.Matchers#lessThanOrEqualTo(java.lang.Comparable)"),
 				generateDeclaration("LessThanOrEqualTo", fieldType + " value"),
 				"org.hamcrest.Matchers.lessThanOrEqualTo(value)"));
 
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that this field is greater than another value"),
-						Optional.of("value the value to compare with"),
-						Optional.of("org.hamcrest.Matchers#greaterThan(java.lang.Comparable)")),
+				getJavaDocFor("that this field is greater than another value", "value the value to compare with",
+						"org.hamcrest.Matchers#greaterThan(java.lang.Comparable)"),
 				generateDeclaration("GreaterThan", fieldType + " value"), "org.hamcrest.Matchers.greaterThan(value)"));
 
-		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that this field is greater or equal than another value"),
-						Optional.of("value the value to compare with"),
-						Optional.of("org.hamcrest.Matchers#greaterThanOrEqualTo(java.lang.Comparable)")),
+		sb.append(buildDefaultDsl(getJavaDocFor("that this field is greater or equal than another value",
+				"value the value to compare with", "org.hamcrest.Matchers#greaterThanOrEqualTo(java.lang.Comparable)"),
 				generateDeclaration("GreaterThanOrEqualTo", fieldType + " value"),
 				"org.hamcrest.Matchers.greaterThanOrEqualTo(value)"));
 
