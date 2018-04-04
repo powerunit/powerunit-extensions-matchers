@@ -19,13 +19,15 @@
  */
 package ch.powerunit.extensions.matchers.factoryprocessor;
 
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
@@ -64,7 +66,7 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor implements Pr
 			build = Collections.emptyList();
 		} else {
 			build = Arrays.stream(targets.split("\\s*;\\s*")).map(e -> new FactoryGroup(this, e))
-					.collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+					.collect(collectingAndThen(toList(), Collections::unmodifiableList));
 		}
 		factoryAnnotationTE = processingEnv.getElementUtils().getTypeElement("org.hamcrest.Factory");
 	}

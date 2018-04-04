@@ -19,6 +19,8 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -30,7 +32,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -109,7 +110,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 					"META-INF/" + getClass().getName() + "/matchers.xml",
 					allGeneratedMatchers.getGeneratedMatcher().stream()
 							.map(g -> g.getMirror().getTypeElementForClassAnnotatedWithProvideMatcher())
-							.collect(Collectors.toList()).toArray(new Element[0]));
+							.collect(toList()).toArray(new Element[0]));
 			try (OutputStream os = jfo.openOutputStream();) {
 				Marshaller m = JAXBContext.newInstance(GeneratedMatchers.class).createMarshaller();
 				m.setProperty("jaxb.formatted.output", true);
@@ -130,7 +131,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			JavaFileObject jfo = processingEnv.getFiler().createSourceFile(factory,
 					allGeneratedMatchers.getGeneratedMatcher().stream()
 							.map(g -> g.getMirror().getTypeElementForClassAnnotatedWithProvideMatcher())
-							.collect(Collectors.toList()).toArray(new Element[0]));
+							.collect(toList()).toArray(new Element[0]));
 			try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
 				String cName = factory.replaceAll("^([^.]+\\.)*", "");
 				CommonUtils.generateFactoryClass(wjfo, ProvidesMatchersAnnotationsProcessor.class,
@@ -159,10 +160,10 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 						elementsWithIgnore, elementsWithAddToMatcher, elementsWithAddToMatchers))
 				.forEach(a -> alias.put(a.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher(), a));
 
-		factories.addAll(alias.values().stream().map(ProvidesMatchersAnnotatedElementMirror::process)
-				.collect(Collectors.toList()));
-		allGeneratedMatchers.getGeneratedMatcher().addAll(alias.values().stream()
-				.map(ProvidesMatchersAnnotatedElementMirror::asXml).collect(Collectors.toList()));
+		factories
+				.addAll(alias.values().stream().map(ProvidesMatchersAnnotatedElementMirror::process).collect(toList()));
+		allGeneratedMatchers.getGeneratedMatcher()
+				.addAll(alias.values().stream().map(ProvidesMatchersAnnotatedElementMirror::asXml).collect(toList()));
 		doWarningForElement((Set) elementsWithIgnore, IgnoreInMatcher.class);
 		doWarningForElement((Set) elementsWithAddToMatcher, AddToMatcher.class);
 		doWarningForElement((Set) elementsWithAddToMatchers, AddToMatchers.class);
