@@ -41,7 +41,6 @@ import javax.tools.Diagnostic.Kind;
 
 import ch.powerunit.extensions.matchers.AddToMatcher;
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
-import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcherField;
 
@@ -143,22 +142,7 @@ public class FieldDescription {
 		if (isInSameRound) {
 			TypeElement typeElement = fieldTypeAsTypeElement;
 			if (typeElement != null) {
-				String simpleName = typeElement.getSimpleName().toString() + "Matchers";
-				String packageName = processingEnv.getElementUtils().getPackageOf(typeElement).getQualifiedName()
-						.toString();
-				String fullyQualifiedNameMatcher = typeElement.getQualifiedName().toString() + "Matchers";
-				ProvideMatchers pm = typeElement.getAnnotation(ProvideMatchers.class);
-				if (!"".equals(pm.matchersClassName())) {
-					fullyQualifiedNameMatcher = fullyQualifiedNameMatcher.replaceAll(simpleName + "$",
-							pm.matchersClassName());
-					simpleName = pm.matchersClassName();
-				}
-				if (!"".equals(pm.matchersPackageName())) {
-					fullyQualifiedNameMatcher = fullyQualifiedNameMatcher.replaceAll("^" + packageName,
-							pm.matchersPackageName());
-					packageName = pm.matchersPackageName();
-				}
-				return fullyQualifiedNameMatcher;
+				return new ProvideMatchersMirror(processingEnv, typeElement).getFullyQualifiedNameOfGeneratedClass();
 			}
 		}
 		return null;

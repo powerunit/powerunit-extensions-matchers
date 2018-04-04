@@ -54,6 +54,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private final String genericForChaining;
 	private final Set<? extends Element> elementsWithOtherAnnotation[];
 	private final List<FieldDescription> fields;
+	private final ProvideMatchersMirror provideMatcherMirror;
 
 	private List<FieldDescription> generateFields(TypeElement typeElement,
 			ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor) {
@@ -76,22 +77,11 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		this.processingEnv = processingEnv;
 		this.elementsWithOtherAnnotation = elementsWithOtherAnnotation;
 		this.fullyQualifiedNameOfClassAnnotatedWithProvideMatcher = typeElement.getQualifiedName().toString();
-		String tpackageName = processingEnv.getElementUtils().getPackageOf(typeElement).getQualifiedName().toString();
-		String toutputClassName = fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + "Matchers";
-		String tsimpleNameOfGeneratedClass = typeElement.getSimpleName().toString() + "Matchers";
-		ProvideMatchers pm = typeElement.getAnnotation(ProvideMatchers.class);
-		this.comments = pm.comments();
-		if (!"".equals(pm.matchersClassName())) {
-			toutputClassName = toutputClassName.replaceAll(tsimpleNameOfGeneratedClass + "$", pm.matchersClassName());
-			tsimpleNameOfGeneratedClass = pm.matchersClassName();
-		}
-		this.simpleNameOfGeneratedClass = tsimpleNameOfGeneratedClass;
-		if (!"".equals(pm.matchersPackageName())) {
-			toutputClassName = toutputClassName.replaceAll("^" + tpackageName, pm.matchersPackageName());
-			tpackageName = pm.matchersPackageName();
-		}
-		this.fullyQualifiedNameOfGeneratedClass = toutputClassName;
-		this.packageNameOfGeneratedClass = tpackageName;
+		this.provideMatcherMirror = new ProvideMatchersMirror(processingEnv, typeElement);
+		this.fullyQualifiedNameOfGeneratedClass = provideMatcherMirror.getFullyQualifiedNameOfGeneratedClass();
+		this.simpleNameOfGeneratedClass = provideMatcherMirror.getSimpleNameOfGeneratedClass();
+		this.packageNameOfGeneratedClass = provideMatcherMirror.getPackageNameOfGeneratedClass();
+		this.comments = provideMatcherMirror.getComments();
 		this.simpleNameOfClassAnnotatedWithProvideMatcher = typeElement.getSimpleName().toString();
 		this.methodShortClassName = simpleNameOfClassAnnotatedWithProvideMatcher.substring(0, 1).toLowerCase()
 				+ simpleNameOfClassAnnotatedWithProvideMatcher.substring(1);
