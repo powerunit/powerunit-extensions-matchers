@@ -134,11 +134,4 @@ public class FieldDescriptionTest implements TestSuite {
 				"private static class FieldMatcher extends org.hamcrest.FeatureMatcher<fqn.sn,boolean> {\n  public FieldMatcher(org.hamcrest.Matcher<? super boolean> matcher) {\n    super(matcher,\"field\",\"field\");\n  }\n  protected boolean featureValueOf(fqn.sn actual) {\n    return actual.field();\n  }\n}\n");
 	}
 
-	@Test
-	public void testGetSupplierMatcher() {
-		FieldDescription undertest = new FieldDescription(provideMatchersAnnotatedElementMirror, "field", "boolean",
-				false, executableElement);
-		assertThat(undertest.getSupplierMatcher()).is(
-				"private static class FieldMatcherSupplier extends org.hamcrest.FeatureMatcher<java.util.function.Supplier<>,> {\n  public FieldMatcherSupplier(org.hamcrest.Matcher<? super > matcher) {\n    super(matcher,\"with supplier result\",\"with supplier result\");\n  }\n  protected  featureValueOf(java.util.function.Supplier<> actual) {\n    return actual.get();\n  }\n}\n");
-	}
 }
