@@ -547,17 +547,12 @@ public class FieldDescription {
 	}
 
 	public String generateMatcherBuilderReferenceFor(String generic) {
-		ProvidesMatchersAnnotatedElementMirror target = containingElementMirror.findMirrorFor(generic);
-		if (target != null) {
-			return target.getFullyQualifiedNameOfGeneratedClass() + "::" + target.getMethodShortClassName()
-					+ "WithSameValue";
-		}
-
-		return "org.hamcrest.Matchers::is";
+		return containingElementMirror.findMirrorFor(generic).map(
+				t -> t.getFullyQualifiedNameOfGeneratedClass() + "::" + t.getMethodShortClassName() + "WithSameValue")
+				.orElse("org.hamcrest.Matchers::is");
 	}
 
 	public String getFieldCopyForList(String lhs, String rhs) {
-
 		return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + fieldName
 				+ "(org.hamcrest.Matchers.nullValue()); } else if (" + rhs + "." + fieldAccessor + ".isEmpty()) {" + lhs
 				+ "." + fieldName + "IsEmptyIterable(); } else {" + lhs + "." + fieldName + "Contains(" + rhs + "."

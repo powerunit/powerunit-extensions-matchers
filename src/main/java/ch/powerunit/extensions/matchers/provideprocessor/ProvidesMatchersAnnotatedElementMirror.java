@@ -734,8 +734,8 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		return typeElementForClassAnnotatedWithProvideMatcher;
 	}
 
-	public ProvidesMatchersAnnotatedElementMirror findMirrorFor(String name) {
-		return findMirrorForTypeName.apply(name);
+	public Optional<ProvidesMatchersAnnotatedElementMirror> findMirrorFor(String name) {
+		return Optional.ofNullable(findMirrorForTypeName.apply(name));
 	}
 
 	public String getMethodShortClassName() {
