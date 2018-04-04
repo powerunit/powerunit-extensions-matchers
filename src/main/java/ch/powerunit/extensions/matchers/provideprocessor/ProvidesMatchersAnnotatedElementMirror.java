@@ -54,7 +54,6 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private final String genericForChaining;
 	private final Set<? extends Element> elementsWithOtherAnnotation[];
 	private final List<FieldDescription> fields;
-	private final ProvideMatchersMirror provideMatcherMirror;
 
 	private List<FieldDescription> generateFields(TypeElement typeElement,
 			ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor) {
@@ -77,7 +76,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		this.processingEnv = processingEnv;
 		this.elementsWithOtherAnnotation = elementsWithOtherAnnotation;
 		this.fullyQualifiedNameOfClassAnnotatedWithProvideMatcher = typeElement.getQualifiedName().toString();
-		this.provideMatcherMirror = new ProvideMatchersMirror(processingEnv, typeElement);
+		ProvideMatchersMirror provideMatcherMirror = new ProvideMatchersMirror(processingEnv, typeElement);
 		this.fullyQualifiedNameOfGeneratedClass = provideMatcherMirror.getFullyQualifiedNameOfGeneratedClass();
 		this.simpleNameOfGeneratedClass = provideMatcherMirror.getSimpleNameOfGeneratedClass();
 		this.packageNameOfGeneratedClass = provideMatcherMirror.getPackageNameOfGeneratedClass();
