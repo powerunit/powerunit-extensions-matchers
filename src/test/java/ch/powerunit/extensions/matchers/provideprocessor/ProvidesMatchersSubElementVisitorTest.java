@@ -14,9 +14,11 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import org.mockito.Mock;
@@ -62,6 +64,12 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 	private Element elementType;
 
 	@Mock
+	private Elements elements;
+
+	@Mock
+	private TypeElement typeElement;
+
+	@Mock
 	private Types types;
 
 	@Mock
@@ -73,8 +81,10 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 	private void prepare() {
 		underTest = new ProvidesMatchersSubElementVisitor(processingEnv, a -> false);
 		when(fieldDescription.getFieldElement()).thenReturn(targetElement);
+		when(processingEnv.getElementUtils()).thenReturn(elements);
 		when(processingEnv.getMessager()).thenReturn(messager);
 		when(processingEnv.getTypeUtils()).thenReturn(types);
+		when(elements.getTypeElement(Mockito.anyString())).thenReturn(typeElement);
 		when(types.asElement(typeMirror)).thenReturn(elementType);
 		when(variableElement.getSimpleName()).thenReturn(variableName);
 		when(variableName.toString()).thenReturn("fn");
@@ -88,6 +98,7 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 				.thenReturn(Type.NA);
 		when(executableElement.getReturnType()).thenReturn(typeMirror);
 		when(executableElement.getAnnotationsByType(AddToMatcher.class)).thenReturn(new AddToMatcher[] {});
+		when(providesMatchersAnnotatedElementMirror.getProcessingEnv()).thenReturn(processingEnv);
 	}
 
 	private ProvidesMatchersSubElementVisitor underTest;

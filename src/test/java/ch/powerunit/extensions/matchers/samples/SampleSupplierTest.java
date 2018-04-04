@@ -1,5 +1,7 @@
 package ch.powerunit.extensions.matchers.samples;
 
+import java.util.Arrays;
+
 import ch.powerunit.Ignore;
 import ch.powerunit.Test;
 import ch.powerunit.TestSuite;
@@ -23,5 +25,12 @@ public class SampleSupplierTest implements TestSuite {
 		SampleSupplier ss = new SampleSupplier();
 		ss.s1 = () -> "x";
 		assertThat(ss).is(SampleSupplierMatchers.sampleSupplierWith().s1SupplierResult(is("x")));
+	}
+
+	@Test
+	public void testSupplierNotNullList() {
+		SampleSupplier ss = new SampleSupplier();
+		ss.s2 = () -> Arrays.asList("x");
+		assertThat(ss).is(SampleSupplierMatchers.sampleSupplierWith().s2SupplierResult(contains("x")));
 	}
 }

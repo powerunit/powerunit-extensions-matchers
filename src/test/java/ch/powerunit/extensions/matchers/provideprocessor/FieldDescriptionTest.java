@@ -8,6 +8,7 @@ import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
@@ -60,6 +61,9 @@ public class FieldDescriptionTest implements TestSuite {
 
 	@Mock
 	private Elements elements;
+
+	@Mock
+	private TypeElement typeElement;
 
 	@Mock
 	private Types types;
@@ -135,10 +139,14 @@ public class FieldDescriptionTest implements TestSuite {
 	}
 
 	@Test
-	public void testGetSupplierMatcher() {
-		FieldDescription undertest = new FieldDescription(provideMatchersAnnotatedElementMirror, "field", "boolean",
-				false, executableElement);
-		assertThat(undertest.getSupplierMatcher()).is(
-				"private static class FieldMatcherSupplier extends org.hamcrest.FeatureMatcher<java.util.function.Supplier<>,> {\n  public FieldMatcherSupplier(org.hamcrest.Matcher<? super > matcher) {\n    super(matcher,\"with supplier result\",\"with supplier result\");\n  }\n  protected  featureValueOf(java.util.function.Supplier<> actual) {\n    return actual.get();\n  }\n}\n");
+	public void testComputeFullyQualifiedNameMatcherInSameRoundFalseThenNull() {
+		assertThat(FieldDescription.computeFullyQualifiedNameMatcherInSameRound(processingEnv, false, typeElement))
+				.isNull();
 	}
+
+	@Test
+	public void testComputeFullyQualifiedNameMatcherInSameRoundTrueNullThenNull() {
+		assertThat(FieldDescription.computeFullyQualifiedNameMatcherInSameRound(processingEnv, true, null)).isNull();
+	}
+
 }

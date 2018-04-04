@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -33,7 +34,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.TypeKindVisitor8;
@@ -41,7 +41,6 @@ import javax.tools.Diagnostic.Kind;
 
 import ch.powerunit.extensions.matchers.AddToMatcher;
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
-import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcherField;
 
@@ -63,7 +62,6 @@ public class FieldDescription {
 	private final Type type;
 	private final List<Supplier<String>> implGenerator;
 	private final List<Supplier<String>> dslGenerator;
-	private final List<Supplier<String>> additionalMatcherGenerator;
 	private final ProvidesMatchersAnnotatedElementMirror containingElementMirror;
 	private final boolean ignore;
 	private final Element fieldElement;
@@ -72,46 +70,12 @@ public class FieldDescription {
 	private final String fullyQualifiedNameEnclosingClassOfField;
 	private final String enclosingClassOfFieldFullGeneric;
 	private final String enclosingClassOfFieldGeneric;
+	private final TypeElement fieldTypeAsTypeElement;
 
 	public static final class ExtracTypeVisitor extends TypeKindVisitor8<Type, ProcessingEnvironment> {
 
 		@Override
-		public Type visitPrimitiveAsBoolean(PrimitiveType t, ProcessingEnvironment processingEnv) {
-			return Type.NA;
-		}
-
-		@Override
-		public Type visitPrimitiveAsByte(PrimitiveType t, ProcessingEnvironment processingEnv) {
-			return Type.NA;
-		}
-
-		@Override
-		public Type visitPrimitiveAsShort(PrimitiveType t, ProcessingEnvironment processingEnv) {
-			return Type.NA;
-		}
-
-		@Override
-		public Type visitPrimitiveAsInt(PrimitiveType t, ProcessingEnvironment processingEnv) {
-			return Type.NA;
-		}
-
-		@Override
-		public Type visitPrimitiveAsLong(PrimitiveType t, ProcessingEnvironment processingEnv) {
-			return Type.NA;
-		}
-
-		@Override
-		public Type visitPrimitiveAsChar(PrimitiveType t, ProcessingEnvironment processingEnv) {
-			return Type.NA;
-		}
-
-		@Override
-		public Type visitPrimitiveAsFloat(PrimitiveType t, ProcessingEnvironment processingEnv) {
-			return Type.NA;
-		}
-
-		@Override
-		public Type visitPrimitiveAsDouble(PrimitiveType t, ProcessingEnvironment processingEnv) {
+		protected Type defaultAction(TypeMirror t, ProcessingEnvironment processingEnv) {
 			return Type.NA;
 		}
 
@@ -174,29 +138,46 @@ public class FieldDescription {
 	}
 
 	public static final String computeFullyQualifiedNameMatcherInSameRound(ProcessingEnvironment processingEnv,
-			boolean isInSameRound, String fieldType) {
-		if (isInSameRound) {
-			TypeElement typeElement = processingEnv.getElementUtils().getTypeElement(fieldType);
-			if (typeElement != null) {
-				String simpleName = typeElement.getSimpleName().toString() + "Matchers";
-				String packageName = processingEnv.getElementUtils().getPackageOf(typeElement).getQualifiedName()
-						.toString();
-				String fullyQualifiedNameMatcher = typeElement.getQualifiedName().toString() + "Matchers";
-				ProvideMatchers pm = typeElement.getAnnotation(ProvideMatchers.class);
-				if (!"".equals(pm.matchersClassName())) {
-					fullyQualifiedNameMatcher = fullyQualifiedNameMatcher.replaceAll(simpleName + "$",
-							pm.matchersClassName());
-					simpleName = pm.matchersClassName();
-				}
-				if (!"".equals(pm.matchersPackageName())) {
-					fullyQualifiedNameMatcher = fullyQualifiedNameMatcher.replaceAll("^" + packageName,
-							pm.matchersPackageName());
-					packageName = pm.matchersPackageName();
-				}
-				return fullyQualifiedNameMatcher;
-			}
+			boolean isInSameRound, TypeElement fieldTypeAsTypeElement) {
+		if (isInSameRound && fieldTypeAsTypeElement != null) {
+			return new ProvideMatchersMirror(processingEnv, fieldTypeAsTypeElement)
+					.getFullyQualifiedNameOfGeneratedClass();
 		}
 		return null;
+	}
+
+	public static final List<Supplier<String>> getDslSupplierFor(FieldDescription target, Type type, String generic) {
+		List<Supplier<String>> tmp2 = new ArrayList<>();
+		switch (type) {
+		case ARRAY:
+			tmp2.add(target::getDslForArray);
+			break;
+		case OPTIONAL:
+			tmp2.add(target::getDslForOptional);
+			break;
+		case COMPARABLE:
+			tmp2.add(target::getDslForComparable);
+			break;
+		case STRING:
+			tmp2.add(target::getDslForComparable);
+			tmp2.add(target::getDslForString);
+			break;
+		case COLLECTION:
+		case LIST:
+		case SET:
+			tmp2.add(target::getDslForIterable);
+			tmp2.add(target::getDslForCollection);
+			if (!"".equals(generic)) {
+				tmp2.add(target::getDslForIterableWithGeneric);
+			}
+			break;
+		case SUPPLIER:
+			tmp2.add(target::getDslForSupplier);
+			break;
+		default:
+			// Nothing
+		}
+		return tmp2;
 	}
 
 	public FieldDescription(ProvidesMatchersAnnotatedElementMirror containingElementMirror, String fieldName,
@@ -219,56 +200,22 @@ public class FieldDescription {
 		this.fieldElement = fieldElement;
 		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
 		this.generic = computeGenericInformation(fieldTypeMirror);
+		this.fieldTypeAsTypeElement = processingEnv.getElementUtils().getTypeElement(fieldType);
 		this.fullyQualifiedNameMatcherInSameRound = computeFullyQualifiedNameMatcherInSameRound(processingEnv,
-				isInSameRound, fieldType);
-		List<Supplier<String>> tmp1 = new ArrayList<>();
-		List<Supplier<String>> tmp2 = new ArrayList<>();
-		List<Supplier<String>> tmp3 = new ArrayList<>();
-		tmp1.add(this::getImplementationForDefault);
-		tmp2.add(this::getDslForDefault);
-		if (fullyQualifiedNameMatcherInSameRound != null
-				&& processingEnv.getElementUtils().getTypeElement(fieldType).getTypeParameters().isEmpty()) {
+				isInSameRound, fieldTypeAsTypeElement);
+		List<Supplier<String>> tmp1 = new ArrayList<>(Arrays.asList(this::getImplementationForDefault));
+		List<Supplier<String>> tmp2 = new ArrayList<>(Arrays.asList(this::getDslForDefault));
+		if (fullyQualifiedNameMatcherInSameRound != null && fieldTypeAsTypeElement.getTypeParameters().isEmpty()) {
 			tmp1.add(this::getImplementationForDefaultChaining);
 			tmp2.add(this::getDslForDefaultChaining);
 		}
-		switch (type) {
-		case ARRAY:
-			tmp2.add(this::getDslForArray);
-			break;
-		case OPTIONAL:
-			tmp2.add(this::getDslForOptional);
-			break;
-		case COMPARABLE:
-			tmp2.add(this::getDslForComparable);
-			break;
-		case STRING:
-			tmp2.add(this::getDslForComparable);
-			tmp2.add(this::getDslForString);
-			break;
-		case COLLECTION:
-		case LIST:
-		case SET:
-			tmp2.add(this::getDslForIterable);
-			tmp2.add(this::getDslForCollection);
-			if (!"".equals(generic)) {
-				tmp2.add(this::getDslForIterableWithGeneric);
-			}
-			break;
-		case SUPPLIER:
-			tmp2.add(this::getDslForSupplier);
-			tmp3.add(this::getSupplierMatcher);
-			break;
-		default:
-			// Nothing
-		}
+		tmp2.addAll(getDslSupplierFor(this, type, generic));
 		AddToMatcher addToMatchers[] = fieldElement.getAnnotationsByType(AddToMatcher.class);
-		tmp1.addAll(Arrays.stream(addToMatchers).map(this::generateFunctionForImplementation).filter(t -> t != null)
-				.collect(Collectors.toList()));
-		tmp2.addAll(Arrays.stream(addToMatchers).map(this::generateFunctionForDSL).filter(t -> t != null)
-				.collect(Collectors.toList()));
+		Arrays.stream(addToMatchers).map(this::generateFunctionForImplementation).filter(Objects::nonNull)
+				.forEach(tmp1::add);
+		Arrays.stream(addToMatchers).map(this::generateFunctionForDSL).filter(Objects::nonNull).forEach(tmp2::add);
 		implGenerator = Collections.unmodifiableList(tmp1);
 		dslGenerator = Collections.unmodifiableList(tmp2);
-		additionalMatcherGenerator = Collections.unmodifiableList(tmp3);
 	}
 
 	public Supplier<String> generateFunctionForDSL(AddToMatcher a) {
@@ -331,18 +278,13 @@ public class FieldDescription {
 	}
 
 	public String getImplementationForDefault() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(
-				buildImplementation(generateDeclaration("", "org.hamcrest.Matcher<? super " + fieldType + "> matcher"),
-						fieldName + "= new " + methodFieldName + "Matcher(matcher);\nreturn this;"));
-
-		return sb.toString();
+		return buildImplementation(generateDeclaration("", "org.hamcrest.Matcher<? super " + fieldType + "> matcher"),
+				fieldName + "= new " + methodFieldName + "Matcher(matcher);\nreturn this;");
 	}
 
 	public String getImplementationForDefaultChaining() {
 		// Can't use buildDeclaration here
-		TypeElement targetElement = processingEnv.getElementUtils().getTypeElement(fieldType);
-		String name = targetElement.getSimpleName().toString();
+		String name = fieldTypeAsTypeElement.getSimpleName().toString();
 		String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
 		return buildImplementation(
 				fullyQualifiedNameMatcherInSameRound + "." + name + "Matcher" + "<" + defaultReturnMethod + "> "
@@ -363,7 +305,8 @@ public class FieldDescription {
 								" Validate that the result of the supplier is accepted by another matcher (the result of the execution must be stable)"),
 						Optional.of("matcherOnResult a Matcher on result of the supplier execution"), Optional.empty()),
 				generateDeclaration("SupplierResult", "org.hamcrest.Matcher<? super " + generic + "> matcherOnResult"),
-				"new " + methodFieldName + "MatcherSupplier(matcherOnResult)");
+				"asFeatureMatcher(\"with supplier result\",(java.util.function.Supplier<" + generic
+						+ "> s) -> s.get(),matcherOnResult)");
 	}
 
 	public String getDslForDefault() {
@@ -395,8 +338,7 @@ public class FieldDescription {
 
 	public String getDslForDefaultChaining() {
 		// can'ut use generateDeclaration here
-		TypeElement targetElement = processingEnv.getElementUtils().getTypeElement(fieldType);
-		String name = targetElement.getSimpleName().toString();
+		String name = fieldTypeAsTypeElement.getSimpleName().toString();
 		return buildDsl(
 				getJavaDocFor(Optional.of("by starting a matcher for this field"), Optional.empty(), Optional.empty()),
 				fullyQualifiedNameMatcherInSameRound + "." + name + "Matcher" + "<" + defaultReturnMethod + "> "
@@ -404,7 +346,6 @@ public class FieldDescription {
 	}
 
 	public String getDslForString() {
-
 		StringBuilder sb = new StringBuilder();
 
 		sb.append(buildDefaultDsl(
@@ -557,23 +498,6 @@ public class FieldDescription {
 		return dslGenerator.stream().map(g -> g.get()).collect(Collectors.joining("\n"));
 	}
 
-	public String getSupplierMatcher() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("private static class " + methodFieldName + "MatcherSupplier" + enclosingClassOfFieldFullGeneric
-				+ " extends org.hamcrest.FeatureMatcher<java.util.function.Supplier<" + generic + ">," + generic
-				+ "> {").append("\n");
-		sb.append("  public " + methodFieldName + "MatcherSupplier(org.hamcrest.Matcher<? super " + generic
-				+ "> matcher) {").append("\n");
-		sb.append("    super(matcher,\"with supplier result\",\"with supplier result\");").append("\n");
-		sb.append("  }").append("\n");
-		sb.append("  protected " + generic + " featureValueOf(java.util.function.Supplier<" + generic + "> actual) {")
-				.append("\n");
-		sb.append("    return actual.get();").append("\n");
-		sb.append("  }").append("\n");
-		sb.append("}").append("\n");
-		return sb.toString();
-	}
-
 	public String getMatcherForField() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("private static class " + methodFieldName + "Matcher" + enclosingClassOfFieldFullGeneric
@@ -590,8 +514,6 @@ public class FieldDescription {
 		sb.append("  }").append("\n");
 		sb.append("}").append("\n");
 
-		additionalMatcherGenerator.stream().map(f -> f.get()).forEach(sb::append);
-
 		return sb.toString();
 	}
 
@@ -599,29 +521,24 @@ public class FieldDescription {
 		return lhs + "." + fieldName + "(org.hamcrest.Matchers.is(" + rhs + "." + fieldAccessor + "))";
 	}
 
-	public String getSameValueMatcherFor(String target, TypeElement targetElement) {
-		String name = targetElement.getSimpleName().toString();
+	public String getSameValueMatcherFor(String target) {
+		String name = fieldTypeAsTypeElement.getSimpleName().toString();
 		String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
 		return fullyQualifiedNameMatcherInSameRound + "." + lname + "WithSameValue(" + target + ")";
 	}
 
-	public String getFieldCopySameRound(String lhs, String rhs, TypeElement targetElement) {
+	public String getFieldCopySameRound(String lhs, String rhs) {
 		return lhs + "." + fieldName + "(" + rhs + "." + fieldAccessor + "==null?org.hamcrest.Matchers.nullValue():"
-				+ getSameValueMatcherFor(rhs + "." + fieldAccessor, targetElement) + ")";
+				+ getSameValueMatcherFor(rhs + "." + fieldAccessor) + ")";
 	}
 
 	public String generateMatcherBuilderReferenceFor(String generic) {
-		ProvidesMatchersAnnotatedElementMirror target = containingElementMirror.findMirrorFor(generic);
-		if (target != null) {
-			return target.getFullyQualifiedNameOfGeneratedClass() + "::" + target.getMethodShortClassName()
-					+ "WithSameValue";
-		}
-
-		return "org.hamcrest.Matchers::is";
+		return containingElementMirror.findMirrorFor(generic).map(
+				t -> t.getFullyQualifiedNameOfGeneratedClass() + "::" + t.getMethodShortClassName() + "WithSameValue")
+				.orElse("org.hamcrest.Matchers::is");
 	}
 
 	public String getFieldCopyForList(String lhs, String rhs) {
-
 		return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + fieldName
 				+ "(org.hamcrest.Matchers.nullValue()); } else if (" + rhs + "." + fieldAccessor + ".isEmpty()) {" + lhs
 				+ "." + fieldName + "IsEmptyIterable(); } else {" + lhs + "." + fieldName + "Contains(" + rhs + "."
@@ -635,9 +552,8 @@ public class FieldDescription {
 			return getFieldCopyForList(lhs, rhs);
 		}
 
-		if (fullyQualifiedNameMatcherInSameRound != null
-				&& processingEnv.getElementUtils().getTypeElement(fieldType).getTypeParameters().isEmpty()) {
-			return getFieldCopySameRound(lhs, rhs, processingEnv.getElementUtils().getTypeElement(fieldType));
+		if (fullyQualifiedNameMatcherInSameRound != null && fieldTypeAsTypeElement.getTypeParameters().isEmpty()) {
+			return getFieldCopySameRound(lhs, rhs);
 		}
 		return getFieldCopyDefault(lhs, rhs);
 	}
@@ -650,9 +566,7 @@ public class FieldDescription {
 	}
 
 	public String asDescribeTo() {
-		return new StringBuilder()
-				.append("description.appendText(\"[\").appendDescriptionOf(" + fieldName + ").appendText(\"]\\n\");")
-				.toString();
+		return "description.appendText(\"[\").appendDescriptionOf(" + fieldName + ").appendText(\"]\\n\");";
 	}
 
 	public String asMatcherField() {

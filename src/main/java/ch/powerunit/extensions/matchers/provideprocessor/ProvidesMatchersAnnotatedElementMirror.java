@@ -1,5 +1,8 @@
 package ch.powerunit.extensions.matchers.provideprocessor;
 
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.joining;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.Instant;
@@ -18,7 +21,6 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
-import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 
@@ -76,44 +78,26 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		this.processingEnv = processingEnv;
 		this.elementsWithOtherAnnotation = elementsWithOtherAnnotation;
 		this.fullyQualifiedNameOfClassAnnotatedWithProvideMatcher = typeElement.getQualifiedName().toString();
-		String tpackageName = processingEnv.getElementUtils().getPackageOf(typeElement).getQualifiedName().toString();
-		String toutputClassName = fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + "Matchers";
-		String tsimpleNameOfGeneratedClass = typeElement.getSimpleName().toString() + "Matchers";
-		ProvideMatchers pm = typeElement.getAnnotation(ProvideMatchers.class);
-		this.comments = pm.comments();
-		if (!"".equals(pm.matchersClassName())) {
-			toutputClassName = toutputClassName.replaceAll(tsimpleNameOfGeneratedClass + "$", pm.matchersClassName());
-			tsimpleNameOfGeneratedClass = pm.matchersClassName();
-		}
-		this.simpleNameOfGeneratedClass = tsimpleNameOfGeneratedClass;
-		if (!"".equals(pm.matchersPackageName())) {
-			toutputClassName = toutputClassName.replaceAll("^" + tpackageName, pm.matchersPackageName());
-			tpackageName = pm.matchersPackageName();
-		}
-		this.fullyQualifiedNameOfGeneratedClass = toutputClassName;
-		this.packageNameOfGeneratedClass = tpackageName;
+		ProvideMatchersMirror provideMatcherMirror = new ProvideMatchersMirror(processingEnv, typeElement);
+		this.fullyQualifiedNameOfGeneratedClass = provideMatcherMirror.getFullyQualifiedNameOfGeneratedClass();
+		this.simpleNameOfGeneratedClass = provideMatcherMirror.getSimpleNameOfGeneratedClass();
+		this.packageNameOfGeneratedClass = provideMatcherMirror.getPackageNameOfGeneratedClass();
+		this.comments = provideMatcherMirror.getComments();
 		this.simpleNameOfClassAnnotatedWithProvideMatcher = typeElement.getSimpleName().toString();
 		this.methodShortClassName = simpleNameOfClassAnnotatedWithProvideMatcher.substring(0, 1).toLowerCase()
 				+ simpleNameOfClassAnnotatedWithProvideMatcher.substring(1);
-		TypeElement objectTE = processingEnv.getElementUtils().getTypeElement("java.lang.Object");
-		this.hasParent = !objectTE.asType().equals(typeElement.getSuperclass());
+		this.hasParent = !processingEnv.getElementUtils().getTypeElement("java.lang.Object").asType()
+				.equals(typeElement.getSuperclass());
 		this.hasParentInSameRound = isInSameRound.test(typeElement);
 		this.fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher = typeElement.getSuperclass().toString();
 		this.typeElementForSuperClassOfClassAnnotatedWithProvideMatcher = (TypeElement) processingEnv.getTypeUtils()
 				.asElement(typeElement.getSuperclass());
-
-		if (typeElement.getTypeParameters().size() > 0) {
-			this.generic = "<"
-					+ typeElement.getTypeParameters().stream().map(t -> t.toString()).collect(Collectors.joining(","))
-					+ ">";
-			this.fullGeneric = "<" + typeElement.getTypeParameters().stream()
-					.map(t -> t.toString() + " extends "
-							+ t.getBounds().stream().map(b -> b.toString()).collect(Collectors.joining("&")))
-					.collect(Collectors.joining(",")) + ">";
-		} else {
-			this.generic = "";
-			this.fullGeneric = "";
-		}
+		this.generic = typeElement.getTypeParameters().stream().map(t -> t.toString())
+				.collect(collectingAndThen(joining(","), r -> r.isEmpty() ? "" : ("<" + r + ">")));
+		this.fullGeneric = typeElement.getTypeParameters().stream()
+				.map(t -> t.toString() + " extends "
+						+ t.getBounds().stream().map(b -> b.toString()).collect(joining("&")))
+				.collect(collectingAndThen(joining(","), r -> r.isEmpty() ? "" : ("<" + r + ">")));
 		this.paramJavadoc = extractParamCommentFromJavadoc(processingEnv.getElementUtils().getDocComment(typeElement));
 		this.genericParent = getAddParentToGeneric(generic);
 		this.genericNoParent = getAddNoParentToGeneric(generic);
@@ -124,9 +108,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		this.findMirrorForTypeName = findMirrorForTypeName;
 		this.genericForChaining = genericParent.replaceAll("^<_PARENT", "<" + fullyQualifiedNameOfGeneratedClass + "."
 				+ simpleNameOfGeneratedInterfaceMatcher + genericNoParent);
-		ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor = new ProvidesMatchersSubElementVisitor(
-				processingEnv, isInSameRound);
-		this.fields = generateFields(typeElement, providesMatchersSubElementVisitor);
+		this.fields = generateFields(typeElement, new ProvidesMatchersSubElementVisitor(processingEnv, isInSameRound));
 	}
 
 	public String getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() {
@@ -734,8 +716,8 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		return typeElementForClassAnnotatedWithProvideMatcher;
 	}
 
-	public ProvidesMatchersAnnotatedElementMirror findMirrorFor(String name) {
-		return findMirrorForTypeName.apply(name);
+	public Optional<ProvidesMatchersAnnotatedElementMirror> findMirrorFor(String name) {
+		return Optional.ofNullable(findMirrorForTypeName.apply(name));
 	}
 
 	public String getMethodShortClassName() {
