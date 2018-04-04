@@ -8,6 +8,7 @@ import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
@@ -60,6 +61,9 @@ public class FieldDescriptionTest implements TestSuite {
 
 	@Mock
 	private Elements elements;
+
+	@Mock
+	private TypeElement typeElement;
 
 	@Mock
 	private Types types;
@@ -132,6 +136,17 @@ public class FieldDescriptionTest implements TestSuite {
 				false, executableElement);
 		assertThat(undertest.getMatcherForField()).is(
 				"private static class FieldMatcher extends org.hamcrest.FeatureMatcher<fqn.sn,boolean> {\n  public FieldMatcher(org.hamcrest.Matcher<? super boolean> matcher) {\n    super(matcher,\"field\",\"field\");\n  }\n  protected boolean featureValueOf(fqn.sn actual) {\n    return actual.field();\n  }\n}\n");
+	}
+
+	@Test
+	public void testComputeFullyQualifiedNameMatcherInSameRoundFalseThenNull() {
+		assertThat(FieldDescription.computeFullyQualifiedNameMatcherInSameRound(processingEnv, false, typeElement))
+				.isNull();
+	}
+
+	@Test
+	public void testComputeFullyQualifiedNameMatcherInSameRoundTrueNullThenNull() {
+		assertThat(FieldDescription.computeFullyQualifiedNameMatcherInSameRound(processingEnv, true, null)).isNull();
 	}
 
 }
