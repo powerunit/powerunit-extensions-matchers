@@ -149,4 +149,28 @@ public class FieldDescriptionTest implements TestSuite {
 		assertThat(FieldDescription.computeFullyQualifiedNameMatcherInSameRound(processingEnv, true, null)).isNull();
 	}
 
+	@Test
+	public void testBuildImplementationOneLine() {
+		assertThatBiFunction(FieldDescription::buildImplementation, "name", "ligne1")
+				.is("@Override\npublic name {\n  ligne1\n}\n");
+	}
+
+	@Test
+	public void testBuildImplementationTwoLine() {
+		assertThatBiFunction(FieldDescription::buildImplementation, "name", "ligne1\nligne2")
+				.is("@Override\npublic name {\n  ligne1\n  ligne2\n}\n");
+	}
+
+	@Test
+	public void testBuildDsl() {
+		assertThatBiFunction(FieldDescription::buildDsl, "javadoc", "declaration").is("javadoc\ndeclaration;\n");
+	}
+
+	@Test
+	public void testBuildDefaultDsl() {
+		FieldDescription undertest = new FieldDescription(provideMatchersAnnotatedElementMirror, "field", "boolean",
+				false, executableElement);
+		assertThat(undertest.buildDefaultDsl("javadoc", "declaration", "inner"))
+				.is("javadoc\ndefault declaration{\n  return field(inner);\n}");
+	}
 }

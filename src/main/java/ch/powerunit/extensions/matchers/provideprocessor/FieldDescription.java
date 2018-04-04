@@ -255,21 +255,18 @@ public class FieldDescription {
 		return sb.toString();
 	}
 
-	public String buildImplementation(String declaration, String body) {
-		return new StringBuilder().append("@Override").append("\n").append("public ").append(declaration).append(" {\n")
-				.append("  ").append(body.replaceAll("\\R", "\n" + "  ")).append("\n").append("}").append("\n")
-				.toString();
+	public static String buildImplementation(String declaration, String body) {
+		return String.format("@Override\npublic %1$s {\n  %2$s\n}\n", declaration, body.replaceAll("\\R", "\n" + "  "));
 	}
 
-	public String buildDsl(String javadoc, String declaration) {
-		return new StringBuilder().append(javadoc.replaceAll("\\R", "\n")).append("\n").append(declaration)
-				.append(";\n").toString();
+	public static String buildDsl(String javadoc, String declaration) {
+		return String.format("%1$s\n%2$s;\n", javadoc.replaceAll("\\R", "\n"), declaration);
 	}
 
 	public String buildDefaultDsl(String javadoc, String declaration, String innerMatcher) {
-		return new StringBuilder().append(javadoc.replaceAll("\\R", "\n")).append("\n").append("default ")
-				.append(declaration).append("{\n").append("  ").append("return ").append(fieldName).append("(")
-				.append(innerMatcher).append(");\n").append("}").toString();
+		return String.format("%1$s\ndefault %2$s{\n  return %3$s(%4$s);\n}", javadoc.replaceAll("\\R", "\n"),
+				declaration, fieldName, innerMatcher);
+
 	}
 
 	public String generateDeclaration(String postFix, String arguments) {
