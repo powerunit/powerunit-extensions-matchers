@@ -139,13 +139,12 @@ public class FieldDescription {
 
 	public static final String computeFullyQualifiedNameMatcherInSameRound(ProcessingEnvironment processingEnv,
 			boolean isInSameRound, TypeElement fieldTypeAsTypeElement) {
-		if (isInSameRound) {
-			TypeElement typeElement = fieldTypeAsTypeElement;
-			if (typeElement != null) {
-				return new ProvideMatchersMirror(processingEnv, typeElement).getFullyQualifiedNameOfGeneratedClass();
-			}
+		if (isInSameRound && fieldTypeAsTypeElement != null) {
+			return new ProvideMatchersMirror(processingEnv, fieldTypeAsTypeElement)
+					.getFullyQualifiedNameOfGeneratedClass();
 		}
 		return null;
+
 	}
 
 	public FieldDescription(ProvidesMatchersAnnotatedElementMirror containingElementMirror, String fieldName,
