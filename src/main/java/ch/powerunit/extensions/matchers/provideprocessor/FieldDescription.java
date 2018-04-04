@@ -54,7 +54,6 @@ public class FieldDescription {
 	}
 
 	private final String fieldAccessor;
-	private final ProcessingEnvironment processingEnv;
 	private final String fieldName;
 	private final String methodFieldName;
 	private final String fieldType;
@@ -189,7 +188,7 @@ public class FieldDescription {
 		this.enclosingClassOfFieldGeneric = containingElementMirror.getGeneric();
 		this.fullyQualifiedNameEnclosingClassOfField = containingElementMirror
 				.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher();
-		this.processingEnv = containingElementMirror.getProcessingEnv();
+		ProcessingEnvironment processingEnv = containingElementMirror.getProcessingEnv();
 		this.fieldAccessor = fieldElement.getSimpleName().toString()
 				+ ((fieldElement instanceof ExecutableElement) ? "()" : "");
 		this.fieldName = fieldName;
