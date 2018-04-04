@@ -144,7 +144,40 @@ public class FieldDescription {
 					.getFullyQualifiedNameOfGeneratedClass();
 		}
 		return null;
+	}
 
+	public static final List<Supplier<String>> getDslSupplierFor(FieldDescription target, Type type, String generic) {
+		List<Supplier<String>> tmp2 = new ArrayList<>();
+		switch (type) {
+		case ARRAY:
+			tmp2.add(target::getDslForArray);
+			break;
+		case OPTIONAL:
+			tmp2.add(target::getDslForOptional);
+			break;
+		case COMPARABLE:
+			tmp2.add(target::getDslForComparable);
+			break;
+		case STRING:
+			tmp2.add(target::getDslForComparable);
+			tmp2.add(target::getDslForString);
+			break;
+		case COLLECTION:
+		case LIST:
+		case SET:
+			tmp2.add(target::getDslForIterable);
+			tmp2.add(target::getDslForCollection);
+			if (!"".equals(generic)) {
+				tmp2.add(target::getDslForIterableWithGeneric);
+			}
+			break;
+		case SUPPLIER:
+			tmp2.add(target::getDslForSupplier);
+			break;
+		default:
+			// Nothing
+		}
+		return tmp2;
 	}
 
 	public FieldDescription(ProvidesMatchersAnnotatedElementMirror containingElementMirror, String fieldName,
@@ -170,43 +203,13 @@ public class FieldDescription {
 		this.fieldTypeAsTypeElement = processingEnv.getElementUtils().getTypeElement(fieldType);
 		this.fullyQualifiedNameMatcherInSameRound = computeFullyQualifiedNameMatcherInSameRound(processingEnv,
 				isInSameRound, fieldTypeAsTypeElement);
-		List<Supplier<String>> tmp1 = new ArrayList<>();
-		List<Supplier<String>> tmp2 = new ArrayList<>();
-		tmp1.add(this::getImplementationForDefault);
-		tmp2.add(this::getDslForDefault);
+		List<Supplier<String>> tmp1 = new ArrayList<>(Arrays.asList(this::getImplementationForDefault));
+		List<Supplier<String>> tmp2 = new ArrayList<>(Arrays.asList(this::getDslForDefault));
 		if (fullyQualifiedNameMatcherInSameRound != null && fieldTypeAsTypeElement.getTypeParameters().isEmpty()) {
 			tmp1.add(this::getImplementationForDefaultChaining);
 			tmp2.add(this::getDslForDefaultChaining);
 		}
-		switch (type) {
-		case ARRAY:
-			tmp2.add(this::getDslForArray);
-			break;
-		case OPTIONAL:
-			tmp2.add(this::getDslForOptional);
-			break;
-		case COMPARABLE:
-			tmp2.add(this::getDslForComparable);
-			break;
-		case STRING:
-			tmp2.add(this::getDslForComparable);
-			tmp2.add(this::getDslForString);
-			break;
-		case COLLECTION:
-		case LIST:
-		case SET:
-			tmp2.add(this::getDslForIterable);
-			tmp2.add(this::getDslForCollection);
-			if (!"".equals(generic)) {
-				tmp2.add(this::getDslForIterableWithGeneric);
-			}
-			break;
-		case SUPPLIER:
-			tmp2.add(this::getDslForSupplier);
-			break;
-		default:
-			// Nothing
-		}
+		tmp2.addAll(getDslSupplierFor(this, type, generic));
 		AddToMatcher addToMatchers[] = fieldElement.getAnnotationsByType(AddToMatcher.class);
 		Arrays.stream(addToMatchers).map(this::generateFunctionForImplementation).filter(Objects::nonNull)
 				.forEach(tmp1::add);
