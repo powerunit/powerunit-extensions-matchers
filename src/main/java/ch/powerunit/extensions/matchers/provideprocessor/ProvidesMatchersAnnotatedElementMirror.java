@@ -1,19 +1,21 @@
 package ch.powerunit.extensions.matchers.provideprocessor;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.reducing;
+import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -59,15 +61,14 @@ public class ProvidesMatchersAnnotatedElementMirror {
 
 	private List<FieldDescription> generateFields(TypeElement typeElement,
 			ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor) {
-		return typeElement.getEnclosedElements().stream()
-				.map(ie -> ie.accept(providesMatchersSubElementVisitor,
-						this))
-				.filter(Optional::isPresent).map(t -> t.get()).collect(
-						Collectors.collectingAndThen(
-								Collectors.groupingBy(t -> t.getFieldName(),
-										Collectors.reducing(null,
-												(v1, v2) -> v1 == null ? v2 : v1.isIgnore() ? v1 : v2)),
-						c -> c == null ? Collections.emptyList() : c.values().stream().collect(Collectors.toList())));
+		return typeElement.getEnclosedElements()
+				.stream().map(
+						ie -> ie.accept(providesMatchersSubElementVisitor, this))
+				.filter(Optional::isPresent).map(t -> t.get())
+				.collect(collectingAndThen(
+						groupingBy(t -> t.getFieldName(),
+								reducing(null, (v1, v2) -> v1 == null ? v2 : v1.isIgnore() ? v1 : v2)),
+						c -> c == null ? emptyList() : c.values().stream().collect(toList())));
 	}
 
 	public ProvidesMatchersAnnotatedElementMirror(TypeElement typeElement, ProcessingEnvironment processingEnv,
@@ -177,8 +178,8 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				.append("      return converter.apply(actual);").append("\n").append("    }};").append("\n")
 				.append("  }").append("\n").append("\n");
 
-		sb.append(fields.stream().map(f -> f.getMatcherForField()).map(f -> addPrefix("  ", f))
-				.collect(Collectors.joining("\n"))).append("\n");
+		sb.append(fields.stream().map(f -> f.getMatcherForField()).map(f -> addPrefix("  ", f)).collect(joining("\n")))
+				.append("\n");
 		if (hasParent) {
 			sb.append("  private static class SuperClassMatcher").append(fullGeneric)
 					.append(" extends org.hamcrest.FeatureMatcher<")
@@ -214,7 +215,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				.append(" {").append("\n");
 
 		sb.append(fields.stream().filter(FieldDescription::isNotIgnore).map(f -> f.getDslInterface())
-				.map(s -> addPrefix("    ", s)).collect(Collectors.joining("\n"))).append("\n\n");
+				.map(s -> addPrefix("    ", s)).collect(joining("\n"))).append("\n\n");
 
 		sb.append(generateAsPublicInterface());
 		sb.append("  }").append("\n");
@@ -328,8 +329,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	public String generatePrivateImplementationConstructor(String argument, String... body) {
 		return new StringBuilder().append("    public ").append(simpleNameOfGeneratedImplementationMatcher).append("(")
 				.append(argument).append(") {\n")
-				.append(Arrays.stream(body).map(l -> "      " + l).collect(Collectors.joining("\n"))).append("    }")
-				.toString();
+				.append(Arrays.stream(body).map(l -> "      " + l).collect(joining("\n"))).append("    }").toString();
 	}
 
 	private String generatePrivateImplementation() {
@@ -338,7 +338,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				.append(fullGenericParent).append(" extends org.hamcrest.TypeSafeDiagnosingMatcher<")
 				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append("> implements ")
 				.append(getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + " {\n");
-		sb.append("    " + fields.stream().map(FieldDescription::asMatcherField).collect(Collectors.joining("\n    ")))
+		sb.append("    " + fields.stream().map(FieldDescription::asMatcherField).collect(joining("\n    ")))
 				.append("\n");
 
 		sb.append("    private final _PARENT _parentBuilder;\n\n").append(
@@ -364,7 +364,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		}
 
 		sb.append(fields.stream().filter(FieldDescription::isNotIgnore).map(f -> f.getImplementationInterface())
-				.map(s -> addPrefix("    ", s)).collect(Collectors.joining("\n"))).append("\n");
+				.map(s -> addPrefix("    ", s)).collect(joining("\n"))).append("\n");
 
 		sb.append(generatePrivateImplementationForMatchersSafely()).append("\n")
 				.append(generatedPrivateImplementationForDescribeTo()).append("\n\n")
@@ -619,7 +619,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	}
 
 	private String addPrefix(String prefix, String input) {
-		return "\n" + Arrays.stream(input.split("\\R")).map(l -> prefix + l).collect(Collectors.joining("\n")) + "\n";
+		return "\n" + Arrays.stream(input.split("\\R")).map(l -> prefix + l).collect(joining("\n")) + "\n";
 	}
 
 	private String generateJavaDocWithoutParamNeitherParent(String description, String moreDetails,
@@ -731,8 +731,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		gm.setSimpleNameGeneratedClass(simpleNameOfGeneratedClass);
 		gm.setSimpleNameInputClass(simpleNameOfClassAnnotatedWithProvideMatcher);
 		gm.setDslMethodNameStart(methodShortClassName);
-		gm.setGeneratedMatcherField(
-				fields.stream().map(FieldDescription::asGeneratedMatcherField).collect(Collectors.toList()));
+		gm.setGeneratedMatcherField(fields.stream().map(FieldDescription::asGeneratedMatcherField).collect(toList()));
 		gm.setMirror(this);
 		return gm;
 	}

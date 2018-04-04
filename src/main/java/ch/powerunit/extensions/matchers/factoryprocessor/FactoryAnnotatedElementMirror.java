@@ -19,8 +19,9 @@
  */
 package ch.powerunit.extensions.matchers.factoryprocessor;
 
+import static java.util.stream.Collectors.joining;
+
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -71,7 +72,7 @@ class FactoryAnnotatedElementMirror {
 				return pe.toString() + "."
 						+ factoryAnnotationsProcessor.getTypeUtils().asElement(ve.asType()).getSimpleName();
 			}
-		}).collect(Collectors.joining(",")));
+		}).collect(joining(",")));
 		sb.append(")");
 		String result = sb.toString();
 		if (element.isVarArgs()) {
@@ -91,11 +92,10 @@ class FactoryAnnotatedElementMirror {
 			sb.append("<");
 			sb.append(
 					element.getTypeParameters().stream()
-							.map((ve) -> ve.getSimpleName().toString()
-									+ (ve.getBounds().isEmpty() ? ""
-											: (" extends " + ve.getBounds().stream().map((b) -> b.toString())
-													.collect(Collectors.joining("&")))))
-							.collect(Collectors.joining(",")));
+							.map((ve) -> ve.getSimpleName().toString() + (ve.getBounds().isEmpty() ? ""
+									: (" extends "
+											+ ve.getBounds().stream().map((b) -> b.toString()).collect(joining("&")))))
+							.collect(joining(",")));
 			sb.append("> ");
 		}
 		sb.append(element.getReturnType().toString());
@@ -103,8 +103,7 @@ class FactoryAnnotatedElementMirror {
 		sb.append(element.getSimpleName().toString());
 		sb.append("(");
 		String param = element.getParameters().stream()
-				.map((ve) -> ve.asType().toString() + " " + ve.getSimpleName().toString())
-				.collect(Collectors.joining(","));
+				.map((ve) -> ve.asType().toString() + " " + ve.getSimpleName().toString()).collect(joining(","));
 		sb.append(element.isVarArgs() ? param.replaceAll("\\[\\](\\s[0-9a-zA-Z_]*$)??", "...") : param);
 		sb.append(") {").append("\n");
 		if (TypeKind.VOID != element.getReturnType().getKind()) {
@@ -119,8 +118,7 @@ class FactoryAnnotatedElementMirror {
 		sb.append(".");
 		sb.append(element.getSimpleName().toString());
 		sb.append("(");
-		sb.append(element.getParameters().stream().map((ve) -> ve.getSimpleName().toString())
-				.collect(Collectors.joining(",")));
+		sb.append(element.getParameters().stream().map((ve) -> ve.getSimpleName().toString()).collect(joining(",")));
 		sb.append(");").append("\n");
 		sb.append("  }").append("\n");
 		sb.append("\n");

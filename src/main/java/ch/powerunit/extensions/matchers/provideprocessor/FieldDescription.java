@@ -19,6 +19,8 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
+import static java.util.stream.Collectors.joining;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,7 +28,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -54,7 +55,6 @@ public class FieldDescription {
 	}
 
 	private final String fieldAccessor;
-	private final ProcessingEnvironment processingEnv;
 	private final String fieldName;
 	private final String methodFieldName;
 	private final String fieldType;
@@ -132,7 +132,7 @@ public class FieldDescription {
 	public static final String computeGenericInformation(TypeMirror fieldTypeMirror) {
 		if (fieldTypeMirror instanceof DeclaredType) {
 			DeclaredType dt = ((DeclaredType) fieldTypeMirror);
-			return dt.getTypeArguments().stream().map(Object::toString).collect(Collectors.joining(","));
+			return dt.getTypeArguments().stream().map(Object::toString).collect(joining(","));
 		}
 		return "";
 	}
@@ -189,7 +189,7 @@ public class FieldDescription {
 		this.enclosingClassOfFieldGeneric = containingElementMirror.getGeneric();
 		this.fullyQualifiedNameEnclosingClassOfField = containingElementMirror
 				.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher();
-		this.processingEnv = containingElementMirror.getProcessingEnv();
+		ProcessingEnvironment processingEnv = containingElementMirror.getProcessingEnv();
 		this.fieldAccessor = fieldElement.getSimpleName().toString()
 				+ ((fieldElement instanceof ExecutableElement) ? "()" : "");
 		this.fieldName = fieldName;
@@ -225,7 +225,7 @@ public class FieldDescription {
 
 	public Supplier<String> generateFunctionForImplementation(AddToMatcher a) {
 		return () -> buildImplementation(generateDeclaration(a.suffix(), a.argument()),
-				Arrays.stream(a.body()).map(l -> l).collect(Collectors.joining("\n")) + "\n" + "return this;");
+				Arrays.stream(a.body()).map(l -> l).collect(joining("\n")) + "\n" + "return this;");
 	}
 
 	public String getJavaDocFor(Optional<String> addToDescription, Optional<String> param, Optional<String> see) {
@@ -295,7 +295,7 @@ public class FieldDescription {
 	}
 
 	public String getImplementationInterface() {
-		return implGenerator.stream().map(g -> g.get()).collect(Collectors.joining("\n"));
+		return implGenerator.stream().map(g -> g.get()).collect(joining("\n"));
 	}
 
 	public String getDslForSupplier() {
@@ -495,7 +495,7 @@ public class FieldDescription {
 	}
 
 	public String getDslInterface() {
-		return dslGenerator.stream().map(g -> g.get()).collect(Collectors.joining("\n"));
+		return dslGenerator.stream().map(g -> g.get()).collect(joining("\n"));
 	}
 
 	public String getMatcherForField() {
