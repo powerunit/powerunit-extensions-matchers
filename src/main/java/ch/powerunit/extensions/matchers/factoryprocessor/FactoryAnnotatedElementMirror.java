@@ -30,6 +30,8 @@ import javax.lang.model.type.TypeKind;
 
 class FactoryAnnotatedElementMirror {
 
+	private static final String VAR_ARG_REGEX = "\\[\\](\\s[0-9a-zA-Z_]*$)??";
+
 	private final ExecutableElement element;
 
 	private final Optional<String> doc;
@@ -76,17 +78,16 @@ class FactoryAnnotatedElementMirror {
 		sb.append(")");
 		String result = sb.toString();
 		if (element.isVarArgs()) {
-			result = result.replaceAll("\\[\\](\\s[0-9a-zA-Z_]*$)??", "...");
+			result = result.replaceAll(VAR_ARG_REGEX, "...");
 		}
 		return result;
 	}
 
 	public String generateFactory() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("  // " + element.getSimpleName()).append("\n");
 		sb.append("  /**\n   * " + doc.map(t -> t.replaceAll("\n", "\n   * ").replaceAll("  * $", "\n"))
-				.orElse("No javadoc found from the source method.")).append("\n");
-		sb.append("   * @see " + getSeeValue() + "\n   */").append("\n");
+				.orElse("No javadoc found from the source method.")).append("\n   * @see " + getSeeValue() + "\n   */")
+				.append("\n");
 		sb.append("  default ");
 		if (!element.getTypeParameters().isEmpty()) {
 			sb.append("<");
@@ -98,30 +99,20 @@ class FactoryAnnotatedElementMirror {
 							.collect(joining(",")));
 			sb.append("> ");
 		}
-		sb.append(element.getReturnType().toString());
-		sb.append(" ");
-		sb.append(element.getSimpleName().toString());
-		sb.append("(");
+		sb.append(element.getReturnType().toString()).append(" ").append(element.getSimpleName().toString())
+				.append("(");
 		String param = element.getParameters().stream()
 				.map((ve) -> ve.asType().toString() + " " + ve.getSimpleName().toString()).collect(joining(","));
-		sb.append(element.isVarArgs() ? param.replaceAll("\\[\\](\\s[0-9a-zA-Z_]*$)??", "...") : param);
-		sb.append(") {").append("\n");
-		if (TypeKind.VOID != element.getReturnType().getKind()) {
-			sb.append("    return ");
-		} else {
-			sb.append("    ");
-		}
+		sb.append(element.isVarArgs() ? param.replaceAll(VAR_ARG_REGEX, "...") : param);
+		sb.append(") {").append("\n")
+				.append(TypeKind.VOID != element.getReturnType().getKind() ? "    return " : "    ");
 		sb.append(factoryAnnotationsProcessor.getElementUtils().getPackageOf(element.getEnclosingElement())
-				.getQualifiedName().toString());
-		sb.append(".");
-		sb.append(element.getEnclosingElement().getSimpleName().toString());
-		sb.append(".");
-		sb.append(element.getSimpleName().toString());
-		sb.append("(");
-		sb.append(element.getParameters().stream().map((ve) -> ve.getSimpleName().toString()).collect(joining(",")));
-		sb.append(");").append("\n");
-		sb.append("  }").append("\n");
-		sb.append("\n");
+				.getQualifiedName().toString()).append(".")
+				.append(element.getEnclosingElement().getSimpleName().toString()).append(".")
+				.append(element.getSimpleName().toString()).append("(").append(element.getParameters().stream()
+						.map((ve) -> ve.getSimpleName().toString()).collect(joining(",")))
+				.append(");\n");
+		sb.append("  }\n\n");
 		return sb.toString();
 	}
 
