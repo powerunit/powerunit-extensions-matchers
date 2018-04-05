@@ -25,7 +25,7 @@ import java.util.Optional;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 
 class FactoryAnnotatedElementMirror {
@@ -61,26 +61,26 @@ class FactoryAnnotatedElementMirror {
 		sb.append(factoryAnnotationsProcessor.getElementUtils().getPackageOf(element.getEnclosingElement())
 				.getQualifiedName()).append(".").append(element.getEnclosingElement().getSimpleName().toString())
 				.append("#").append(element.getSimpleName().toString()).append("(");
-		sb.append(element.getParameters().stream().map((ve) -> {
-			Element e = factoryAnnotationsProcessor.getTypeUtils().asElement(ve.asType());
-			if (e == null) {
-				return factoryAnnotationsProcessor.getTypeUtils().erasure(ve.asType()).toString();
-			} else {
-				if (ve.asType().getKind() == TypeKind.TYPEVAR) {
-					return factoryAnnotationsProcessor.getTypeUtils().erasure(ve.asType()).toString();
-				}
-
-				PackageElement pe = factoryAnnotationsProcessor.getElementUtils().getPackageOf(e);
-				return pe.toString() + "."
-						+ factoryAnnotationsProcessor.getTypeUtils().asElement(ve.asType()).getSimpleName();
-			}
-		}).collect(joining(",")));
+		sb.append(element.getParameters().stream().map(this::convertParameterForSee).collect(joining(",")));
 		sb.append(")");
 		String result = sb.toString();
 		if (element.isVarArgs()) {
 			result = result.replaceAll(VAR_ARG_REGEX, "...");
 		}
 		return result;
+	}
+
+	private String convertParameterForSee(VariableElement ve) {
+		Element e = factoryAnnotationsProcessor.getTypeUtils().asElement(ve.asType());
+		if (e == null) {
+			return factoryAnnotationsProcessor.getTypeUtils().erasure(ve.asType()).toString();
+		} else {
+			if (ve.asType().getKind() == TypeKind.TYPEVAR) {
+				return factoryAnnotationsProcessor.getTypeUtils().erasure(ve.asType()).toString();
+			}
+		}
+		return factoryAnnotationsProcessor.getElementUtils().getPackageOf(e).toString() + "."
+				+ factoryAnnotationsProcessor.getTypeUtils().asElement(ve.asType()).getSimpleName();
 	}
 
 	public String generateFactory() {

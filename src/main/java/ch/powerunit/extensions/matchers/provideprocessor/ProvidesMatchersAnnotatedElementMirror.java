@@ -405,20 +405,14 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private String generateDSLStarter(PrintWriter wjfo) {
 		StringBuilder factories = new StringBuilder();
 		factories.append(generateDefaultDSLStarter(wjfo));
-
 		factories.append(generateDefaultForChainingDSLStarter(wjfo));
-
 		if (hasParent) {
 			factories.append(generateParentDSLStarter(wjfo));
-		}
-
-		wjfo.println();
-
-		if (!hasParent) {
+			if (hasParentInSameRound) {
+				factories.append(generateParentInSameRoundDSLStarter(wjfo));
+			}
+		} else {
 			factories.append(generateParentValueDSLStarter(wjfo, ""));
-		}
-		if (hasParent && hasParentInSameRound) {
-			factories.append(generateParentInSameRoundDSLStarter(wjfo));
 		}
 		return factories.toString();
 	}
