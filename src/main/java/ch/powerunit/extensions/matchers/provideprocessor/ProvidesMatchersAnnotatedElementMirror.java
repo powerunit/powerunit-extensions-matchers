@@ -717,4 +717,8 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		return processingEnv;
 	}
 
+	public RoundMirror getRoundMirror() {
+		return roundMirror;
+	}
+
 }

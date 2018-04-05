@@ -181,9 +181,9 @@ public class FieldDescription {
 		return tmp2;
 	}
 
-	public FieldDescription(ProvidesMatchersAnnotatedElementMirror containingElementMirror, RoundMirror roundMirror,
-			String fieldName, String fieldType, Element fieldElement) {
-		this.roundMirror = roundMirror;
+	public FieldDescription(ProvidesMatchersAnnotatedElementMirror containingElementMirror, String fieldName,
+			String fieldType, Element fieldElement) {
+		this.roundMirror = containingElementMirror.getRoundMirror();
 		TypeMirror fieldTypeMirror = (fieldElement instanceof ExecutableElement)
 				? ((ExecutableElement) fieldElement).getReturnType() : fieldElement.asType();
 		this.enclosingClassOfFieldFullGeneric = containingElementMirror.getFullGeneric();

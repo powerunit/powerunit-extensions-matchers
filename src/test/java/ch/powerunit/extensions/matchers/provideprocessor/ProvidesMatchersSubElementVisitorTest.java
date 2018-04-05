@@ -83,6 +83,7 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 
 	private void prepare() {
 		underTest = new ProvidesMatchersSubElementVisitor(roundMirror);
+		when(providesMatchersAnnotatedElementMirror.getRoundMirror()).thenReturn(roundMirror);
 		when(roundMirror.getProcessingEnv()).thenReturn(processingEnv);
 		when(fieldDescription.getFieldElement()).thenReturn(targetElement);
 		when(processingEnv.getElementUtils()).thenReturn(elements);
