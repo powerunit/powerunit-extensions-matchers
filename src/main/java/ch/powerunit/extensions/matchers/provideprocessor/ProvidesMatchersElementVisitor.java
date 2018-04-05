@@ -29,19 +29,16 @@ class ProvidesMatchersElementVisitor extends SimpleElementVisitor8<Optional<Type
 		}
 	}
 
-	private void warningForType(TypeElement e, String type) {
+	@Override
+	protected Optional<TypeElement> defaultAction(Element e, Void p) {
+		warningForType(e, "unexpected element");
+		return Optional.empty();
+	}
+
+	private void warningForType(Element e, String type) {
 		roundMirror.getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING,
 				"The annotation `ProvideMatchers` is used on an " + type + ", which is not supported", e,
 				roundMirror.getProvideMatchersAnnotation(
 						roundMirror.getProcessingEnv().getElementUtils().getAllAnnotationMirrors(e)));
-	}
-
-	@Override
-	protected Optional<TypeElement> defaultAction(Element e, Void p) {
-		roundMirror.getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING,
-				"The annotation `ProvideMatchers` is used on an unsupported element", e,
-				roundMirror.getProvideMatchersAnnotation(
-						roundMirror.getProcessingEnv().getElementUtils().getAllAnnotationMirrors(e)));
-		return Optional.empty();
 	}
 }
