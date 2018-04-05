@@ -89,28 +89,22 @@ public class FieldDescription {
 			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
 					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Optional").asType()))) {
 				return Type.OPTIONAL;
-			}
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
 					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Set").asType()))) {
 				return Type.SET;
-			}
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
 					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.List").asType()))) {
 				return Type.LIST;
-			}
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
 					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Collection").asType()))) {
 				return Type.COLLECTION;
-			}
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
 					.erasure(processingEnv.getElementUtils().getTypeElement("java.lang.String").asType()))) {
 				return Type.STRING;
-			}
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
 					.erasure(processingEnv.getElementUtils().getTypeElement("java.lang.Comparable").asType()))) {
 				return Type.COMPARABLE;
-			}
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
 					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.function.Supplier").asType()))) {
 				return Type.SUPPLIER;
 			}
@@ -148,37 +142,28 @@ public class FieldDescription {
 	}
 
 	public static final List<Supplier<String>> getDslSupplierFor(FieldDescription target, Type type, String generic) {
-		List<Supplier<String>> tmp2 = new ArrayList<>();
 		switch (type) {
 		case ARRAY:
-			tmp2.add(target::getDslForArray);
-			break;
+			return Collections.singletonList(target::getDslForArray);
 		case OPTIONAL:
-			tmp2.add(target::getDslForOptional);
-			break;
+			return Collections.singletonList(target::getDslForOptional);
 		case COMPARABLE:
-			tmp2.add(target::getDslForComparable);
-			break;
+			return Collections.singletonList(target::getDslForComparable);
 		case STRING:
-			tmp2.add(target::getDslForComparable);
-			tmp2.add(target::getDslForString);
-			break;
+			return Arrays.asList(target::getDslForComparable, target::getDslForString);
 		case COLLECTION:
 		case LIST:
 		case SET:
-			tmp2.add(target::getDslForIterable);
-			tmp2.add(target::getDslForCollection);
 			if (!"".equals(generic)) {
-				tmp2.add(target::getDslForIterableWithGeneric);
+				return Arrays.asList(target::getDslForIterable, target::getDslForCollection,
+						target::getDslForIterableWithGeneric);
 			}
-			break;
+			return Arrays.asList(target::getDslForIterable, target::getDslForCollection);
 		case SUPPLIER:
-			tmp2.add(target::getDslForSupplier);
-			break;
+			return Collections.singletonList(target::getDslForSupplier);
 		default:
-			// Nothing
+			return Collections.emptyList();
 		}
-		return tmp2;
 	}
 
 	public FieldDescription(ProvidesMatchersAnnotatedElementMirror containingElementMirror, String fieldName,
