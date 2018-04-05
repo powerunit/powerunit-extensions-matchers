@@ -117,7 +117,6 @@ public class ProvidesMatchersAnnotatedElementMirror {
 
 	public String process() {
 		StringBuilder factories = new StringBuilder();
-
 		try {
 			processingEnv.getMessager().printMessage(Kind.NOTE,
 					"The class `" + fullyQualifiedNameOfGeneratedClass + "` will be generated as a Matchers class.",
@@ -127,13 +126,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 			try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
 				wjfo.println("package " + packageNameOfGeneratedClass + ";");
 				wjfo.println();
-				wjfo.println("/**");
-				wjfo.println(" * This class provides matchers for the class {@link "
-						+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + "}.");
-				wjfo.println(" * ");
-				wjfo.println(" * @see " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
-						+ " The class for which matchers are provided.");
-				wjfo.println(" */");
+				wjfo.println(generateMainJavaDoc());
 				wjfo.println("@javax.annotation.Generated(value=\""
 						+ ProvidesMatchersAnnotationsProcessor.class.getName() + "\",date=\"" + Instant.now().toString()
 						+ "\",comments=" + CommonUtils.toJavaSyntax(comments) + ")");
@@ -146,9 +139,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				wjfo.println(generatePublicInterface());
 				wjfo.println();
 				wjfo.println(generatePrivateImplementation());
-
 				wjfo.println();
-
 				factories.append(generateDSLStarter(wjfo));
 				wjfo.println("}");
 			}
@@ -158,6 +149,13 @@ public class ProvidesMatchersAnnotatedElementMirror {
 					typeElementForClassAnnotatedWithProvideMatcher);
 		}
 		return factories.toString();
+	}
+
+	public String generateMainJavaDoc() {
+		return "/**\n* This class provides matchers for the class {@link "
+				+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + "}.\n * \n * @see "
+				+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
+				+ " The class for which matchers are provided.\n */\n";
 	}
 
 	public String generateAndExtractFieldAndParentPrivateMatcher() {
