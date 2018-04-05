@@ -218,37 +218,28 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				+ getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + "> otherMatcher";
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("    /**").append("\n");
-		sb.append("     * Add a matcher on the object itself and not on a specific field.").append("\n");
-		sb.append("     * <p>").append("\n");
-		sb.append("     * <i>This method, when used more than once, just add more matcher to the list.</i>")
-				.append("\n");
-		sb.append("     * @param otherMatcher the matcher on the object itself.").append("\n");
-		sb.append("     * @return the DSL to continue").append("\n");
-		sb.append("     */").append("\n");
-		sb.append("    ").append(getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent()).append(" andWith(")
-				.append(otherMatcher).append(");").append("\n\n");
-
-		sb.append("    /**").append("\n");
+		sb.append("    /**\n     * Add a matcher on the object itself and not on a specific field.\n");
 		sb.append(
-				"     * Add a matcher on the object itself and not on a specific field, but convert the object before passing it to the matcher.")
-				.append("\n");
-		sb.append("     * <p>").append("\n");
-		sb.append("     * <i>This method, when used more than once, just add more matcher to the list.</i>")
-				.append("\n");
-		sb.append("     * @param converter the function to convert the object.").append("\n");
-		sb.append("     * @param otherMatcher the matcher on the converter object itself.").append("\n");
-		sb.append("     * @param <_TARGETOBJECT> the type of the target object").append("\n");
-		sb.append("     * @return the DSL to continue").append("\n");
-		sb.append("     */").append("\n");
+				"     * <p>\n     * <i>This method, when used more than once, just add more matcher to the list.</i>\n");
+		sb.append("     * @param otherMatcher the matcher on the object itself.\n");
+		sb.append("     * @return the DSL to continue\n     */\n");
+		sb.append("    ").append(getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent()).append(" andWith(")
+				.append(otherMatcher).append(");\n\n");
+
+		sb.append(
+				"    /**\n     * Add a matcher on the object itself and not on a specific field, but convert the object before passing it to the matcher.\n");
+		sb.append(
+				"     * <p>\n     * <i>This method, when used more than once, just add more matcher to the list.</i>\n");
+		sb.append("     * @param converter the function to convert the object.\n");
+		sb.append("     * @param otherMatcher the matcher on the converter object itself.\n");
+		sb.append("     * @param <_TARGETOBJECT> the type of the target object\n");
+		sb.append("     * @return the DSL to continue\n     */\n");
 		sb.append("    default <_TARGETOBJECT> ").append(getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent())
 				.append(" andWithAs(java.util.function.Function<")
 				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric())
-				.append(",_TARGETOBJECT> converter,org.hamcrest.Matcher<? super _TARGETOBJECT> otherMatcher) {")
-				.append("\n");
-		sb.append("      return andWith(asFeatureMatcher(\" <object is converted> \",converter,otherMatcher));")
-				.append("\n");
-		sb.append("    }").append("\n\n");
+				.append(",_TARGETOBJECT> converter,org.hamcrest.Matcher<? super _TARGETOBJECT> otherMatcher) {\n");
+		sb.append("      return andWith(asFeatureMatcher(\" <object is converted> \",converter,otherMatcher));\n");
+		sb.append("    }\n\n");
 
 		sb.append(addPrefix("  ",
 				generateJavaDocWithoutParamNeitherParent(
@@ -258,17 +249,15 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				.append("\n");
 		sb.append("    default org.hamcrest.Matcher<")
 				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append("> buildWith(")
-				.append(otherMatcher).append(") {").append("\n");
-		sb.append("      return andWith(otherMatcher);").append("\n");
-		sb.append("    }").append("\n\n");
+				.append(otherMatcher).append(") {\n");
+		sb.append("      return andWith(otherMatcher);").append("\n    }\n\n");
 
 		sb.append(addPrefix("  ", generateJavaDocWithoutParamNeitherParent(
 				"Method that return the parent builder and accept one single Matcher on the object itself.",
 				JAVADOC_WARNING_PARENT_MAY_BE_VOID, Optional.of("otherMatcher the matcher on the object itself."),
 				Optional.of("the parent builder or null if not applicable"))));
-		sb.append("    default _PARENT endWith(").append(otherMatcher).append("){").append("\n");
-		sb.append("      return andWith(otherMatcher).end();").append("\n");
-		sb.append("    }").append("\n");
+		sb.append("    default _PARENT endWith(").append(otherMatcher).append("){\n");
+		sb.append("      return andWith(otherMatcher).end();\n    }").append("\n");
 		return sb.toString();
 	}
 
