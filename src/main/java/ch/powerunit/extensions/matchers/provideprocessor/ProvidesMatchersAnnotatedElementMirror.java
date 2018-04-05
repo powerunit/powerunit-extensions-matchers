@@ -621,8 +621,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private String generateJavaDoc(String description, Optional<String> moreDetails, Optional<String> param,
 			Optional<String> returnDescription, boolean withParam, boolean withParent) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("/**").append("\n");
-		sb.append(" * ").append(description).append(".\n");
+		sb.append("/**\n * ").append(description).append(".\n");
 		moreDetails.ifPresent(t -> sb.append(" * <p>\n").append(" * ").append(t).append("\n"));
 		param.ifPresent(t -> sb.append(" * @param ").append(t).append("\n"));
 		if (withParam) {
