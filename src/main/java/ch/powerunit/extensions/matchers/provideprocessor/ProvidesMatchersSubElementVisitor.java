@@ -20,9 +20,7 @@
 package ch.powerunit.extensions.matchers.provideprocessor;
 
 import java.util.Optional;
-import java.util.function.Predicate;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -37,19 +35,17 @@ import javax.tools.Diagnostic.Kind;
 public class ProvidesMatchersSubElementVisitor
 		extends SimpleElementVisitor8<Optional<FieldDescription>, ProvidesMatchersAnnotatedElementMirror> {
 
-	private final ProcessingEnvironment processingEnv;
-	private final Predicate<Element> isInSameRound;
+	private final RoundMirror roundMirror;
 	private final NameExtractorVisitor extractNameVisitor;
 
-	public ProvidesMatchersSubElementVisitor(ProcessingEnvironment processingEnv, Predicate<Element> isInSameRound) {
-		this.processingEnv = processingEnv;
-		this.isInSameRound = isInSameRound;
-		this.extractNameVisitor = new NameExtractorVisitor(processingEnv);
+	public ProvidesMatchersSubElementVisitor(RoundMirror roundMirror) {
+		this.roundMirror = roundMirror;
+		this.extractNameVisitor = new NameExtractorVisitor(roundMirror.getProcessingEnv());
 	}
 
 	public static Optional<FieldDescription> removeIfNeededAndThenReturn(Optional<FieldDescription> fieldDescription,
-			ProvidesMatchersAnnotatedElementMirror p) {
-		fieldDescription.ifPresent(f -> p.removeFromIgnoreList(f.getFieldElement()));
+			RoundMirror r) {
+		fieldDescription.ifPresent(f -> r.removeFromIgnoreList(f.getFieldElement()));
 		return fieldDescription;
 	}
 
@@ -59,11 +55,11 @@ public class ProvidesMatchersSubElementVisitor
 			String fieldName = e.getSimpleName().toString();
 			return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, fieldName);
 		}
-		if (p.isInsideIgnoreList(e)) {
-			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
+		if (roundMirror.isInsideIgnoreList(e)) {
+			roundMirror.getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING,
 					"One of the annotation is not supported as this location ; Check that this field is public and not static",
 					e);
-			p.removeFromIgnoreList(e);
+			roundMirror.removeFromIgnoreList(e);
 		}
 		return Optional.empty();
 	}
@@ -79,11 +75,11 @@ public class ProvidesMatchersSubElementVisitor
 				return visiteExecutableGet(e, "is", p);
 			}
 		}
-		if (p.isInsideIgnoreList(e)) {
-			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
+		if (roundMirror.isInsideIgnoreList(e)) {
+			roundMirror.getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING,
 					"One of the annotation is not supported as this location ; Check that this method is public, doesn't have any parameter and is named isXXX or getXXX",
 					e);
-			p.removeFromIgnoreList(e);
+			roundMirror.removeFromIgnoreList(e);
 		}
 		return Optional.empty();
 	}
@@ -100,9 +96,9 @@ public class ProvidesMatchersSubElementVisitor
 			Element e, ProvidesMatchersAnnotatedElementMirror p, String fieldName) {
 		return removeIfNeededAndThenReturn(
 				((e instanceof ExecutableElement) ? ((ExecutableElement) e).getReturnType() : e.asType())
-						.accept(extractNameVisitor, false).map(f -> new FieldDescription(p, fieldName, f,
-								isInSameRound.test(processingEnv.getTypeUtils().asElement(e.asType())), e)),
-				p);
+						.accept(extractNameVisitor, false)
+						.map(f -> new FieldDescription(p, roundMirror, fieldName, f, e)),
+				roundMirror);
 	}
 
 	@Override

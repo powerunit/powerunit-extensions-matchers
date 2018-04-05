@@ -57,6 +57,9 @@ public class FieldDescriptionTest implements TestSuite {
 	private ProvidesMatchersAnnotatedElementMirror provideMatchersAnnotatedElementMirror;
 
 	@Mock
+	private RoundMirror roundMirror;
+
+	@Mock
 	private ProcessingEnvironment processingEnv;
 
 	@Mock
@@ -69,6 +72,8 @@ public class FieldDescriptionTest implements TestSuite {
 	private Types types;
 
 	private void prepareMock() {
+		when(roundMirror.getProcessingEnv()).thenReturn(processingEnv);
+		when(roundMirror.isInSameRound(Mockito.any())).thenReturn(false);
 		when(provideMatchersAnnotatedElementMirror.getProcessingEnv()).thenReturn(processingEnv);
 		when(provideMatchersAnnotatedElementMirror.getFullGeneric()).thenReturn("");
 		when(provideMatchersAnnotatedElementMirror.getGeneric()).thenReturn("");
@@ -108,45 +113,47 @@ public class FieldDescriptionTest implements TestSuite {
 
 	@Test
 	public void testAsDescribeTo() {
-		FieldDescription undertest = new FieldDescription(provideMatchersAnnotatedElementMirror, "field", "boolean",
-				false, executableElement);
+		FieldDescription undertest = new FieldDescription(provideMatchersAnnotatedElementMirror, roundMirror, "field",
+				"boolean", executableElement);
 		assertThat(undertest.asDescribeTo())
 				.is("description.appendText(\"[\").appendDescriptionOf(field).appendText(\"]\\n\");");
 	}
 
 	@Test
 	public void testAsMatchesSafely() {
-		FieldDescription undertest = new FieldDescription(provideMatchersAnnotatedElementMirror, "field", "boolean",
-				false, executableElement);
+		FieldDescription undertest = new FieldDescription(provideMatchersAnnotatedElementMirror, roundMirror, "field",
+				"boolean", executableElement);
 		assertThat(undertest.asMatchesSafely()).is(
 				"if(!field.matches(actual)) {\n  mismatchDescription.appendText(\"[\"); field.describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");\n  result=false;\n}");
 	}
 
 	@Test
 	public void testGetDslForDefault() {
-		FieldDescription undertest = new FieldDescription(provideMatchersAnnotatedElementMirror, "field", "boolean",
-				false, executableElement);
+		FieldDescription undertest = new FieldDescription(provideMatchersAnnotatedElementMirror, roundMirror, "field",
+				"boolean", executableElement);
 		assertThat(undertest.getDslForDefault()).is(
 				"/**\n * Add a validation on the field `field`.\n * <p>\n *\n * <i>{@link fqn.sn#field() This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @param matcher a Matcher on the field.\n * @return the DSL to continue the construction of the matcher.\n * @see org.hamcrest.Matchers The main class from hamcrest that provides default matchers.\n */\nnull field(org.hamcrest.Matcher<? super boolean> matcher);\n\n/**\n * Add a validation on the field `field`.\n * <p>\n *\n * <i>{@link fqn.sn#field() This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @param value an expected value for the field, which will be compared using the is matcher.\n * @return the DSL to continue the construction of the matcher.\n * @see org.hamcrest.Matchers#is(java.lang.Object)\n */\ndefault null field(boolean value){\n  return field(org.hamcrest.Matchers.is(value));\n}\n/**\n * Add a validation on the field `field` by converting the received field before validat it.\n * <p>\n *\n * <i>{@link fqn.sn#field() This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @param converter a function to convert the field.\n * @param matcher a matcher on the resulting.\n * @param <_TARGETFIELD> The type which this field must be converter.\n * @return the DSL to continue the construction of the matcher.\n */\ndefault <_TARGETFIELD> null fieldAs(java.util.function.Function<boolean,_TARGETFIELD> converter,org.hamcrest.Matcher<? super _TARGETFIELD> matcher){\n  return field(asFeatureMatcher(\" <field is converted> \",converter,matcher));\n}\n");
 	}
 
 	@Test
 	public void testGetMatcherForField() {
-		FieldDescription undertest = new FieldDescription(provideMatchersAnnotatedElementMirror, "field", "boolean",
-				false, executableElement);
+		FieldDescription undertest = new FieldDescription(provideMatchersAnnotatedElementMirror, roundMirror, "field",
+				"boolean", executableElement);
 		assertThat(undertest.getMatcherForField()).is(
 				"private static class FieldMatcher extends org.hamcrest.FeatureMatcher<fqn.sn,boolean> {\n  public FieldMatcher(org.hamcrest.Matcher<? super boolean> matcher) {\n    super(matcher,\"field\",\"field\");\n  }\n  protected boolean featureValueOf(fqn.sn actual) {\n    return actual.field();\n  }\n}\n");
 	}
 
 	@Test
 	public void testComputeFullyQualifiedNameMatcherInSameRoundFalseThenNull() {
-		assertThat(FieldDescription.computeFullyQualifiedNameMatcherInSameRound(processingEnv, false, typeElement))
-				.isNull();
+		assertThat(FieldDescription.computeFullyQualifiedNameMatcherInSameRound(roundMirror, executableElement,
+				typeElement)).isNull();
 	}
 
 	@Test
 	public void testComputeFullyQualifiedNameMatcherInSameRoundTrueNullThenNull() {
-		assertThat(FieldDescription.computeFullyQualifiedNameMatcherInSameRound(processingEnv, true, null)).isNull();
+		when(roundMirror.isInSameRound(Mockito.any())).thenReturn(true);
+		assertThat(FieldDescription.computeFullyQualifiedNameMatcherInSameRound(roundMirror, executableElement, null))
+				.isNull();
 	}
 
 	@Test
@@ -168,8 +175,8 @@ public class FieldDescriptionTest implements TestSuite {
 
 	@Test
 	public void testBuildDefaultDsl() {
-		FieldDescription undertest = new FieldDescription(provideMatchersAnnotatedElementMirror, "field", "boolean",
-				false, executableElement);
+		FieldDescription undertest = new FieldDescription(provideMatchersAnnotatedElementMirror, roundMirror, "field",
+				"boolean", executableElement);
 		assertThat(undertest.buildDefaultDsl("javadoc", "declaration", "inner"))
 				.is("javadoc\ndefault declaration{\n  return field(inner);\n}");
 	}

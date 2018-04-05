@@ -62,7 +62,7 @@ public class FieldDescription {
 	private final Type type;
 	private final List<Supplier<String>> implGenerator;
 	private final List<Supplier<String>> dslGenerator;
-	private final ProvidesMatchersAnnotatedElementMirror containingElementMirror;
+	private final RoundMirror roundMirror;
 	private final boolean ignore;
 	private final Element fieldElement;
 	private final String generic;
@@ -137,10 +137,11 @@ public class FieldDescription {
 		return "";
 	}
 
-	public static final String computeFullyQualifiedNameMatcherInSameRound(ProcessingEnvironment processingEnv,
-			boolean isInSameRound, TypeElement fieldTypeAsTypeElement) {
-		if (isInSameRound && fieldTypeAsTypeElement != null) {
-			return new ProvideMatchersMirror(processingEnv, fieldTypeAsTypeElement)
+	public static final String computeFullyQualifiedNameMatcherInSameRound(RoundMirror roundMirror,
+			Element fieldElement, TypeElement fieldTypeAsTypeElement) {
+		if (roundMirror.isInSameRound(roundMirror.getProcessingEnv().getTypeUtils().asElement(fieldElement.asType()))
+				&& fieldTypeAsTypeElement != null) {
+			return new ProvideMatchersMirror(roundMirror.getProcessingEnv(), fieldTypeAsTypeElement)
 					.getFullyQualifiedNameOfGeneratedClass();
 		}
 		return null;
@@ -180,11 +181,11 @@ public class FieldDescription {
 		return tmp2;
 	}
 
-	public FieldDescription(ProvidesMatchersAnnotatedElementMirror containingElementMirror, String fieldName,
-			String fieldType, boolean isInSameRound, Element fieldElement) {
+	public FieldDescription(ProvidesMatchersAnnotatedElementMirror containingElementMirror, RoundMirror roundMirror,
+			String fieldName, String fieldType, Element fieldElement) {
+		this.roundMirror = roundMirror;
 		TypeMirror fieldTypeMirror = (fieldElement instanceof ExecutableElement)
 				? ((ExecutableElement) fieldElement).getReturnType() : fieldElement.asType();
-		this.containingElementMirror = containingElementMirror;
 		this.enclosingClassOfFieldFullGeneric = containingElementMirror.getFullGeneric();
 		this.enclosingClassOfFieldGeneric = containingElementMirror.getGeneric();
 		this.fullyQualifiedNameEnclosingClassOfField = containingElementMirror
@@ -201,8 +202,8 @@ public class FieldDescription {
 		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
 		this.generic = computeGenericInformation(fieldTypeMirror);
 		this.fieldTypeAsTypeElement = processingEnv.getElementUtils().getTypeElement(fieldType);
-		this.fullyQualifiedNameMatcherInSameRound = computeFullyQualifiedNameMatcherInSameRound(processingEnv,
-				isInSameRound, fieldTypeAsTypeElement);
+		this.fullyQualifiedNameMatcherInSameRound = computeFullyQualifiedNameMatcherInSameRound(roundMirror,
+				fieldElement, fieldTypeAsTypeElement);
 		List<Supplier<String>> tmp1 = new ArrayList<>(Arrays.asList(this::getImplementationForDefault));
 		List<Supplier<String>> tmp2 = new ArrayList<>(Arrays.asList(this::getDslForDefault));
 		if (fullyQualifiedNameMatcherInSameRound != null && fieldTypeAsTypeElement.getTypeParameters().isEmpty()) {
@@ -513,7 +514,7 @@ public class FieldDescription {
 	}
 
 	public String generateMatcherBuilderReferenceFor(String generic) {
-		return containingElementMirror.findMirrorFor(generic).map(
+		return Optional.ofNullable(roundMirror.getByName(generic)).map(
 				t -> t.getFullyQualifiedNameOfGeneratedClass() + "::" + t.getMethodShortClassName() + "WithSameValue")
 				.orElse("org.hamcrest.Matchers::is");
 	}

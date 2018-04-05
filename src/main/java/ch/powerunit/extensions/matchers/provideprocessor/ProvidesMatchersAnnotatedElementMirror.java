@@ -13,12 +13,8 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
@@ -54,10 +50,9 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private final String simpleNameOfGeneratedInterfaceMatcher;
 	private final String simpleNameOfGeneratedImplementationMatcher;
 	private final TypeElement typeElementForSuperClassOfClassAnnotatedWithProvideMatcher;
-	private final Function<String, ProvidesMatchersAnnotatedElementMirror> findMirrorForTypeName;
 	private final String genericForChaining;
-	private final Set<? extends Element> elementsWithOtherAnnotation[];
 	private final List<FieldDescription> fields;
+	private final RoundMirror roundMirror;
 
 	private List<FieldDescription> generateFields(TypeElement typeElement,
 			ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor) {
@@ -71,13 +66,10 @@ public class ProvidesMatchersAnnotatedElementMirror {
 						c -> c == null ? emptyList() : c.values().stream().collect(toList())));
 	}
 
-	public ProvidesMatchersAnnotatedElementMirror(TypeElement typeElement, ProcessingEnvironment processingEnv,
-			Predicate<Element> isInSameRound,
-			Function<String, ProvidesMatchersAnnotatedElementMirror> findMirrorForTypeName,
-			Set<? extends Element>... elementsWithOtherAnnotation) {
+	public ProvidesMatchersAnnotatedElementMirror(TypeElement typeElement, RoundMirror roundMirror) {
+		this.roundMirror = roundMirror;
 		this.typeElementForClassAnnotatedWithProvideMatcher = typeElement;
-		this.processingEnv = processingEnv;
-		this.elementsWithOtherAnnotation = elementsWithOtherAnnotation;
+		this.processingEnv = roundMirror.getProcessingEnv();
 		this.fullyQualifiedNameOfClassAnnotatedWithProvideMatcher = typeElement.getQualifiedName().toString();
 		ProvideMatchersMirror provideMatcherMirror = new ProvideMatchersMirror(processingEnv, typeElement);
 		this.fullyQualifiedNameOfGeneratedClass = provideMatcherMirror.getFullyQualifiedNameOfGeneratedClass();
@@ -89,7 +81,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				+ simpleNameOfClassAnnotatedWithProvideMatcher.substring(1);
 		this.hasParent = !processingEnv.getElementUtils().getTypeElement("java.lang.Object").asType()
 				.equals(typeElement.getSuperclass());
-		this.hasParentInSameRound = isInSameRound.test(typeElement);
+		this.hasParentInSameRound = roundMirror.isInSameRound(typeElement);
 		this.fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher = typeElement.getSuperclass().toString();
 		this.typeElementForSuperClassOfClassAnnotatedWithProvideMatcher = (TypeElement) processingEnv.getTypeUtils()
 				.asElement(typeElement.getSuperclass());
@@ -106,10 +98,9 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		this.defaultReturnMethod = simpleNameOfClassAnnotatedWithProvideMatcher + "Matcher" + genericParent;
 		this.simpleNameOfGeneratedInterfaceMatcher = simpleNameOfClassAnnotatedWithProvideMatcher + "Matcher";
 		this.simpleNameOfGeneratedImplementationMatcher = simpleNameOfClassAnnotatedWithProvideMatcher + "MatcherImpl";
-		this.findMirrorForTypeName = findMirrorForTypeName;
 		this.genericForChaining = genericParent.replaceAll("^<_PARENT", "<" + fullyQualifiedNameOfGeneratedClass + "."
 				+ simpleNameOfGeneratedInterfaceMatcher + genericNoParent);
-		this.fields = generateFields(typeElement, new ProvidesMatchersSubElementVisitor(processingEnv, isInSameRound));
+		this.fields = generateFields(typeElement, new ProvidesMatchersSubElementVisitor(roundMirror));
 	}
 
 	public String getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() {
@@ -534,8 +525,8 @@ public class ProvidesMatchersAnnotatedElementMirror {
 
 	private String generateParentInSameRoundDSLStarter(PrintWriter wjfo) {
 		StringBuilder factories = new StringBuilder();
-		ProvidesMatchersAnnotatedElementMirror parentMirror = findMirrorForTypeName
-				.apply(typeElementForSuperClassOfClassAnnotatedWithProvideMatcher.getQualifiedName().toString());
+		ProvidesMatchersAnnotatedElementMirror parentMirror = roundMirror
+				.getByName(typeElementForSuperClassOfClassAnnotatedWithProvideMatcher.getQualifiedName().toString());
 		factories.append(generateParentValueDSLStarter(wjfo, parentMirror.fullyQualifiedNameOfGeneratedClass + "."
 				+ parentMirror.methodShortClassName + "WithSameValue(other)"));
 
@@ -618,7 +609,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		return "Start a DSL matcher for the " + getDefaultLinkForAnnotatedClass();
 	}
 
-	private String addPrefix(String prefix, String input) {
+	private static String addPrefix(String prefix, String input) {
 		return "\n" + Arrays.stream(input.split("\\R")).map(l -> prefix + l).collect(joining("\n")) + "\n";
 	}
 
@@ -703,21 +694,8 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		return generic;
 	}
 
-	public void removeFromIgnoreList(Element e) {
-		Arrays.stream(elementsWithOtherAnnotation).forEach(t -> t.remove(e));
-	}
-
-	public boolean isInsideIgnoreList(Element e) {
-		return Arrays.stream(elementsWithOtherAnnotation).map(t -> t.contains(e)).filter(t -> t).findAny()
-				.orElse(false);
-	}
-
 	public TypeElement getTypeElementForClassAnnotatedWithProvideMatcher() {
 		return typeElementForClassAnnotatedWithProvideMatcher;
-	}
-
-	public Optional<ProvidesMatchersAnnotatedElementMirror> findMirrorFor(String name) {
-		return Optional.ofNullable(findMirrorForTypeName.apply(name));
 	}
 
 	public String getMethodShortClassName() {
