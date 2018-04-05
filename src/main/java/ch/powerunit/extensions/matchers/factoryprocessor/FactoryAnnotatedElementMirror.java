@@ -90,14 +90,13 @@ class FactoryAnnotatedElementMirror {
 				.append("\n");
 		sb.append("  default ");
 		if (!element.getTypeParameters().isEmpty()) {
-			sb.append("<");
-			sb.append(
-					element.getTypeParameters().stream()
+			sb.append("<")
+					.append(element.getTypeParameters().stream()
 							.map((ve) -> ve.getSimpleName().toString() + (ve.getBounds().isEmpty() ? ""
 									: (" extends "
 											+ ve.getBounds().stream().map((b) -> b.toString()).collect(joining("&")))))
-							.collect(joining(",")));
-			sb.append("> ");
+							.collect(joining(",")))
+					.append("> ");
 		}
 		sb.append(element.getReturnType().toString()).append(" ").append(element.getSimpleName().toString())
 				.append("(");
@@ -108,11 +107,10 @@ class FactoryAnnotatedElementMirror {
 				.append(TypeKind.VOID != element.getReturnType().getKind() ? "    return " : "    ");
 		sb.append(factoryAnnotationsProcessor.getElementUtils().getPackageOf(element.getEnclosingElement())
 				.getQualifiedName().toString()).append(".")
-				.append(element.getEnclosingElement().getSimpleName().toString()).append(".")
-				.append(element.getSimpleName().toString()).append("(").append(element.getParameters().stream()
-						.map((ve) -> ve.getSimpleName().toString()).collect(joining(",")))
-				.append(");\n");
-		sb.append("  }\n\n");
+				.append(element.getEnclosingElement().getSimpleName().toString())
+				.append(".").append(element.getSimpleName().toString()).append("(").append(element.getParameters()
+						.stream().map((ve) -> ve.getSimpleName().toString()).collect(joining(",")))
+				.append(");\n  }\n\n");
 		return sb.toString();
 	}
 

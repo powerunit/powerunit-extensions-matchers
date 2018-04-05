@@ -19,20 +19,21 @@ class ProvidesMatchersElementVisitor extends SimpleElementVisitor8<Optional<Type
 	public Optional<TypeElement> visitType(TypeElement e, Void p) {
 		switch (e.getKind()) {
 		case ENUM:
-			roundMirror.getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING,
-					"The annotation `ProvideMatchers` is used on an enum, which is not supported", e,
-					roundMirror.getProvideMatchersAnnotation(
-							roundMirror.getProcessingEnv().getElementUtils().getAllAnnotationMirrors(e)));
+			warningForType(e, "enum");
 			return Optional.empty();
 		case INTERFACE:
-			roundMirror.getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING,
-					"The annotation `ProvideMatchers` is used on an interface, which is not supported", e,
-					roundMirror.getProvideMatchersAnnotation(
-							roundMirror.getProcessingEnv().getElementUtils().getAllAnnotationMirrors(e)));
+			warningForType(e, "interface");
 			return Optional.empty();
 		default:
+			return Optional.of(e);
 		}
-		return Optional.of(e);
+	}
+
+	private void warningForType(TypeElement e, String type) {
+		roundMirror.getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING,
+				"The annotation `ProvideMatchers` is used on an " + type + ", which is not supported", e,
+				roundMirror.getProvideMatchersAnnotation(
+						roundMirror.getProcessingEnv().getElementUtils().getAllAnnotationMirrors(e)));
 	}
 
 	@Override
