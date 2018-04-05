@@ -25,11 +25,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -84,16 +82,10 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 		if (!roundEnv.processingOver()) {
-			try {
-				Collection<ProvidesMatchersAnnotatedElementMirror> alias = new RoundMirror(roundEnv, processingEnv)
-						.parse();
-				factories.addAll(alias.stream().map(ProvidesMatchersAnnotatedElementMirror::process).collect(toList()));
-				allGeneratedMatchers.getGeneratedMatcher()
-						.addAll(alias.stream().map(ProvidesMatchersAnnotatedElementMirror::asXml).collect(toList()));
-			} catch (Exception e) {
-				processingEnv.getMessager().printMessage(Kind.ERROR, "Unable to process " + e.getMessage()
-						+ Arrays.stream(e.getStackTrace()).map(Object::toString).collect(Collectors.joining("\n")));
-			}
+			Collection<ProvidesMatchersAnnotatedElementMirror> alias = new RoundMirror(roundEnv, processingEnv).parse();
+			factories.addAll(alias.stream().map(ProvidesMatchersAnnotatedElementMirror::process).collect(toList()));
+			allGeneratedMatchers.getGeneratedMatcher()
+					.addAll(alias.stream().map(ProvidesMatchersAnnotatedElementMirror::asXml).collect(toList()));
 		} else {
 			processReport();
 			if (factory != null) {

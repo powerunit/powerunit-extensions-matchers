@@ -43,9 +43,8 @@ public class ProvidesMatchersSubElementVisitor
 		this.extractNameVisitor = new NameExtractorVisitor(roundMirror.getProcessingEnv());
 	}
 
-	public static Optional<FieldDescription> removeIfNeededAndThenReturn(Optional<FieldDescription> fieldDescription,
-			RoundMirror r) {
-		fieldDescription.ifPresent(f -> r.removeFromIgnoreList(f.getFieldElement()));
+	public Optional<FieldDescription> removeIfNeededAndThenReturn(Optional<FieldDescription> fieldDescription) {
+		fieldDescription.ifPresent(f -> roundMirror.removeFromIgnoreList(f.getFieldElement()));
 		return fieldDescription;
 	}
 
@@ -97,8 +96,7 @@ public class ProvidesMatchersSubElementVisitor
 		return removeIfNeededAndThenReturn(
 				((e instanceof ExecutableElement) ? ((ExecutableElement) e).getReturnType() : e.asType())
 						.accept(extractNameVisitor, false)
-						.map(f -> new FieldDescription(p, roundMirror, fieldName, f, e)),
-				roundMirror);
+						.map(f -> new FieldDescription(p, roundMirror, fieldName, f, e)));
 	}
 
 	@Override
