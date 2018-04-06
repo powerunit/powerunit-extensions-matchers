@@ -39,29 +39,28 @@ public class DSLMethod {
 	private final String realArguments;
 	private final String realArgumentsName;
 
+	private static String cleanJavadoc(String javadoc[]) {
+		return "/**\n" + Arrays.stream(javadoc).map(s -> " * " + s).collect(joining("\n")) + "\n */\n";
+	}
+
 	public DSLMethod(String javadoc[], String declaration, String implementation) {
-		this("/**\n" + Arrays.stream(javadoc).map(s -> " * " + s).collect(joining("\n")) + "\n */\n", declaration,
-				new String[][] {}, new String[] { implementation });
+		this(cleanJavadoc(javadoc), declaration, new String[][] {}, new String[] { implementation });
 	}
 
 	public DSLMethod(String javadoc[], String declaration, String implementation[]) {
-		this("/**\n" + Arrays.stream(javadoc).map(s -> " * " + s).collect(joining("\n")) + "\n */\n", declaration,
-				new String[][] {}, implementation);
+		this(cleanJavadoc(javadoc), declaration, new String[][] {}, implementation);
 	}
 
 	public DSLMethod(String javadoc[], String declaration, String arguments[], String implementation) {
-		this("/**\n" + Arrays.stream(javadoc).map(s -> " * " + s).collect(joining("\n")) + "\n */\n", declaration,
-				new String[][] { arguments }, new String[] { implementation });
+		this(cleanJavadoc(javadoc), declaration, new String[][] { arguments }, new String[] { implementation });
 	}
 
 	public DSLMethod(String javadoc[], String declaration, String arguments[], String implementation[]) {
-		this("/**\n" + Arrays.stream(javadoc).map(s -> " * " + s).collect(joining("\n")) + "\n */\n", declaration,
-				new String[][] { arguments }, implementation);
+		this(cleanJavadoc(javadoc), declaration, new String[][] { arguments }, implementation);
 	}
 
 	public DSLMethod(String javadoc[], String declaration, String arguments[][], String implementation) {
-		this("/**\n" + Arrays.stream(javadoc).map(s -> " * " + s).collect(joining("\n")) + "\n */\n", declaration,
-				arguments, new String[] { implementation });
+		this(cleanJavadoc(javadoc), declaration, arguments, new String[] { implementation });
 	}
 
 	public DSLMethod(String javadoc, String declaration, String implementation) {

@@ -89,7 +89,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 					.collect(Collectors.toMap(
 							ProvidesMatchersAnnotatedElementMirror::getFullyQualifiedNameOfGeneratedClass,
 							ProvidesMatchersAnnotatedElementMirror::process))
-					.entrySet().stream().map(e -> e.getValue().stream().map(m -> m.asDefaultReference(e.getKey()))
+					.entrySet().stream()
+					.map(e -> e.getValue().stream().map(m -> addPrefix("  ", m.asDefaultReference(e.getKey())))
 							.collect(Collectors.joining("\n")))
 					.collect(Collectors.toList()));
 			allGeneratedMatchers.getGeneratedMatcher()
