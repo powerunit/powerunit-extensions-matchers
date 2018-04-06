@@ -19,15 +19,18 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -82,7 +85,13 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 		if (!roundEnv.processingOver()) {
 			Collection<ProvidesMatchersAnnotatedElementMirror> alias = new RoundMirror(roundEnv, processingEnv).parse();
-			factories.addAll(alias.stream().map(ProvidesMatchersAnnotatedElementMirror::process).collect(toList()));
+			factories.addAll(alias.stream()
+					.collect(Collectors.toMap(
+							ProvidesMatchersAnnotatedElementMirror::getFullyQualifiedNameOfGeneratedClass,
+							ProvidesMatchersAnnotatedElementMirror::process))
+					.entrySet().stream().map(e -> e.getValue().stream().map(m -> m.asDefaultReference(e.getKey()))
+							.collect(Collectors.joining("\n")))
+					.collect(Collectors.toList()));
 			allGeneratedMatchers.getGeneratedMatcher()
 					.addAll(alias.stream().map(ProvidesMatchersAnnotatedElementMirror::asXml).collect(toList()));
 		} else {
@@ -92,6 +101,10 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			}
 		}
 		return true;
+	}
+
+	private static String addPrefix(String prefix, String input) {
+		return "\n" + Arrays.stream(input.split("\\R")).map(l -> prefix + l).collect(joining("\n")) + "\n";
 	}
 
 	private void processReport() {
