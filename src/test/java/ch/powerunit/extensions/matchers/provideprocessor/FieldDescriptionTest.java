@@ -137,6 +137,21 @@ public class FieldDescriptionTest implements TestSuite {
 	}
 
 	@Test
+	public void testGetDslForString() {
+		FieldDescription undertest = new FieldDescription(provideMatchersAnnotatedElementMirror, "field",
+				"java.lang.String", executableElement);
+		assertThat(undertest.getDslForString()).is(
+				"/**\n * Add a validation on the field `field` that the string contains another one.\n * <p>\n *\n * <i>{@link fqn.sn#field() This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @param other the string is contains in the other one.\n * @return the DSL to continue the construction of the matcher.\n * @see org.hamcrest.Matchers#containsString(java.lang.String)\n */\ndefault null fieldContainsString(String other){\n  return field(org.hamcrest.Matchers.containsString(other));\n}/**\n * Add a validation on the field `field` that the string starts with another one.\n * <p>\n *\n * <i>{@link fqn.sn#field() This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @param other the string to use to compare.\n * @return the DSL to continue the construction of the matcher.\n * @see org.hamcrest.Matchers#startsWith(java.lang.String)\n */\ndefault null fieldStartsWith(String other){\n  return field(org.hamcrest.Matchers.startsWith(other));\n}/**\n * Add a validation on the field `field` that the string ends with another one.\n * <p>\n *\n * <i>{@link fqn.sn#field() This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @param other the string to use to compare.\n * @return the DSL to continue the construction of the matcher.\n * @see org.hamcrest.Matchers#endsWith(java.lang.String)\n */\ndefault null fieldEndsWith(String other){\n  return field(org.hamcrest.Matchers.endsWith(other));\n}");
+	}
+
+	@Test
+	public void testGetFieldCopy() {
+		FieldDescription undertest = new FieldDescription(provideMatchersAnnotatedElementMirror, "field",
+				"java.lang.String", executableElement);
+		assertThat(undertest.getFieldCopy("a", "b")).is("a.field(org.hamcrest.Matchers.is(b.field()))");
+	}
+
+	@Test
 	public void testGetMatcherForField() {
 		FieldDescription undertest = new FieldDescription(provideMatchersAnnotatedElementMirror, "field", "boolean",
 				executableElement);

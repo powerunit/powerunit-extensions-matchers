@@ -452,18 +452,17 @@ public class FieldDescription {
 		StringBuilder sb = new StringBuilder();
 		sb.append("private static class " + methodFieldName + "Matcher" + enclosingClassOfFieldFullGeneric
 				+ " extends org.hamcrest.FeatureMatcher<" + fullyQualifiedNameEnclosingClassOfField
-				+ enclosingClassOfFieldGeneric + "," + fieldType + "> {").append("\n");
-		sb.append("  public " + methodFieldName + "Matcher(org.hamcrest.Matcher<? super " + fieldType + "> matcher) {")
-				.append("\n");
-		sb.append("    super(matcher,\"" + fieldName + "\",\"" + fieldName + "\");").append("\n");
-		sb.append("  }").append("\n");
+				+ enclosingClassOfFieldGeneric + "," + fieldType + "> {\n");
+		sb.append(
+				"  public " + methodFieldName + "Matcher(org.hamcrest.Matcher<? super " + fieldType + "> matcher) {\n");
+		sb.append("    super(matcher,\"" + fieldName + "\",\"" + fieldName + "\");\n");
+		sb.append("  }\n");
 
 		sb.append("  protected " + fieldType + " featureValueOf(" + fullyQualifiedNameEnclosingClassOfField
-				+ enclosingClassOfFieldGeneric + " actual) {").append("\n");
-		sb.append("    return actual." + fieldAccessor + ";").append("\n");
-		sb.append("  }").append("\n");
-		sb.append("}").append("\n");
-
+				+ enclosingClassOfFieldGeneric + " actual) {\n");
+		sb.append("    return actual." + fieldAccessor + ";\n");
+		sb.append("  }\n");
+		sb.append("}\n");
 		return sb.toString();
 	}
 
