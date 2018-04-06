@@ -34,17 +34,17 @@ public class FactoryAnnotatedElementMirrorTest implements TestSuite {
 	public static Stream<Object[]> getParameters() {
 		return Arrays.stream(new Object[][] {
 				{ true, false, false,
-						"  // method\n  /**\n   * No javadoc found from the source method.\n   * @see .sn#method()\n   */\n  default void method() {\n    fqn.sn.method();\n  }\n\n" },
+						"  /**\n   * No javadoc found from the source method.\n   * @see .sn#method()\n   */\n  default void method() {\n    fqn.sn.method();\n  }\n\n" },
 				{ false, false, false,
-						"  // method\n  /**\n   * No javadoc found from the source method.\n   * @see .sn#method()\n   */\n  default returnType method() {\n    return fqn.sn.method();\n  }\n\n" },
+						"  /**\n   * No javadoc found from the source method.\n   * @see .sn#method()\n   */\n  default returnType method() {\n    return fqn.sn.method();\n  }\n\n" },
 				{ false, true, false,
-						"  // method\n  /**\n   * No javadoc found from the source method.\n   * @see .sn#method(type)\n   */\n  default returnType method(type param) {\n    return fqn.sn.method(param);\n  }\n\n" },
+						"  /**\n   * No javadoc found from the source method.\n   * @see .sn#method(type)\n   */\n  default returnType method(type param) {\n    return fqn.sn.method(param);\n  }\n\n" },
 				{ true, true, false,
-						"  // method\n  /**\n   * No javadoc found from the source method.\n   * @see .sn#method(type)\n   */\n  default void method(type param) {\n    fqn.sn.method(param);\n  }\n\n" },
+						"  /**\n   * No javadoc found from the source method.\n   * @see .sn#method(type)\n   */\n  default void method(type param) {\n    fqn.sn.method(param);\n  }\n\n" },
 				{ false, true, true,
-						"  // method\n  /**\n   * No javadoc found from the source method.\n   * @see .sn#method(type...)\n   */\n  default returnType method(type... param) {\n    return fqn.sn.method(param);\n  }\n\n" },
+						"  /**\n   * No javadoc found from the source method.\n   * @see .sn#method(type...)\n   */\n  default returnType method(type... param) {\n    return fqn.sn.method(param);\n  }\n\n" },
 				{ true, true, true,
-						"  // method\n  /**\n   * No javadoc found from the source method.\n   * @see .sn#method(type...)\n   */\n  default void method(type... param) {\n    fqn.sn.method(param);\n  }\n\n" } });
+						"  /**\n   * No javadoc found from the source method.\n   * @see .sn#method(type...)\n   */\n  default void method(type... param) {\n    fqn.sn.method(param);\n  }\n\n" } });
 	}
 
 	@Parameter(0)

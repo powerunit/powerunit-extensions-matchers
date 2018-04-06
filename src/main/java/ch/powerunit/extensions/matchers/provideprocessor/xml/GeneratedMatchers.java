@@ -19,14 +19,16 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.xml;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.lang.model.element.Element;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -41,5 +43,10 @@ public class GeneratedMatchers {
 	public void setGeneratedMatcher(List<GeneratedMatcher> generatedMatcher) {
 		this.generatedMatcher = generatedMatcher;
 	}
-	
+
+	public Element[] listElements() {
+		return generatedMatcher.stream().map(g -> g.getMirror().getTypeElementForClassAnnotatedWithProvideMatcher())
+				.collect(toList()).toArray(new Element[0]);
+	}
+
 }

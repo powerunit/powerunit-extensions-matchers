@@ -47,8 +47,10 @@ import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcherFie
 
 public class FieldDescription {
 
+	private static final String DEFAULT_JAVADOC_MATCHER_ON_ELEMENTS = "matchersOnElements the matchers on the elements";
 	private static final String SEE_TEXT_FOR_IS_MATCHER = "org.hamcrest.Matchers#is(java.lang.Object)";
 	private static final String SEE_TEXT_FOR_HAMCREST_MATCHER = "org.hamcrest.Matchers The main class from hamcrest that provides default matchers.";
+	private static final String MATCHERS = "org.hamcrest.Matchers";
 
 	public static enum Type {
 		NA, ARRAY, COLLECTION, LIST, SET, OPTIONAL, COMPARABLE, STRING, SUPPLIER
@@ -62,7 +64,7 @@ public class FieldDescription {
 	private final Type type;
 	private final List<Supplier<String>> implGenerator;
 	private final List<Supplier<String>> dslGenerator;
-	private final ProvidesMatchersAnnotatedElementMirror containingElementMirror;
+	private final RoundMirror roundMirror;
 	private final boolean ignore;
 	private final Element fieldElement;
 	private final String generic;
@@ -89,28 +91,22 @@ public class FieldDescription {
 			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
 					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Optional").asType()))) {
 				return Type.OPTIONAL;
-			}
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
 					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Set").asType()))) {
 				return Type.SET;
-			}
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
 					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.List").asType()))) {
 				return Type.LIST;
-			}
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
 					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Collection").asType()))) {
 				return Type.COLLECTION;
-			}
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
 					.erasure(processingEnv.getElementUtils().getTypeElement("java.lang.String").asType()))) {
 				return Type.STRING;
-			}
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
 					.erasure(processingEnv.getElementUtils().getTypeElement("java.lang.Comparable").asType()))) {
 				return Type.COMPARABLE;
-			}
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
+			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
 					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.function.Supplier").asType()))) {
 				return Type.SUPPLIER;
 			}
@@ -137,54 +133,46 @@ public class FieldDescription {
 		return "";
 	}
 
-	public static final String computeFullyQualifiedNameMatcherInSameRound(ProcessingEnvironment processingEnv,
-			boolean isInSameRound, TypeElement fieldTypeAsTypeElement) {
-		if (isInSameRound && fieldTypeAsTypeElement != null) {
-			return new ProvideMatchersMirror(processingEnv, fieldTypeAsTypeElement)
+	public static final String computeFullyQualifiedNameMatcherInSameRound(RoundMirror roundMirror,
+			Element fieldElement, TypeElement fieldTypeAsTypeElement) {
+		if (roundMirror.isInSameRound(roundMirror.getProcessingEnv().getTypeUtils().asElement(fieldElement.asType()))
+				&& fieldTypeAsTypeElement != null) {
+			return new ProvideMatchersMirror(roundMirror.getProcessingEnv(), fieldTypeAsTypeElement)
 					.getFullyQualifiedNameOfGeneratedClass();
 		}
 		return null;
 	}
 
 	public static final List<Supplier<String>> getDslSupplierFor(FieldDescription target, Type type, String generic) {
-		List<Supplier<String>> tmp2 = new ArrayList<>();
 		switch (type) {
 		case ARRAY:
-			tmp2.add(target::getDslForArray);
-			break;
+			return Collections.singletonList(target::getDslForArray);
 		case OPTIONAL:
-			tmp2.add(target::getDslForOptional);
-			break;
+			return Collections.singletonList(target::getDslForOptional);
 		case COMPARABLE:
-			tmp2.add(target::getDslForComparable);
-			break;
+			return Collections.singletonList(target::getDslForComparable);
 		case STRING:
-			tmp2.add(target::getDslForComparable);
-			tmp2.add(target::getDslForString);
-			break;
+			return Arrays.asList(target::getDslForComparable, target::getDslForString);
 		case COLLECTION:
 		case LIST:
 		case SET:
-			tmp2.add(target::getDslForIterable);
-			tmp2.add(target::getDslForCollection);
 			if (!"".equals(generic)) {
-				tmp2.add(target::getDslForIterableWithGeneric);
+				return Arrays.asList(target::getDslForIterable, target::getDslForCollection,
+						target::getDslForIterableWithGeneric);
 			}
-			break;
+			return Arrays.asList(target::getDslForIterable, target::getDslForCollection);
 		case SUPPLIER:
-			tmp2.add(target::getDslForSupplier);
-			break;
+			return Collections.singletonList(target::getDslForSupplier);
 		default:
-			// Nothing
+			return Collections.emptyList();
 		}
-		return tmp2;
 	}
 
 	public FieldDescription(ProvidesMatchersAnnotatedElementMirror containingElementMirror, String fieldName,
-			String fieldType, boolean isInSameRound, Element fieldElement) {
+			String fieldType, Element fieldElement) {
+		this.roundMirror = containingElementMirror.getRoundMirror();
 		TypeMirror fieldTypeMirror = (fieldElement instanceof ExecutableElement)
 				? ((ExecutableElement) fieldElement).getReturnType() : fieldElement.asType();
-		this.containingElementMirror = containingElementMirror;
 		this.enclosingClassOfFieldFullGeneric = containingElementMirror.getFullGeneric();
 		this.enclosingClassOfFieldGeneric = containingElementMirror.getGeneric();
 		this.fullyQualifiedNameEnclosingClassOfField = containingElementMirror
@@ -201,8 +189,8 @@ public class FieldDescription {
 		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
 		this.generic = computeGenericInformation(fieldTypeMirror);
 		this.fieldTypeAsTypeElement = processingEnv.getElementUtils().getTypeElement(fieldType);
-		this.fullyQualifiedNameMatcherInSameRound = computeFullyQualifiedNameMatcherInSameRound(processingEnv,
-				isInSameRound, fieldTypeAsTypeElement);
+		this.fullyQualifiedNameMatcherInSameRound = computeFullyQualifiedNameMatcherInSameRound(roundMirror,
+				fieldElement, fieldTypeAsTypeElement);
 		List<Supplier<String>> tmp1 = new ArrayList<>(Arrays.asList(this::getImplementationForDefault));
 		List<Supplier<String>> tmp2 = new ArrayList<>(Arrays.asList(this::getDslForDefault));
 		if (fullyQualifiedNameMatcherInSameRound != null && fieldTypeAsTypeElement.getTypeParameters().isEmpty()) {
@@ -228,48 +216,47 @@ public class FieldDescription {
 				Arrays.stream(a.body()).map(l -> l).collect(joining("\n")) + "\n" + "return this;");
 	}
 
+	public String getJavaDocFor(String addToDescription) {
+		return getJavaDocFor(Optional.of(addToDescription), Optional.empty(), Optional.empty());
+	}
+
+	public String getJavaDocFor(String addToDescription, String param, String see) {
+		return getJavaDocFor(Optional.of(addToDescription), Optional.of(param), Optional.of(see));
+	}
+
 	public String getJavaDocFor(Optional<String> addToDescription, Optional<String> param, Optional<String> see) {
 		String linkToAccessor = "{@link " + fullyQualifiedNameEnclosingClassOfField + "#" + getFieldAccessor()
 				+ " This field is accessed by using this approach}.";
 		StringBuilder sb = new StringBuilder();
-		sb.append("/**").append("\n");
-		sb.append(" * Add a validation on the field `").append(fieldName).append("`");
+		sb.append("/**\n * Add a validation on the field `").append(fieldName).append("`");
 		addToDescription.ifPresent(t -> sb.append(" ").append(t));
-		sb.append(".").append("\n");
-		sb.append(" * <p>").append("\n");
-		sb.append(" *").append("\n");
-		sb.append(" * <i>").append(linkToAccessor).append("</i>").append("\n");
-		sb.append(" * <p>").append("\n");
+		sb.append(".\n * <p>").append("\n *\n * <i>").append(linkToAccessor).append("</i>\n * <p>\n");
 		sb.append(
-				" * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> ")
-				.append("\n");
+				" * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n");
 		sb.append(
-				" * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.")
-				.append("\n");
-		sb.append(" *").append("\n");
-		param.ifPresent(t -> Arrays.stream(t.split("\n"))
-				.forEach(l -> sb.append(" * @param ").append(l).append(".").append("\n")));
-		sb.append(" * @return the DSL to continue the construction of the matcher.").append("\n");
+				" * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link "
+						+ MATCHERS + "#both(org.hamcrest.Matcher)}.\n");
+		sb.append(" *\n");
+		param.ifPresent(
+				t -> Arrays.stream(t.split("\n")).forEach(l -> sb.append(" * @param ").append(l).append(".\n")));
+		sb.append(" * @return the DSL to continue the construction of the matcher.\n");
 		see.ifPresent(t -> sb.append(" * @see ").append(t).append("\n"));
 		sb.append(" */");
 		return sb.toString();
 	}
 
-	public String buildImplementation(String declaration, String body) {
-		return new StringBuilder().append("@Override").append("\n").append("public ").append(declaration).append(" {\n")
-				.append("  ").append(body.replaceAll("\\R", "\n" + "  ")).append("\n").append("}").append("\n")
-				.toString();
+	public static String buildImplementation(String declaration, String body) {
+		return String.format("@Override\npublic %1$s {\n  %2$s\n}\n", declaration, body.replaceAll("\\R", "\n" + "  "));
 	}
 
-	public String buildDsl(String javadoc, String declaration) {
-		return new StringBuilder().append(javadoc.replaceAll("\\R", "\n")).append("\n").append(declaration)
-				.append(";\n").toString();
+	public static String buildDsl(String javadoc, String declaration) {
+		return String.format("%1$s\n%2$s;\n", javadoc.replaceAll("\\R", "\n"), declaration);
 	}
 
 	public String buildDefaultDsl(String javadoc, String declaration, String innerMatcher) {
-		return new StringBuilder().append(javadoc.replaceAll("\\R", "\n")).append("\n").append("default ")
-				.append(declaration).append("{\n").append("  ").append("return ").append(fieldName).append("(")
-				.append(innerMatcher).append(");\n").append("}").toString();
+		return String.format("%1$s\ndefault %2$s{\n  return %3$s(%4$s);\n}", javadoc.replaceAll("\\R", "\n"),
+				declaration, fieldName, innerMatcher);
+
 	}
 
 	public String generateDeclaration(String postFix, String arguments) {
@@ -321,7 +308,7 @@ public class FieldDescription {
 						Optional.of(
 								"value an expected value for the field, which will be compared using the is matcher"),
 						Optional.of(SEE_TEXT_FOR_IS_MATCHER)),
-				generateDeclaration("", fieldType + " value"), "org.hamcrest.Matchers.is(value)")).append("\n");
+				generateDeclaration("", fieldType + " value"), MATCHERS + ".is(value)")).append("\n");
 
 		sb.append(buildDefaultDsl(
 				getJavaDocFor(Optional.of("by converting the received field before validat it"),
@@ -339,158 +326,113 @@ public class FieldDescription {
 	public String getDslForDefaultChaining() {
 		// can'ut use generateDeclaration here
 		String name = fieldTypeAsTypeElement.getSimpleName().toString();
-		return buildDsl(
-				getJavaDocFor(Optional.of("by starting a matcher for this field"), Optional.empty(), Optional.empty()),
-				fullyQualifiedNameMatcherInSameRound + "." + name + "Matcher" + "<" + defaultReturnMethod + "> "
-						+ fieldName + "With()");
+		return buildDsl(getJavaDocFor("by starting a matcher for this field"), fullyQualifiedNameMatcherInSameRound
+				+ "." + name + "Matcher" + "<" + defaultReturnMethod + "> " + fieldName + "With()");
 	}
 
 	public String getDslForString() {
 		StringBuilder sb = new StringBuilder();
-
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that the string contains another one"),
-						Optional.of("other the string is contains in the other one"),
-						Optional.of("org.hamcrest.Matchers#containsString(java.lang.String)")),
-				generateDeclaration("ContainsString", "String other"), "org.hamcrest.Matchers.containsString(other)"));
-
+				getJavaDocFor("that the string contains another one", "other the string is contains in the other one",
+						MATCHERS + "#containsString(java.lang.String)"),
+				generateDeclaration("ContainsString", "String other"), MATCHERS + ".containsString(other)"));
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that the string starts with another one"),
-						Optional.of("other the string to use to compare"),
-						Optional.of("org.hamcrest.Matchers#startsWith(java.lang.String)")),
-				generateDeclaration("StartsWith", "String other"), "org.hamcrest.Matchers.startsWith(other)"));
-
+				getJavaDocFor("that the string starts with another one", "other the string to use to compare",
+						MATCHERS + "#startsWith(java.lang.String)"),
+				generateDeclaration("StartsWith", "String other"), MATCHERS + ".startsWith(other)"));
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that the string ends with another one"),
-						Optional.of("other the string to use to compare"),
-						Optional.of("org.hamcrest.Matchers#endsWith(java.lang.String)")),
-				generateDeclaration("EndsWith", "String other"), "org.hamcrest.Matchers.endsWith(other)"));
-
+				getJavaDocFor("that the string ends with another one", "other the string to use to compare",
+						MATCHERS + "#endsWith(java.lang.String)"),
+				generateDeclaration("EndsWith", "String other"), MATCHERS + ".endsWith(other)"));
 		return sb.toString();
 	}
 
 	public String getDslForIterable() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that the iterable is empty"), Optional.empty(), Optional.empty()),
-				generateDeclaration("IsEmptyIterable", ""),
-				"(org.hamcrest.Matcher)org.hamcrest.Matchers.emptyIterable()"));
+		sb.append(buildDefaultDsl(getJavaDocFor("that the iterable is empty"),
+				generateDeclaration("IsEmptyIterable", ""), "(org.hamcrest.Matcher)" + MATCHERS + ".emptyIterable()"));
 
 		return sb.toString();
 	}
 
 	public String getDslForIterableWithGeneric() {
 		StringBuilder sb = new StringBuilder();
-
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that the iterable contains the received elements"),
-						Optional.of("elements the elements"),
-						Optional.of("org.hamcrest.Matchers#contains(java.lang.Object[])")),
-				generateDeclaration("Contains", generic + "... elements"), "org.hamcrest.Matchers.contains(elements)"));
-
+				getJavaDocFor("that the iterable contains the received elements", "elements the elements",
+						MATCHERS + "#contains(java.lang.Object[])"),
+				generateDeclaration("Contains", generic + "... elements"), MATCHERS + ".contains(elements)"));
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that the iterable contains the received elements, using matchers"),
-						Optional.of("matchersOnElements the matchers on the elements"),
-						Optional.of("org.hamcrest.Matchers#contains(org.hamcrest.Matcher[])")),
+				getJavaDocFor("that the iterable contains the received elements, using matchers",
+						DEFAULT_JAVADOC_MATCHER_ON_ELEMENTS, MATCHERS + "#contains(org.hamcrest.Matcher[])"),
 				generateDeclaration("Contains", "org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
-				"org.hamcrest.Matchers.contains(matchersOnElements)"));
-
+				MATCHERS + ".contains(matchersOnElements)"));
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that the iterable contains the received elements in any order"),
-						Optional.of("elements the elements"),
-						Optional.of("org.hamcrest.Matchers#containsInAnyOrder(java.lang.Object[])")),
+				getJavaDocFor("that the iterable contains the received elements in any order", "elements the elements",
+						MATCHERS + "#containsInAnyOrder(java.lang.Object[])"),
 				generateDeclaration("ContainsInAnyOrder", generic + "... elements"),
-				"org.hamcrest.Matchers.containsInAnyOrder(elements)"));
-
-		sb.append(
-				buildDefaultDsl(
-						getJavaDocFor(
-								Optional.of(
-										"that the iterable contains the received elements, using matchers in any order"),
-								Optional.of("matchersOnElements the matchers on the elements"),
-								Optional.of("org.hamcrest.Matchers#containsInAnyOrder(org.hamcrest.Matcher[])")),
-						generateDeclaration("ContainsInAnyOrder",
-								"org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
-				"org.hamcrest.Matchers.containsInAnyOrder(matchersOnElements)"));
-
+				MATCHERS + ".containsInAnyOrder(elements)"));
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that the iterable contains the received elements, using list of matcher"),
-						Optional.of("matchersOnElements the matchers on the elements"),
-						Optional.of("org.hamcrest.Matchers#contains(java.util.List)")),
+				getJavaDocFor("that the iterable contains the received elements, using matchers in any order",
+						DEFAULT_JAVADOC_MATCHER_ON_ELEMENTS, MATCHERS + "#containsInAnyOrder(org.hamcrest.Matcher[])"),
+				generateDeclaration("ContainsInAnyOrder",
+						"org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
+				MATCHERS + ".containsInAnyOrder(matchersOnElements)"));
+		sb.append(buildDefaultDsl(
+				getJavaDocFor("that the iterable contains the received elements, using list of matcher",
+						DEFAULT_JAVADOC_MATCHER_ON_ELEMENTS, MATCHERS + "#contains(java.util.List)"),
 				generateDeclaration("Contains",
 						"java.util.List<org.hamcrest.Matcher<? super " + generic + ">> matchersOnElements"),
-				"org.hamcrest.Matchers.contains(matchersOnElements)"));
-
+				MATCHERS + ".contains(matchersOnElements)"));
 		return sb.toString();
 	}
 
 	public String getDslForArray() {
-		return buildDefaultDsl(
-				getJavaDocFor(Optional.of("that the array is empty"), Optional.empty(), Optional.empty()),
-				generateDeclaration("IsEmpty", ""), "(org.hamcrest.Matcher)org.hamcrest.Matchers.emptyArray()");
+		return buildDefaultDsl(getJavaDocFor("that the array is empty"), generateDeclaration("IsEmpty", ""),
+				"(org.hamcrest.Matcher)" + MATCHERS + ".emptyArray()");
 	}
 
 	public String getDslForCollection() {
-		return buildDefaultDsl(
-				getJavaDocFor(Optional.of("that the collection is empty"), Optional.empty(), Optional.empty()),
-				generateDeclaration("IsEmpty", ""), "(org.hamcrest.Matcher)org.hamcrest.Matchers.empty()");
+		return buildDefaultDsl(getJavaDocFor("that the collection is empty"), generateDeclaration("IsEmpty", ""),
+				"(org.hamcrest.Matcher)" + MATCHERS + ".empty()");
 	}
 
 	public String getDslForOptional() {
 		StringBuilder sb = new StringBuilder();
-
-		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("with a present optional"), Optional.empty(), Optional.empty()),
-				generateDeclaration("IsPresent", ""),
+		sb.append(buildDefaultDsl(getJavaDocFor("with a present optional"), generateDeclaration("IsPresent", ""),
 				"new org.hamcrest.CustomTypeSafeMatcher<" + fieldType
 						+ ">(\"optional is present\"){ public boolean matchesSafely(" + fieldType
 						+ " o) {return o.isPresent();}}"));
-
-		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("with a not present optional"), Optional.empty(), Optional.empty()),
-				generateDeclaration("IsNotPresent", ""),
+		sb.append(buildDefaultDsl(getJavaDocFor("with a not present optional"), generateDeclaration("IsNotPresent", ""),
 				"new org.hamcrest.CustomTypeSafeMatcher<" + fieldType
 						+ ">(\"optional is not present\"){ public boolean matchesSafely(" + fieldType
 						+ " o) {return !o.isPresent();}}"));
-
 		return sb.toString();
 	}
 
 	public String getDslForComparable() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that this field is equals to another one, using the compareTo method"),
-						Optional.of("value the value to compare with"),
-						Optional.of("org.hamcrest.Matchers#comparesEqualTo(java.lang.Comparable)")),
-				generateDeclaration("ComparesEqualTo", fieldType + " value"),
-				"org.hamcrest.Matchers.comparesEqualTo(value)"));
-
+				getJavaDocFor("that this field is equals to another one, using the compareTo method",
+						"value the value to compare with", MATCHERS + "#comparesEqualTo(java.lang.Comparable)"),
+				generateDeclaration("ComparesEqualTo", fieldType + " value"), MATCHERS + ".comparesEqualTo(value)"));
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that this field is less than another value"),
-						Optional.of("value the value to compare with"),
-						Optional.of("org.hamcrest.Matchers#lessThan(java.lang.Comparable)")),
-				generateDeclaration("LessThan", fieldType + " value"), "org.hamcrest.Matchers.lessThan(value)"));
-
+				getJavaDocFor("that this field is less than another value", "value the value to compare with",
+						MATCHERS + "#lessThan(java.lang.Comparable)"),
+				generateDeclaration("LessThan", fieldType + " value"), MATCHERS + ".lessThan(value)"));
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that this field is less or equal than another value"),
-						Optional.of("value the value to compare with"),
-						Optional.of("org.hamcrest.Matchers#lessThanOrEqualTo(java.lang.Comparable)")),
+				getJavaDocFor("that this field is less or equal than another value", "value the value to compare with",
+						MATCHERS + "#lessThanOrEqualTo(java.lang.Comparable)"),
 				generateDeclaration("LessThanOrEqualTo", fieldType + " value"),
-				"org.hamcrest.Matchers.lessThanOrEqualTo(value)"));
-
+				MATCHERS + ".lessThanOrEqualTo(value)"));
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that this field is greater than another value"),
-						Optional.of("value the value to compare with"),
-						Optional.of("org.hamcrest.Matchers#greaterThan(java.lang.Comparable)")),
-				generateDeclaration("GreaterThan", fieldType + " value"), "org.hamcrest.Matchers.greaterThan(value)"));
-
+				getJavaDocFor("that this field is greater than another value", "value the value to compare with",
+						MATCHERS + "#greaterThan(java.lang.Comparable)"),
+				generateDeclaration("GreaterThan", fieldType + " value"), MATCHERS + ".greaterThan(value)"));
 		sb.append(buildDefaultDsl(
-				getJavaDocFor(Optional.of("that this field is greater or equal than another value"),
-						Optional.of("value the value to compare with"),
-						Optional.of("org.hamcrest.Matchers#greaterThanOrEqualTo(java.lang.Comparable)")),
+				getJavaDocFor("that this field is greater or equal than another value",
+						"value the value to compare with", MATCHERS + "#greaterThanOrEqualTo(java.lang.Comparable)"),
 				generateDeclaration("GreaterThanOrEqualTo", fieldType + " value"),
-				"org.hamcrest.Matchers.greaterThanOrEqualTo(value)"));
-
+				MATCHERS + ".greaterThanOrEqualTo(value)"));
 		return sb.toString();
 	}
 
@@ -502,23 +444,22 @@ public class FieldDescription {
 		StringBuilder sb = new StringBuilder();
 		sb.append("private static class " + methodFieldName + "Matcher" + enclosingClassOfFieldFullGeneric
 				+ " extends org.hamcrest.FeatureMatcher<" + fullyQualifiedNameEnclosingClassOfField
-				+ enclosingClassOfFieldGeneric + "," + fieldType + "> {").append("\n");
-		sb.append("  public " + methodFieldName + "Matcher(org.hamcrest.Matcher<? super " + fieldType + "> matcher) {")
-				.append("\n");
-		sb.append("    super(matcher,\"" + fieldName + "\",\"" + fieldName + "\");").append("\n");
-		sb.append("  }").append("\n");
+				+ enclosingClassOfFieldGeneric + "," + fieldType + "> {\n");
+		sb.append(
+				"  public " + methodFieldName + "Matcher(org.hamcrest.Matcher<? super " + fieldType + "> matcher) {\n");
+		sb.append("    super(matcher,\"" + fieldName + "\",\"" + fieldName + "\");\n");
+		sb.append("  }\n");
 
 		sb.append("  protected " + fieldType + " featureValueOf(" + fullyQualifiedNameEnclosingClassOfField
-				+ enclosingClassOfFieldGeneric + " actual) {").append("\n");
-		sb.append("    return actual." + fieldAccessor + ";").append("\n");
-		sb.append("  }").append("\n");
-		sb.append("}").append("\n");
-
+				+ enclosingClassOfFieldGeneric + " actual) {\n");
+		sb.append("    return actual." + fieldAccessor + ";\n");
+		sb.append("  }\n");
+		sb.append("}\n");
 		return sb.toString();
 	}
 
 	public String getFieldCopyDefault(String lhs, String rhs) {
-		return lhs + "." + fieldName + "(org.hamcrest.Matchers.is(" + rhs + "." + fieldAccessor + "))";
+		return lhs + "." + fieldName + "(" + MATCHERS + ".is(" + rhs + "." + fieldAccessor + "))";
 	}
 
 	public String getSameValueMatcherFor(String target) {
@@ -528,21 +469,21 @@ public class FieldDescription {
 	}
 
 	public String getFieldCopySameRound(String lhs, String rhs) {
-		return lhs + "." + fieldName + "(" + rhs + "." + fieldAccessor + "==null?org.hamcrest.Matchers.nullValue():"
+		return lhs + "." + fieldName + "(" + rhs + "." + fieldAccessor + "==null?" + MATCHERS + ".nullValue():"
 				+ getSameValueMatcherFor(rhs + "." + fieldAccessor) + ")";
 	}
 
 	public String generateMatcherBuilderReferenceFor(String generic) {
-		return containingElementMirror.findMirrorFor(generic).map(
+		return Optional.ofNullable(roundMirror.getByName(generic)).map(
 				t -> t.getFullyQualifiedNameOfGeneratedClass() + "::" + t.getMethodShortClassName() + "WithSameValue")
-				.orElse("org.hamcrest.Matchers::is");
+				.orElse(MATCHERS + "::is");
 	}
 
 	public String getFieldCopyForList(String lhs, String rhs) {
-		return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + fieldName
-				+ "(org.hamcrest.Matchers.nullValue()); } else if (" + rhs + "." + fieldAccessor + ".isEmpty()) {" + lhs
-				+ "." + fieldName + "IsEmptyIterable(); } else {" + lhs + "." + fieldName + "Contains(" + rhs + "."
-				+ fieldAccessor + ".stream().map(" + generateMatcherBuilderReferenceFor(generic)
+		return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + fieldName + "(" + MATCHERS
+				+ ".nullValue()); } else if (" + rhs + "." + fieldAccessor + ".isEmpty()) {" + lhs + "." + fieldName
+				+ "IsEmptyIterable(); } else {" + lhs + "." + fieldName + "Contains(" + rhs + "." + fieldAccessor
+				+ ".stream().map(" + generateMatcherBuilderReferenceFor(generic)
 				+ ").collect(java.util.stream.Collectors.toList())); }";
 	}
 
@@ -570,8 +511,8 @@ public class FieldDescription {
 	}
 
 	public String asMatcherField() {
-		return "private " + methodFieldName + "Matcher " + fieldName + " = new " + methodFieldName
-				+ "Matcher(org.hamcrest.Matchers.anything(" + (ignore ? "\"This field is ignored \"+"
+		return "private " + methodFieldName + "Matcher " + fieldName + " = new " + methodFieldName + "Matcher("
+				+ MATCHERS + ".anything(" + (ignore ? "\"This field is ignored \"+"
 						+ CommonUtils.toJavaSyntax(getDescriptionForIgnoreIfApplicable()) : "")
 				+ "));";
 	}

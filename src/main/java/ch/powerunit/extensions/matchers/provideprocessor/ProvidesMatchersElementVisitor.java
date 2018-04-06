@@ -2,7 +2,6 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 
 import java.util.Optional;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.SimpleElementVisitor8;
@@ -10,43 +9,36 @@ import javax.tools.Diagnostic.Kind;
 
 class ProvidesMatchersElementVisitor extends SimpleElementVisitor8<Optional<TypeElement>, Void> {
 
-	private final ProvidesMatchersAnnotationsProcessor providesMatchersAnnotationsProcessor;
-	private final ProcessingEnvironment processingEnv;
-	private final TypeElement provideMatchersTE;
+	private final RoundMirror roundMirror;
 
-	public ProvidesMatchersElementVisitor(ProvidesMatchersAnnotationsProcessor providesMatchersAnnotationsProcessor,
-			ProcessingEnvironment processingEnv, TypeElement provideMatchersTE) {
-		this.providesMatchersAnnotationsProcessor = providesMatchersAnnotationsProcessor;
-		this.processingEnv = processingEnv;
-		this.provideMatchersTE = provideMatchersTE;
+	public ProvidesMatchersElementVisitor(RoundMirror roundMirror) {
+		this.roundMirror = roundMirror;
 	}
 
 	@Override
 	public Optional<TypeElement> visitType(TypeElement e, Void p) {
 		switch (e.getKind()) {
 		case ENUM:
-			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
-					"The annotation `ProvideMatchers` is used on an enum, which is not supported", e,
-					this.providesMatchersAnnotationsProcessor.getProvideMatchersAnnotation(provideMatchersTE,
-							processingEnv.getElementUtils().getAllAnnotationMirrors(e)));
+			warningForType(e, "enum");
 			return Optional.empty();
 		case INTERFACE:
-			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
-					"The annotation `ProvideMatchers` is used on an interface, which is not supported", e,
-					this.providesMatchersAnnotationsProcessor.getProvideMatchersAnnotation(provideMatchersTE,
-							processingEnv.getElementUtils().getAllAnnotationMirrors(e)));
+			warningForType(e, "interface");
 			return Optional.empty();
 		default:
+			return Optional.of(e);
 		}
-		return Optional.of(e);
 	}
 
 	@Override
 	protected Optional<TypeElement> defaultAction(Element e, Void p) {
-		processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
-				"The annotation `ProvideMatchers` is used on an unsupported element", e,
-				this.providesMatchersAnnotationsProcessor.getProvideMatchersAnnotation(provideMatchersTE,
-						processingEnv.getElementUtils().getAllAnnotationMirrors(e)));
+		warningForType(e, "unexpected element");
 		return Optional.empty();
+	}
+
+	private void warningForType(Element e, String type) {
+		roundMirror.getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING,
+				"The annotation `ProvideMatchers` is used on an " + type + ", which is not supported", e,
+				roundMirror.getProvideMatchersAnnotation(
+						roundMirror.getProcessingEnv().getElementUtils().getAllAnnotationMirrors(e)));
 	}
 }
