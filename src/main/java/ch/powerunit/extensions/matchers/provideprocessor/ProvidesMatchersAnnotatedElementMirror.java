@@ -202,11 +202,13 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	}
 
 	public String generatePublicInterface() {
+		return new StringBuilder().append(generateMainBuildPublicInterface())
+				.append(generateMainParentPublicInterface()).append(generateExposedPublicInterface()).toString();
+
+	}
+
+	private String generateExposedPublicInterface() {
 		StringBuilder sb = new StringBuilder();
-
-		sb.append(generateMainBuildPublicInterface());
-		sb.append(generateMainParentPublicInterface());
-
 		sb.append(addPrefix("  ",
 				generateJavaDoc("DSL interface for matcher on " + getDefaultLinkForAnnotatedClass(), Optional.empty(),
 						Optional.empty(), Optional.empty(), true, true)))
@@ -222,9 +224,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 
 		sb.append(generateAsPublicInterface());
 		sb.append("  }").append("\n");
-
 		return sb.toString();
-
 	}
 
 	private String generateAsPublicInterface() {
