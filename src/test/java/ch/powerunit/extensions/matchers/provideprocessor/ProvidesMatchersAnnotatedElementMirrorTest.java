@@ -89,7 +89,7 @@ public class ProvidesMatchersAnnotatedElementMirrorTest implements TestSuite {
 	public void testGenerateAndExtractFieldAndParentPrivateMatcherWithoutField() {
 		ProvidesMatchersAnnotatedElementMirror underTest = new ProvidesMatchersAnnotatedElementMirror(typeElement,
 				roundMirror);
-		assertThat(underTest.generateAndExtractFieldAndParentPrivateMatcher()).is(
+		assertThat(underTest.generateMatchers()).is(
 				"\n  private static <_TARGET,_SOURCE> org.hamcrest.Matcher<_SOURCE> asFeatureMatcher(String msg,java.util.function.Function<_SOURCE,_TARGET> converter,org.hamcrest.Matcher<? super _TARGET> matcher) {\n   return new org.hamcrest.FeatureMatcher<_SOURCE,_TARGET>(matcher, msg, msg) {\n     protected _TARGET featureValueOf(_SOURCE actual) {\n      return converter.apply(actual);\n    }};\n  }\n\n\n");
 	}
 

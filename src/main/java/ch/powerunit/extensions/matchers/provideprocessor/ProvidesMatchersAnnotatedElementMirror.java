@@ -134,7 +134,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				wjfo.println();
 				wjfo.println("  private " + simpleNameOfGeneratedClass + "() {}");
 				wjfo.println();
-				wjfo.println(generateAndExtractFieldAndParentPrivateMatcher());
+				wjfo.println(generateMatchers());
 				wjfo.println();
 				wjfo.println(generatePublicInterface());
 				wjfo.println();
@@ -158,7 +158,17 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				+ " The class for which matchers are provided.\n */\n";
 	}
 
-	public String generateAndExtractFieldAndParentPrivateMatcher() {
+	public String generateMatchers() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(generateFeatureMatcher());
+		sb.append(generateFieldsMatcher());
+		if (hasParent) {
+			sb.append(generateParentMatcher());
+		}
+		return sb.toString();
+	}
+
+	public String generateFeatureMatcher() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("\n")
 				.append("  private static <_TARGET,_SOURCE> org.hamcrest.Matcher<_SOURCE> asFeatureMatcher(String msg,java.util.function.Function<_SOURCE,_TARGET> converter,org.hamcrest.Matcher<? super _TARGET> matcher) {")
@@ -166,23 +176,28 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				.append("\n").append("     protected _TARGET featureValueOf(_SOURCE actual) {").append("\n")
 				.append("      return converter.apply(actual);").append("\n").append("    }};").append("\n")
 				.append("  }").append("\n").append("\n");
+		return sb.toString();
+	}
 
-		sb.append(fields.stream().map(f -> f.getMatcherForField()).map(f -> addPrefix("  ", f)).collect(joining("\n")))
-				.append("\n");
-		if (hasParent) {
-			sb.append("  private static class SuperClassMatcher").append(fullGeneric)
-					.append(" extends org.hamcrest.FeatureMatcher<")
-					.append(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher).append(",")
-					.append(fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher + "> {").append("\n\n")
-					.append("    public SuperClassMatcher(org.hamcrest.Matcher<? super ")
-					.append(fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher).append("> matcher) {")
-					.append("\n").append("      super(matcher,\"parent\",\"parent\");").append("\n").append("  }")
-					.append("\n\n\n").append("    protected ")
-					.append(fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher).append(" featureValueOf(")
-					.append(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher).append(" actual) {").append("\n")
-					.append("      return actual;").append("\n").append("    }").append("\n\n").append("  }")
-					.append("\n\n\n");
-		}
+	public String generateFieldsMatcher() {
+		return fields.stream().map(f -> f.getMatcherForField()).map(f -> addPrefix("  ", f)).collect(joining("\n"))
+				+ "\n";
+	}
+
+	public String generateParentMatcher() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("  private static class SuperClassMatcher").append(fullGeneric)
+				.append(" extends org.hamcrest.FeatureMatcher<")
+				.append(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher).append(",")
+				.append(fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher + "> {").append("\n\n")
+				.append("    public SuperClassMatcher(org.hamcrest.Matcher<? super ")
+				.append(fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher).append("> matcher) {")
+				.append("\n").append("      super(matcher,\"parent\",\"parent\");").append("\n").append("  }")
+				.append("\n\n\n").append("    protected ")
+				.append(fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher).append(" featureValueOf(")
+				.append(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher).append(" actual) {").append("\n")
+				.append("      return actual;").append("\n").append("    }").append("\n\n").append("  }")
+				.append("\n\n\n");
 		return sb.toString();
 	}
 
@@ -190,7 +205,6 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		StringBuilder sb = new StringBuilder();
 
 		sb.append(generateMainBuildPublicInterface());
-
 		sb.append(generateMainParentPublicInterface());
 
 		sb.append(addPrefix("  ",
@@ -203,7 +217,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				.append(simpleNameOfGeneratedInterfaceMatcher).append("EndSyntaxicSugar ").append(genericParent)
 				.append(" {").append("\n");
 
-		sb.append(fields.stream().filter(FieldDescription::isNotIgnore).map(f -> f.getDslInterface())
+		sb.append(fields.stream().filter(FieldDescription::isNotIgnore).map(FieldDescription::getDslInterface)
 				.map(s -> addPrefix("    ", s)).collect(joining("\n"))).append("\n\n");
 
 		sb.append(generateAsPublicInterface());
@@ -622,8 +636,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 			return " * \n";
 		}
 		boolean insideParam = false;
-		StringBuilder sb = new StringBuilder();
-		sb.append(" * \n");
+		StringBuilder sb = new StringBuilder(" * \n");
 		for (String line : docComment.split("\\R")) {
 			if (insideParam && line.matches("^\\s*@.*$")) {
 				insideParam = false;
@@ -632,7 +645,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				insideParam = true;
 			}
 			if (insideParam) {
-				sb.append(" *" + line).append("\n");
+				sb.append(" *").append(line).append("\n");
 			}
 		}
 		return sb.toString();

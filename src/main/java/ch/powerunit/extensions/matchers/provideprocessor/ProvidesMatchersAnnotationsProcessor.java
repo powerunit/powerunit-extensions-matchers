@@ -37,7 +37,6 @@ import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.FileObject;
@@ -98,10 +97,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	private void processReport() {
 		try {
 			FileObject jfo = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "",
-					"META-INF/" + getClass().getName() + "/matchers.xml",
-					allGeneratedMatchers.getGeneratedMatcher().stream()
-							.map(g -> g.getMirror().getTypeElementForClassAnnotatedWithProvideMatcher())
-							.collect(toList()).toArray(new Element[0]));
+					"META-INF/" + getClass().getName() + "/matchers.xml", allGeneratedMatchers.listElements());
 			try (OutputStream os = jfo.openOutputStream();) {
 				Marshaller m = JAXBContext.newInstance(GeneratedMatchers.class).createMarshaller();
 				m.setProperty("jaxb.formatted.output", true);
@@ -120,13 +116,11 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			processingEnv.getMessager().printMessage(Kind.NOTE,
 					"The interface `" + factory + "` will be generated as a factory interface.");
 			JavaFileObject jfo = processingEnv.getFiler().createSourceFile(factory,
-					allGeneratedMatchers.getGeneratedMatcher().stream()
-							.map(g -> g.getMirror().getTypeElementForClassAnnotatedWithProvideMatcher())
-							.collect(toList()).toArray(new Element[0]));
+					allGeneratedMatchers.listElements());
 			try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
-				String cName = factory.replaceAll("^([^.]+\\.)*", "");
 				CommonUtils.generateFactoryClass(wjfo, ProvidesMatchersAnnotationsProcessor.class,
-						factory.replaceAll("\\.[^.]+$", ""), cName, () -> factories.stream());
+						factory.replaceAll("\\.[^.]+$", ""), factory.replaceAll("^([^.]+\\.)*", ""),
+						() -> factories.stream());
 			}
 		} catch (IOException e1) {
 			processingEnv.getMessager().printMessage(Kind.ERROR,
