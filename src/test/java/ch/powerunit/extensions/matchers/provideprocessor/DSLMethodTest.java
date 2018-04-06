@@ -40,6 +40,18 @@ public class DSLMethodTest implements TestSuite {
 	}
 
 	@Test
+	public void testDSLMethodNoArgumentOneLine() {
+		DSLMethod m = new DSLMethod(new String[] { "l1", "l2" }, "boolean isOK", "l1");
+		assertThat(m.asStaticImplementation())
+				.is("/**\n * l1\n * l2\n */\n@org.hamcrest.Factory\npublic static boolean isOK() {\n  l1\n}\n");
+		assertThat(m.getMethodName()).is("isOK");
+		assertThat(m.getRealArguments()).is("");
+		assertThat(m.getRealArgumentsName()).is("");
+		assertThat(m.asDefaultReference("target"))
+				.is("/**\n * l1\n * l2\n */\ndefault boolean isOK() {\n  return target.isOK();\n}\n");
+	}
+
+	@Test
 	public void testDSLMethodOneArgument() {
 		DSLMethod m = new DSLMethod(new String[] { "l1", "l2" }, "boolean isOK",
 				new String[] { "java.lang.String", "one" }, new String[] { "l1", "l2" });
