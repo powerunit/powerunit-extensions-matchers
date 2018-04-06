@@ -327,22 +327,18 @@ public class FieldDescription {
 
 	public String getDslForString() {
 		StringBuilder sb = new StringBuilder();
-
 		sb.append(buildDefaultDsl(
 				getJavaDocFor("that the string contains another one", "other the string is contains in the other one",
 						"org.hamcrest.Matchers#containsString(java.lang.String)"),
 				generateDeclaration("ContainsString", "String other"), "org.hamcrest.Matchers.containsString(other)"));
-
 		sb.append(buildDefaultDsl(
 				getJavaDocFor("that the string starts with another one", "other the string to use to compare",
 						"org.hamcrest.Matchers#startsWith(java.lang.String)"),
 				generateDeclaration("StartsWith", "String other"), "org.hamcrest.Matchers.startsWith(other)"));
-
 		sb.append(buildDefaultDsl(
 				getJavaDocFor("that the string ends with another one", "other the string to use to compare",
 						"org.hamcrest.Matchers#endsWith(java.lang.String)"),
 				generateDeclaration("EndsWith", "String other"), "org.hamcrest.Matchers.endsWith(other)"));
-
 		return sb.toString();
 	}
 
@@ -363,20 +359,17 @@ public class FieldDescription {
 				getJavaDocFor("that the iterable contains the received elements", "elements the elements",
 						"org.hamcrest.Matchers#contains(java.lang.Object[])"),
 				generateDeclaration("Contains", generic + "... elements"), "org.hamcrest.Matchers.contains(elements)"));
-
 		sb.append(buildDefaultDsl(
 				getJavaDocFor("that the iterable contains the received elements, using matchers",
 						"matchersOnElements the matchers on the elements",
 						"org.hamcrest.Matchers#contains(org.hamcrest.Matcher[])"),
 				generateDeclaration("Contains", "org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
 				"org.hamcrest.Matchers.contains(matchersOnElements)"));
-
 		sb.append(buildDefaultDsl(
 				getJavaDocFor("that the iterable contains the received elements in any order", "elements the elements",
 						"org.hamcrest.Matchers#containsInAnyOrder(java.lang.Object[])"),
 				generateDeclaration("ContainsInAnyOrder", generic + "... elements"),
 				"org.hamcrest.Matchers.containsInAnyOrder(elements)"));
-
 		sb.append(buildDefaultDsl(
 				getJavaDocFor("that the iterable contains the received elements, using matchers in any order",
 						"matchersOnElements the matchers on the elements",
@@ -384,7 +377,6 @@ public class FieldDescription {
 				generateDeclaration("ContainsInAnyOrder",
 						"org.hamcrest.Matcher<" + generic + ">... matchersOnElements"),
 				"org.hamcrest.Matchers.containsInAnyOrder(matchersOnElements)"));
-
 		sb.append(
 				buildDefaultDsl(
 						getJavaDocFor("that the iterable contains the received elements, using list of matcher",
@@ -411,21 +403,18 @@ public class FieldDescription {
 
 	public String getDslForOptional() {
 		StringBuilder sb = new StringBuilder();
-
 		sb.append(buildDefaultDsl(
 				getJavaDocFor(Optional.of("with a present optional"), Optional.empty(), Optional.empty()),
 				generateDeclaration("IsPresent", ""),
 				"new org.hamcrest.CustomTypeSafeMatcher<" + fieldType
 						+ ">(\"optional is present\"){ public boolean matchesSafely(" + fieldType
 						+ " o) {return o.isPresent();}}"));
-
 		sb.append(buildDefaultDsl(
 				getJavaDocFor(Optional.of("with a not present optional"), Optional.empty(), Optional.empty()),
 				generateDeclaration("IsNotPresent", ""),
 				"new org.hamcrest.CustomTypeSafeMatcher<" + fieldType
 						+ ">(\"optional is not present\"){ public boolean matchesSafely(" + fieldType
 						+ " o) {return !o.isPresent();}}"));
-
 		return sb.toString();
 	}
 
@@ -435,28 +424,23 @@ public class FieldDescription {
 				"value the value to compare with", "org.hamcrest.Matchers#comparesEqualTo(java.lang.Comparable)"),
 				generateDeclaration("ComparesEqualTo", fieldType + " value"),
 				"org.hamcrest.Matchers.comparesEqualTo(value)"));
-
 		sb.append(buildDefaultDsl(
 				getJavaDocFor("that this field is less than another value", "value the value to compare with",
 						"org.hamcrest.Matchers#lessThan(java.lang.Comparable)"),
 				generateDeclaration("LessThan", fieldType + " value"), "org.hamcrest.Matchers.lessThan(value)"));
-
 		sb.append(buildDefaultDsl(
 				getJavaDocFor("that this field is less or equal than another value", "value the value to compare with",
 						"org.hamcrest.Matchers#lessThanOrEqualTo(java.lang.Comparable)"),
 				generateDeclaration("LessThanOrEqualTo", fieldType + " value"),
 				"org.hamcrest.Matchers.lessThanOrEqualTo(value)"));
-
 		sb.append(buildDefaultDsl(
 				getJavaDocFor("that this field is greater than another value", "value the value to compare with",
 						"org.hamcrest.Matchers#greaterThan(java.lang.Comparable)"),
 				generateDeclaration("GreaterThan", fieldType + " value"), "org.hamcrest.Matchers.greaterThan(value)"));
-
 		sb.append(buildDefaultDsl(getJavaDocFor("that this field is greater or equal than another value",
 				"value the value to compare with", "org.hamcrest.Matchers#greaterThanOrEqualTo(java.lang.Comparable)"),
 				generateDeclaration("GreaterThanOrEqualTo", fieldType + " value"),
 				"org.hamcrest.Matchers.greaterThanOrEqualTo(value)"));
-
 		return sb.toString();
 	}
 
