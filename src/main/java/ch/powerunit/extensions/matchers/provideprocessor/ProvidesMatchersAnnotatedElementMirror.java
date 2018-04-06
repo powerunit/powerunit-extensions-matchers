@@ -435,11 +435,11 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				.append("      return this;\n").append("    }\n").toString();
 	}
 
-	private Collection<DSLMethod> generateDSLStarter() {
+	public Collection<DSLMethod> generateDSLStarter() {
 		return dslProvider.stream().map(Supplier::get).collect(toList());
 	}
 
-	private DSLMethod generateDefaultDSLStarter() {
+	public DSLMethod generateDefaultDSLStarter() {
 		return new DSLMethod(
 				generateJavaDoc(getDefaultDescriptionForDsl(),
 						Optional.of(
@@ -454,7 +454,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 						: ("return new " + simpleNameOfGeneratedImplementationMatcher + genericNoParent + "();"));
 	}
 
-	private DSLMethod generateDefaultForChainingDSLStarter() {
+	public DSLMethod generateDefaultForChainingDSLStarter() {
 		return new DSLMethod(
 				generateJavaDoc(getDefaultDescriptionForDsl(),
 						Optional.of(
@@ -472,7 +472,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 								+ "(parentBuilder);"));
 	}
 
-	private DSLMethod generateParentDSLStarter() {
+	public DSLMethod generateParentDSLStarter() {
 		return new DSLMethod(
 				generateJavaDoc(getDefaultDescriptionForDsl(), Optional.empty(),
 						Optional.of("matcherOnParent the matcher on the parent data."), Optional.of("the DSL matcher"),
@@ -487,7 +487,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				"return " + fullyQualifiedNameOfGeneratedClass + "." + methodShortClassName + "With(matcherOnParent);");
 	}
 
-	private DSLMethod generateNoParentValueDSLStarter() {
+	public DSLMethod generateNoParentValueDSLStarter() {
 		String javadoc = generateJavaDoc(getDefaultDescriptionForDsl(), Optional.empty(),
 				Optional.of("other the other object to be used as a reference."), Optional.of("the DSL matcher"), true,
 				false);
@@ -505,7 +505,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				lines.toArray(new String[0]));
 	}
 
-	private DSLMethod generateParentValueDSLStarter() {
+	public DSLMethod generateParentValueDSLStarter() {
 		ProvidesMatchersAnnotatedElementMirror parentMirror = roundMirror
 				.getByName(typeElementForSuperClassOfClassAnnotatedWithProvideMatcher.getQualifiedName().toString());
 		String argumentForParentBuilder = parentMirror.fullyQualifiedNameOfGeneratedClass + "."
@@ -527,7 +527,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				lines.toArray(new String[0]));
 	}
 
-	private DSLMethod generateParentInSameRoundWithChaningDSLStarter() {
+	public DSLMethod generateParentInSameRoundWithChaningDSLStarter() {
 		ProvidesMatchersAnnotatedElementMirror parentMirror = roundMirror
 				.getByName(typeElementForSuperClassOfClassAnnotatedWithProvideMatcher.getQualifiedName().toString());
 		return new DSLMethod(
