@@ -185,20 +185,17 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	}
 
 	public String generateParentMatcher() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("  private static class SuperClassMatcher").append(fullGeneric)
+		return new StringBuilder("  private static class SuperClassMatcher").append(fullGeneric)
 				.append(" extends org.hamcrest.FeatureMatcher<")
 				.append(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher).append(",")
-				.append(fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher + "> {").append("\n\n")
+				.append(fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher + "> {\n\n")
 				.append("    public SuperClassMatcher(org.hamcrest.Matcher<? super ")
 				.append(fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher).append("> matcher) {")
-				.append("\n").append("      super(matcher,\"parent\",\"parent\");").append("\n").append("  }")
-				.append("\n\n\n").append("    protected ")
-				.append(fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher).append(" featureValueOf(")
-				.append(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher).append(" actual) {").append("\n")
-				.append("      return actual;").append("\n").append("    }").append("\n\n").append("  }")
-				.append("\n\n\n");
-		return sb.toString();
+				.append("\n").append("      super(matcher,\"parent\",\"parent\");\n").append("  }").append("\n\n\n")
+				.append("    protected ").append(fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher)
+				.append(" featureValueOf(").append(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher)
+				.append(" actual) {\n").append("      return actual;\n").append("    }\n\n").append("  }\n\n\n")
+				.toString();
 	}
 
 	public String generatePublicInterface() {

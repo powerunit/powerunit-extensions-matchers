@@ -65,10 +65,8 @@ public class ProvidesMatchersSubElementVisitor
 		if (e.getModifiers().contains(Modifier.PUBLIC) && e.getParameters().size() == 0
 				&& !e.getModifiers().contains(Modifier.STATIC)) {
 			String simpleName = e.getSimpleName().toString();
-			if (simpleName.startsWith("get")) {
-				return visiteExecutableGet(e, "get", p);
-			} else if (simpleName.startsWith("is")) {
-				return visiteExecutableGet(e, "is", p);
+			if (simpleName.matches("^((get)|(is)).*")) {
+				return visiteExecutableGet(e, "^(get)|(is)", p);
 			}
 		}
 		if (roundMirror.isInsideIgnoreList(e)) {
