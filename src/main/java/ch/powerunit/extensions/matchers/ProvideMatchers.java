@@ -229,4 +229,15 @@ public @interface ProvideMatchers {
 	 */
 	String comments() default "";
 
+	/**
+	 * This attribute may be used to generate additional exposition methods for
+	 * the object.
+	 * <p>
+	 * By default, only the standard method are generated.
+	 * 
+	 * @return additional method to be generated or an empty array by default.
+	 * @since 0.1.0
+	 */
+	ComplementaryExpositionMethod[]moreMethod() default {};
+
 }
