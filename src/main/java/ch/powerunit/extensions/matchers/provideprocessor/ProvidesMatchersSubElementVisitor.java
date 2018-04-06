@@ -55,10 +55,7 @@ public class ProvidesMatchersSubElementVisitor
 			return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, fieldName);
 		}
 		if (roundMirror.isInsideIgnoreList(e)) {
-			roundMirror.getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING,
-					"One of the annotation is not supported as this location ; Check that this field is public and not static",
-					e);
-			roundMirror.removeFromIgnoreList(e);
+			generateWarningForNotSupportedElementAndRemoveIt("Check that this field is public and not static", e);
 		}
 		return Optional.empty();
 	}
@@ -75,12 +72,16 @@ public class ProvidesMatchersSubElementVisitor
 			}
 		}
 		if (roundMirror.isInsideIgnoreList(e)) {
-			roundMirror.getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING,
-					"One of the annotation is not supported as this location ; Check that this method is public, doesn't have any parameter and is named isXXX or getXXX",
-					e);
-			roundMirror.removeFromIgnoreList(e);
+			generateWarningForNotSupportedElementAndRemoveIt(
+					"Check that this method is public, doesn't have any parameter and is named isXXX or getXXX", e);
 		}
 		return Optional.empty();
+	}
+
+	private void generateWarningForNotSupportedElementAndRemoveIt(String description, Element e) {
+		roundMirror.getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING,
+				"One of the annotation is not supported as this location ; " + description, e);
+		roundMirror.removeFromIgnoreList(e);
 	}
 
 	private Optional<FieldDescription> visiteExecutableGet(ExecutableElement e, String prefix,
