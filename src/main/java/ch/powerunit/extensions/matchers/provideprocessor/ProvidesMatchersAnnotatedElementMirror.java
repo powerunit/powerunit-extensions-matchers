@@ -25,6 +25,7 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
 import ch.powerunit.extensions.matchers.common.CommonUtils;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.DSLExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 
 public class ProvidesMatchersAnnotatedElementMirror {
@@ -120,6 +121,8 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		} else {
 			tmp.add(this::generateNoParentValueDSLStarter);
 		}
+		tmp.addAll(Optional.ofNullable(provideMatcherMirror.getDSLExtension()).orElseGet(Collections::emptyList)
+				.stream().map(t -> t.getDSLMethodFor(this)).flatMap(Collection::stream).collect(toList()));
 
 		this.dslProvider = Collections.unmodifiableList(tmp);
 	}
@@ -645,6 +648,10 @@ public class ProvidesMatchersAnnotatedElementMirror {
 
 	public String getMethodShortClassName() {
 		return methodShortClassName;
+	}
+
+	public String getSimpleNameOfClassAnnotatedWithProvideMatcher() {
+		return simpleNameOfClassAnnotatedWithProvideMatcher;
 	}
 
 	public GeneratedMatcher asXml() {

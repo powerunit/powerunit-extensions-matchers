@@ -23,13 +23,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 
 /**
  * @author borettim
  *
  */
-@ProvideMatchers
+@ProvideMatchers(moreMethod = ComplementaryExpositionMethod.CONTAINS)
 public class Pojo1 {
 	private String msg1;
 

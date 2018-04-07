@@ -17,49 +17,23 @@
  * You should have received a copy of the GNU General Public License
  * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
  */
-package ch.powerunit.extensions.matchers.samples;
+package ch.powerunit.extensions.matchers.provideprocessor.extension;
 
-import java.io.Serializable;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.function.Supplier;
 
 import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
+import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
 
-/**
- * @author borettim
- * @param <T>
- *            This is T
- * @param <O>
- *            This is O
- *
- */
-@ProvideMatchers(comments = "this is a \"comment\"", moreMethod = ComplementaryExpositionMethod.CONTAINS)
-public class Pojo3<T, O extends Serializable> {
-	public String msg1;
+public interface DSLExtension {
+	ComplementaryExpositionMethod supportedEnum();
 
-	public T msg2;
-
-	public O msg3;
-
-	private T msg4;
-
-	public T[] msg5;
-
-	public List<T> msg6;
-
-	/**
-	 * @return the msg4
-	 */
-	public T getMsg4() {
-		return msg4;
+	default boolean accept(ComplementaryExpositionMethod[] values) {
+		return values != null && Arrays.stream(values).filter(o -> o == supportedEnum()).findAny().isPresent();
 	}
 
-	/**
-	 * @param msg4
-	 *            the msg4 to set
-	 */
-	public void setMsg4(T msg4) {
-		this.msg4 = msg4;
-	}
+	Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementMirror element);
 
 }
