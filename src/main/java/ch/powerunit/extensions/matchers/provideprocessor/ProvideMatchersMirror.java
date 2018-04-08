@@ -34,11 +34,12 @@ import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.ArrayContainingDSLExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.ContainsDSLExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.DSLExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.HasItemsExtension;
 
 public class ProvideMatchersMirror {
 
-	private static final Collection<DSLExtension> EXTENSION = Collections
-			.unmodifiableList(Arrays.asList(new ContainsDSLExtension(), new ArrayContainingDSLExtension()));
+	private static final Collection<DSLExtension> EXTENSION = Collections.unmodifiableList(
+			Arrays.asList(new ContainsDSLExtension(), new ArrayContainingDSLExtension(), new HasItemsExtension()));
 
 	private final String comments;
 	private final String simpleNameOfGeneratedClass;

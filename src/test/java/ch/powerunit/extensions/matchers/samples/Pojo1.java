@@ -30,7 +30,8 @@ import ch.powerunit.extensions.matchers.ProvideMatchers;
  * @author borettim
  *
  */
-@ProvideMatchers(moreMethod = { ComplementaryExpositionMethod.CONTAINS, ComplementaryExpositionMethod.ARRAYCONTAINING })
+@ProvideMatchers(moreMethod = { ComplementaryExpositionMethod.CONTAINS, ComplementaryExpositionMethod.ARRAYCONTAINING,
+		ComplementaryExpositionMethod.HAS_ITEMS })
 public class Pojo1 {
 	private String msg1;
 

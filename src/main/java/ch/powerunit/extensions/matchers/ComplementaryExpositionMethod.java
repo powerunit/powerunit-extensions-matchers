@@ -28,14 +28,22 @@ package ch.powerunit.extensions.matchers;
 public enum ComplementaryExpositionMethod {
 	/**
 	 * This can be used to indicate that, for the annotated element, method
-	 * named {@code containsXXX} that returns Matcher for {@code Iterable}.
+	 * named {@code containsXXX} that returns Matcher for {@code Iterable} must
+	 * be created.
 	 * 
 	 */
 	CONTAINS, //
 	/**
 	 * This can be used to indicate that, for the annotated element, method
-	 * named {@code arrayContainingXXX} that returns Matcher for array.
+	 * named {@code arrayContainingXXX} that returns Matcher for array must be
+	 * created.
 	 * 
 	 */
-	ARRAYCONTAINING
+	ARRAYCONTAINING, //
+
+	/**
+	 * This can be used to indcate that, for the annotated element, method name
+	 * {@code hasItemsXXX} that return hasItems matcher must be created.
+	 */
+	HAS_ITEMS
 }
