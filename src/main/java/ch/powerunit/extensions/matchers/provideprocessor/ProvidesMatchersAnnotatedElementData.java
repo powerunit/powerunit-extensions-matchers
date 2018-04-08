@@ -17,9 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
  */
-package ch.powerunit.extensions.matchers.provideprocessor.extension;
-
-import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
+package ch.powerunit.extensions.matchers.provideprocessor;
 
 @FunctionalInterface
 public interface ProvidesMatchersAnnotatedElementData {
@@ -29,8 +27,16 @@ public interface ProvidesMatchersAnnotatedElementData {
 		return getFullData().getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric();
 	}
 
+	default String getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher() {
+		return getFullData().getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher();
+	}
+
 	default String getFullGeneric() {
 		return getFullData().getFullGeneric();
+	}
+
+	default String getGeneric() {
+		return getFullData().getGeneric();
 	}
 
 	default String getSimpleNameOfClassAnnotatedWithProvideMatcher() {
@@ -40,6 +46,10 @@ public interface ProvidesMatchersAnnotatedElementData {
 	default String getMethodShortClassName() {
 		return getFullData().getMethodShortClassName();
 	}
+	
+	default String getDefaultReturnMethod() {
+		return getFullData().getDefaultReturnMethod();
+	}
 
 	default String generateDSLMethodName(String prefix) {
 		return prefix + getSimpleNameOfClassAnnotatedWithProvideMatcher();
@@ -48,4 +58,5 @@ public interface ProvidesMatchersAnnotatedElementData {
 	default String generateDSLWithSameValueMethodName() {
 		return getMethodShortClassName() + "WithSameValue";
 	}
+	
 }

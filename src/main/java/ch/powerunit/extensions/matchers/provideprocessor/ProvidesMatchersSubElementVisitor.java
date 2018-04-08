@@ -95,7 +95,7 @@ public class ProvidesMatchersSubElementVisitor
 			Element e, ProvidesMatchersAnnotatedElementMirror p, String fieldName) {
 		return removeIfNeededAndThenReturn(
 				((e instanceof ExecutableElement) ? ((ExecutableElement) e).getReturnType() : e.asType())
-						.accept(extractNameVisitor, false).map(f -> new FieldDescription(p, fieldName, f, e)));
+						.accept(extractNameVisitor, false).map(f -> new FieldDescription(()->p, fieldName, f, e)));
 	}
 
 	@Override
