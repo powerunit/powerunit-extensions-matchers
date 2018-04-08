@@ -91,7 +91,7 @@ class FactoryAnnotatedElementMirror {
 					.append(element.getTypeParameters().stream()
 							.map((ve) -> ve.getSimpleName().toString() + (ve.getBounds().isEmpty() ? ""
 									: (" extends "
-											+ ve.getBounds().stream().map((b) -> b.toString()).collect(joining("&")))))
+											+ ve.getBounds().stream().map(Object::toString).collect(joining("&")))))
 							.collect(joining(",")))
 					.append("> ");
 		}
