@@ -30,4 +30,9 @@ public class CommonUtilsTest implements TestSuite {
 		assertThat(clean).containsString("public static final clazzName DSL = new clazzName() {};");
 		assertThat(clean).containsString("yxx");
 	}
+
+	@Test
+	public void testToJavaSyntax() {
+		assertThatFunction(CommonUtils::toJavaSyntax, "<\"><\r><\t><\n>").is("\"<\\\"><\\r><\\t><\\n>\"");
+	}
 }
