@@ -25,7 +25,6 @@ import java.util.function.Supplier;
 
 import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
-import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
 
 public class ContainsDSLExtension implements DSLExtension {
 
@@ -35,12 +34,12 @@ public class ContainsDSLExtension implements DSLExtension {
 	}
 
 	@Override
-	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementMirror element) {
+	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData element) {
 		String targetName = element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric();
 		String returnType = element.getFullGeneric() + " org.hamcrest.Matcher<java.lang.Iterable<? extends "
 				+ targetName + ">>";
-		String methodName = "contains" + element.getSimpleNameOfClassAnnotatedWithProvideMatcher();
-		String targetMethodName = element.getMethodShortClassName() + "WithSameValue";
+		String methodName = element.generateDSLMethodName("contains");
+		String targetMethodName = element.generateDSLWithSameValueMethodName();
 		return Arrays.asList(() -> generateContains1(targetName, targetMethodName, returnType, methodName),
 				() -> generateContains2(targetName, targetMethodName, returnType, methodName),
 				() -> generateContains3(targetName, targetMethodName, returnType, methodName));

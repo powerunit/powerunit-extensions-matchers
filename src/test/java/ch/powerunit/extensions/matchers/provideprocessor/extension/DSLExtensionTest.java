@@ -29,7 +29,6 @@ import ch.powerunit.Test;
 import ch.powerunit.TestSuite;
 import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
-import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
 
 public class DSLExtensionTest implements TestSuite {
 	@Test(fastFail = false)
@@ -42,7 +41,7 @@ public class DSLExtensionTest implements TestSuite {
 			}
 
 			@Override
-			public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementMirror element) {
+			public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData element) {
 				return null;
 			}
 		};

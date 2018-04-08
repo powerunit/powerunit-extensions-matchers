@@ -25,7 +25,6 @@ import java.util.function.Supplier;
 
 import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
-import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
 
 public interface DSLExtension {
 	ComplementaryExpositionMethod supportedEnum();
@@ -34,6 +33,6 @@ public interface DSLExtension {
 		return values != null && Arrays.stream(values).filter(o -> o == supportedEnum()).findAny().isPresent();
 	}
 
-	Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementMirror element);
+	Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData element);
 
 }
