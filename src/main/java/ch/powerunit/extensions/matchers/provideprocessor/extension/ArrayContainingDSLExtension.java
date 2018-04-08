@@ -62,7 +62,7 @@ public class ArrayContainingDSLExtension implements DSLExtension {
 
 		public DSLMethod generateContains1() {
 			return new DSLMethod(
-					new String[] { JAVADOC_DESCRIPTION, "@param first the element contained inside the target iterable",
+					new String[] { JAVADOC_DESCRIPTION, "@param first the element contained inside the target array",
 							"@return the Matcher." },
 					returnType + " " + methodName, getOneParameter("first"),
 					"return " + ARRAYCONTAINS_MATCHER + "(" + getOneWith("first") + ");");
@@ -71,8 +71,8 @@ public class ArrayContainingDSLExtension implements DSLExtension {
 		public DSLMethod generateContains2() {
 			return new DSLMethod(
 					new String[] { JAVADOC_DESCRIPTION,
-							"@param first the first element contained inside the target iterable",
-							"@param second the second element contained inside the target iterable",
+							"@param first the first element contained inside the target array",
+							"@param second the second element contained inside the target array",
 							"@return the Matcher." },
 					returnType + " " + methodName, getSeveralParameter(false, "first", "second"),
 					"return " + ARRAYCONTAINS_MATCHER + "(" + getSeveralWith("first", "second") + ");");
@@ -81,9 +81,9 @@ public class ArrayContainingDSLExtension implements DSLExtension {
 		public DSLMethod generateContains3() {
 			return new DSLMethod(
 					new String[] { JAVADOC_DESCRIPTION,
-							"@param first the first element contained inside the target iterable",
-							"@param second the second element contained inside the target iterable",
-							"@param third the third element contained inside the target iterable",
+							"@param first the first element contained inside the target array",
+							"@param second the second element contained inside the target array",
+							"@param third the third element contained inside the target array",
 							"@return the Matcher." },
 					returnType + " " + methodName, getSeveralParameter(false, "first", "second", "third"),
 					"return " + ARRAYCONTAINS_MATCHER + "(" + getSeveralWith("first", "second", "third") + ");");
@@ -92,15 +92,14 @@ public class ArrayContainingDSLExtension implements DSLExtension {
 		public DSLMethod generateContainsN() {
 			return new DSLMethod(
 					new String[] { JAVADOC_DESCRIPTION,
-							"@param first the first element contained inside the target iterable",
-							"@param second the second element contained inside the target iterable",
-							"@param third the third element contained inside the target iterable",
+							"@param first the first element contained inside the target array",
+							"@param second the second element contained inside the target array",
+							"@param third the third element contained inside the target array",
 							"@param last the next element", "@return the Matcher." },
 					returnType + " " + methodName, getSeveralParameter(true, "first", "second", "third", "last"),
-					new String[] {
-							"java.util.List<org.hamcrest.Matcher<" + targetName
-									+ ">> tmp = new java.util.ArrayList<>(java.util.Arrays.asList("
-									+ getSeveralWith("first", "second", "third") + "));",
+					new String[] { "java.util.List<org.hamcrest.Matcher<" + targetName
+							+ ">> tmp = new java.util.ArrayList<>(java.util.Arrays.asList("
+							+ getSeveralWith("first", "second", "third") + "));",
 							"tmp.addAll(java.util.Arrays.stream(last).map(v->" + targetMethodName
 									+ "(v)).collect(java.util.stream.Collectors.toList()));",
 							"return " + ARRAYCONTAINS_MATCHER + "(tmp.toArray(new org.hamcrest.Matcher[0]));" });
