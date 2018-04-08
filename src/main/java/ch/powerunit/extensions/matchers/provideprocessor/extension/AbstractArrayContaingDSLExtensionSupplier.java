@@ -38,24 +38,24 @@ public abstract class AbstractArrayContaingDSLExtensionSupplier extends Abstract
 
 	@Override
 	public Collection<Supplier<DSLMethod>> asSuppliers() {
-		return Arrays.asList(this::generateContains1, this::generateContains2, this::generateContains3,
-				this::generateContainsN);
+		return Arrays.asList(this::generateArrayContains1, this::generateArrayContains2, this::generateArrayContains3,
+				this::generateArrayContainsN);
 	}
 
-	public DSLMethod generateContains1() {
+	public DSLMethod generateArrayContains1() {
 		return generateSimpleDSLMethodFor(new String[] { getJavaDocDescription(),
 				"@param first the element contained inside the target array", "@return the Matcher." }, getMatcher(),
 				"first");
 	}
 
-	public DSLMethod generateContains2() {
+	public DSLMethod generateArrayContains2() {
 		return generateSimpleDSLMethodFor(
 				new String[] { getJavaDocDescription(), "@param first the element contained inside the target array",
 						"@param second the second element contained inside the target array", "@return the Matcher." },
 				getMatcher(), "first", "second");
 	}
 
-	public DSLMethod generateContains3() {
+	public DSLMethod generateArrayContains3() {
 		return generateSimpleDSLMethodFor(
 				new String[] { getJavaDocDescription(), "@param first the element contained inside the target array",
 						"@param second the second element contained inside the target array",
@@ -63,7 +63,7 @@ public abstract class AbstractArrayContaingDSLExtensionSupplier extends Abstract
 				getMatcher(), "first", "second", "third");
 	}
 
-	public DSLMethod generateContainsN() {
+	public DSLMethod generateArrayContainsN() {
 		return new DSLMethod(
 				new String[] { getJavaDocDescription(),
 						"@param first the first element contained inside the target array",
