@@ -82,7 +82,6 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 	public final TestRule rules = mockitoRule().around(before(this::prepare));
 
 	private void prepare() {
-		underTest = new ProvidesMatchersSubElementVisitor(roundMirror);
 		when(providesMatchersAnnotatedElementMirror.getRoundMirror()).thenReturn(roundMirror);
 		when(roundMirror.getProcessingEnv()).thenReturn(processingEnv);
 		when(fieldDescription.getFieldElement()).thenReturn(targetElement);
@@ -104,6 +103,7 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 		when(executableElement.getReturnType()).thenReturn(typeMirror);
 		when(executableElement.getAnnotationsByType(AddToMatcher.class)).thenReturn(new AddToMatcher[] {});
 		when(providesMatchersAnnotatedElementMirror.getProcessingEnv()).thenReturn(processingEnv);
+		underTest = new ProvidesMatchersSubElementVisitor(roundMirror);
 	}
 
 	private ProvidesMatchersSubElementVisitor underTest;
@@ -123,7 +123,7 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 		assertThat(ofd).isNotNull();
 		assertThat(ofd.isPresent()).is(false);
 		Mockito.verify(messager, Mockito.never()).printMessage(Mockito.any(), Mockito.anyString(), Mockito.any());
-		Mockito.verify(roundMirror, Mockito.never()).removeFromIgnoreList(Mockito.any());
+		Mockito.verify(roundMirror).removeFromIgnoreList(Mockito.any());
 	}
 
 	@Test
@@ -134,7 +134,7 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 		assertThat(ofd).isNotNull();
 		assertThat(ofd.isPresent()).is(false);
 		Mockito.verify(messager, Mockito.never()).printMessage(Mockito.any(), Mockito.anyString(), Mockito.any());
-		Mockito.verify(roundMirror, Mockito.never()).removeFromIgnoreList(Mockito.any());
+		Mockito.verify(roundMirror).removeFromIgnoreList(Mockito.any());
 	}
 
 	@Test
@@ -145,7 +145,7 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 		assertThat(ofd).isNotNull();
 		assertThat(ofd.isPresent()).is(false);
 		Mockito.verify(messager, Mockito.never()).printMessage(Mockito.any(), Mockito.anyString(), Mockito.any());
-		Mockito.verify(roundMirror, Mockito.never()).removeFromIgnoreList(Mockito.any());
+		Mockito.verify(roundMirror).removeFromIgnoreList(Mockito.any());
 	}
 
 	@Test
@@ -157,7 +157,7 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 		assertThat(ofd).isNotNull();
 		assertThat(ofd.isPresent()).is(false);
 		Mockito.verify(messager, Mockito.never()).printMessage(Mockito.any(), Mockito.anyString(), Mockito.any());
-		Mockito.verify(roundMirror, Mockito.never()).removeFromIgnoreList(Mockito.any());
+		Mockito.verify(roundMirror).removeFromIgnoreList(Mockito.any());
 	}
 
 	@Test
@@ -169,13 +169,13 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 		assertThat(ofd).isNotNull();
 		assertThat(ofd.isPresent()).is(false);
 		Mockito.verify(messager, Mockito.never()).printMessage(Mockito.any(), Mockito.anyString(), Mockito.any());
-		Mockito.verify(roundMirror, Mockito.never()).removeFromIgnoreList(Mockito.any());
+		Mockito.verify(roundMirror).removeFromIgnoreList(Mockito.any());
 	}
 
 	@Test
 	public void testVisitVariableNoPublicAndInListThenEmptyAndWarning() {
 		when(variableElement.getModifiers()).thenReturn(Collections.emptySet());
-		when(roundMirror.isInsideIgnoreList(Mockito.any())).thenReturn(true);
+		when(roundMirror.removeFromIgnoreList(Mockito.any())).thenReturn(true);
 		Optional<FieldDescription> ofd = underTest.visitVariable(variableElement,
 				providesMatchersAnnotatedElementMirror);
 		assertThat(ofd).isNotNull();
@@ -187,7 +187,7 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 	@Test
 	public void testVisitVariablePublicAndStaticAndInListThenEmptyAndWarning() {
 		when(variableElement.getModifiers()).thenReturn(new HashSet(Arrays.asList(Modifier.PUBLIC, Modifier.STATIC)));
-		when(roundMirror.isInsideIgnoreList(Mockito.any())).thenReturn(true);
+		when(roundMirror.removeFromIgnoreList(Mockito.any())).thenReturn(true);
 		Optional<FieldDescription> ofd = underTest.visitVariable(variableElement,
 				providesMatchersAnnotatedElementMirror);
 		assertThat(ofd).isNotNull();
@@ -199,8 +199,8 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 	@Test
 	public void testVisitExecutableNoPublicAndInListThenEmptyAndWarning() {
 		when(executableElement.getModifiers()).thenReturn(Collections.emptySet());
-		when(roundMirror.isInsideIgnoreList(Mockito.any())).thenReturn(true);
-		when(roundMirror.isInsideIgnoreList(Mockito.any())).thenReturn(true);
+		when(roundMirror.removeFromIgnoreList(Mockito.any())).thenReturn(true);
+		when(roundMirror.removeFromIgnoreList(Mockito.any())).thenReturn(true);
 		Optional<FieldDescription> ofd = underTest.visitExecutable(executableElement,
 				providesMatchersAnnotatedElementMirror);
 		assertThat(ofd).isNotNull();
@@ -212,7 +212,7 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 	@Test
 	public void testVisitExecutablePublicAndStaticAndInListThenEmptyAndWarning() {
 		when(executableElement.getModifiers()).thenReturn(new HashSet(Arrays.asList(Modifier.PUBLIC, Modifier.STATIC)));
-		when(roundMirror.isInsideIgnoreList(Mockito.any())).thenReturn(true);
+		when(roundMirror.removeFromIgnoreList(Mockito.any())).thenReturn(true);
 		when(executableElement.getParameters()).thenReturn(Collections.emptyList());
 		Optional<FieldDescription> ofd = underTest.visitExecutable(executableElement,
 				providesMatchersAnnotatedElementMirror);
@@ -225,7 +225,7 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 	@Test
 	public void testVisitExecutablePublicStaticAndNotSize0AndInListThenEmptyAndWarning() {
 		when(executableElement.getModifiers()).thenReturn(new HashSet(Arrays.asList(Modifier.PUBLIC)));
-		when(roundMirror.isInsideIgnoreList(Mockito.any())).thenReturn(true);
+		when(roundMirror.removeFromIgnoreList(Mockito.any())).thenReturn(true);
 		when(executableElement.getParameters()).thenReturn((List) Collections.singletonList(variableElement));
 		Optional<FieldDescription> ofd = underTest.visitExecutable(executableElement,
 				providesMatchersAnnotatedElementMirror);

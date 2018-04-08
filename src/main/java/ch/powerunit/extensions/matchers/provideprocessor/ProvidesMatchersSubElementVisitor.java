@@ -21,6 +21,7 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 
 import java.util.Optional;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -37,10 +38,12 @@ public class ProvidesMatchersSubElementVisitor
 
 	private final RoundMirror roundMirror;
 	private final NameExtractorVisitor extractNameVisitor;
+	private final ProcessingEnvironment processingEnv;
 
 	public ProvidesMatchersSubElementVisitor(RoundMirror roundMirror) {
+		this.processingEnv = roundMirror.getProcessingEnv();
 		this.roundMirror = roundMirror;
-		this.extractNameVisitor = new NameExtractorVisitor(roundMirror.getProcessingEnv());
+		this.extractNameVisitor = new NameExtractorVisitor(processingEnv);
 	}
 
 	public Optional<FieldDescription> removeIfNeededAndThenReturn(Optional<FieldDescription> fieldDescription) {
@@ -73,10 +76,9 @@ public class ProvidesMatchersSubElementVisitor
 	}
 
 	private void generateIfNeededWarningForNotSupportedElementAndRemoveIt(String description, Element e) {
-		if (roundMirror.isInsideIgnoreList(e)) {
-			roundMirror.getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING,
+		if (roundMirror.removeFromIgnoreList(e)) {
+			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
 					"One of the annotation is not supported as this location ; " + description, e);
-			roundMirror.removeFromIgnoreList(e);
 		}
 	}
 

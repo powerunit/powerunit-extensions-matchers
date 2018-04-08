@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
@@ -95,14 +96,9 @@ public class RoundMirror {
 										.findAny().orElse(null)));
 	}
 
-	public void removeFromIgnoreList(Element e) {
-		Arrays.stream(new Set[] { elementsWithIgnore, elementsWithAddToMatcher, elementsWithAddToMatchers })
-				.forEach(t -> t.remove(e));
-	}
-
-	public boolean isInsideIgnoreList(Element e) {
+	public boolean removeFromIgnoreList(Element e) {
 		return Arrays.stream(new Set[] { elementsWithIgnore, elementsWithAddToMatcher, elementsWithAddToMatchers })
-				.map(t -> t.contains(e)).filter(t -> t).findAny().orElse(false);
+				.map(t -> t.remove(e)).filter(t -> t).findAny().orElse(false);
 	}
 
 	public ProvidesMatchersAnnotatedElementMirror getByName(String name) {
