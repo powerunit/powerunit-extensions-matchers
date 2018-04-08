@@ -102,7 +102,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		return true;
 	}
 
-	private static String addPrefix(String prefix, String input) {
+	public static String addPrefix(String prefix, String input) {
 		return "\n" + Arrays.stream(input.split("\\R")).map(l -> prefix + l).collect(joining("\n")) + "\n";
 	}
 
