@@ -31,6 +31,8 @@ public class ContainsDSLExtension implements DSLExtension {
 
 	public static final String CONTAINS_MATCHER = "org.hamcrest.Matchers.contains";
 
+	private static final String JAVADOC_DESCRIPTION = "Generate a contains matcher for this Object.";
+
 	@Override
 	public ComplementaryExpositionMethod supportedEnum() {
 		return ComplementaryExpositionMethod.CONTAINS;
@@ -60,53 +62,45 @@ public class ContainsDSLExtension implements DSLExtension {
 
 		public DSLMethod generateContains1() {
 			return new DSLMethod(
-					new String[] { "Generate a contains matcher for this Object.",
-							"@param first the element contained inside the target iterable", "@return the Matcher." },
+					new String[] { JAVADOC_DESCRIPTION, "@param first the element contained inside the target iterable",
+							"@return the Matcher." },
 					returnType + " " + methodName, getOneParameter("first"),
 					"return " + CONTAINS_MATCHER + "(" + getOneWith("first") + ");");
 		}
 
 		public DSLMethod generateContains2() {
 			return new DSLMethod(
-					new String[] { "Generate a contains matcher for this Object.",
+					new String[] { JAVADOC_DESCRIPTION,
 							"@param first the first element contained inside the target iterable",
 							"@param second the second element contained inside the target iterable",
 							"@return the Matcher." },
-					returnType + " " + methodName,
-					new String[][] { getOneParameter("first"), getOneParameter("second") },
-					"return " + CONTAINS_MATCHER + "(" + getOneWith("first") + "," + getOneWith("second") + ");");
+					returnType + " " + methodName, getSeveralParameter(false, "first", "second"),
+					"return " + CONTAINS_MATCHER + "(" + getSeveralWith("first", "second") + ");");
 		}
 
 		public DSLMethod generateContains3() {
 			return new DSLMethod(
-					new String[] { "Generate a contains matcher for this Object.",
+					new String[] { JAVADOC_DESCRIPTION,
 							"@param first the first element contained inside the target iterable",
 							"@param second the second element contained inside the target iterable",
 							"@param third the third element contained inside the target iterable",
 							"@return the Matcher." },
-					returnType + " " + methodName,
-					new String[][] { getOneParameter("first"), getOneParameter("second"), getOneParameter("third") },
-					"return " + CONTAINS_MATCHER + "(" + getOneWith("first") + "," + getOneWith("second") + ","
-							+ getOneWith("third") + ");");
+					returnType + " " + methodName, getSeveralParameter(false, "first", "second", "third"),
+					"return " + CONTAINS_MATCHER + "(" + getSeveralWith("first", "second", "third") + ");");
 		}
 
 		public DSLMethod generateContainsN() {
-			String last[] = getOneParameter("last");
-			last[0] += "...";
 			return new DSLMethod(
-					new String[] { "Generate a contains matcher for this Object.",
+					new String[] { JAVADOC_DESCRIPTION,
 							"@param first the first element contained inside the target iterable",
 							"@param second the second element contained inside the target iterable",
 							"@param third the third element contained inside the target iterable",
 							"@param last the next element", "@return the Matcher." },
-					returnType + " " + methodName,
-					new String[][] { getOneParameter("first"), getOneParameter("second"), getOneParameter("third"),
-							last },
+					returnType + " " + methodName, getSeveralParameter(true, "first", "second", "third", "last"),
 					new String[] {
 							"java.util.List<org.hamcrest.Matcher<" + targetName
-									+ ">> tmp = new java.util.ArrayList<>();",
-							"tmp.add(" + getOneWith("first") + ");", "tmp.add(" + getOneWith("second") + ");",
-							"tmp.add(" + getOneWith("third") + ");",
+									+ ">> tmp = new java.util.ArrayList<>(java.util.Arrays.asList("
+									+ getSeveralWith("first", "second", "third") + "));",
 							"tmp.addAll(java.util.Arrays.stream(last).map(v->" + targetMethodName
 									+ "(v)).collect(java.util.stream.Collectors.toList()));",
 							"return " + CONTAINS_MATCHER + "(tmp.toArray(new org.hamcrest.Matcher[0]));" });
