@@ -135,9 +135,10 @@ public class FieldDescription {
 
 	public static final String computeFullyQualifiedNameMatcherInSameRound(RoundMirror roundMirror,
 			Element fieldElement, TypeElement fieldTypeAsTypeElement) {
-		if (roundMirror.isInSameRound(roundMirror.getProcessingEnv().getTypeUtils().asElement(fieldElement.asType()))
+		ProcessingEnvironment processingEnv = roundMirror.getProcessingEnv();
+		if (roundMirror.isInSameRound(processingEnv.getTypeUtils().asElement(fieldElement.asType()))
 				&& fieldTypeAsTypeElement != null) {
-			return new ProvideMatchersMirror(roundMirror.getProcessingEnv(), fieldTypeAsTypeElement)
+			return new ProvideMatchersMirror(processingEnv, fieldTypeAsTypeElement)
 					.getFullyQualifiedNameOfGeneratedClass();
 		}
 		return null;
@@ -168,16 +169,16 @@ public class FieldDescription {
 		}
 	}
 
-	public FieldDescription(ProvidesMatchersAnnotatedElementMirror containingElementMirror, String fieldName,
+	public FieldDescription(ProvidesMatchersAnnotatedElementData containingElementMirror, String fieldName,
 			String fieldType, Element fieldElement) {
-		this.roundMirror = containingElementMirror.getRoundMirror();
+		this.roundMirror = containingElementMirror.getFullData().getRoundMirror();
 		TypeMirror fieldTypeMirror = (fieldElement instanceof ExecutableElement)
 				? ((ExecutableElement) fieldElement).getReturnType() : fieldElement.asType();
 		this.enclosingClassOfFieldFullGeneric = containingElementMirror.getFullGeneric();
 		this.enclosingClassOfFieldGeneric = containingElementMirror.getGeneric();
 		this.fullyQualifiedNameEnclosingClassOfField = containingElementMirror
 				.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher();
-		ProcessingEnvironment processingEnv = containingElementMirror.getProcessingEnv();
+		ProcessingEnvironment processingEnv = roundMirror.getProcessingEnv();
 		this.fieldAccessor = fieldElement.getSimpleName().toString()
 				+ ((fieldElement instanceof ExecutableElement) ? "()" : "");
 		this.fieldName = fieldName;

@@ -19,16 +19,33 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 
+import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.ArrayContainingDSLExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.ContainsDSLExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.DSLExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.HasItemsExtension;
 
 public class ProvideMatchersMirror {
+
+	private static final Collection<DSLExtension> EXTENSION = Collections.unmodifiableList(
+			Arrays.asList(new ContainsDSLExtension(), new ArrayContainingDSLExtension(), new HasItemsExtension()));
+
 	private final String comments;
 	private final String simpleNameOfGeneratedClass;
 	private final String fullyQualifiedNameOfGeneratedClass;
 	private final String packageNameOfGeneratedClass;
+	private final ComplementaryExpositionMethod[] moreMethod;
 
 	public ProvideMatchersMirror(ProcessingEnvironment processingEnv, TypeElement annotatedElement) {
 		String fullyQualifiedNameOfClassAnnotatedWithProvideMatcher = annotatedElement.getQualifiedName().toString();
@@ -49,6 +66,7 @@ public class ProvideMatchersMirror {
 		}
 		this.fullyQualifiedNameOfGeneratedClass = toutputClassName;
 		this.packageNameOfGeneratedClass = tpackageName;
+		this.moreMethod = pm.moreMethod();
 	}
 
 	public String getComments() {
@@ -65,6 +83,11 @@ public class ProvideMatchersMirror {
 
 	public String getPackageNameOfGeneratedClass() {
 		return packageNameOfGeneratedClass;
+	}
+
+	public Collection<DSLExtension> getDSLExtension() {
+		return EXTENSION.stream().filter(e -> e.accept(moreMethod))
+				.collect(collectingAndThen(toList(), Collections::unmodifiableList));
 	}
 
 }

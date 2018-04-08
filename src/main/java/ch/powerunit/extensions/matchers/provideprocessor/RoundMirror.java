@@ -95,14 +95,9 @@ public class RoundMirror {
 										.findAny().orElse(null)));
 	}
 
-	public void removeFromIgnoreList(Element e) {
-		Arrays.stream(new Set[] { elementsWithIgnore, elementsWithAddToMatcher, elementsWithAddToMatchers })
-				.forEach(t -> t.remove(e));
-	}
-
-	public boolean isInsideIgnoreList(Element e) {
+	public boolean removeFromIgnoreList(Element e) {
 		return Arrays.stream(new Set[] { elementsWithIgnore, elementsWithAddToMatcher, elementsWithAddToMatchers })
-				.map(t -> t.contains(e)).filter(t -> t).findAny().orElse(false);
+				.map(t -> t.remove(e)).filter(t -> t).findAny().orElse(false);
 	}
 
 	public ProvidesMatchersAnnotatedElementMirror getByName(String name) {
@@ -115,9 +110,9 @@ public class RoundMirror {
 						.findAny().isPresent();
 	}
 
-	public AnnotationMirror getProvideMatchersAnnotation(Collection<? extends AnnotationMirror> annotations) {
-		return annotations.stream().filter(a -> a.getAnnotationType().equals(provideMatchersTE.asType())).findAny()
-				.orElse(null);
+	public AnnotationMirror getProvideMatchersAnnotation(Element e) {
+		return getProcessingEnv().getElementUtils().getAllAnnotationMirrors(e).stream()
+				.filter(a -> a.getAnnotationType().equals(provideMatchersTE.asType())).findAny().orElse(null);
 	}
 
 }

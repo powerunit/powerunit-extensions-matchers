@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.joining;
 
 import java.util.Optional;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -38,13 +39,13 @@ class FactoryAnnotatedElementMirror {
 
 	private final String surroundingFullyQualifiedName;
 
-	private final FactoryAnnotationsProcessor factoryAnnotationsProcessor;
+	private final ProcessingEnvironment processingEnv;
 
 	public FactoryAnnotatedElementMirror(FactoryAnnotationsProcessor factoryAnnotationsProcessor,
 			ExecutableElement element) {
 		this.element = element;
-		this.factoryAnnotationsProcessor = factoryAnnotationsProcessor;
-		this.doc = Optional.ofNullable(factoryAnnotationsProcessor.getElementUtils().getDocComment(element));
+		this.processingEnv = factoryAnnotationsProcessor;
+		this.doc = Optional.ofNullable(processingEnv.getElementUtils().getDocComment(element));
 		this.surroundingFullyQualifiedName = element.getEnclosingElement().asType().toString();
 	}
 
@@ -58,9 +59,9 @@ class FactoryAnnotatedElementMirror {
 
 	public String getSeeValue() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(factoryAnnotationsProcessor.getElementUtils().getPackageOf(element.getEnclosingElement())
-				.getQualifiedName()).append(".").append(element.getEnclosingElement().getSimpleName().toString())
-				.append("#").append(element.getSimpleName().toString()).append("(");
+		sb.append(processingEnv.getElementUtils().getPackageOf(element.getEnclosingElement()).getQualifiedName())
+				.append(".").append(element.getEnclosingElement().getSimpleName().toString()).append("#")
+				.append(element.getSimpleName().toString()).append("(");
 		sb.append(element.getParameters().stream().map(this::convertParameterForSee).collect(joining(",")));
 		sb.append(")");
 		String result = sb.toString();
@@ -71,16 +72,16 @@ class FactoryAnnotatedElementMirror {
 	}
 
 	private String convertParameterForSee(VariableElement ve) {
-		Element e = factoryAnnotationsProcessor.getTypeUtils().asElement(ve.asType());
+		Element e = processingEnv.getTypeUtils().asElement(ve.asType());
 		if (e == null) {
-			return factoryAnnotationsProcessor.getTypeUtils().erasure(ve.asType()).toString();
+			return processingEnv.getTypeUtils().erasure(ve.asType()).toString();
 		} else {
 			if (ve.asType().getKind() == TypeKind.TYPEVAR) {
-				return factoryAnnotationsProcessor.getTypeUtils().erasure(ve.asType()).toString();
+				return processingEnv.getTypeUtils().erasure(ve.asType()).toString();
 			}
 		}
-		return factoryAnnotationsProcessor.getElementUtils().getPackageOf(e).toString() + "."
-				+ factoryAnnotationsProcessor.getTypeUtils().asElement(ve.asType()).getSimpleName();
+		return processingEnv.getElementUtils().getPackageOf(e).toString() + "."
+				+ processingEnv.getTypeUtils().asElement(ve.asType()).getSimpleName();
 	}
 
 	public String generateFactory() {
@@ -105,8 +106,8 @@ class FactoryAnnotatedElementMirror {
 		sb.append(element.isVarArgs() ? param.replaceAll(VAR_ARG_REGEX, "...") : param);
 		sb.append(") {").append("\n")
 				.append(TypeKind.VOID != element.getReturnType().getKind() ? "    return " : "    ");
-		sb.append(factoryAnnotationsProcessor.getElementUtils().getPackageOf(element.getEnclosingElement())
-				.getQualifiedName().toString()).append(".")
+		sb.append(processingEnv.getElementUtils().getPackageOf(element.getEnclosingElement()).getQualifiedName()
+				.toString()).append(".")
 				.append(element.getEnclosingElement().getSimpleName().toString())
 				.append(".").append(element.getSimpleName().toString()).append("(").append(element.getParameters()
 						.stream().map((ve) -> ve.getSimpleName().toString()).collect(joining(",")))
