@@ -44,12 +44,12 @@ public class ContainsInAnyOrderDSLExtension implements DSLExtension {
 				+ targetName + ">>";
 		String methodName = element.generateDSLMethodName("containsInAnyOrder");
 		String targetMethodName = element.generateDSLWithSameValueMethodName();
-		return new ContainsSupplier(targetName, returnType, methodName, targetMethodName).asSuppliers();
+		return new ContainsInAnyOrderSupplier(targetName, returnType, methodName, targetMethodName).asSuppliers();
 	}
 
-	public class ContainsSupplier extends AbstractContainsDSLExtensionSupplier {
+	public class ContainsInAnyOrderSupplier extends AbstractContainsDSLExtensionSupplier {
 
-		public ContainsSupplier(String targetName, String returnType, String methodName, String targetMethodName) {
+		public ContainsInAnyOrderSupplier(String targetName, String returnType, String methodName, String targetMethodName) {
 			super(targetName, returnType, methodName, targetMethodName);
 		}
 

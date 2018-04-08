@@ -43,12 +43,12 @@ public class ArrayContainingInAnyOrderDSLExtension implements DSLExtension {
 		String returnType = element.getFullGeneric() + " org.hamcrest.Matcher<" + targetName + "[]>";
 		String methodName = element.generateDSLMethodName("arrayContainingInAnyOrder");
 		String targetMethodName = element.generateDSLWithSameValueMethodName();
-		return new ArrrayContainsSupplier(targetName, returnType, methodName, targetMethodName).asSuppliers();
+		return new ArrrayContainsInAnyOrderSupplier(targetName, returnType, methodName, targetMethodName).asSuppliers();
 	}
 
-	public class ArrrayContainsSupplier extends AbstractArrayContaingDSLExtensionSupplier {
+	public class ArrrayContainsInAnyOrderSupplier extends AbstractArrayContaingDSLExtensionSupplier {
 
-		public ArrrayContainsSupplier(String targetName, String returnType, String methodName,
+		public ArrrayContainsInAnyOrderSupplier(String targetName, String returnType, String methodName,
 				String targetMethodName) {
 			super(targetName, returnType, methodName, targetMethodName);
 		}
