@@ -43,20 +43,8 @@ public class DSLMethod {
 		return "/**\n" + Arrays.stream(javadoc).map(s -> " * " + s).collect(joining("\n")) + "\n */\n";
 	}
 
-	public DSLMethod(String javadoc[], String declaration, String implementation) {
-		this(cleanJavadoc(javadoc), declaration, new String[][] {}, new String[] { implementation });
-	}
-
-	public DSLMethod(String javadoc[], String declaration, String implementation[]) {
-		this(cleanJavadoc(javadoc), declaration, new String[][] {}, implementation);
-	}
-
 	public DSLMethod(String javadoc[], String declaration, String arguments[], String implementation) {
 		this(cleanJavadoc(javadoc), declaration, new String[][] { arguments }, new String[] { implementation });
-	}
-
-	public DSLMethod(String javadoc[], String declaration, String arguments[], String implementation[]) {
-		this(cleanJavadoc(javadoc), declaration, new String[][] { arguments }, implementation);
 	}
 
 	public DSLMethod(String javadoc[], String declaration, String arguments[][], String implementation) {
@@ -81,10 +69,6 @@ public class DSLMethod {
 
 	public DSLMethod(String javadoc, String declaration, String arguments[], String implementation[]) {
 		this(javadoc, declaration, new String[][] { arguments }, implementation);
-	}
-
-	public DSLMethod(String javadoc, String declaration, String arguments[][], String implementation) {
-		this(javadoc, declaration, arguments, new String[] { implementation });
 	}
 
 	public DSLMethod(String javadoc, String declaration, String arguments[][], String implementation[]) {
