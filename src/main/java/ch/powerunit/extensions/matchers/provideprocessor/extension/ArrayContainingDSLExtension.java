@@ -19,7 +19,6 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.extension;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Supplier;
 
@@ -47,7 +46,7 @@ public class ArrayContainingDSLExtension implements DSLExtension {
 		return new ArrrayContainsSupplier(targetName, returnType, methodName, targetMethodName).asSuppliers();
 	}
 
-	public class ArrrayContainsSupplier extends AbstractDSLExtensionSupplier {
+	public class ArrrayContainsSupplier extends AbstractArrayContaingDSLExtensionSupplier {
 
 		public ArrrayContainsSupplier(String targetName, String returnType, String methodName,
 				String targetMethodName) {
@@ -55,46 +54,13 @@ public class ArrayContainingDSLExtension implements DSLExtension {
 		}
 
 		@Override
-		public Collection<Supplier<DSLMethod>> asSuppliers() {
-			return Arrays.asList(this::generateContains1, this::generateContains2, this::generateContains3,
-					this::generateContainsN);
+		public String getJavaDocDescription() {
+			return JAVADOC_DESCRIPTION;
 		}
 
-		public DSLMethod generateContains1() {
-			return generateSimpleDSLMethodFor(new String[] { JAVADOC_DESCRIPTION,
-					"@param first the element contained inside the target array", "@return the Matcher." },
-					ARRAYCONTAINS_MATCHER, "first");
-		}
-
-		public DSLMethod generateContains2() {
-			return generateSimpleDSLMethodFor(new String[] { JAVADOC_DESCRIPTION,
-					"@param first the element contained inside the target array",
-					"@param second the second element contained inside the target array", "@return the Matcher." },
-					ARRAYCONTAINS_MATCHER, "first", "second");
-		}
-
-		public DSLMethod generateContains3() {
-			return generateSimpleDSLMethodFor(new String[] { JAVADOC_DESCRIPTION,
-					"@param first the element contained inside the target array",
-					"@param second the second element contained inside the target array",
-					"@param third the third element contained inside the target array", "@return the Matcher." },
-					ARRAYCONTAINS_MATCHER, "first", "second", "third");
-		}
-
-		public DSLMethod generateContainsN() {
-			return new DSLMethod(
-					new String[] { JAVADOC_DESCRIPTION,
-							"@param first the first element contained inside the target array",
-							"@param second the second element contained inside the target array",
-							"@param third the third element contained inside the target array",
-							"@param last the next element", "@return the Matcher." },
-					returnType + " " + methodName, getSeveralParameter(true, "first", "second", "third", "last"),
-					new String[] { "java.util.List<org.hamcrest.Matcher<" + targetName
-							+ ">> tmp = new java.util.ArrayList<>(java.util.Arrays.asList("
-							+ getSeveralWith("first", "second", "third") + "));",
-							"tmp.addAll(java.util.Arrays.stream(last).map(v->" + targetMethodName
-									+ "(v)).collect(java.util.stream.Collectors.toList()));",
-							"return " + ARRAYCONTAINS_MATCHER + "(tmp.toArray(new org.hamcrest.Matcher[0]));" });
+		@Override
+		public String getMatcher() {
+			return ARRAYCONTAINS_MATCHER;
 		}
 
 	}
