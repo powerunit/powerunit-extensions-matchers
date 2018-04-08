@@ -27,21 +27,20 @@ import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 
-public class ContainsDSLExtension implements DSLExtension {
+public class ArrayContainingDSLExtension implements DSLExtension {
 
-	public static final String CONTAINS_MATCHER = "org.hamcrest.Matchers.contains";
+	public static final String ARRAYCONTAINS_MATCHER = "org.hamcrest.Matchers.arrayContaining";
 
 	@Override
 	public ComplementaryExpositionMethod supportedEnum() {
-		return ComplementaryExpositionMethod.CONTAINS;
+		return ComplementaryExpositionMethod.ARRAYCONTAINING;
 	}
 
 	@Override
 	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData element) {
 		String targetName = element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric();
-		String returnType = element.getFullGeneric() + " org.hamcrest.Matcher<java.lang.Iterable<? extends "
-				+ targetName + ">>";
-		String methodName = element.generateDSLMethodName("contains");
+		String returnType = element.getFullGeneric() + " org.hamcrest.Matcher<" + targetName + "[]>";
+		String methodName = element.generateDSLMethodName("arrayContaining");
 		String targetMethodName = element.generateDSLWithSameValueMethodName();
 		return Arrays.asList(() -> generateContains1(targetName, targetMethodName, returnType, methodName),
 				() -> generateContains2(targetName, targetMethodName, returnType, methodName),
@@ -60,36 +59,36 @@ public class ContainsDSLExtension implements DSLExtension {
 	public DSLMethod generateContains1(String targetName, String targetMethodName, String returnType,
 			String methodName) {
 		return new DSLMethod(
-				new String[] { "Generate a contains matcher for this Object.",
+				new String[] { "Generate an array contains matcher for this Object.",
 						"@param first the element contained inside the target iterable", "@return the Matcher." },
 				returnType + " " + methodName, getOneParameter(targetName, "first"),
-				"return " + CONTAINS_MATCHER + "(" + getOneWith(targetMethodName, "first") + ");");
+				"return " + ARRAYCONTAINS_MATCHER + "(" + getOneWith(targetMethodName, "first") + ");");
 	}
 
 	public DSLMethod generateContains2(String targetName, String targetMethodName, String returnType,
 			String methodName) {
 		return new DSLMethod(
-				new String[] { "Generate a contains matcher for this Object.",
+				new String[] { "Generate an array contains matcher for this Object.",
 						"@param first the first element contained inside the target iterable",
 						"@param second the second element contained inside the target iterable",
 						"@return the Matcher." },
 				returnType + " " + methodName,
 				new String[][] { getOneParameter(targetName, "first"), getOneParameter(targetName, "second") },
-				"return " + CONTAINS_MATCHER + "(" + getOneWith(targetMethodName, "first") + ","
+				"return " + ARRAYCONTAINS_MATCHER + "(" + getOneWith(targetMethodName, "first") + ","
 						+ getOneWith(targetMethodName, "second") + ");");
 	}
 
 	public DSLMethod generateContains3(String targetName, String targetMethodName, String returnType,
 			String methodName) {
 		return new DSLMethod(
-				new String[] { "Generate a contains matcher for this Object.",
+				new String[] { "Generate an array contains matcher for this Object.",
 						"@param first the first element contained inside the target iterable",
 						"@param second the second element contained inside the target iterable",
 						"@param third the third element contained inside the target iterable", "@return the Matcher." },
 				returnType + " " + methodName,
 				new String[][] { getOneParameter(targetName, "first"), getOneParameter(targetName, "second"),
 						getOneParameter(targetName, "third") },
-				"return " + CONTAINS_MATCHER + "(" + getOneWith(targetMethodName, "first") + ","
+				"return " + ARRAYCONTAINS_MATCHER + "(" + getOneWith(targetMethodName, "first") + ","
 						+ getOneWith(targetMethodName, "second") + "," + getOneWith(targetMethodName, "third") + ");");
 	}
 
@@ -98,7 +97,7 @@ public class ContainsDSLExtension implements DSLExtension {
 		String last[] = getOneParameter(targetName, "last");
 		last[0] += "...";
 		return new DSLMethod(
-				new String[] { "Generate a contains matcher for this Object.",
+				new String[] { "Generate an array contains matcher for this Object.",
 						"@param first the first element contained inside the target iterable",
 						"@param second the second element contained inside the target iterable",
 						"@param third the third element contained inside the target iterable",
@@ -113,7 +112,7 @@ public class ContainsDSLExtension implements DSLExtension {
 						"tmp.add(" + getOneWith(targetMethodName, "third") + ");",
 						"tmp.addAll(java.util.Arrays.stream(last).map(v->" + targetMethodName
 								+ "(v)).collect(java.util.stream.Collectors.toList()));",
-						"return " + CONTAINS_MATCHER + "(tmp.toArray(new org.hamcrest.Matcher[0]));" });
+						"return " + ARRAYCONTAINS_MATCHER + "(tmp.toArray(new org.hamcrest.Matcher[0]));" });
 	}
 
 }

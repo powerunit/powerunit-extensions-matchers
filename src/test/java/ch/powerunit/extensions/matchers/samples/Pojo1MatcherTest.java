@@ -23,12 +23,12 @@ import static ch.powerunit.matchers.MatcherTester.matcher;
 import static ch.powerunit.matchers.MatcherTester.value;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 
 import ch.powerunit.Ignore;
 import ch.powerunit.Test;
@@ -56,6 +56,50 @@ public class Pojo1MatcherTest implements TestSuite {
 	public void testOKMatcher() {
 		Pojo1 p = new Pojo1();
 		assertThat(p).is(Pojo1Matchers.pojo1With());
+	}
+
+	@Test
+	public void testContainsMatcherOne() {
+		Pojo1 p1 = new Pojo1();
+		p1.setMsg1("x");
+		List<Pojo1> lst = Arrays.asList(p1);
+		assertThat(lst).is(Pojo1Matchers.containsPojo1(p1));
+	}
+
+	@Test
+	public void testContainsMatcherTwo() {
+		Pojo1 p1 = new Pojo1();
+		p1.setMsg1("x");
+		Pojo1 p2 = new Pojo1();
+		p2.setMsg1("y");
+		List<Pojo1> lst = Arrays.asList(p1, p2);
+		assertThat(lst).is(Pojo1Matchers.containsPojo1(p1, p2));
+	}
+
+	@Test
+	public void testContainsMatcherThird() {
+		Pojo1 p1 = new Pojo1();
+		p1.setMsg1("x");
+		Pojo1 p2 = new Pojo1();
+		p2.setMsg1("y");
+		Pojo1 p3 = new Pojo1();
+		p3.setMsg1("z");
+		List<Pojo1> lst = Arrays.asList(p1, p2, p3);
+		assertThat(lst).is(Pojo1Matchers.containsPojo1(p1, p2, p3));
+	}
+
+	@Test
+	public void testContainsMatcherMore() {
+		Pojo1 p1 = new Pojo1();
+		p1.setMsg1("x");
+		Pojo1 p2 = new Pojo1();
+		p2.setMsg1("y");
+		Pojo1 p3 = new Pojo1();
+		p3.setMsg1("z");
+		Pojo1 p4 = new Pojo1();
+		p4.setMsg1("a");
+		List<Pojo1> lst = Arrays.asList(p1, p2, p3, p4);
+		assertThat(lst).is(Pojo1Matchers.containsPojo1(p1, p2, p3, p4));
 	}
 
 	@Test

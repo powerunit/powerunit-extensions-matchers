@@ -33,7 +33,8 @@ import ch.powerunit.extensions.matchers.ProvideMatchers;
  *            This is O
  *
  */
-@ProvideMatchers(comments = "this is a \"comment\"", moreMethod = ComplementaryExpositionMethod.CONTAINS)
+@ProvideMatchers(comments = "this is a \"comment\"", moreMethod = { ComplementaryExpositionMethod.CONTAINS,
+		ComplementaryExpositionMethod.ARRAYCONTAINING })
 public class Pojo3<T, O extends Serializable> {
 	public String msg1;
 

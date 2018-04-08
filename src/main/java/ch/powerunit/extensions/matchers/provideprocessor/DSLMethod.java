@@ -63,6 +63,10 @@ public class DSLMethod {
 		this(cleanJavadoc(javadoc), declaration, arguments, new String[] { implementation });
 	}
 
+	public DSLMethod(String javadoc[], String declaration, String arguments[][], String implementation[]) {
+		this(cleanJavadoc(javadoc), declaration, arguments, implementation);
+	}
+
 	public DSLMethod(String javadoc, String declaration, String implementation) {
 		this(javadoc, declaration, new String[][] {}, new String[] { implementation });
 	}

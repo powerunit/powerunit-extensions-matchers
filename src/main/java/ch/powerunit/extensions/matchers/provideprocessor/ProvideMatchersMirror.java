@@ -31,13 +31,14 @@ import javax.lang.model.element.TypeElement;
 
 import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.ArrayContainingDSLExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.ContainsDSLExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.DSLExtension;
 
 public class ProvideMatchersMirror {
 
 	private static final Collection<DSLExtension> EXTENSION = Collections
-			.unmodifiableList(Arrays.asList(new ContainsDSLExtension()));
+			.unmodifiableList(Arrays.asList(new ContainsDSLExtension(), new ArrayContainingDSLExtension()));
 
 	private final String comments;
 	private final String simpleNameOfGeneratedClass;
