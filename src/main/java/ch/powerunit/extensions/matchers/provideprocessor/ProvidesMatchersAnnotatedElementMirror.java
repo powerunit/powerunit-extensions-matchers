@@ -506,9 +506,13 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				lines.toArray(new String[0]));
 	}
 
-	public DSLMethod generateParentValueDSLStarter() {
-		ProvidesMatchersAnnotatedElementMirror parentMirror = roundMirror
+	public ProvidesMatchersAnnotatedElementMirror getParentMirror() {
+		return roundMirror
 				.getByName(typeElementForSuperClassOfClassAnnotatedWithProvideMatcher.getQualifiedName().toString());
+	}
+
+	public DSLMethod generateParentValueDSLStarter() {
+		ProvidesMatchersAnnotatedElementMirror parentMirror = getParentMirror();
 		String argumentForParentBuilder = parentMirror.fullyQualifiedNameOfGeneratedClass + "."
 				+ parentMirror.methodShortClassName + "WithSameValue(other)";
 		String javadoc = generateJavaDoc(getDefaultDescriptionForDsl(), Optional.empty(),
@@ -529,8 +533,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	}
 
 	public DSLMethod generateParentInSameRoundWithChaningDSLStarter() {
-		ProvidesMatchersAnnotatedElementMirror parentMirror = roundMirror
-				.getByName(typeElementForSuperClassOfClassAnnotatedWithProvideMatcher.getQualifiedName().toString());
+		ProvidesMatchersAnnotatedElementMirror parentMirror = getParentMirror();
 		return new DSLMethod(
 				generateJavaDoc(getDefaultDescriptionForDsl(), Optional.empty(), Optional.empty(),
 						Optional.of("the DSL matcher"), true, false),

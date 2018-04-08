@@ -135,9 +135,10 @@ public class FieldDescription {
 
 	public static final String computeFullyQualifiedNameMatcherInSameRound(RoundMirror roundMirror,
 			Element fieldElement, TypeElement fieldTypeAsTypeElement) {
-		if (roundMirror.isInSameRound(roundMirror.getProcessingEnv().getTypeUtils().asElement(fieldElement.asType()))
+		ProcessingEnvironment processingEnv = roundMirror.getProcessingEnv();
+		if (roundMirror.isInSameRound(processingEnv.getTypeUtils().asElement(fieldElement.asType()))
 				&& fieldTypeAsTypeElement != null) {
-			return new ProvideMatchersMirror(roundMirror.getProcessingEnv(), fieldTypeAsTypeElement)
+			return new ProvideMatchersMirror(processingEnv, fieldTypeAsTypeElement)
 					.getFullyQualifiedNameOfGeneratedClass();
 		}
 		return null;
