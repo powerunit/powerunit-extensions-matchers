@@ -223,6 +223,20 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 	}
 
 	@Test
+	public void testVisitExecutablePublicAndNotStaticAndZize0AndNamedTotoThenEmptyAndWarning() {
+		when(executableName.toString()).thenReturn("toto");
+		when(roundMirror.removeFromIgnoreList(Mockito.any())).thenReturn(true);
+		when(executableElement.getModifiers()).thenReturn(Collections.singleton(Modifier.PUBLIC));
+		when(executableElement.getParameters()).thenReturn(Collections.emptyList());
+		Optional<FieldDescription> ofd = underTest.visitExecutable(executableElement,
+				providesMatchersAnnotatedElementMirror);
+		assertThat(ofd).isNotNull();
+		assertThat(ofd.isPresent()).is(false);
+		Mockito.verify(messager).printMessage(Mockito.any(), Mockito.anyString(), Mockito.any());
+		Mockito.verify(roundMirror).removeFromIgnoreList(Mockito.any());
+	}
+
+	@Test
 	public void testVisitExecutablePublicStaticAndNotSize0AndInListThenEmptyAndWarning() {
 		when(executableElement.getModifiers()).thenReturn(new HashSet(Arrays.asList(Modifier.PUBLIC)));
 		when(roundMirror.removeFromIgnoreList(Mockito.any())).thenReturn(true);
