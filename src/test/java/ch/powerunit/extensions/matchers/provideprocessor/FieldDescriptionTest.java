@@ -83,6 +83,8 @@ public class FieldDescriptionTest implements TestSuite {
 		when(processingEnv.getElementUtils()).thenReturn(elements);
 		when(processingEnv.getTypeUtils()).thenReturn(types);
 		when(primitiveType.getKind()).thenReturn(TypeKind.BOOLEAN);
+		when(elements.getTypeElement("java.lang.String")).thenReturn(typeElement);
+		when(typeElement.getSimpleName()).thenReturn(executableElementName);
 		when(executableElement.getSimpleName()).thenReturn(executableElementName);
 		when(executableElementName.toString()).thenReturn("field");
 		when(executableElement.getReturnType()).thenReturn(primitiveType);
@@ -196,4 +198,28 @@ public class FieldDescriptionTest implements TestSuite {
 		assertThat(undertest.buildDefaultDsl("javadoc", "declaration", "inner"))
 				.is("javadoc\ndefault declaration{\n  return field(inner);\n}");
 	}
+
+	@Test
+	public void testGetSameValueMatcherFor() {
+		FieldDescription undertest = new FieldDescription(() -> provideMatchersAnnotatedElementMirror, "field",
+				"java.lang.String", executableElement);
+		assertThat(undertest.getSameValueMatcherFor("target")).is("null.fieldWithSameValue(target)");
+	}
+
+	@Test
+	public void testGetFieldCopySameRound() {
+		FieldDescription undertest = new FieldDescription(() -> provideMatchersAnnotatedElementMirror, "field",
+				"java.lang.String", executableElement);
+		assertThat(undertest.getFieldCopySameRound("rhs", "lhs")).is(
+				"rhs.field(lhs.field()==null?org.hamcrest.Matchers.nullValue():null.fieldWithSameValue(lhs.field()))");
+	}
+
+	@Test
+	public void testAsMatcherField() {
+		FieldDescription undertest = new FieldDescription(() -> provideMatchersAnnotatedElementMirror, "field",
+				"java.lang.String", executableElement);
+		assertThat(undertest.asMatcherField())
+				.is("private FieldMatcher field = new FieldMatcher(org.hamcrest.Matchers.anything());");
+	}
+
 }
