@@ -22,7 +22,6 @@ package ch.powerunit.extensions.matchers.provideprocessor.extension;
 import org.mockito.Mock;
 
 import ch.powerunit.Rule;
-import ch.powerunit.Test;
 import ch.powerunit.TestRule;
 import ch.powerunit.TestSuite;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
@@ -39,13 +38,4 @@ public class ContainsDSLExtensionTest implements TestSuite {
 	@Rule
 	public final TestRule rules = mockitoRule().around(before(this::prepare));
 
-	@Test
-	public void testGetOneParameter() {
-		assertThatBiFunction(ContainsDSLExtension::getOneParameter, "t1", "n1").is(arrayContaining("t1", "n1"));
-	}
-
-	@Test
-	public void testGetOneWith() {
-		assertThatBiFunction(ContainsDSLExtension::getOneWith, "r", "a").is("r(a)");
-	}
 }
