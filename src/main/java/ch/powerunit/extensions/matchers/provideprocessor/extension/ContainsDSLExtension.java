@@ -36,10 +36,10 @@ public class ContainsDSLExtension implements DSLExtension {
 
 	@Override
 	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementMirror element) {
-		String returnType = element.getFullGeneric() + " org.hamcrest.Matcher<java.lang.Iterable<? extends "
-				+ element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + ">>";
-		String methodName = "contains" + element.getSimpleNameOfClassAnnotatedWithProvideMatcher();
 		String targetName = element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric();
+		String returnType = element.getFullGeneric() + " org.hamcrest.Matcher<java.lang.Iterable<? extends "
+				+ targetName + ">>";
+		String methodName = "contains" + element.getSimpleNameOfClassAnnotatedWithProvideMatcher();
 		String targetMethodName = element.getMethodShortClassName() + "WithSameValue";
 		return Arrays.asList(() -> generateContains1(targetName, targetMethodName, returnType, methodName),
 				() -> generateContains2(targetName, targetMethodName, returnType, methodName),
