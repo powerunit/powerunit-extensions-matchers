@@ -61,32 +61,24 @@ public class ArrayContainingDSLExtension implements DSLExtension {
 		}
 
 		public DSLMethod generateContains1() {
-			return new DSLMethod(
-					new String[] { JAVADOC_DESCRIPTION, "@param first the element contained inside the target array",
-							"@return the Matcher." },
-					returnType + " " + methodName, getOneParameter("first"),
-					"return " + ARRAYCONTAINS_MATCHER + "(" + getOneWith("first") + ");");
+			return generateSimpleDSLMethodFor(new String[] { JAVADOC_DESCRIPTION,
+					"@param first the element contained inside the target array", "@return the Matcher." },
+					ARRAYCONTAINS_MATCHER, "first");
 		}
 
 		public DSLMethod generateContains2() {
-			return new DSLMethod(
-					new String[] { JAVADOC_DESCRIPTION,
-							"@param first the first element contained inside the target array",
-							"@param second the second element contained inside the target array",
-							"@return the Matcher." },
-					returnType + " " + methodName, getSeveralParameter(false, "first", "second"),
-					"return " + ARRAYCONTAINS_MATCHER + "(" + getSeveralWith("first", "second") + ");");
+			return generateSimpleDSLMethodFor(new String[] { JAVADOC_DESCRIPTION,
+					"@param first the element contained inside the target array",
+					"@param second the second element contained inside the target array", "@return the Matcher." },
+					ARRAYCONTAINS_MATCHER, "first", "second");
 		}
 
 		public DSLMethod generateContains3() {
-			return new DSLMethod(
-					new String[] { JAVADOC_DESCRIPTION,
-							"@param first the first element contained inside the target array",
-							"@param second the second element contained inside the target array",
-							"@param third the third element contained inside the target array",
-							"@return the Matcher." },
-					returnType + " " + methodName, getSeveralParameter(false, "first", "second", "third"),
-					"return " + ARRAYCONTAINS_MATCHER + "(" + getSeveralWith("first", "second", "third") + ");");
+			return generateSimpleDSLMethodFor(new String[] { JAVADOC_DESCRIPTION,
+					"@param first the element contained inside the target array",
+					"@param second the second element contained inside the target array",
+					"@param third the third element contained inside the target array", "@return the Matcher." },
+					ARRAYCONTAINS_MATCHER, "first", "second", "third");
 		}
 
 		public DSLMethod generateContainsN() {
