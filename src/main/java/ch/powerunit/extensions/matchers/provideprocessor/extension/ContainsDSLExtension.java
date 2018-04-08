@@ -46,31 +46,16 @@ public class ContainsDSLExtension implements DSLExtension {
 		return new ContainsSupplier(targetName, returnType, methodName, targetMethodName).asSuppliers();
 	}
 
-	public class ContainsSupplier {
-
-		private final String targetName;
-		private String returnType;
-		private String methodName;
-		private String targetMethodName;
+	public class ContainsSupplier extends AbstractDSLExtensionSupplier {
 
 		public ContainsSupplier(String targetName, String returnType, String methodName, String targetMethodName) {
-			this.targetName = targetName;
-			this.returnType = returnType;
-			this.methodName = methodName;
-			this.targetMethodName = targetMethodName;
+			super(targetName, returnType, methodName, targetMethodName);
 		}
 
+		@Override
 		public Collection<Supplier<DSLMethod>> asSuppliers() {
 			return Arrays.asList(this::generateContains1, this::generateContains2, this::generateContains3,
 					this::generateContainsN);
-		}
-
-		public String[] getOneParameter(String name) {
-			return new String[] { targetName, name };
-		}
-
-		public String getOneWith(String name) {
-			return targetMethodName + "(" + name + ")";
 		}
 
 		public DSLMethod generateContains1() {
