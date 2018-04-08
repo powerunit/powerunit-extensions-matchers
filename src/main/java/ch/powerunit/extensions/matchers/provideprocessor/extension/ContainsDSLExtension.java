@@ -39,29 +39,31 @@ public class ContainsDSLExtension implements DSLExtension {
 		String returnType = element.getFullGeneric() + " org.hamcrest.Matcher<java.lang.Iterable<? extends "
 				+ element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + ">>";
 		String methodName = "contains" + element.getSimpleNameOfClassAnnotatedWithProvideMatcher();
-		return Arrays.asList(() -> generateContains1(element, returnType, methodName),
-				() -> generateContains2(element, returnType, methodName),
-				() -> generateContains3(element, returnType, methodName));
+		String targetName = element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric();
+		String targetMethodName = element.getMethodShortClassName() + "WithSameValue";
+		return Arrays.asList(() -> generateContains1(targetName, targetMethodName, returnType, methodName),
+				() -> generateContains2(targetName, targetMethodName, returnType, methodName),
+				() -> generateContains3(targetName, targetMethodName, returnType, methodName));
 	}
 
-	private String[] getOneParameter(ProvidesMatchersAnnotatedElementMirror element, String name) {
-		return new String[] { element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(), name };
+	public static String[] getOneParameter(String targetName, String name) {
+		return new String[] { targetName, name };
 	}
 
-	private String getOneWith(ProvidesMatchersAnnotatedElementMirror element, String name) {
-		return element.getMethodShortClassName() + "WithSameValue(" + name + ")";
+	public static String getOneWith(String targetMethodName, String name) {
+		return targetMethodName + "(" + name + ")";
 	}
 
-	public DSLMethod generateContains1(ProvidesMatchersAnnotatedElementMirror element, String returnType,
+	public DSLMethod generateContains1(String targetName, String targetMethodName, String returnType,
 			String methodName) {
 		return new DSLMethod(
 				new String[] { "Generate a contains matcher for this Object.",
 						"@param first the element contained inside the target iterable", "@return the Matcher." },
-				returnType + " " + methodName, getOneParameter(element, "first"),
-				"return org.hamcrest.Matchers.contains(" + getOneWith(element, "first") + ");");
+				returnType + " " + methodName, getOneParameter(targetName, "first"),
+				"return org.hamcrest.Matchers.contains(" + getOneWith(targetMethodName, "first") + ");");
 	}
 
-	public DSLMethod generateContains2(ProvidesMatchersAnnotatedElementMirror element, String returnType,
+	public DSLMethod generateContains2(String targetName, String targetMethodName, String returnType,
 			String methodName) {
 		return new DSLMethod(
 				new String[] { "Generate a contains matcher for this Object.",
@@ -69,12 +71,12 @@ public class ContainsDSLExtension implements DSLExtension {
 						"@param second the second element contained inside the target iterable",
 						"@return the Matcher." },
 				returnType + " " + methodName,
-				new String[][] { getOneParameter(element, "first"), getOneParameter(element, "second") },
-				"return org.hamcrest.Matchers.contains(" + getOneWith(element, "first") + ","
-						+ getOneWith(element, "second") + ");");
+				new String[][] { getOneParameter(targetName, "first"), getOneParameter(targetName, "second") },
+				"return org.hamcrest.Matchers.contains(" + getOneWith(targetMethodName, "first") + ","
+						+ getOneWith(targetMethodName, "second") + ");");
 	}
 
-	public DSLMethod generateContains3(ProvidesMatchersAnnotatedElementMirror element, String returnType,
+	public DSLMethod generateContains3(String targetName, String targetMethodName, String returnType,
 			String methodName) {
 		return new DSLMethod(
 				new String[] { "Generate a contains matcher for this Object.",
@@ -82,10 +84,10 @@ public class ContainsDSLExtension implements DSLExtension {
 						"@param second the second element contained inside the target iterable",
 						"@param third the third element contained inside the target iterable", "@return the Matcher." },
 				returnType + " " + methodName,
-				new String[][] { getOneParameter(element, "first"), getOneParameter(element, "second"),
-						getOneParameter(element, "third") },
-				"return org.hamcrest.Matchers.contains(" + getOneWith(element, "first") + ","
-						+ getOneWith(element, "second") + "," + getOneWith(element, "third") + ");");
+				new String[][] { getOneParameter(targetName, "first"), getOneParameter(targetName, "second"),
+						getOneParameter(targetName, "third") },
+				"return org.hamcrest.Matchers.contains(" + getOneWith(targetMethodName, "first") + ","
+						+ getOneWith(targetMethodName, "second") + "," + getOneWith(targetMethodName, "third") + ");");
 	}
 
 }

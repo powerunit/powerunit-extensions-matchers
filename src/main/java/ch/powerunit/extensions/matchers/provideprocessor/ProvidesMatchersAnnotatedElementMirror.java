@@ -1,6 +1,7 @@
 package ch.powerunit.extensions.matchers.provideprocessor;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
@@ -25,7 +26,6 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
 import ch.powerunit.extensions.matchers.common.CommonUtils;
-import ch.powerunit.extensions.matchers.provideprocessor.extension.DSLExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 
 public class ProvidesMatchersAnnotatedElementMirror {
@@ -43,7 +43,6 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private final String simpleNameOfClassAnnotatedWithProvideMatcher;
 	private final String methodShortClassName;
 	private final boolean hasParent;
-	private final boolean hasParentInSameRound;
 	private final String generic;
 	private final String fullGeneric;
 	private final String comments;
@@ -88,7 +87,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				+ simpleNameOfClassAnnotatedWithProvideMatcher.substring(1);
 		this.hasParent = !processingEnv.getElementUtils().getTypeElement("java.lang.Object").asType()
 				.equals(typeElement.getSuperclass());
-		this.hasParentInSameRound = roundMirror.isInSameRound(typeElement);
+		boolean hasParentInSameRound = roundMirror.isInSameRound(typeElement);
 		this.fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher = typeElement.getSuperclass().toString();
 		this.typeElementForSuperClassOfClassAnnotatedWithProvideMatcher = (TypeElement) processingEnv.getTypeUtils()
 				.asElement(typeElement.getSuperclass());
@@ -124,7 +123,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		tmp.addAll(Optional.ofNullable(provideMatcherMirror.getDSLExtension()).orElseGet(Collections::emptyList)
 				.stream().map(t -> t.getDSLMethodFor(this)).flatMap(Collection::stream).collect(toList()));
 
-		this.dslProvider = Collections.unmodifiableList(tmp);
+		this.dslProvider = unmodifiableList(tmp);
 	}
 
 	public String getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() {
@@ -498,7 +497,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		lines.add(getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " m=new "
 				+ simpleNameOfGeneratedImplementationMatcher + genericNoParent + "();");
 		lines.addAll(fields.stream().filter(FieldDescription::isNotIgnore)
-				.map(f -> "    " + f.getFieldCopy("m", "other") + ";").collect(Collectors.toList()));
+				.map(f -> "    " + f.getFieldCopy("m", "other") + ";").collect(toList()));
 		lines.add("return m;");
 		return new DSLMethod(javadoc,
 				fullGeneric + " " + fullyQualifiedNameOfGeneratedClass + "."
