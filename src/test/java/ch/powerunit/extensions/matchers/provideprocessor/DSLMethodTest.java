@@ -28,7 +28,7 @@ import ch.powerunit.TestSuite;
  */
 public class DSLMethodTest implements TestSuite {
 
-	@Test
+	@Test(fastFail = false)
 	public void testDSLMethodTwoArgument() {
 		DSLMethod m = new DSLMethod(new String[] { "l1", "l2" }, "boolean isOK",
 				new String[][] { { "java.lang.String", "one" }, { "java.lang.String", "two" } }, "l1");
@@ -39,5 +39,8 @@ public class DSLMethodTest implements TestSuite {
 		assertThat(m.getRealArgumentsName()).is("one,two");
 		assertThat(m.asDefaultReference("target")).is(
 				"/**\n * l1\n * l2\n */\ndefault boolean isOK(java.lang.String one,java.lang.String two) {\n  return target.isOK(one,two);\n}\n");
+		assertThat(m.getJavadoc()).is("/**\n * l1\n * l2\n */\n");
+		assertThat(m.getDeclaration()).is("boolean isOK");
+		assertThat(m.getImplementation()).is("  l1\n");
 	}
 }
