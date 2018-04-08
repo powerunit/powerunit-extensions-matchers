@@ -73,12 +73,8 @@ class FactoryAnnotatedElementMirror {
 
 	private String convertParameterForSee(VariableElement ve) {
 		Element e = processingEnv.getTypeUtils().asElement(ve.asType());
-		if (e == null) {
+		if (e == null || ve.asType().getKind() == TypeKind.TYPEVAR) {
 			return processingEnv.getTypeUtils().erasure(ve.asType()).toString();
-		} else {
-			if (ve.asType().getKind() == TypeKind.TYPEVAR) {
-				return processingEnv.getTypeUtils().erasure(ve.asType()).toString();
-			}
 		}
 		return processingEnv.getElementUtils().getPackageOf(e).toString() + "."
 				+ processingEnv.getTypeUtils().asElement(ve.asType()).getSimpleName();
