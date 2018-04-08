@@ -38,7 +38,6 @@ class ProvidesMatchersElementVisitor extends SimpleElementVisitor8<Optional<Type
 	private void warningForType(Element e, String type) {
 		roundMirror.getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING,
 				"The annotation `ProvideMatchers` is used on an " + type + ", which is not supported", e,
-				roundMirror.getProvideMatchersAnnotation(
-						roundMirror.getProcessingEnv().getElementUtils().getAllAnnotationMirrors(e)));
+				roundMirror.getProvideMatchersAnnotation(e));
 	}
 }

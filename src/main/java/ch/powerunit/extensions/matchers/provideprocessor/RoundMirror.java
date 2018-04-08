@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
@@ -111,9 +110,9 @@ public class RoundMirror {
 						.findAny().isPresent();
 	}
 
-	public AnnotationMirror getProvideMatchersAnnotation(Collection<? extends AnnotationMirror> annotations) {
-		return annotations.stream().filter(a -> a.getAnnotationType().equals(provideMatchersTE.asType())).findAny()
-				.orElse(null);
+	public AnnotationMirror getProvideMatchersAnnotation(Element e) {
+		return getProcessingEnv().getElementUtils().getAllAnnotationMirrors(e).stream()
+				.filter(a -> a.getAnnotationType().equals(provideMatchersTE.asType())).findAny().orElse(null);
 	}
 
 }
