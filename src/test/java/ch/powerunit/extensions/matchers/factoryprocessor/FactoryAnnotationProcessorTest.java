@@ -146,6 +146,15 @@ public class FactoryAnnotationProcessorTest implements TestSuite {
 	}
 
 	@Test
+	public void testInitEmptyTarget() {
+		when(processingEnv.getOptions())
+				.thenReturn(Collections.singletonMap(FactoryAnnotationsProcessor.class.getName() + ".targets", ""));
+		underTest.init(processingEnv);
+		Mockito.verify(messageUtils).printMessage(Kind.MANDATORY_WARNING, "The parameter `"
+				+ FactoryAnnotationsProcessor.class.getName() + ".targets` is missing, please use it.");
+	}
+
+	@Test
 	public void testProcessNoTarget() {
 		when(processingEnv.getOptions()).thenReturn(Collections.emptyMap());
 		underTest.init(processingEnv);
@@ -173,7 +182,7 @@ public class FactoryAnnotationProcessorTest implements TestSuite {
 		assertThat(target).is(containsString("public interface target {"));
 		assertThat(target).is(containsString("public static final target DSL = new target() {}"));
 	}
- 
+
 	@Test
 	public void testProcessOneTargetOneAnnotatedElement() throws IOException {
 		when(filer.createSourceFile(Mockito.eq("target"), Mockito.anyVararg())).thenReturn(javaFileObject);
