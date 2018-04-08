@@ -45,4 +45,9 @@ public abstract class AbstractDSLExtensionSupplier {
 	public String getOneWith(String name) {
 		return targetMethodName + "(" + name + ")";
 	}
+
+	public DSLMethod generateSimpleDSLMethodFor(String javadoc[], String containerMatcher, String... parameters) {
+		return new DSLMethod(javadoc, returnType + " " + methodName, getSeveralParameter(false, parameters),
+				"return " + containerMatcher + "(" + getSeveralWith(parameters) + ");");
+	}
 }

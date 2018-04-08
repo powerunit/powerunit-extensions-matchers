@@ -26,11 +26,11 @@ import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 
-public class ArrayContainingDSLExtension implements DSLExtension {
+public class ArrayContainingInAnyOrderDSLExtension implements DSLExtension {
 
-	public static final String ARRAYCONTAINS_MATCHER = "org.hamcrest.Matchers.arrayContaining";
+	public static final String ARRAYCONTAINS_MATCHER = "org.hamcrest.Matchers.arrayContainingInAnyOrder";
 
-	private static final String JAVADOC_DESCRIPTION = "Generate an array contains matcher for this Object.";
+	private static final String JAVADOC_DESCRIPTION = "Generate an array contains in any order matcher for this Object.";
 
 	@Override
 	public ComplementaryExpositionMethod supportedEnum() {
@@ -41,14 +41,14 @@ public class ArrayContainingDSLExtension implements DSLExtension {
 	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData element) {
 		String targetName = element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric();
 		String returnType = element.getFullGeneric() + " org.hamcrest.Matcher<" + targetName + "[]>";
-		String methodName = element.generateDSLMethodName("arrayContaining");
+		String methodName = element.generateDSLMethodName("arrayContainingInAnyOrder");
 		String targetMethodName = element.generateDSLWithSameValueMethodName();
-		return new ArrrayContainsSupplier(targetName, returnType, methodName, targetMethodName).asSuppliers();
+		return new ArrrayContainsInAnyOrderSupplier(targetName, returnType, methodName, targetMethodName).asSuppliers();
 	}
 
-	public class ArrrayContainsSupplier extends AbstractArrayContaingDSLExtensionSupplier {
+	public class ArrrayContainsInAnyOrderSupplier extends AbstractArrayContaingDSLExtensionSupplier {
 
-		public ArrrayContainsSupplier(String targetName, String returnType, String methodName,
+		public ArrrayContainsInAnyOrderSupplier(String targetName, String returnType, String methodName,
 				String targetMethodName) {
 			super(targetName, returnType, methodName, targetMethodName);
 		}

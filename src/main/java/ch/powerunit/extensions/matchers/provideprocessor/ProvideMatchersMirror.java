@@ -32,14 +32,17 @@ import javax.lang.model.element.TypeElement;
 import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.ArrayContainingDSLExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.ArrayContainingInAnyOrderDSLExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.ContainsDSLExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.ContainsInAnyOrderDSLExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.DSLExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.HasItemsExtension;
 
 public class ProvideMatchersMirror {
 
 	private static final Collection<DSLExtension> EXTENSION = Collections.unmodifiableList(
-			Arrays.asList(new ContainsDSLExtension(), new ArrayContainingDSLExtension(), new HasItemsExtension()));
+			Arrays.asList(new ContainsDSLExtension(), new ArrayContainingDSLExtension(), new HasItemsExtension(),
+					new ContainsInAnyOrderDSLExtension(), new ArrayContainingInAnyOrderDSLExtension()));
 
 	private final String comments;
 	private final String simpleNameOfGeneratedClass;
