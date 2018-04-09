@@ -147,19 +147,20 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		return true;
 	}
 
+	private SupplierWithException<FileObject> getSupplierFor(String targetName) {
+		return () -> processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "",
+				"META-INF/" + getClass().getName() + "/" + targetName, allGeneratedMatchers.listElements());
+	}
+
 	private void processReportDSL() {
-		processFileWithIOException(
-				() -> processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "",
-						"META-INF/" + getClass().getName() + "/dsl.txt", allGeneratedMatchers.listElements()),
-				factories::isEmpty, jfo -> new PrintWriter(jfo.openWriter()), wjfo -> factories.forEach(wjfo::println),
+		processFileWithIOException(getSupplierFor("dsl.txt"), factories::isEmpty,
+				jfo -> new PrintWriter(jfo.openWriter()), wjfo -> factories.forEach(wjfo::println),
 				Kind.MANDATORY_WARNING);
 
 	}
 
 	private void processReportXML() {
-		processFileWithIOException(
-				() -> processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "",
-						"META-INF/" + getClass().getName() + "/matchers.xml", allGeneratedMatchers.listElements()),
+		processFileWithIOException(getSupplierFor("matchers.xml"),
 				() -> allGeneratedMatchers.listElements().length == 0, FileObject::openOutputStream, os -> {
 					Marshaller m = JAXBContext.newInstance(GeneratedMatchers.class).createMarshaller();
 					m.setProperty("jaxb.formatted.output", true);
