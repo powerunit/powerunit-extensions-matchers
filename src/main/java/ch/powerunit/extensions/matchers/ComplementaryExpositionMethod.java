@@ -30,6 +30,85 @@ public enum ComplementaryExpositionMethod {
 	 * This can be used to indicate that, for the annotated element, method
 	 * named {@code containsXXX} that returns Matcher for {@code Iterable} must
 	 * be created.
+	 * <p>
+	 * For example, for a class {@code Pojo1}, this will add the following
+	 * elements to the generated classes :
+	 * 
+	 * <pre>
+	 * 
+	 * &#64;org.hamcrest.Factory
+	 * public static org.hamcrest.Matcher&lt;java.lang.Iterable&lt;? extends ch.powerunit.extensions.matchers.samples.Pojo1&gt;&gt; containsPojo1(
+	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 first) {
+	 * 	return org.hamcrest.Matchers.contains(pojo1WithSameValue(first));
+	 * }
+	 * 
+	 * &#64;org.hamcrest.Factory
+	 * public static org.hamcrest.Matcher&lt;java.lang.Iterable&lt;? extends ch.powerunit.extensions.matchers.samples.Pojo1&gt;&gt; containsPojo1(
+	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 first,
+	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 second) {
+	 * 	return org.hamcrest.Matchers.contains(pojo1WithSameValue(first), pojo1WithSameValue(second));
+	 * }
+	 * 
+	 * &#64;org.hamcrest.Factory
+	 * public static org.hamcrest.Matcher&lt;java.lang.Iterable&lt;? extends ch.powerunit.extensions.matchers.samples.Pojo1&gt;&gt; containsPojo1(
+	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 first,
+	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 second,
+	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 third) {
+	 * 	return org.hamcrest.Matchers.contains(pojo1WithSameValue(first), pojo1WithSameValue(second),
+	 * 			pojo1WithSameValue(third));
+	 * }
+	 * 
+	 * &#64;org.hamcrest.Factory
+	 * public static org.hamcrest.Matcher&lt;java.lang.Iterable&lt;? extends ch.powerunit.extensions.matchers.samples.Pojo1&gt;&gt; containsPojo1(
+	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 first,
+	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 second,
+	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 third,
+	 * 		ch.powerunit.extensions.matchers.samples.Pojo1... last) {
+	 * 	java.util.List&lt;org.hamcrest.Matcher&lt;ch.powerunit.extensions.matchers.samples.Pojo1&gt;&gt; tmp = new java.util.ArrayList&lt;&gt;(
+	 * 			java.util.Arrays.asList(pojo1WithSameValue(first), pojo1WithSameValue(second),
+	 * 					pojo1WithSameValue(third)));
+	 * 	tmp.addAll(java.util.Arrays.stream(last).map(v -&gt; pojo1WithSameValue(v))
+	 * 			.collect(java.util.stream.Collectors.toList()));
+	 * 	return org.hamcrest.Matchers.contains(tmp.toArray(new org.hamcrest.Matcher[0]));
+	 * }
+	 * 
+	 * &#64;org.hamcrest.Factory
+	 * public static org.hamcrest.Matcher&lt;java.lang.Iterable&lt;? extends ch.powerunit.extensions.matchers.samples.Pojo1&gt;&gt; containsInAnyOrderPojo1(
+	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 first) {
+	 * 	return org.hamcrest.Matchers.containsInAnyOrder(pojo1WithSameValue(first));
+	 * }
+	 * 
+	 * &#64;org.hamcrest.Factory
+	 * public static org.hamcrest.Matcher&lt;java.lang.Iterable&lt;? extends ch.powerunit.extensions.matchers.samples.Pojo1&gt;&gt; containsInAnyOrderPojo1(
+	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 first,
+	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 second) {
+	 * 	return org.hamcrest.Matchers.containsInAnyOrder(pojo1WithSameValue(first), pojo1WithSameValue(second));
+	 * }
+	 * 
+	 * &#64;org.hamcrest.Factory
+	 * public static org.hamcrest.Matcher&lt;java.lang.Iterable&lt;? extends ch.powerunit.extensions.matchers.samples.Pojo1&gt;&gt; containsInAnyOrderPojo1(
+	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 first,
+	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 second,
+	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 third) {
+	 * 	return org.hamcrest.Matchers.containsInAnyOrder(pojo1WithSameValue(first), pojo1WithSameValue(second),
+	 * 			pojo1WithSameValue(third));
+	 * }
+	 * 
+	 * &#64;org.hamcrest.Factory
+	 * public static org.hamcrest.Matcher&lt;java.lang.Iterable&lt;? extends ch.powerunit.extensions.matchers.samples.Pojo1&gt;&gt; containsInAnyOrderPojo1(
+	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 first,
+	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 second,
+	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 third,
+	 * 		ch.powerunit.extensions.matchers.samples.Pojo1... last) {
+	 * 	java.util.List&lt;org.hamcrest.Matcher&lt;ch.powerunit.extensions.matchers.samples.Pojo1&gt;&gt; tmp = new java.util.ArrayList&lt;&gt;(
+	 * 			java.util.Arrays.asList(pojo1WithSameValue(first), pojo1WithSameValue(second),
+	 * 					pojo1WithSameValue(third)));
+	 * 	tmp.addAll(java.util.Arrays.stream(last).map(v -&gt; pojo1WithSameValue(v))
+	 * 			.collect(java.util.stream.Collectors.toList()));
+	 * 	return org.hamcrest.Matchers.containsInAnyOrder(tmp.toArray(new org.hamcrest.Matcher[0]));
+	 * }
+	 * 
+	 * </pre>
 	 * 
 	 */
 	CONTAINS, //
@@ -37,6 +116,73 @@ public enum ComplementaryExpositionMethod {
 	 * This can be used to indicate that, for the annotated element, method
 	 * named {@code arrayContainingXXX} that returns Matcher for array must be
 	 * created.
+	 * <p>
+	 * For example, for a class {@code Pojo1}, this will add the following
+	 * elements to the generated classes :
+	 * 
+	 * <pre>
+	 * &#64;org.hamcrest.Factory
+  	 * public static org.hamcrest.Matcher&lt;ch.powerunit.extensions.matchers.samples.Pojo1 []&gt; arrayContainingPojo1(ch.powerunit.extensions.matchers.samples.Pojo1 first) {
+     *  return org.hamcrest.Matchers.arrayContaining(pojo1WithSameValue(first));
+  	 * }
+	 *
+  	 * &#64;org.hamcrest.Factory
+  	 * public static org.hamcrest.Matcher&lt;ch.powerunit.extensions.matchers.samples.Pojo1 []&gt; arrayContainingPojo1(
+  	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 first,
+  	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 second) {
+     *  return org.hamcrest.Matchers.arrayContaining(pojo1WithSameValue(first),pojo1WithSameValue(second));
+     * }
+	 *
+     * &#64;org.hamcrest.Factory
+     * public static org.hamcrest.Matcher&lt;ch.powerunit.extensions.matchers.samples.Pojo1 []&gt; arrayContainingPojo1(
+     * 		ch.powerunit.extensions.matchers.samples.Pojo1 first,
+     * 		ch.powerunit.extensions.matchers.samples.Pojo1 second,
+     * 		ch.powerunit.extensions.matchers.samples.Pojo1 third) {
+     *  return org.hamcrest.Matchers.arrayContaining(pojo1WithSameValue(first),pojo1WithSameValue(second),pojo1WithSameValue(third));
+     * }
+	 *
+  	 * &#64;org.hamcrest.Factory
+  	 * public static org.hamcrest.Matcher&lt;ch.powerunit.extensions.matchers.samples.Pojo1 []&gt; arrayContainingPojo1(
+  	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 first,
+  	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 second,
+  	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 third,
+  	 * 		ch.powerunit.extensions.matchers.samples.Pojo1... last) {
+     * 	java.util.List&lt;org.hamcrest.Matcher&lt;ch.powerunit.extensions.matchers.samples.Pojo1 &gt;&gt; tmp = new java.util.ArrayList&lt;&gt;(java.util.Arrays.asList(pojo1WithSameValue(first),pojo1WithSameValue(second),pojo1WithSameValue(third)));
+     *  tmp.addAll(java.util.Arrays.stream(last).map(v-&gt;pojo1WithSameValue(v)).collect(java.util.stream.Collectors.toList()));
+     *  return org.hamcrest.Matchers.arrayContaining(tmp.toArray(new org.hamcrest.Matcher[0]));
+     * }
+     *
+     * &#64;org.hamcrest.Factory
+     * public static org.hamcrest.Matcher&lt;ch.powerunit.extensions.matchers.samples.Pojo1 []&gt; arrayContainingInAnyOrderPojo1(ch.powerunit.extensions.matchers.samples.Pojo1 first) {
+     *  return org.hamcrest.Matchers.arrayContainingInAnyOrder(pojo1WithSameValue(first));
+     * }
+	 *
+     * &#64;org.hamcrest.Factory
+     * public static org.hamcrest.Matcher&lt;ch.powerunit.extensions.matchers.samples.Pojo1 []&gt; arrayContainingInAnyOrderPojo1(
+     * 		ch.powerunit.extensions.matchers.samples.Pojo1 first,
+     * 		ch.powerunit.extensions.matchers.samples.Pojo1 second) {
+     *  return org.hamcrest.Matchers.arrayContainingInAnyOrder(pojo1WithSameValue(first),pojo1WithSameValue(second));
+     * }
+	 *
+     * &#64;org.hamcrest.Factory
+  	 * public static org.hamcrest.Matcher&lt;ch.powerunit.extensions.matchers.samples.Pojo1 []&gt; arrayContainingInAnyOrderPojo1(
+  	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 first,
+  	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 second,
+  	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 	third) {
+     *  return org.hamcrest.Matchers.arrayContainingInAnyOrder(pojo1WithSameValue(first),pojo1WithSameValue(second),pojo1WithSameValue(third));
+     * }
+     *
+     * &#64;org.hamcrest.Factory
+  	 * public static org.hamcrest.Matcher&lt;ch.powerunit.extensions.matchers.samples.Pojo1 []&gt; arrayContainingInAnyOrderPojo1(
+  	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 first,
+  	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 second,
+  	 * 		ch.powerunit.extensions.matchers.samples.Pojo1 third,
+  	 * 		ch.powerunit.extensions.matchers.samples.Pojo1... last) {
+     *  java.util.List&lt;org.hamcrest.Matcher&lt;ch.powerunit.extensions.matchers.samples.Pojo1 &gt;&gt; tmp = new java.util.ArrayList&lt;&gt;(java.util.Arrays.asList(pojo1WithSameValue(first),pojo1WithSameValue(second),pojo1WithSameValue(third)));
+     *  tmp.addAll(java.util.Arrays.stream(last).map(v-&gt;pojo1WithSameValue(v)).collect(java.util.stream.Collectors.toList()));
+     *  return org.hamcrest.Matchers.arrayContainingInAnyOrder(tmp.toArray(new org.hamcrest.Matcher[0]));
+     * }
+	 * </pre>
 	 * 
 	 */
 	ARRAYCONTAINING, //
@@ -44,6 +190,16 @@ public enum ComplementaryExpositionMethod {
 	/**
 	 * This can be used to indcate that, for the annotated element, method name
 	 * {@code hasItemsXXX} that return hasItems matcher must be created.
+	 * <p>
+	 * For example, for a class {@code Pojo1}, this will add the following
+	 * elements to the generated classes :
+	 * 
+	 * <pre>
+	 * &#64;org.hamcrest.Factory
+     * public static org.hamcrest.Matcher&lt;java.lang.Iterable&lt;ch.powerunit.extensions.matchers.samples.Pojo1 &gt;&gt; hasItemsPojo1(ch.powerunit.extensions.matchers.samples.Pojo1 ... item) {
+     *  return org.hamcrest.Matchers.hasItems(java.util.Arrays.stream(item).map(v-&gt;pojo1WithSameValue(v)).collect(java.util.stream.Collectors.toList()).toArray(new org.hamcrest.Matcher[0]));
+     *}
+	 * </pre>
 	 */
 	HAS_ITEMS
 }
