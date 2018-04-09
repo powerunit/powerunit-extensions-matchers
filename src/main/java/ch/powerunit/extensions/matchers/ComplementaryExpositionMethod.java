@@ -188,7 +188,7 @@ public enum ComplementaryExpositionMethod {
 	ARRAYCONTAINING, //
 
 	/**
-	 * This can be used to indcate that, for the annotated element, method name
+	 * This can be used to indicate that, for the annotated element, method name
 	 * {@code hasItemsXXX} that return hasItems matcher must be created.
 	 * <p>
 	 * For example, for a class {@code Pojo1}, this will add the following
@@ -201,5 +201,21 @@ public enum ComplementaryExpositionMethod {
      *}
 	 * </pre>
 	 */
-	HAS_ITEMS
+	HAS_ITEMS, //
+	
+	/**
+	 * This can be used to indcate that, for the annotated element, method name
+	 * {@code anyOfXXX} that return anyOf matcher must be created.
+	 * <p>
+	 * For example, for a class {@code Pojo1}, this will add the following
+	 * elements to the generated classes :
+	 * 
+	 * <pre>
+	 * &#64;org.hamcrest.Factory
+  	 * public static org.hamcrest.Matcher&lt;ch.powerunit.extensions.matchers.samples.Pojo1 &gt; anyOfPojo1(ch.powerunit.extensions.matchers.samples.Pojo1 ... items) {
+     *  return org.hamcrest.Matchers.anyOf(java.util.Arrays.stream(items).map(v-&gt;pojo1WithSameValue(v)).collect(java.util.stream.Collectors.toList()).toArray(new org.hamcrest.Matcher[0]));
+     * }
+	 * </pre>
+	 */
+	ANY_OF
 }
