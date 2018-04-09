@@ -67,22 +67,27 @@ public class RoundMirror {
 				.map(t -> new ProvidesMatchersAnnotatedElementMirror(t.get(), this))
 				.forEach(a -> alias.put(a.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher(), a));
 
-		elementsWithOtherAnnotations.entrySet().stream().forEach(e -> doWarningForElement(e.getValue(), e.getKey()));
+		doWarningforAllElements();
 		return alias.values();
+	}
+
+	private void doWarningforAllElements() {
+		elementsWithOtherAnnotations.entrySet().stream().forEach(e -> doWarningForElement(e.getValue(), e.getKey()));
 	}
 
 	private void doWarningForElement(Set<? extends Element> elements, Class<?> aa) {
 		elements.stream()
-				.forEach(
-						e -> processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
-								"Annotation @" + aa.getName()
-										+ " not supported at this location ; The surrounding class is not annotated with @ProvideMatchers",
-								e,
-								e.getAnnotationMirrors().stream()
-										.filter(a -> a.getAnnotationType()
-												.equals(processingEnv.getElementUtils()
-														.getTypeElement(aa.getName().toString()).asType()))
-										.findAny().orElse(null)));
+				.forEach(e -> processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
+						"Annotation @" + aa.getName()
+								+ " not supported at this location ; The surrounding class is not annotated with @ProvideMatchers",
+						e, findAnnotationMirrorFor(e, aa)));
+	}
+
+	private AnnotationMirror findAnnotationMirrorFor(Element e, Class<?> aa) {
+		return e.getAnnotationMirrors().stream()
+				.filter(a -> a.getAnnotationType()
+						.equals(processingEnv.getElementUtils().getTypeElement(aa.getName().toString()).asType()))
+				.findAny().orElse(null);
 	}
 
 	public boolean removeFromIgnoreList(Element e) {
