@@ -19,7 +19,6 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +29,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic.Kind;
 
 import ch.powerunit.extensions.matchers.AddToMatcher;
@@ -43,29 +42,22 @@ public class RoundMirror {
 	private final RoundEnvironment roundEnv;
 	private final ProcessingEnvironment processingEnv;
 	private final Set<? extends Element> elementsWithPM;
-	private final Set<? extends Element> elementsWithIgnore;
-	private final Set<? extends Element> elementsWithAddToMatcher;
-	private final Set<? extends Element> elementsWithAddToMatchers;
-	private final TypeElement provideMatchersTE;
+	private final Map<Class<?>, Set<? extends Element>> elementsWithOtherAnnotations;
 	private final Map<String, ProvidesMatchersAnnotatedElementMirror> alias = new HashMap<>();
 
 	public RoundMirror(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
 		this.roundEnv = roundEnv;
 		this.processingEnv = processingEnv;
+		this.elementsWithOtherAnnotations = new HashMap<>();
 		this.elementsWithPM = roundEnv.getElementsAnnotatedWith(ProvideMatchers.class);
-		this.elementsWithIgnore = roundEnv.getElementsAnnotatedWith(IgnoreInMatcher.class);
-		this.elementsWithAddToMatcher = roundEnv.getElementsAnnotatedWith(AddToMatcher.class);
-		this.elementsWithAddToMatchers = roundEnv.getElementsAnnotatedWith(AddToMatchers.class);
-		this.provideMatchersTE = processingEnv.getElementUtils()
-				.getTypeElement("ch.powerunit.extensions.matchers.ProvideMatchers");
+		elementsWithOtherAnnotations.put(IgnoreInMatcher.class,
+				roundEnv.getElementsAnnotatedWith(IgnoreInMatcher.class));
+		elementsWithOtherAnnotations.put(AddToMatcher.class, roundEnv.getElementsAnnotatedWith(AddToMatcher.class));
+		elementsWithOtherAnnotations.put(AddToMatchers.class, roundEnv.getElementsAnnotatedWith(AddToMatchers.class));
 	}
 
 	public ProcessingEnvironment getProcessingEnv() {
 		return processingEnv;
-	}
-
-	public TypeElement getProvideMatchersTE() {
-		return provideMatchersTE;
 	}
 
 	public Collection<ProvidesMatchersAnnotatedElementMirror> parse() {
@@ -75,9 +67,7 @@ public class RoundMirror {
 				.map(t -> new ProvidesMatchersAnnotatedElementMirror(t.get(), this))
 				.forEach(a -> alias.put(a.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher(), a));
 
-		doWarningForElement(elementsWithIgnore, IgnoreInMatcher.class);
-		doWarningForElement(elementsWithAddToMatcher, AddToMatcher.class);
-		doWarningForElement(elementsWithAddToMatchers, AddToMatchers.class);
+		elementsWithOtherAnnotations.entrySet().stream().forEach(e -> doWarningForElement(e.getValue(), e.getKey()));
 		return alias.values();
 	}
 
@@ -96,8 +86,8 @@ public class RoundMirror {
 	}
 
 	public boolean removeFromIgnoreList(Element e) {
-		return Arrays.stream(new Set[] { elementsWithIgnore, elementsWithAddToMatcher, elementsWithAddToMatchers })
-				.map(t -> t.remove(e)).filter(t -> t).findAny().orElse(false);
+		return elementsWithOtherAnnotations.values().stream().map(t -> t.remove(e)).filter(t -> t).findAny()
+				.orElse(false);
 	}
 
 	public ProvidesMatchersAnnotatedElementMirror getByName(String name) {
@@ -111,8 +101,10 @@ public class RoundMirror {
 	}
 
 	public AnnotationMirror getProvideMatchersAnnotation(Element e) {
+		TypeMirror pmtm = processingEnv.getElementUtils()
+				.getTypeElement("ch.powerunit.extensions.matchers.ProvideMatchers").asType();
 		return getProcessingEnv().getElementUtils().getAllAnnotationMirrors(e).stream()
-				.filter(a -> a.getAnnotationType().equals(provideMatchersTE.asType())).findAny().orElse(null);
+				.filter(a -> a.getAnnotationType().equals(pmtm)).findAny().orElse(null);
 	}
 
 }
