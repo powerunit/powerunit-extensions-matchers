@@ -23,6 +23,3 @@ deploy:
   local-dir: target/site
   on:
     branch: master
-env:
-  global:
-  - secure: j9eN+/hZEB/aXZDh8ZcaV4iFb+zEtgRP8PwRydX44GKwQFMx1Qp7u2UySj3YbbuBRqLDUgdLDTGIdVhzCdm1H646pHhGnBvmHnvTXgofuVzr/QPYLMpIuPn8dc6EOoo4qvffEJX3I2hb2IQ0ELIU+1MNKztorkidA5fCeYa+uiU=
