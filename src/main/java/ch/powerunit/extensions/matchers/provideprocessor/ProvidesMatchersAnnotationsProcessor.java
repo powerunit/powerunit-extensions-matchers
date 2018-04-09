@@ -160,8 +160,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	}
 
 	private void processReportXML() {
-		processFileWithIOException(getSupplierFor("matchers.xml"),
-				() -> allGeneratedMatchers.listElements().length == 0, FileObject::openOutputStream, os -> {
+		processFileWithIOException(getSupplierFor("matchers.xml"), allGeneratedMatchers.getGeneratedMatcher()::isEmpty,
+				FileObject::openOutputStream, os -> {
 					Marshaller m = JAXBContext.newInstance(GeneratedMatchers.class).createMarshaller();
 					m.setProperty("jaxb.formatted.output", true);
 					m.marshal(allGeneratedMatchers, os);
