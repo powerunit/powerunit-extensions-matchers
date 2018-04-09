@@ -39,7 +39,7 @@ public class GeneratedMatcher {
 	private String simpleNameGeneratedClass;
 
 	private String dslMethodNameStart;
-	
+		
 	private List<GeneratedMatcherField> generatedMatcherField;
 
 	private transient ProvidesMatchersAnnotatedElementMirror mirror;

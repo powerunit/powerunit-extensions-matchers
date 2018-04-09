@@ -110,6 +110,9 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		try {
 			FileObject jfo = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "",
 					"META-INF/" + getClass().getName() + "/matchers.xml", allGeneratedMatchers.listElements());
+			if (jfo.getLastModified() != 0 && allGeneratedMatchers.listElements().length == 0) {
+				return;
+			}
 			try (OutputStream os = jfo.openOutputStream();) {
 				Marshaller m = JAXBContext.newInstance(GeneratedMatchers.class).createMarshaller();
 				m.setProperty("jaxb.formatted.output", true);
@@ -125,10 +128,13 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
 	private void processFactory() {
 		try {
-			processingEnv.getMessager().printMessage(Kind.NOTE,
-					"The interface `" + factory + "` will be generated as a factory interface.");
 			JavaFileObject jfo = processingEnv.getFiler().createSourceFile(factory,
 					allGeneratedMatchers.listElements());
+			if (jfo.getLastModified() != 0 && factories.isEmpty()) {
+				return;
+			}
+			processingEnv.getMessager().printMessage(Kind.NOTE,
+					"The interface `" + factory + "` will be generated as a factory interface.");
 			try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
 				CommonUtils.generateFactoryClass(wjfo, ProvidesMatchersAnnotationsProcessor.class,
 						factory.replaceAll("\\.[^.]+$", ""), factory.replaceAll("^([^.]+\\.)*", ""),
