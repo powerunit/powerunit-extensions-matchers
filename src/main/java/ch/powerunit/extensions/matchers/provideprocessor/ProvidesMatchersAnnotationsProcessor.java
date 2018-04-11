@@ -74,20 +74,24 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		super.init(processingEnv);
 		factory = processingEnv.getOptions().get(ProvidesMatchersAnnotationsProcessor.class.getName() + ".factory");
 		if (factory != null) {
-			try {
-				FileObject matchers = processingEnv.getFiler().getResource(StandardLocation.SOURCE_OUTPUT, "",
-						"META-INF/" + getClass().getName() + "/matchers.xml");
-				if (matchers.getLastModified() != 0) {
-					Unmarshaller m = JAXBContext.newInstance(GeneratedMatchers.class).createUnmarshaller();
-					try (InputStream is = matchers.openInputStream()) {
-						GeneratedMatchers gm = (GeneratedMatchers) m.unmarshal(is);
-						gm.getGeneratedMatcher()
-								.forEach(mo -> allGeneratedMatchers.put(mo.getFullyQualifiedNameGeneratedClass(), mo));
-					}
+			retrieveInformationFromOldBuild();
+		}
+	}
+
+	private void retrieveInformationFromOldBuild() {
+		try {
+			FileObject matchers = processingEnv.getFiler().getResource(StandardLocation.SOURCE_OUTPUT, "",
+					"META-INF/" + getClass().getName() + "/matchers.xml");
+			if (matchers.getLastModified() != 0) {
+				Unmarshaller m = JAXBContext.newInstance(GeneratedMatchers.class).createUnmarshaller();
+				try (InputStream is = matchers.openInputStream()) {
+					GeneratedMatchers gm = (GeneratedMatchers) m.unmarshal(is);
+					gm.getGeneratedMatcher()
+							.forEach(mo -> allGeneratedMatchers.put(mo.getFullyQualifiedNameGeneratedClass(), mo));
 				}
-			} catch (Exception e) {
-				processingEnv.getMessager().printMessage(Kind.ERROR, "Unable to open matchers.xml file");
 			}
+		} catch (Exception e) {
+			processingEnv.getMessager().printMessage(Kind.ERROR, "Unable to open matchers.xml file");
 		}
 	}
 
