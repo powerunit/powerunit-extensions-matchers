@@ -41,7 +41,6 @@ import java.util.function.Supplier;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
-import javax.tools.JavaFileObject;
 
 import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
