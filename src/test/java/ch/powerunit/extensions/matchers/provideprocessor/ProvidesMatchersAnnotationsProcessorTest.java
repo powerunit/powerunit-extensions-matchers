@@ -2,6 +2,7 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Collections;
 
@@ -46,18 +47,30 @@ public class ProvidesMatchersAnnotationsProcessorTest implements TestSuite {
 	}
 
 	@Test
+	public void testInitFactoryNoFactory() {
+		ProvidesMatchersAnnotationsProcessor underTest = new ProvidesMatchersAnnotationsProcessor();
+		underTest.init(processingEnv);
+	}
+
+	@Test
 	public void testInitFactoryNoOldFIle() {
 		ProvidesMatchersAnnotationsProcessor underTest = new ProvidesMatchersAnnotationsProcessor();
+		when(processingEnv.getOptions()).thenReturn(Collections.singletonMap(
+				"ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor.factory",
+				"test"));
 		when(matcher.getLastModified()).thenReturn(0l);
 		underTest.init(processingEnv);
 	}
 
 	@Test
-	public void testInitFactory() {
+	public void testInitFactoryOldFile() throws IOException {
 		ProvidesMatchersAnnotationsProcessor underTest = new ProvidesMatchersAnnotationsProcessor();
 		when(processingEnv.getOptions()).thenReturn(Collections.singletonMap(
 				"ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor.factory",
 				"test"));
+		when(matcher.getLastModified()).thenReturn(1l);
+		when(matcher.openInputStream()).thenReturn(new ByteArrayInputStream(
+				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><generatedMatchers/>".getBytes()));
 		underTest.init(processingEnv);
 	}
 }

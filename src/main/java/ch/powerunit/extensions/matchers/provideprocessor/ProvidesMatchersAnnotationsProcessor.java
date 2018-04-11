@@ -47,6 +47,7 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
@@ -69,9 +70,16 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
 	private Map<String, GeneratedMatcher> allGeneratedMatchers = new HashMap<>();
 
+	private JAXBContext context;
+
 	@Override
 	public synchronized void init(ProcessingEnvironment processingEnv) {
 		super.init(processingEnv);
+		try {
+			context = JAXBContext.newInstance(GeneratedMatchers.class);
+		} catch (JAXBException e) {
+			processingEnv.getMessager().printMessage(Kind.ERROR, "Unable to open prepare jaxb " + e.getMessage());
+		}
 		factory = processingEnv.getOptions().get(ProvidesMatchersAnnotationsProcessor.class.getName() + ".factory");
 		if (factory != null) {
 			retrieveInformationFromOldBuild();
@@ -83,15 +91,15 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			FileObject matchers = processingEnv.getFiler().getResource(StandardLocation.SOURCE_OUTPUT, "",
 					"META-INF/" + getClass().getName() + "/matchers.xml");
 			if (matchers.getLastModified() != 0) {
-				Unmarshaller m = JAXBContext.newInstance(GeneratedMatchers.class).createUnmarshaller();
 				try (InputStream is = matchers.openInputStream()) {
+					Unmarshaller m = context.createUnmarshaller();
 					GeneratedMatchers gm = (GeneratedMatchers) m.unmarshal(is);
 					gm.getGeneratedMatcher()
 							.forEach(mo -> allGeneratedMatchers.put(mo.getFullyQualifiedNameGeneratedClass(), mo));
 				}
 			}
 		} catch (Exception e) {
-			processingEnv.getMessager().printMessage(Kind.ERROR, "Unable to open matchers.xml file");
+			processingEnv.getMessager().printMessage(Kind.ERROR, "Unable to open matchers.xml file " + e.getMessage());
 		}
 	}
 
@@ -172,7 +180,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				() -> processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "",
 						"META-INF/" + getClass().getName() + "/matchers.xml"),
 				allGeneratedMatchers::isEmpty, FileObject::openOutputStream, os -> {
-					Marshaller m = JAXBContext.newInstance(GeneratedMatchers.class).createMarshaller();
+					Marshaller m = context.createMarshaller();
 					m.setProperty("jaxb.formatted.output", true);
 					m.marshal(gm, os);
 				} , Kind.MANDATORY_WARNING);
