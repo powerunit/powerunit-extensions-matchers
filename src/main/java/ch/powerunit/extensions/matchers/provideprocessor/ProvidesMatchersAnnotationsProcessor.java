@@ -19,16 +19,18 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
+import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 import java.io.Closeable;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -46,8 +48,10 @@ import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 
 import ch.powerunit.extensions.matchers.common.CommonUtils;
+import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatchers;
 
 /**
@@ -63,14 +67,28 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
 	private String factory = null;
 
-	private List<String> factories = new ArrayList<>();
-
-	private GeneratedMatchers allGeneratedMatchers = new GeneratedMatchers();
+	private Map<String, GeneratedMatcher> allGeneratedMatchers = new HashMap<>();
 
 	@Override
 	public synchronized void init(ProcessingEnvironment processingEnv) {
 		super.init(processingEnv);
 		factory = processingEnv.getOptions().get(ProvidesMatchersAnnotationsProcessor.class.getName() + ".factory");
+		if (factory != null) {
+			try {
+				FileObject matchers = processingEnv.getFiler().getResource(StandardLocation.SOURCE_OUTPUT, "",
+						"META-INF/" + getClass().getName() + "/matchers.xml");
+				if (matchers.getLastModified() != 0) {
+					Unmarshaller m = JAXBContext.newInstance(GeneratedMatchers.class).createUnmarshaller();
+					try (InputStream is = matchers.openInputStream()) {
+						GeneratedMatchers gm = (GeneratedMatchers) m.unmarshal(is);
+						gm.getGeneratedMatcher()
+								.forEach(mo -> allGeneratedMatchers.put(mo.getFullyQualifiedNameGeneratedClass(), mo));
+					}
+				}
+			} catch (Exception e) {
+				processingEnv.getMessager().printMessage(Kind.ERROR, "Unable to open matchers.xml file");
+			}
+		}
 	}
 
 	/*
@@ -87,11 +105,13 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			processFinalRound();
 		}
 		return true;
+
 	}
 
 	private void processFinalRound() {
-		processReportDSL();
-		processReportXML();
+		GeneratedMatchers gm = new GeneratedMatchers();
+		gm.setGeneratedMatcher(new ArrayList<>(allGeneratedMatchers.values()));
+		processReportXML(gm);
 		if (factory != null) {
 			processFactory();
 		}
@@ -99,14 +119,14 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
 	private void processBuildRound(RoundEnvironment roundEnv) {
 		Collection<ProvidesMatchersAnnotatedElementMirror> alias = new RoundMirror(roundEnv, processingEnv).parse();
-		factories.addAll(alias.stream()
+		Map<String, Collection<DSLMethod>> processed = alias.stream()
 				.collect(toMap(ProvidesMatchersAnnotatedElementMirror::getFullyQualifiedNameOfGeneratedClass,
-						ProvidesMatchersAnnotatedElementMirror::process))
-				.entrySet().stream().map(e -> e.getValue().stream()
-						.map(m -> addPrefix("  ", m.asDefaultReference(e.getKey()))).collect(joining("\n")))
-				.collect(toList()));
-		allGeneratedMatchers.getGeneratedMatcher()
-				.addAll(alias.stream().map(ProvidesMatchersAnnotatedElementMirror::asXml).collect(toList()));
+						ProvidesMatchersAnnotatedElementMirror::process));
+		Map<String, GeneratedMatcher> matchers = alias.stream().map(ProvidesMatchersAnnotatedElementMirror::asXml)
+				.collect(toMap(GeneratedMatcher::getFullyQualifiedNameGeneratedClass, identity()));
+		matchers.entrySet().stream().forEach(m -> m.getValue().setFactories(processed.get(m.getKey()).stream()
+				.map(d -> addPrefix("  ", d.asDefaultReference(m.getKey()))).collect(joining("\n"))));
+		allGeneratedMatchers.putAll(matchers);
 	}
 
 	public static String addPrefix(String prefix, String input) {
@@ -132,11 +152,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			SupplierWithException<T> generateFileObject, Supplier<Boolean> mayAvoidRegenerate,
 			FunctionWithException<T, S> openStream, ConsumerWithException<S> actions, Kind errorLevel) {
 		try {
-			T jfo = generateFileObject.get();
-			if (jfo.getLastModified() != 0 && mayAvoidRegenerate.get()) {
-				return false;
-			}
-			try (S wjfo = openStream.apply(jfo)) {
+			try (S wjfo = openStream.apply(generateFileObject.get())) {
 				actions.accept(wjfo);
 			}
 		} catch (Exception e) {
@@ -147,34 +163,23 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		return true;
 	}
 
-	private SupplierWithException<FileObject> getSupplierFor(String targetName) {
-		return () -> processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "",
-				"META-INF/" + getClass().getName() + "/" + targetName, allGeneratedMatchers.listElements());
-	}
-
-	private void processReportDSL() {
-		processFileWithIOException(getSupplierFor("dsl.txt"), factories::isEmpty,
-				jfo -> new PrintWriter(jfo.openWriter()), wjfo -> factories.forEach(wjfo::println),
-				Kind.MANDATORY_WARNING);
-
-	}
-
-	private void processReportXML() {
-		processFileWithIOException(getSupplierFor("matchers.xml"), allGeneratedMatchers.getGeneratedMatcher()::isEmpty,
-				FileObject::openOutputStream, os -> {
+	private void processReportXML(GeneratedMatchers gm) {
+		processFileWithIOException(
+				() -> processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "",
+						"META-INF/" + getClass().getName() + "/matchers.xml"),
+				allGeneratedMatchers::isEmpty, FileObject::openOutputStream, os -> {
 					Marshaller m = JAXBContext.newInstance(GeneratedMatchers.class).createMarshaller();
 					m.setProperty("jaxb.formatted.output", true);
-					m.marshal(allGeneratedMatchers, os);
+					m.marshal(gm, os);
 				} , Kind.MANDATORY_WARNING);
 	}
 
 	private void processFactory() {
-		processFileWithIOException(
-				() -> processingEnv.getFiler().createSourceFile(factory, allGeneratedMatchers.listElements()),
-				factories::isEmpty, jfo -> new PrintWriter(jfo.openWriter()),
+		processFileWithIOException(() -> processingEnv.getFiler().createSourceFile(factory),
+				allGeneratedMatchers::isEmpty, jfo -> new PrintWriter(jfo.openWriter()),
 				wjfo -> CommonUtils.generateFactoryClass(wjfo, ProvidesMatchersAnnotationsProcessor.class,
 						factory.replaceAll("\\.[^.]+$", ""), factory.replaceAll("^([^.]+\\.)*", ""),
-						() -> factories.stream()),
+						() -> allGeneratedMatchers.values().stream().map(GeneratedMatcher::getFactories)),
 				Kind.ERROR);
 	}
 

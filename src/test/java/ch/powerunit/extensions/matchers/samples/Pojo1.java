@@ -28,7 +28,7 @@ import ch.powerunit.extensions.matchers.ProvideMatchers;
 
 /**
  * @author borettim
- *
+ * 
  */
 @ProvideMatchers(moreMethod = { ComplementaryExpositionMethod.CONTAINS, ComplementaryExpositionMethod.ARRAYCONTAINING,
 		ComplementaryExpositionMethod.HAS_ITEMS })

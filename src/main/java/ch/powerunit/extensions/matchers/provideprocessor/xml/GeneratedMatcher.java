@@ -39,8 +39,10 @@ public class GeneratedMatcher {
 	private String simpleNameGeneratedClass;
 
 	private String dslMethodNameStart;
-		
+
 	private List<GeneratedMatcherField> generatedMatcherField;
+
+	private String factories;
 
 	private transient ProvidesMatchersAnnotatedElementMirror mirror;
 
@@ -98,6 +100,14 @@ public class GeneratedMatcher {
 
 	public void setMirror(ProvidesMatchersAnnotatedElementMirror mirror) {
 		this.mirror = mirror;
+	}
+
+	public String getFactories() {
+		return factories;
+	}
+
+	public void setFactories(String factories) {
+		this.factories = factories;
 	}
 
 }
