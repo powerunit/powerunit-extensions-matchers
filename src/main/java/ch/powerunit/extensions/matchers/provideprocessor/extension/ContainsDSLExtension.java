@@ -28,10 +28,6 @@ import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotat
 
 public class ContainsDSLExtension implements DSLExtension {
 
-	public static final String CONTAINS_MATCHER = "org.hamcrest.Matchers.contains";
-
-	private static final String JAVADOC_DESCRIPTION = "Generate a contains matcher for this Object.";
-
 	@Override
 	public ComplementaryExpositionMethod supportedEnum() {
 		return ComplementaryExpositionMethod.CONTAINS;
@@ -39,30 +35,8 @@ public class ContainsDSLExtension implements DSLExtension {
 
 	@Override
 	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData element) {
-		String targetName = element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric();
-		String returnType = element.getFullGeneric() + " org.hamcrest.Matcher<java.lang.Iterable<? extends "
-				+ targetName + ">>";
-		String methodName = element.generateDSLMethodName("contains");
-		String targetMethodName = element.generateDSLWithSameValueMethodName();
-		return new ContainsSupplier(targetName, returnType, methodName, targetMethodName).asSuppliers();
-	}
-
-	public class ContainsSupplier extends AbstractContainsDSLExtensionSupplier {
-
-		public ContainsSupplier(String targetName, String returnType, String methodName, String targetMethodName) {
-			super(targetName, returnType, methodName, targetMethodName);
-		}
-
-		@Override
-		public String getJavaDocDescription() {
-			return JAVADOC_DESCRIPTION;
-		}
-
-		@Override
-		public String getMatcher() {
-			return CONTAINS_MATCHER;
-		}
-
+		return new ContainsDSLExtensionSupplier(element, element.generateDSLMethodName("contains"),
+				"Generate a contains matcher for this Object.", "org.hamcrest.Matchers.contains").asSuppliers();
 	}
 
 }

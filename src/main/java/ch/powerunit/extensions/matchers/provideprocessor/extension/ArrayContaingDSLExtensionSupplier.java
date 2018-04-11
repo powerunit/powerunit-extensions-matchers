@@ -24,17 +24,30 @@ import java.util.Collection;
 import java.util.function.Supplier;
 
 import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
+import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 
-public abstract class AbstractArrayContaingDSLExtensionSupplier extends AbstractDSLExtensionSupplier {
+public class ArrayContaingDSLExtensionSupplier extends AbstractDSLExtensionSupplier {
 
-	public AbstractArrayContaingDSLExtensionSupplier(String targetName, String returnType, String methodName,
-			String targetMethodName) {
-		super(targetName, returnType, methodName, targetMethodName);
+	private final String javadoc;
+	private final String matcher;
+
+	public ArrayContaingDSLExtensionSupplier(ProvidesMatchersAnnotatedElementData element, String methodName,
+			String javadoc, String matcher) {
+		super(element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(),
+				element.getFullGeneric() + " org.hamcrest.Matcher<"
+						+ element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + "[]>",
+				methodName, element.generateDSLWithSameValueMethodName());
+		this.javadoc = javadoc;
+		this.matcher = matcher;
 	}
 
-	public abstract String getJavaDocDescription();
+	public String getJavaDocDescription() {
+		return javadoc;
+	}
 
-	public abstract String getMatcher();
+	public String getMatcher() {
+		return matcher;
+	}
 
 	@Override
 	public Collection<Supplier<DSLMethod>> asSuppliers() {

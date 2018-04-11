@@ -30,14 +30,12 @@ import java.util.regex.Pattern;
  *
  */
 public class DSLMethod {
-	public static Pattern DECLARATION_PARSER = Pattern.compile("^\\s*.*\\s+([0-9A-Za-z_]+)\\s*$");
+	public static final Pattern DECLARATION_PARSER = Pattern.compile("^\\s*.*\\s+([0-9A-Za-z_]+)\\s*$");
 
 	private final String javadoc;
-	private final String declaration;
+	private final String fullDeclaration;
 	private final String implementation;
-	private final String methodName;
-	private final String realArguments;
-	private final String realArgumentsName;
+	private final String fullMethodName;
 
 	private static String cleanJavadoc(String javadoc[]) {
 		return "/**\n" + Arrays.stream(javadoc).map(s -> " * " + s).collect(joining("\n")) + "\n */\n";
@@ -72,50 +70,24 @@ public class DSLMethod {
 	}
 
 	public DSLMethod(String javadoc, String declaration, String arguments[][], String implementation[]) {
-		this.javadoc = javadoc;
-		this.declaration = declaration;
-		this.implementation = Arrays.stream(implementation).map(s -> "  " + s).collect(joining("\n")) + "\n";
-		this.realArguments = Arrays.stream(arguments).map(a -> a[0] + " " + a[1]).collect(joining(","));
-		this.realArgumentsName = Arrays.stream(arguments).map(a -> a[1]).collect(joining(","));
+		String realArguments = Arrays.stream(arguments).map(a -> a[0] + " " + a[1]).collect(joining(","));
+		String realArgumentsName = Arrays.stream(arguments).map(a -> a[1]).collect(joining(","));
 		Matcher m = DECLARATION_PARSER.matcher(declaration);
 		if (!m.matches()) {
 			throw new IllegalArgumentException("Unable to parse the received declaration");
 		}
-		methodName = m.group(1);
+		this.javadoc = javadoc;
+		this.implementation = Arrays.stream(implementation).map(s -> "  " + s).collect(joining("\n")) + "\n";
+		this.fullDeclaration = declaration + "(" + realArguments + ")";
+		this.fullMethodName = m.group(1) + "(" + realArgumentsName + ")";
 	}
 
 	public String asStaticImplementation() {
-		return javadoc + "@org.hamcrest.Factory\npublic static " + declaration + "(" + realArguments + ")" + " {\n"
-				+ implementation + "}\n";
+		return javadoc + "@org.hamcrest.Factory\npublic static " + fullDeclaration + " {\n" + implementation + "}\n";
 	}
 
 	public String asDefaultReference(String target) {
-		return javadoc + "default " + declaration + "(" + realArguments + ")" + " {\n  return " + target + "."
-				+ methodName + "(" + realArgumentsName + ");\n}\n";
-	}
-
-	public String getJavadoc() {
-		return javadoc;
-	}
-
-	public String getDeclaration() {
-		return declaration;
-	}
-
-	public String getImplementation() {
-		return implementation;
-	}
-
-	public String getMethodName() {
-		return methodName;
-	}
-
-	public String getRealArguments() {
-		return realArguments;
-	}
-
-	public String getRealArgumentsName() {
-		return realArgumentsName;
+		return javadoc + "default " + fullDeclaration + " {\n  return " + target + "." + fullMethodName + ";\n}\n";
 	}
 
 }

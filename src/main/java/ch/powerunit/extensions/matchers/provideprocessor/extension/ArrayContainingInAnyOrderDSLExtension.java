@@ -28,10 +28,6 @@ import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotat
 
 public class ArrayContainingInAnyOrderDSLExtension implements DSLExtension {
 
-	public static final String ARRAYCONTAINS_MATCHER = "org.hamcrest.Matchers.arrayContainingInAnyOrder";
-
-	private static final String JAVADOC_DESCRIPTION = "Generate an array contains in any order matcher for this Object.";
-
 	@Override
 	public ComplementaryExpositionMethod supportedEnum() {
 		return ComplementaryExpositionMethod.ARRAYCONTAINING;
@@ -39,30 +35,10 @@ public class ArrayContainingInAnyOrderDSLExtension implements DSLExtension {
 
 	@Override
 	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData element) {
-		String targetName = element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric();
-		String returnType = element.getFullGeneric() + " org.hamcrest.Matcher<" + targetName + "[]>";
-		String methodName = element.generateDSLMethodName("arrayContainingInAnyOrder");
-		String targetMethodName = element.generateDSLWithSameValueMethodName();
-		return new ArrrayContainsInAnyOrderSupplier(targetName, returnType, methodName, targetMethodName).asSuppliers();
-	}
-
-	public class ArrrayContainsInAnyOrderSupplier extends AbstractArrayContaingDSLExtensionSupplier {
-
-		public ArrrayContainsInAnyOrderSupplier(String targetName, String returnType, String methodName,
-				String targetMethodName) {
-			super(targetName, returnType, methodName, targetMethodName);
-		}
-
-		@Override
-		public String getJavaDocDescription() {
-			return JAVADOC_DESCRIPTION;
-		}
-
-		@Override
-		public String getMatcher() {
-			return ARRAYCONTAINS_MATCHER;
-		}
-
+		return new ArrayContaingDSLExtensionSupplier(element,
+				element.generateDSLMethodName("arrayContainingInAnyOrder"),
+				"Generate an array contains in any order matcher for this Object.",
+				"org.hamcrest.Matchers.arrayContainingInAnyOrder").asSuppliers();
 	}
 
 }
