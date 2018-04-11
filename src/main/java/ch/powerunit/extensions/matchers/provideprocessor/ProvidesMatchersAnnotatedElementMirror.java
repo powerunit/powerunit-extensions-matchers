@@ -157,38 +157,33 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	}
 
 	public GeneratedMatcher process() {
-		try {
-			processingEnv.getMessager().printMessage(Kind.NOTE,
-					"The class `" + fullyQualifiedNameOfGeneratedClass + "` will be generated as a Matchers class.",
-					typeElementForClassAnnotatedWithProvideMatcher);
-			JavaFileObject jfo = processingEnv.getFiler().createSourceFile(fullyQualifiedNameOfGeneratedClass,
-					typeElementForClassAnnotatedWithProvideMatcher);
-			try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
-				wjfo.println("package " + packageNameOfGeneratedClass + ";");
-				wjfo.println();
-				wjfo.println(generateMainJavaDoc());
-				wjfo.println("@javax.annotation.Generated(value=\""
-						+ ProvidesMatchersAnnotationsProcessor.class.getName() + "\",date=\"" + Instant.now().toString()
-						+ "\",comments=" + CommonUtils.toJavaSyntax(comments) + ")");
-				wjfo.println("public final class " + simpleNameOfGeneratedClass + " {");
-				wjfo.println();
-				wjfo.println("  private " + simpleNameOfGeneratedClass + "() {}");
-				wjfo.println();
-				wjfo.println(generateMatchers());
-				wjfo.println();
-				wjfo.println(generatePublicInterface());
-				wjfo.println();
-				wjfo.println(generatePrivateImplementation());
-				wjfo.println();
-				Collection<DSLMethod> results = generateDSLStarter();
-				results.stream().map(m -> addPrefix("  ", m.asStaticImplementation())).forEach(wjfo::println);
-				wjfo.println("}");
-				GeneratedMatcher result = asXml();
-				result.setFactories(results.stream()
-						.map(d -> addPrefix("  ", d.asDefaultReference(fullyQualifiedNameOfGeneratedClass)))
-						.collect(joining("\n")));
-				return result;
-			}
+		try (PrintWriter wjfo = new PrintWriter(processingEnv.getFiler()
+				.createSourceFile(fullyQualifiedNameOfGeneratedClass, typeElementForClassAnnotatedWithProvideMatcher)
+				.openWriter());) {
+			wjfo.println("package " + packageNameOfGeneratedClass + ";");
+			wjfo.println();
+			wjfo.println(generateMainJavaDoc());
+			wjfo.println("@javax.annotation.Generated(value=\"" + ProvidesMatchersAnnotationsProcessor.class.getName()
+					+ "\",date=\"" + Instant.now().toString() + "\",comments=" + CommonUtils.toJavaSyntax(comments)
+					+ ")");
+			wjfo.println("public final class " + simpleNameOfGeneratedClass + " {");
+			wjfo.println();
+			wjfo.println("  private " + simpleNameOfGeneratedClass + "() {}");
+			wjfo.println();
+			wjfo.println(generateMatchers());
+			wjfo.println();
+			wjfo.println(generatePublicInterface());
+			wjfo.println();
+			wjfo.println(generatePrivateImplementation());
+			wjfo.println();
+			Collection<DSLMethod> results = generateDSLStarter();
+			results.stream().map(m -> addPrefix("  ", m.asStaticImplementation())).forEach(wjfo::println);
+			wjfo.println("}");
+			GeneratedMatcher result = asXml();
+			result.setFactories(
+					results.stream().map(d -> addPrefix("  ", d.asDefaultReference(fullyQualifiedNameOfGeneratedClass)))
+							.collect(joining("\n")));
+			return result;
 		} catch (IOException e1) {
 			processingEnv.getMessager().printMessage(Kind.ERROR,
 					"Unable to create the file containing the target class",
