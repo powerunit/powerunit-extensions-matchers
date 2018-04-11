@@ -31,8 +31,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -66,7 +66,7 @@ import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatchers;
 @SupportedOptions({ "ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor.factory" })
 public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
-	private String factory = null;
+	private Optional<String> factory = null;
 
 	private Map<String, GeneratedMatcher> allGeneratedMatchers = new HashMap<>();
 
@@ -80,10 +80,9 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		} catch (JAXBException e) {
 			processingEnv.getMessager().printMessage(Kind.ERROR, "Unable to open prepare jaxb " + e.getMessage());
 		}
-		factory = processingEnv.getOptions().get(ProvidesMatchersAnnotationsProcessor.class.getName() + ".factory");
-		if (factory != null) {
-			retrieveInformationFromOldBuild();
-		}
+		factory = Optional.ofNullable(
+				processingEnv.getOptions().get(ProvidesMatchersAnnotationsProcessor.class.getName() + ".factory"));
+		factory.ifPresent(f -> retrieveInformationFromOldBuild());
 	}
 
 	private void retrieveInformationFromOldBuild() {
@@ -124,9 +123,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		GeneratedMatchers gm = new GeneratedMatchers();
 		gm.setGeneratedMatcher(new ArrayList<>(allGeneratedMatchers.values()));
 		processReportXML(gm);
-		if (factory != null) {
-			processFactory();
-		}
+		factory.ifPresent(f -> processFactory());
 	}
 
 	private void processBuildRound(RoundEnvironment roundEnv) {
@@ -161,14 +158,14 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	}
 
 	public <T extends FileObject, S extends Closeable> boolean processFileWithIOException(
-			SupplierWithException<T> generateFileObject, Supplier<Boolean> mayAvoidRegenerate,
-			FunctionWithException<T, S> openStream, ConsumerWithException<S> actions, Kind errorLevel) {
+			SupplierWithException<T> generateFileObject, FunctionWithException<T, S> openStream,
+			ConsumerWithException<S> actions) {
 		try {
 			try (S wjfo = openStream.apply(generateFileObject.get())) {
 				actions.accept(wjfo);
 			}
 		} catch (Exception e) {
-			processingEnv.getMessager().printMessage(errorLevel,
+			processingEnv.getMessager().printMessage(Kind.ERROR,
 					"Unable to create a file, because of " + e.getMessage());
 			return false;
 		}
@@ -176,23 +173,21 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	}
 
 	private void processReportXML(GeneratedMatchers gm) {
-		processFileWithIOException(
-				() -> processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "",
-						"META-INF/" + getClass().getName() + "/matchers.xml"),
-				allGeneratedMatchers::isEmpty, FileObject::openOutputStream, os -> {
+		processFileWithIOException(() -> processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "",
+				"META-INF/" + getClass().getName() + "/matchers.xml"), FileObject::openOutputStream, os -> {
 					Marshaller m = context.createMarshaller();
 					m.setProperty("jaxb.formatted.output", true);
 					m.marshal(gm, os);
-				} , Kind.MANDATORY_WARNING);
+				});
 	}
 
 	private void processFactory() {
-		processFileWithIOException(() -> processingEnv.getFiler().createSourceFile(factory),
-				allGeneratedMatchers::isEmpty, jfo -> new PrintWriter(jfo.openWriter()),
+		String target = factory.get();
+		processFileWithIOException(() -> processingEnv.getFiler().createSourceFile(target),
+				jfo -> new PrintWriter(jfo.openWriter()),
 				wjfo -> CommonUtils.generateFactoryClass(wjfo, ProvidesMatchersAnnotationsProcessor.class,
-						factory.replaceAll("\\.[^.]+$", ""), factory.replaceAll("^([^.]+\\.)*", ""),
-						() -> allGeneratedMatchers.values().stream().map(GeneratedMatcher::getFactories)),
-				Kind.ERROR);
+						target.replaceAll("\\.[^.]+$", ""), target.replaceAll("^([^.]+\\.)*", ""),
+						() -> allGeneratedMatchers.values().stream().map(GeneratedMatcher::getFactories)));
 	}
 
 	public AnnotationMirror getProvideMatchersAnnotation(TypeElement provideMatchersTE,
