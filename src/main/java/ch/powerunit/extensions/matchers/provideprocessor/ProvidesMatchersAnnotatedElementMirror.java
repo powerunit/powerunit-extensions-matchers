@@ -682,7 +682,6 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		gm.setSimpleNameInputClass(simpleNameOfClassAnnotatedWithProvideMatcher);
 		gm.setDslMethodNameStart(methodShortClassName);
 		gm.setGeneratedMatcherField(fields.stream().map(FieldDescription::asGeneratedMatcherField).collect(toList()));
-		gm.setMirror(this);
 		return gm;
 	}
 

@@ -25,7 +25,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
-import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType
@@ -43,8 +42,6 @@ public class GeneratedMatcher {
 	private List<GeneratedMatcherField> generatedMatcherField;
 
 	private String factories;
-
-	private transient ProvidesMatchersAnnotatedElementMirror mirror;
 
 	public String getFullyQualifiedNameInputClass() {
 		return fullyQualifiedNameInputClass;
@@ -94,13 +91,6 @@ public class GeneratedMatcher {
 		this.generatedMatcherField = generatedMatcherField;
 	}
 
-	public ProvidesMatchersAnnotatedElementMirror getMirror() {
-		return mirror;
-	}
-
-	public void setMirror(ProvidesMatchersAnnotatedElementMirror mirror) {
-		this.mirror = mirror;
-	}
 
 	public String getFactories() {
 		return factories;
