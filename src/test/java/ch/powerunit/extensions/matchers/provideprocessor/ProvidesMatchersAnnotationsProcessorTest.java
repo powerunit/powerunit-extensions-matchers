@@ -48,11 +48,6 @@ public class ProvidesMatchersAnnotationsProcessorTest implements TestSuite {
 	public final TestRule rules = mockitoRule().around(before(this::prepare));
 
 	@Test
-	public void testAddPrefix() {
-		assertThatBiFunction(ProvidesMatchersAnnotationsProcessor::addPrefix, " ", "x\ny").is("\n x\n y\n");
-	}
-
-	@Test
 	public void testInitFactoryNoFactory() {
 		ProvidesMatchersAnnotationsProcessor underTest = new ProvidesMatchersAnnotationsProcessor();
 		underTest.init(processingEnv);

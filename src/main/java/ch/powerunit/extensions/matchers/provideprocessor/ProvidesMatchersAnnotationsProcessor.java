@@ -19,15 +19,12 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 
 import java.io.Closeable;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -128,18 +125,9 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
 	private void processBuildRound(RoundEnvironment roundEnv) {
 		Collection<ProvidesMatchersAnnotatedElementMirror> alias = new RoundMirror(roundEnv, processingEnv).parse();
-		Map<String, Collection<DSLMethod>> processed = alias.stream()
+		allGeneratedMatchers.putAll(alias.stream()
 				.collect(toMap(ProvidesMatchersAnnotatedElementMirror::getFullyQualifiedNameOfGeneratedClass,
-						ProvidesMatchersAnnotatedElementMirror::process));
-		Map<String, GeneratedMatcher> matchers = alias.stream().map(ProvidesMatchersAnnotatedElementMirror::asXml)
-				.collect(toMap(GeneratedMatcher::getFullyQualifiedNameGeneratedClass, identity()));
-		matchers.entrySet().stream().forEach(m -> m.getValue().setFactories(processed.get(m.getKey()).stream()
-				.map(d -> addPrefix("  ", d.asDefaultReference(m.getKey()))).collect(joining("\n"))));
-		allGeneratedMatchers.putAll(matchers);
-	}
-
-	public static String addPrefix(String prefix, String input) {
-		return "\n" + Arrays.stream(input.split("\\R")).map(l -> prefix + l).collect(joining("\n")) + "\n";
+						ProvidesMatchersAnnotatedElementMirror::process)));
 	}
 
 	@FunctionalInterface

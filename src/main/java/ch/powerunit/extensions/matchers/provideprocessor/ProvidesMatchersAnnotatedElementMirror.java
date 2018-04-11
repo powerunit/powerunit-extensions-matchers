@@ -156,7 +156,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		return fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " " + generic;
 	}
 
-	public Collection<DSLMethod> process() {
+	public GeneratedMatcher process() {
 		try {
 			processingEnv.getMessager().printMessage(Kind.NOTE,
 					"The class `" + fullyQualifiedNameOfGeneratedClass + "` will be generated as a Matchers class.",
@@ -183,14 +183,18 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				Collection<DSLMethod> results = generateDSLStarter();
 				results.stream().map(m -> addPrefix("  ", m.asStaticImplementation())).forEach(wjfo::println);
 				wjfo.println("}");
-				return results;
+				GeneratedMatcher result = asXml();
+				result.setFactories(results.stream()
+						.map(d -> addPrefix("  ", d.asDefaultReference(fullyQualifiedNameOfGeneratedClass)))
+						.collect(joining("\n")));
+				return result;
 			}
 		} catch (IOException e1) {
 			processingEnv.getMessager().printMessage(Kind.ERROR,
 					"Unable to create the file containing the target class",
 					typeElementForClassAnnotatedWithProvideMatcher);
 		}
-		return emptyList();
+		return asXml();
 	}
 
 	public String generateMainJavaDoc() {
