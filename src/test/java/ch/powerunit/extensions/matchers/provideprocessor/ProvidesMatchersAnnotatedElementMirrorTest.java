@@ -101,7 +101,7 @@ public class ProvidesMatchersAnnotatedElementMirrorTest implements TestSuite {
 
 		when(fullyQualifiedName.toString()).thenReturn("fqn.Sn");
 		when(packageElement.getQualifiedName()).thenReturn(packageName);
-		when(packageName.toString()).thenReturn("fnq");
+		when(packageName.toString()).thenReturn("fqn");
 		when(simpleName.toString()).thenReturn("Sn");
 		when(object.asType()).thenReturn(objectMirror);
 	}
