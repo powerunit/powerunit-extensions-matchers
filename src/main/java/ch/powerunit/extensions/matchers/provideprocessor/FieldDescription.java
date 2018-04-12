@@ -52,7 +52,6 @@ public class FieldDescription extends FieldDescriptionMirror {
 	private final List<Supplier<String>> dslGenerator;
 	private final RoundMirror roundMirror;
 	private final boolean ignore;
-	private final Element fieldElement;
 	private final String generic;
 	private final String defaultReturnMethod;
 	private final String fullyQualifiedNameEnclosingClassOfField;
@@ -115,7 +114,6 @@ public class FieldDescription extends FieldDescriptionMirror {
 		this.fullyQualifiedNameEnclosingClassOfField = containingElementMirror
 				.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher();
 		this.ignore = fieldElement.getAnnotation(IgnoreInMatcher.class) != null;
-		this.fieldElement = fieldElement;
 		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
 		this.generic = computeGenericInformation(fieldTypeMirror);
 		this.fullyQualifiedNameMatcherInSameRound = computeFullyQualifiedNameMatcherInSameRound(roundMirror,
@@ -452,10 +450,6 @@ public class FieldDescription extends FieldDescriptionMirror {
 
 	public boolean isNotIgnore() {
 		return !ignore;
-	}
-
-	public Element getFieldElement() {
-		return fieldElement;
 	}
 
 	public String getDescriptionForIgnoreIfApplicable() {

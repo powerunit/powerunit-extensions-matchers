@@ -42,6 +42,7 @@ public class FieldDescriptionMirror {
 	protected final String fieldType;
 	protected final Type type;
 	protected final TypeElement fieldTypeAsTypeElement;
+	protected final Element fieldElement;
 
 	public static final class ExtracTypeVisitor extends TypeKindVisitor8<Type, ProcessingEnvironment> {
 
@@ -107,6 +108,7 @@ public class FieldDescriptionMirror {
 		this.fieldType = fieldType;
 		this.type = new ExtracTypeVisitor().visit(fieldTypeMirror, processingEnv);
 		this.fieldTypeAsTypeElement = processingEnv.getElementUtils().getTypeElement(fieldType);
+		this.fieldElement = fieldElement;
 	}
 
 	public String getFieldAccessor() {
@@ -123,6 +125,10 @@ public class FieldDescriptionMirror {
 
 	public String getFieldType() {
 		return fieldType;
+	}
+
+	public Element getFieldElement() {
+		return fieldElement;
 	}
 
 }
