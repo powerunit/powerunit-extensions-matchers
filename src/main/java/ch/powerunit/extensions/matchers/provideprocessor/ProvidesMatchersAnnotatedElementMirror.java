@@ -55,9 +55,6 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private final TypeElement typeElementForClassAnnotatedWithProvideMatcher;
 	private final ProcessingEnvironment processingEnv;
 	private final String fullyQualifiedNameOfClassAnnotatedWithProvideMatcher;
-	private final String packageNameOfGeneratedClass;
-	private final String fullyQualifiedNameOfGeneratedClass;
-	private final String simpleNameOfGeneratedClass;
 	private final String simpleNameOfClassAnnotatedWithProvideMatcher;
 	private final String methodShortClassName;
 	private final boolean hasParent;
@@ -77,6 +74,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private final List<FieldDescription> fields;
 	private final RoundMirror roundMirror;
 	private final Collection<Supplier<DSLMethod>> dslProvider;
+	private final ProvideMatchersMirror provideMatcherMirror;
 
 	private List<FieldDescription> generateFields(TypeElement typeElement,
 			ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor) {
@@ -95,10 +93,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		this.typeElementForClassAnnotatedWithProvideMatcher = typeElement;
 		this.processingEnv = roundMirror.getProcessingEnv();
 		this.fullyQualifiedNameOfClassAnnotatedWithProvideMatcher = typeElement.getQualifiedName().toString();
-		ProvideMatchersMirror provideMatcherMirror = new ProvideMatchersMirror(processingEnv, typeElement);
-		this.fullyQualifiedNameOfGeneratedClass = provideMatcherMirror.getFullyQualifiedNameOfGeneratedClass();
-		this.simpleNameOfGeneratedClass = provideMatcherMirror.getSimpleNameOfGeneratedClass();
-		this.packageNameOfGeneratedClass = provideMatcherMirror.getPackageNameOfGeneratedClass();
+		this.provideMatcherMirror = new ProvideMatchersMirror(processingEnv, typeElement);
 		this.comments = provideMatcherMirror.getComments();
 		this.simpleNameOfClassAnnotatedWithProvideMatcher = typeElement.getSimpleName().toString();
 		this.methodShortClassName = simpleNameOfClassAnnotatedWithProvideMatcher.substring(0, 1).toLowerCase()
@@ -122,8 +117,8 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		this.defaultReturnMethod = simpleNameOfClassAnnotatedWithProvideMatcher + "Matcher" + genericParent;
 		this.simpleNameOfGeneratedInterfaceMatcher = simpleNameOfClassAnnotatedWithProvideMatcher + "Matcher";
 		this.simpleNameOfGeneratedImplementationMatcher = simpleNameOfClassAnnotatedWithProvideMatcher + "MatcherImpl";
-		this.genericForChaining = genericParent.replaceAll("^<_PARENT", "<" + fullyQualifiedNameOfGeneratedClass + "."
-				+ simpleNameOfGeneratedInterfaceMatcher + genericNoParent);
+		this.genericForChaining = genericParent.replaceAll("^<_PARENT", "<" + getFullyQualifiedNameOfGeneratedClass()
+				+ "." + simpleNameOfGeneratedInterfaceMatcher + genericNoParent);
 		this.fields = generateFields(typeElement, new ProvidesMatchersSubElementVisitor(roundMirror));
 		List<Supplier<DSLMethod>> tmp = new ArrayList<>(
 				Arrays.asList(this::generateDefaultDSLStarter, this::generateDefaultForChainingDSLStarter));
@@ -159,20 +154,21 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	public Collection<DSLMethod> process() {
 		try {
 			processingEnv.getMessager().printMessage(Kind.NOTE,
-					"The class `" + fullyQualifiedNameOfGeneratedClass + "` will be generated as a Matchers class.",
+					"The class `" + getFullyQualifiedNameOfGeneratedClass()
+							+ "` will be generated as a Matchers class.",
 					typeElementForClassAnnotatedWithProvideMatcher);
-			JavaFileObject jfo = processingEnv.getFiler().createSourceFile(fullyQualifiedNameOfGeneratedClass,
+			JavaFileObject jfo = processingEnv.getFiler().createSourceFile(getFullyQualifiedNameOfGeneratedClass(),
 					typeElementForClassAnnotatedWithProvideMatcher);
 			try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
-				wjfo.println("package " + packageNameOfGeneratedClass + ";");
+				wjfo.println("package " + getPackageNameOfGeneratedClass() + ";");
 				wjfo.println();
 				wjfo.println(generateMainJavaDoc());
 				wjfo.println("@javax.annotation.Generated(value=\""
 						+ ProvidesMatchersAnnotationsProcessor.class.getName() + "\",date=\"" + Instant.now().toString()
 						+ "\",comments=" + CommonUtils.toJavaSyntax(comments) + ")");
-				wjfo.println("public final class " + simpleNameOfGeneratedClass + " {");
+				wjfo.println("public final class " + getSimpleNameOfGeneratedClass() + " {");
 				wjfo.println();
-				wjfo.println("  private " + simpleNameOfGeneratedClass + "() {}");
+				wjfo.println("  private " + getSimpleNameOfGeneratedClass() + "() {}");
 				wjfo.println();
 				wjfo.println(generateMatchers());
 				wjfo.println();
@@ -466,7 +462,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 								"The returned builder (which is also a Matcher), at this point accepts any object that is a "
 										+ getDefaultLinkForAnnotatedClass() + "."),
 						Optional.empty(), Optional.of("the DSL matcher"), true, false),
-				fullGeneric + " " + fullyQualifiedNameOfGeneratedClass + "."
+				fullGeneric + " " + getFullyQualifiedNameOfGeneratedClass() + "."
 						+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " " + methodShortClassName
 						+ "With",
 				hasParent ? ("return new " + simpleNameOfGeneratedImplementationMatcher + genericNoParent
@@ -481,7 +477,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 								"The returned builder (which is also a Matcher), at this point accepts any object that is a "
 										+ getDefaultLinkForAnnotatedClass() + "."),
 						Optional.of("parentBuilder the parentBuilder."), Optional.of("the DSL matcher"), true, true),
-				fullGenericParent + " " + fullyQualifiedNameOfGeneratedClass + "."
+				fullGenericParent + " " + getFullyQualifiedNameOfGeneratedClass() + "."
 						+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + " " + methodShortClassName
 						+ "WithParent",
 				new String[] { "_PARENT", "parentBuilder" },
@@ -497,14 +493,15 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				generateJavaDoc(getDefaultDescriptionForDsl(), Optional.empty(),
 						Optional.of("matcherOnParent the matcher on the parent data."), Optional.of("the DSL matcher"),
 						true, false),
-				fullGeneric + " " + fullyQualifiedNameOfGeneratedClass + "."
+				fullGeneric + " " + getFullyQualifiedNameOfGeneratedClass() + "."
 						+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " " + methodShortClassName
 						+ "With",
 				new String[] {
 						"org.hamcrest.Matcher<? super "
 								+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher + ">",
 						"matcherOnParent" },
-				"return " + fullyQualifiedNameOfGeneratedClass + "." + methodShortClassName + "With(matcherOnParent);");
+				"return " + getFullyQualifiedNameOfGeneratedClass() + "." + methodShortClassName
+						+ "With(matcherOnParent);");
 	}
 
 	public DSLMethod generateNoParentValueDSLStarter() {
@@ -518,7 +515,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				.map(f -> "    " + f.getFieldCopy("m", "other") + ";").collect(toList()));
 		lines.add("return m;");
 		return new DSLMethod(javadoc,
-				fullGeneric + " " + fullyQualifiedNameOfGeneratedClass + "."
+				fullGeneric + " " + getFullyQualifiedNameOfGeneratedClass() + "."
 						+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " " + methodShortClassName
 						+ "WithSameValue",
 				new String[] { getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(), "other" },
@@ -532,7 +529,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 
 	public DSLMethod generateParentValueDSLStarter() {
 		ProvidesMatchersAnnotatedElementMirror parentMirror = getParentMirror();
-		String argumentForParentBuilder = parentMirror.fullyQualifiedNameOfGeneratedClass + "."
+		String argumentForParentBuilder = parentMirror.getFullyQualifiedNameOfGeneratedClass() + "."
 				+ parentMirror.methodShortClassName + "WithSameValue(other)";
 		String javadoc = generateJavaDoc(getDefaultDescriptionForDsl(), Optional.empty(),
 				Optional.of("other the other object to be used as a reference."), Optional.of("the DSL matcher"), true,
@@ -544,7 +541,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				.map(f -> "    " + f.getFieldCopy("m", "other") + ";").collect(toList()));
 		lines.add("return m;");
 		return new DSLMethod(javadoc,
-				fullGeneric + " " + fullyQualifiedNameOfGeneratedClass + "."
+				fullGeneric + " " + getFullyQualifiedNameOfGeneratedClass() + "."
 						+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " " + methodShortClassName
 						+ "WithSameValue",
 				new String[] { getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(), "other" },
@@ -556,16 +553,16 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		return new DSLMethod(
 				generateJavaDoc(getDefaultDescriptionForDsl(), Optional.empty(), Optional.empty(),
 						Optional.of("the DSL matcher"), true, false),
-				fullGeneric + " " + parentMirror.fullyQualifiedNameOfGeneratedClass + "."
+				fullGeneric + " " + parentMirror.getFullyQualifiedNameOfGeneratedClass() + "."
 						+ parentMirror.simpleNameOfGeneratedInterfaceMatcher + genericForChaining + " "
 						+ methodShortClassName + "WithParent",
 				new String[] {
 						simpleNameOfGeneratedImplementationMatcher + genericNoParent + " m=new "
 								+ simpleNameOfGeneratedImplementationMatcher + genericNoParent
 								+ "(org.hamcrest.Matchers.anything());",
-						parentMirror.fullyQualifiedNameOfGeneratedClass + "."
+						parentMirror.getFullyQualifiedNameOfGeneratedClass() + "."
 								+ parentMirror.simpleNameOfGeneratedInterfaceMatcher + " tmp = "
-								+ parentMirror.fullyQualifiedNameOfGeneratedClass + "."
+								+ parentMirror.getFullyQualifiedNameOfGeneratedClass() + "."
 								+ parentMirror.methodShortClassName + "WithParent(m);",
 						"m._parent = new SuperClassMatcher(tmp);", "return tmp;" });
 	}
@@ -647,7 +644,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	}
 
 	public String getFullyQualifiedNameOfGeneratedClass() {
-		return fullyQualifiedNameOfGeneratedClass;
+		return provideMatcherMirror.getFullyQualifiedNameOfGeneratedClass();
 	}
 
 	public String getDefaultReturnMethod() {
@@ -674,11 +671,19 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		return simpleNameOfClassAnnotatedWithProvideMatcher;
 	}
 
+	public String getSimpleNameOfGeneratedClass() {
+		return provideMatcherMirror.getSimpleNameOfGeneratedClass();
+	}
+
+	public String getPackageNameOfGeneratedClass() {
+		return provideMatcherMirror.getPackageNameOfGeneratedClass();
+	}
+
 	public GeneratedMatcher asXml() {
 		GeneratedMatcher gm = new GeneratedMatcher();
-		gm.setFullyQualifiedNameGeneratedClass(fullyQualifiedNameOfGeneratedClass);
+		gm.setFullyQualifiedNameGeneratedClass(getFullyQualifiedNameOfGeneratedClass());
 		gm.setFullyQualifiedNameInputClass(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher);
-		gm.setSimpleNameGeneratedClass(simpleNameOfGeneratedClass);
+		gm.setSimpleNameGeneratedClass(getSimpleNameOfGeneratedClass());
 		gm.setSimpleNameInputClass(simpleNameOfClassAnnotatedWithProvideMatcher);
 		gm.setDslMethodNameStart(methodShortClassName);
 		gm.setGeneratedMatcherField(fields.stream().map(FieldDescription::asGeneratedMatcherField).collect(toList()));
