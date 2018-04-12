@@ -29,7 +29,7 @@ import ch.powerunit.Test;
 import ch.powerunit.TestRule;
 import ch.powerunit.TestSuite;
 import ch.powerunit.extensions.matchers.AddToMatcher;
-import ch.powerunit.extensions.matchers.provideprocessor.FieldDescription.Type;
+import ch.powerunit.extensions.matchers.provideprocessor.FieldDescriptionMirror.Type;
 
 public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 

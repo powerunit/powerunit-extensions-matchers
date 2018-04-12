@@ -33,35 +33,21 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
-import javax.lang.model.util.TypeKindVisitor8;
-import javax.tools.Diagnostic.Kind;
 
 import ch.powerunit.extensions.matchers.AddToMatcher;
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcherField;
 
-public class FieldDescription {
+public class FieldDescription extends FieldDescriptionMirror {
 
 	private static final String DEFAULT_JAVADOC_MATCHER_ON_ELEMENTS = "matchersOnElements the matchers on the elements";
 	private static final String SEE_TEXT_FOR_IS_MATCHER = "org.hamcrest.Matchers#is(java.lang.Object)";
 	private static final String SEE_TEXT_FOR_HAMCREST_MATCHER = "org.hamcrest.Matchers The main class from hamcrest that provides default matchers.";
 	private static final String MATCHERS = "org.hamcrest.Matchers";
 
-	public static enum Type {
-		NA, ARRAY, COLLECTION, LIST, SET, OPTIONAL, COMPARABLE, STRING, SUPPLIER
-	}
-
-	private final String fieldAccessor;
-	private final String fieldName;
-	private final String methodFieldName;
-	private final String fieldType;
-	private final String fullyQualifiedNameMatcherInSameRound;
-	private final Type type;
 	private final List<Supplier<String>> implGenerator;
 	private final List<Supplier<String>> dslGenerator;
 	private final RoundMirror roundMirror;
@@ -72,58 +58,7 @@ public class FieldDescription {
 	private final String fullyQualifiedNameEnclosingClassOfField;
 	private final String enclosingClassOfFieldFullGeneric;
 	private final String enclosingClassOfFieldGeneric;
-	private final TypeElement fieldTypeAsTypeElement;
-
-	public static final class ExtracTypeVisitor extends TypeKindVisitor8<Type, ProcessingEnvironment> {
-
-		@Override
-		protected Type defaultAction(TypeMirror t, ProcessingEnvironment processingEnv) {
-			return Type.NA;
-		}
-
-		@Override
-		public Type visitArray(ArrayType t, ProcessingEnvironment processingEnv) {
-			return Type.ARRAY;
-		}
-
-		@Override
-		public Type visitDeclared(DeclaredType t, ProcessingEnvironment processingEnv) {
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Optional").asType()))) {
-				return Type.OPTIONAL;
-			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Set").asType()))) {
-				return Type.SET;
-			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.List").asType()))) {
-				return Type.LIST;
-			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Collection").asType()))) {
-				return Type.COLLECTION;
-			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.lang.String").asType()))) {
-				return Type.STRING;
-			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.lang.Comparable").asType()))) {
-				return Type.COMPARABLE;
-			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.function.Supplier").asType()))) {
-				return Type.SUPPLIER;
-			}
-			return Type.NA;
-		}
-
-		@Override
-		public Type visitTypeVariable(TypeVariable t, ProcessingEnvironment processingEnv) {
-			return Type.NA;
-		}
-
-		@Override
-		public Type visitUnknown(TypeMirror t, ProcessingEnvironment processingEnv) {
-			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING, "Unsupported type element");
-			return Type.NA;
-		}
-	}
+	private final String fullyQualifiedNameMatcherInSameRound;
 
 	public static final String computeGenericInformation(TypeMirror fieldTypeMirror) {
 		if (fieldTypeMirror instanceof DeclaredType) {
@@ -171,6 +106,7 @@ public class FieldDescription {
 
 	public FieldDescription(ProvidesMatchersAnnotatedElementData containingElementMirror, String fieldName,
 			String fieldType, Element fieldElement) {
+		super(containingElementMirror, fieldName, fieldType, fieldElement);
 		this.roundMirror = containingElementMirror.getFullData().getRoundMirror();
 		TypeMirror fieldTypeMirror = (fieldElement instanceof ExecutableElement)
 				? ((ExecutableElement) fieldElement).getReturnType() : fieldElement.asType();
@@ -178,18 +114,10 @@ public class FieldDescription {
 		this.enclosingClassOfFieldGeneric = containingElementMirror.getGeneric();
 		this.fullyQualifiedNameEnclosingClassOfField = containingElementMirror
 				.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher();
-		ProcessingEnvironment processingEnv = roundMirror.getProcessingEnv();
-		this.fieldAccessor = fieldElement.getSimpleName().toString()
-				+ ((fieldElement instanceof ExecutableElement) ? "()" : "");
-		this.fieldName = fieldName;
-		this.methodFieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-		this.fieldType = fieldType;
-		this.type = new ExtracTypeVisitor().visit(fieldTypeMirror, processingEnv);
 		this.ignore = fieldElement.getAnnotation(IgnoreInMatcher.class) != null;
 		this.fieldElement = fieldElement;
 		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
 		this.generic = computeGenericInformation(fieldTypeMirror);
-		this.fieldTypeAsTypeElement = processingEnv.getElementUtils().getTypeElement(fieldType);
 		this.fullyQualifiedNameMatcherInSameRound = computeFullyQualifiedNameMatcherInSameRound(roundMirror,
 				fieldElement, fieldTypeAsTypeElement);
 		List<Supplier<String>> tmp1 = new ArrayList<>(Arrays.asList(this::getImplementationForDefault));
