@@ -19,8 +19,11 @@
  */
 package ch.powerunit.extensions.matchers.common;
 
+import static java.util.stream.Collectors.joining;
+
 import java.io.PrintWriter;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -53,6 +56,10 @@ public class CommonUtils {
 		default:
 			return "" + ch;
 		}
+	}
+
+	public static String addPrefix(String prefix, String input) {
+		return "\n" + Arrays.stream(input.split("\\R")).map(l -> prefix + l).collect(joining("\n")) + "\n";
 	}
 
 	public static String generateStaticDSL(String className) {

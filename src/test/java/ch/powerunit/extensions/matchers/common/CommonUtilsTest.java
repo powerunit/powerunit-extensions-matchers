@@ -35,4 +35,9 @@ public class CommonUtilsTest implements TestSuite {
 	public void testToJavaSyntax() {
 		assertThatFunction(CommonUtils::toJavaSyntax, "<\"><\r><\t><\n>").is("\"<\\\"><\\r><\\t><\\n>\"");
 	}
+
+	@Test
+	public void testAddPrefix() {
+		assertThatBiFunction(CommonUtils::addPrefix, " ", "x\ny").is("\n x\n y\n");
+	}
 }

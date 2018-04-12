@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -96,8 +95,9 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		factories.addAll(alias.stream()
 				.collect(toMap(ProvidesMatchersAnnotatedElementMirror::getFullyQualifiedNameOfGeneratedClass,
 						ProvidesMatchersAnnotatedElementMirror::process))
-				.entrySet().stream().map(e -> e.getValue().stream()
-						.map(m -> addPrefix("  ", m.asDefaultReference(e.getKey()))).collect(joining("\n")))
+				.entrySet()
+				.stream().map(e -> e.getValue().stream()
+						.map(m -> CommonUtils.addPrefix("  ", m.asDefaultReference(e.getKey()))).collect(joining("\n")))
 				.collect(toList()));
 		allGeneratedMatchers.getGeneratedMatcher()
 				.addAll(alias.stream().map(ProvidesMatchersAnnotatedElementMirror::asXml).collect(toList()));
@@ -108,10 +108,6 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		if (factory != null) {
 			processFactory();
 		}
-	}
-
-	public static String addPrefix(String prefix, String input) {
-		return "\n" + Arrays.stream(input.split("\\R")).map(l -> prefix + l).collect(joining("\n")) + "\n";
 	}
 
 	private void processReport() {
