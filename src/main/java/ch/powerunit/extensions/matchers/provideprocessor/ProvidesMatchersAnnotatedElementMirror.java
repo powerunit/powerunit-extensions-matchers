@@ -27,7 +27,6 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.reducing;
 import static java.util.stream.Collectors.toList;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -41,9 +40,9 @@ import java.util.function.Supplier;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
-import javax.tools.JavaFileObject;
 
 import ch.powerunit.extensions.matchers.common.CommonUtils;
+import ch.powerunit.extensions.matchers.common.FileObjectHelper;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 
 public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirror {
@@ -149,42 +148,38 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 	}
 
 	public Collection<DSLMethod> process() {
-		try {
-			processingEnv.getMessager().printMessage(Kind.NOTE,
-					"The class `" + getFullyQualifiedNameOfGeneratedClass()
-							+ "` will be generated as a Matchers class.",
-					typeElementForClassAnnotatedWithProvideMatcher);
-			JavaFileObject jfo = processingEnv.getFiler().createSourceFile(getFullyQualifiedNameOfGeneratedClass(),
-					typeElementForClassAnnotatedWithProvideMatcher);
-			try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
-				wjfo.println("package " + getPackageNameOfGeneratedClass() + ";");
-				wjfo.println();
-				wjfo.println(generateMainJavaDoc());
-				wjfo.println("@javax.annotation.Generated(value=\""
-						+ ProvidesMatchersAnnotationsProcessor.class.getName() + "\",date=\"" + Instant.now().toString()
-						+ "\",comments=" + CommonUtils.toJavaSyntax(getComments()) + ")");
-				wjfo.println("public final class " + getSimpleNameOfGeneratedClass() + " {");
-				wjfo.println();
-				wjfo.println("  private " + getSimpleNameOfGeneratedClass() + "() {}");
-				wjfo.println();
-				wjfo.println(generateMatchers());
-				wjfo.println();
-				wjfo.println(generatePublicInterface());
-				wjfo.println();
-				wjfo.println(generatePrivateImplementation());
-				wjfo.println();
-				Collection<DSLMethod> results = generateDSLStarter();
-				results.stream().map(m -> CommonUtils.addPrefix("  ", m.asStaticImplementation()))
-						.forEach(wjfo::println);
-				wjfo.println("}");
-				return results;
-			}
-		} catch (IOException e1) {
-			processingEnv.getMessager().printMessage(Kind.ERROR,
-					"Unable to create the file containing the target class",
-					typeElementForClassAnnotatedWithProvideMatcher);
-		}
-		return emptyList();
+		Collection<DSLMethod> results = new ArrayList<>();
+		FileObjectHelper.processFileWithIOException(
+				() -> processingEnv.getFiler().createSourceFile(getFullyQualifiedNameOfGeneratedClass(),
+						typeElementForClassAnnotatedWithProvideMatcher),
+				jfo -> new PrintWriter(jfo.openWriter()), wjfo -> {
+					wjfo.println("package " + getPackageNameOfGeneratedClass() + ";");
+					wjfo.println();
+					wjfo.println(generateMainJavaDoc());
+					wjfo.println("@javax.annotation.Generated(value=\""
+							+ ProvidesMatchersAnnotationsProcessor.class.getName() + "\",date=\""
+							+ Instant.now().toString() + "\",comments=" + CommonUtils.toJavaSyntax(getComments())
+							+ ")");
+					wjfo.println("public final class " + getSimpleNameOfGeneratedClass() + " {");
+					wjfo.println();
+					wjfo.println("  private " + getSimpleNameOfGeneratedClass() + "() {}");
+					wjfo.println();
+					wjfo.println(generateMatchers());
+					wjfo.println();
+					wjfo.println(generatePublicInterface());
+					wjfo.println();
+					wjfo.println(generatePrivateImplementation());
+					wjfo.println();
+					Collection<DSLMethod> tmp = generateDSLStarter();
+					tmp.stream().map(m -> CommonUtils.addPrefix("  ", m.asStaticImplementation()))
+							.forEach(wjfo::println);
+					wjfo.println("}");
+					results.addAll(tmp);
+				} ,
+				e -> processingEnv.getMessager().printMessage(Kind.ERROR,
+						"Unable to create the file containing the target class because of " + e,
+						typeElementForClassAnnotatedWithProvideMatcher));
+		return results;
 	}
 
 	public String generateMainJavaDoc() {

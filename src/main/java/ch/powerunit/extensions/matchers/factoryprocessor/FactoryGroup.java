@@ -19,7 +19,6 @@
  */
 package ch.powerunit.extensions.matchers.factoryprocessor;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,9 +26,9 @@ import java.util.List;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.tools.Diagnostic.Kind;
-import javax.tools.JavaFileObject;
 
-import ch.powerunit.extensions.matchers.common.CommonUtils;
+import ch.powerunit.extensions.matchers.common.FactoryHelper;
+import ch.powerunit.extensions.matchers.common.FileObjectHelper;
 
 class FactoryGroup {
 
@@ -66,19 +65,18 @@ class FactoryGroup {
 	}
 
 	public void processGenerateOneFactoryInterface() {
-		try {
-			JavaFileObject jfo = parent.getFiler().createSourceFile(fullyQualifiedTargetName,
-					method.stream().map((e) -> e.getElement()).toArray(ExecutableElement[]::new));
-			try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
-				String pName = fullyQualifiedTargetName.replaceAll("\\.[^.]+$", "");
-				String cName = fullyQualifiedTargetName.substring(fullyQualifiedTargetName.lastIndexOf('.') + 1);
-				CommonUtils.generateFactoryClass(wjfo, FactoryAnnotationsProcessor.class, pName, cName,
-						() -> method.stream().map(FactoryAnnotatedElementMirror::generateFactory));
-			}
-		} catch (IOException e) {
-			parent.getMessager().printMessage(Kind.ERROR, "Unable to create the file containing the target class `"
-					+ fullyQualifiedTargetName + "`, because of " + e.getMessage());
-		}
+		FileObjectHelper.processFileWithIOException(
+				() -> parent.getFiler().createSourceFile(fullyQualifiedTargetName,
+						method.stream().map((e) -> e.getElement()).toArray(ExecutableElement[]::new)),
+				jfo -> new PrintWriter(jfo.openWriter()), wjfo -> {
+					String pName = fullyQualifiedTargetName.replaceAll("\\.[^.]+$", "");
+					String cName = fullyQualifiedTargetName.substring(fullyQualifiedTargetName.lastIndexOf('.') + 1);
+					FactoryHelper.generateFactoryClass(wjfo, FactoryAnnotationsProcessor.class, pName, cName,
+							() -> method.stream().map(FactoryAnnotatedElementMirror::generateFactory));
+				} ,
+				e -> parent.getMessager().printMessage(Kind.ERROR,
+						"Unable to create the file containing the target class `" + fullyQualifiedTargetName
+								+ "`, because of " + e.getMessage()));
 	}
 
 }

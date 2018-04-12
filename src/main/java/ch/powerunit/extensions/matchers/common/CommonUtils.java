@@ -69,20 +69,4 @@ public class CommonUtils {
 				.append("  public static final " + className + " DSL = new " + className + "() {};").append("\n")
 				.append("\n").toString();
 	}
-
-	public static void generateFactoryClass(PrintWriter wjfo, Class<? extends AbstractProcessor> processor,
-			String packageName, String className, Supplier<Stream<String>> bodyProvider) {
-		wjfo.println("package " + packageName + ";");
-		wjfo.println();
-		wjfo.println(CommonConstants.DEFAULT_JAVADOC_FOR_FACTORY);
-
-		wjfo.println("@javax.annotation.Generated(value=\"" + processor.getName() + "\",date=\""
-				+ Instant.now().toString() + "\")");
-		wjfo.println("public interface " + className + " {");
-		wjfo.println();
-		wjfo.println(CommonUtils.generateStaticDSL(className));
-		wjfo.println();
-		bodyProvider.get().forEach(wjfo::println);
-		wjfo.println("}");
-	}
 }
