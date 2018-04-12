@@ -102,7 +102,6 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 				.thenReturn(Type.NA);
 		when(executableElement.getReturnType()).thenReturn(typeMirror);
 		when(executableElement.getAnnotationsByType(AddToMatcher.class)).thenReturn(new AddToMatcher[] {});
-		when(providesMatchersAnnotatedElementMirror.getProcessingEnv()).thenReturn(processingEnv);
 		underTest = new ProvidesMatchersSubElementVisitor(roundMirror);
 	}
 

@@ -75,7 +75,6 @@ public class FieldDescriptionTest implements TestSuite {
 		when(provideMatchersAnnotatedElementMirror.getRoundMirror()).thenReturn(roundMirror);
 		when(roundMirror.getProcessingEnv()).thenReturn(processingEnv);
 		when(roundMirror.isInSameRound(Mockito.any())).thenReturn(false);
-		when(provideMatchersAnnotatedElementMirror.getProcessingEnv()).thenReturn(processingEnv);
 		when(provideMatchersAnnotatedElementMirror.getFullGeneric()).thenReturn("");
 		when(provideMatchersAnnotatedElementMirror.getGeneric()).thenReturn("");
 		when(provideMatchersAnnotatedElementMirror.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher())

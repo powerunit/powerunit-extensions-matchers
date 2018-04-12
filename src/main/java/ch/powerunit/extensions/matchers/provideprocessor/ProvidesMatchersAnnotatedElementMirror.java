@@ -672,10 +672,6 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 		return gm;
 	}
 
-	public ProcessingEnvironment getProcessingEnv() {
-		return processingEnv;
-	}
-
 	public RoundMirror getRoundMirror() {
 		return roundMirror;
 	}
