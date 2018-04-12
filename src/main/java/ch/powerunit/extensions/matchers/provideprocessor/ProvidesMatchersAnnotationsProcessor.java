@@ -84,22 +84,30 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 		if (!roundEnv.processingOver()) {
-			Collection<ProvidesMatchersAnnotatedElementMirror> alias = new RoundMirror(roundEnv, processingEnv).parse();
-			factories.addAll(alias.stream()
-					.collect(toMap(ProvidesMatchersAnnotatedElementMirror::getFullyQualifiedNameOfGeneratedClass,
-							ProvidesMatchersAnnotatedElementMirror::process))
-					.entrySet().stream().map(e -> e.getValue().stream()
-							.map(m -> addPrefix("  ", m.asDefaultReference(e.getKey()))).collect(joining("\n")))
-					.collect(toList()));
-			allGeneratedMatchers.getGeneratedMatcher()
-					.addAll(alias.stream().map(ProvidesMatchersAnnotatedElementMirror::asXml).collect(toList()));
+			processRound(roundEnv);
 		} else {
-			processReport();
-			if (factory != null) {
-				processFactory();
-			}
+			processFinalRound();
 		}
 		return true;
+	}
+
+	private void processRound(RoundEnvironment roundEnv) {
+		Collection<ProvidesMatchersAnnotatedElementMirror> alias = new RoundMirror(roundEnv, processingEnv).parse();
+		factories.addAll(alias.stream()
+				.collect(toMap(ProvidesMatchersAnnotatedElementMirror::getFullyQualifiedNameOfGeneratedClass,
+						ProvidesMatchersAnnotatedElementMirror::process))
+				.entrySet().stream().map(e -> e.getValue().stream()
+						.map(m -> addPrefix("  ", m.asDefaultReference(e.getKey()))).collect(joining("\n")))
+				.collect(toList()));
+		allGeneratedMatchers.getGeneratedMatcher()
+				.addAll(alias.stream().map(ProvidesMatchersAnnotatedElementMirror::asXml).collect(toList()));
+	}
+
+	private void processFinalRound() {
+		processReport();
+		if (factory != null) {
+			processFactory();
+		}
 	}
 
 	public static String addPrefix(String prefix, String input) {
