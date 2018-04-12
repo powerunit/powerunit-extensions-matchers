@@ -46,7 +46,7 @@ import javax.tools.JavaFileObject;
 import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 
-public class ProvidesMatchersAnnotatedElementMirror {
+public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirror {
 
 	public static final String JAVADOC_WARNING_SYNTAXIC_SUGAR_NO_CHANGE_ANYMORE = "<b>This method is a syntaxic sugar that end the DSL and make clear that the matcher can't be change anymore.</b>";
 
@@ -60,7 +60,6 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private final boolean hasParent;
 	private final String generic;
 	private final String fullGeneric;
-	private final String comments;
 	private final String paramJavadoc;
 	private final String genericParent;
 	private final String genericNoParent;
@@ -74,7 +73,6 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	private final List<FieldDescription> fields;
 	private final RoundMirror roundMirror;
 	private final Collection<Supplier<DSLMethod>> dslProvider;
-	private final ProvideMatchersMirror provideMatcherMirror;
 
 	private List<FieldDescription> generateFields(TypeElement typeElement,
 			ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor) {
@@ -89,12 +87,11 @@ public class ProvidesMatchersAnnotatedElementMirror {
 	}
 
 	public ProvidesMatchersAnnotatedElementMirror(TypeElement typeElement, RoundMirror roundMirror) {
+		super(roundMirror.getProcessingEnv(), typeElement);
 		this.roundMirror = roundMirror;
 		this.typeElementForClassAnnotatedWithProvideMatcher = typeElement;
 		this.processingEnv = roundMirror.getProcessingEnv();
 		this.fullyQualifiedNameOfClassAnnotatedWithProvideMatcher = typeElement.getQualifiedName().toString();
-		this.provideMatcherMirror = new ProvideMatchersMirror(processingEnv, typeElement);
-		this.comments = provideMatcherMirror.getComments();
 		this.simpleNameOfClassAnnotatedWithProvideMatcher = typeElement.getSimpleName().toString();
 		this.methodShortClassName = simpleNameOfClassAnnotatedWithProvideMatcher.substring(0, 1).toLowerCase()
 				+ simpleNameOfClassAnnotatedWithProvideMatcher.substring(1);
@@ -133,8 +130,8 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		} else {
 			tmp.add(this::generateNoParentValueDSLStarter);
 		}
-		tmp.addAll(Optional.ofNullable(provideMatcherMirror.getDSLExtension()).orElseGet(Collections::emptyList)
-				.stream().map(t -> t.getDSLMethodFor(() -> this)).flatMap(Collection::stream).collect(toList()));
+		tmp.addAll(Optional.ofNullable(getDSLExtension()).orElseGet(Collections::emptyList).stream()
+				.map(t -> t.getDSLMethodFor(() -> this)).flatMap(Collection::stream).collect(toList()));
 
 		this.dslProvider = unmodifiableList(tmp);
 	}
@@ -165,7 +162,7 @@ public class ProvidesMatchersAnnotatedElementMirror {
 				wjfo.println(generateMainJavaDoc());
 				wjfo.println("@javax.annotation.Generated(value=\""
 						+ ProvidesMatchersAnnotationsProcessor.class.getName() + "\",date=\"" + Instant.now().toString()
-						+ "\",comments=" + CommonUtils.toJavaSyntax(comments) + ")");
+						+ "\",comments=" + CommonUtils.toJavaSyntax(getComments()) + ")");
 				wjfo.println("public final class " + getSimpleNameOfGeneratedClass() + " {");
 				wjfo.println();
 				wjfo.println("  private " + getSimpleNameOfGeneratedClass() + "() {}");
@@ -643,10 +640,6 @@ public class ProvidesMatchersAnnotatedElementMirror {
 		return fullyQualifiedNameOfClassAnnotatedWithProvideMatcher;
 	}
 
-	public String getFullyQualifiedNameOfGeneratedClass() {
-		return provideMatcherMirror.getFullyQualifiedNameOfGeneratedClass();
-	}
-
 	public String getDefaultReturnMethod() {
 		return defaultReturnMethod;
 	}
@@ -669,14 +662,6 @@ public class ProvidesMatchersAnnotatedElementMirror {
 
 	public String getSimpleNameOfClassAnnotatedWithProvideMatcher() {
 		return simpleNameOfClassAnnotatedWithProvideMatcher;
-	}
-
-	public String getSimpleNameOfGeneratedClass() {
-		return provideMatcherMirror.getSimpleNameOfGeneratedClass();
-	}
-
-	public String getPackageNameOfGeneratedClass() {
-		return provideMatcherMirror.getPackageNameOfGeneratedClass();
 	}
 
 	public GeneratedMatcher asXml() {
