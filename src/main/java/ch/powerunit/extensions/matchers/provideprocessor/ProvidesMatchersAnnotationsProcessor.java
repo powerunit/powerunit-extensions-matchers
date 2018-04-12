@@ -108,9 +108,10 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 		if (!roundEnv.processingOver()) {
-			processBuildRound(roundEnv);
-		} else {
-			processFinalRound();
+			boolean processed = processBuildRound(roundEnv);
+			if (processed) {
+				processFinalRound();
+			}
 		}
 		return true;
 
@@ -123,11 +124,12 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		factory.ifPresent(f -> processFactory());
 	}
 
-	private void processBuildRound(RoundEnvironment roundEnv) {
+	private boolean processBuildRound(RoundEnvironment roundEnv) {
 		Collection<ProvidesMatchersAnnotatedElementMirror> alias = new RoundMirror(roundEnv, processingEnv).parse();
 		allGeneratedMatchers.putAll(alias.stream()
 				.collect(toMap(ProvidesMatchersAnnotatedElementMirror::getFullyQualifiedNameOfGeneratedClass,
 						ProvidesMatchersAnnotatedElementMirror::process)));
+		return !alias.isEmpty();
 	}
 
 	@FunctionalInterface
