@@ -84,9 +84,10 @@ public class RoundMirror {
 	}
 
 	private AnnotationMirror findAnnotationMirrorFor(Element e, Class<?> aa) {
+		String aaName = aa.getName().toString();
 		return e.getAnnotationMirrors().stream()
 				.filter(a -> a.getAnnotationType()
-						.equals(processingEnv.getElementUtils().getTypeElement(aa.getName().toString()).asType()))
+						.equals(processingEnv.getElementUtils().getTypeElement(aaName).asType()))
 				.findAny().orElse(null);
 	}
 
@@ -100,9 +101,12 @@ public class RoundMirror {
 	}
 
 	public boolean isInSameRound(Element t) {
-		return t == null ? false
-				: elementsWithPM.stream().filter(e -> processingEnv.getTypeUtils().isSameType(e.asType(), t.asType()))
-						.findAny().isPresent();
+		if (t == null) {
+			return false;
+		}
+		TypeMirror tm = t.asType();
+		return elementsWithPM.stream().filter(e -> processingEnv.getTypeUtils().isSameType(e.asType(), tm)).findAny()
+				.isPresent();
 	}
 
 	public AnnotationMirror getProvideMatchersAnnotation(Element e) {
