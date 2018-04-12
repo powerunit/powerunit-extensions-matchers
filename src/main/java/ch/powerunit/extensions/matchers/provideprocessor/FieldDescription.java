@@ -193,7 +193,7 @@ public class FieldDescription extends FieldDescriptionMirror {
 
 	public String getImplementationForDefault() {
 		return buildImplementation(generateDeclaration("", "org.hamcrest.Matcher<? super " + fieldType + "> matcher"),
-				fieldName + "= new " + methodFieldName + "Matcher(matcher);\nreturn this;");
+				fieldName + "= new " + getMethodFieldName() + "Matcher(matcher);\nreturn this;");
 	}
 
 	public String getImplementationForDefaultChaining() {
@@ -275,11 +275,9 @@ public class FieldDescription extends FieldDescriptionMirror {
 	}
 
 	public String getDslForIterable() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(buildDefaultDsl(getJavaDocFor("that the iterable is empty"),
-				generateDeclaration("IsEmptyIterable", ""), "(org.hamcrest.Matcher)" + MATCHERS + ".emptyIterable()"));
+		return buildDefaultDsl(getJavaDocFor("that the iterable is empty"), generateDeclaration("IsEmptyIterable", ""),
+				"(org.hamcrest.Matcher)" + MATCHERS + ".emptyIterable()");
 
-		return sb.toString();
 	}
 
 	public String getDslForIterableWithGeneric() {
@@ -368,6 +366,7 @@ public class FieldDescription extends FieldDescriptionMirror {
 	}
 
 	public String getMatcherForField() {
+		String methodFieldName = getMethodFieldName();
 		StringBuilder sb = new StringBuilder();
 		sb.append("private static class " + methodFieldName + "Matcher" + enclosingClassOfFieldFullGeneric
 				+ " extends org.hamcrest.FeatureMatcher<" + fullyQualifiedNameEnclosingClassOfField
@@ -379,14 +378,14 @@ public class FieldDescription extends FieldDescriptionMirror {
 
 		sb.append("  protected " + fieldType + " featureValueOf(" + fullyQualifiedNameEnclosingClassOfField
 				+ enclosingClassOfFieldGeneric + " actual) {\n");
-		sb.append("    return actual." + fieldAccessor + ";\n");
+		sb.append("    return actual." + getFieldAccessor() + ";\n");
 		sb.append("  }\n");
 		sb.append("}\n");
 		return sb.toString();
 	}
 
 	public String getFieldCopyDefault(String lhs, String rhs) {
-		return lhs + "." + fieldName + "(" + MATCHERS + ".is(" + rhs + "." + fieldAccessor + "))";
+		return lhs + "." + fieldName + "(" + MATCHERS + ".is(" + rhs + "." + getFieldAccessor() + "))";
 	}
 
 	public String getSameValueMatcherFor(String target) {
@@ -396,6 +395,7 @@ public class FieldDescription extends FieldDescriptionMirror {
 	}
 
 	public String getFieldCopySameRound(String lhs, String rhs) {
+		String fieldAccessor = getFieldAccessor();
 		return lhs + "." + fieldName + "(" + rhs + "." + fieldAccessor + "==null?" + MATCHERS + ".nullValue():"
 				+ getSameValueMatcherFor(rhs + "." + fieldAccessor) + ")";
 	}
@@ -407,6 +407,7 @@ public class FieldDescription extends FieldDescriptionMirror {
 	}
 
 	public String getFieldCopyForList(String lhs, String rhs) {
+		String fieldAccessor = getFieldAccessor();
 		return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + fieldName + "(" + MATCHERS
 				+ ".nullValue()); } else if (" + rhs + "." + fieldAccessor + ".isEmpty()) {" + lhs + "." + fieldName
 				+ "IsEmptyIterable(); } else {" + lhs + "." + fieldName + "Contains(" + rhs + "." + fieldAccessor
@@ -438,6 +439,7 @@ public class FieldDescription extends FieldDescriptionMirror {
 	}
 
 	public String asMatcherField() {
+		String methodFieldName = getMethodFieldName();
 		return "private " + methodFieldName + "Matcher " + fieldName + " = new " + methodFieldName + "Matcher("
 				+ MATCHERS + ".anything(" + (ignore ? "\"This field is ignored \"+"
 						+ CommonUtils.toJavaSyntax(getDescriptionForIgnoreIfApplicable()) : "")
@@ -461,7 +463,7 @@ public class FieldDescription extends FieldDescriptionMirror {
 		gmf.setFieldIsIgnored(ignore);
 		gmf.setFieldName(fieldName);
 		gmf.setFieldCategory(type.name());
-		gmf.setFieldAccessor(fieldAccessor);
+		gmf.setFieldAccessor(getFieldAccessor());
 		gmf.setGenericDetails(generic);
 		return gmf;
 	}

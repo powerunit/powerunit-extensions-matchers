@@ -36,9 +36,7 @@ public class FieldDescriptionMirror {
 		NA, ARRAY, COLLECTION, LIST, SET, OPTIONAL, COMPARABLE, STRING, SUPPLIER
 	}
 
-	protected final String fieldAccessor;
 	protected final String fieldName;
-	protected final String methodFieldName;
 	protected final String fieldType;
 	protected final Type type;
 	protected final TypeElement fieldTypeAsTypeElement;
@@ -97,22 +95,17 @@ public class FieldDescriptionMirror {
 
 	public FieldDescriptionMirror(ProvidesMatchersAnnotatedElementData containingElementMirror, String fieldName,
 			String fieldType, Element fieldElement) {
-		RoundMirror roundMirror = containingElementMirror.getFullData().getRoundMirror();
-		TypeMirror fieldTypeMirror = (fieldElement instanceof ExecutableElement)
-				? ((ExecutableElement) fieldElement).getReturnType() : fieldElement.asType();
-		ProcessingEnvironment processingEnv = roundMirror.getProcessingEnv();
-		this.fieldAccessor = fieldElement.getSimpleName().toString()
-				+ ((fieldElement instanceof ExecutableElement) ? "()" : "");
+		ProcessingEnvironment processingEnv = containingElementMirror.getFullData().getRoundMirror().getProcessingEnv();
 		this.fieldName = fieldName;
-		this.methodFieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
 		this.fieldType = fieldType;
-		this.type = new ExtracTypeVisitor().visit(fieldTypeMirror, processingEnv);
+		this.type = new ExtracTypeVisitor().visit((fieldElement instanceof ExecutableElement)
+				? ((ExecutableElement) fieldElement).getReturnType() : fieldElement.asType(), processingEnv);
 		this.fieldTypeAsTypeElement = processingEnv.getElementUtils().getTypeElement(fieldType);
 		this.fieldElement = fieldElement;
 	}
 
 	public String getFieldAccessor() {
-		return fieldAccessor;
+		return fieldElement.getSimpleName().toString() + ((fieldElement instanceof ExecutableElement) ? "()" : "");
 	}
 
 	public String getFieldName() {
@@ -120,7 +113,7 @@ public class FieldDescriptionMirror {
 	}
 
 	public String getMethodFieldName() {
-		return methodFieldName;
+		return fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
 	}
 
 	public String getFieldType() {
