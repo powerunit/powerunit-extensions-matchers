@@ -67,23 +67,23 @@ public class ProvideMatchersMirror {
 		this.moreMethod = pm.moreMethod();
 	}
 
-	public String getComments() {
+	public final String getComments() {
 		return comments;
 	}
 
-	public String getSimpleNameOfGeneratedClass() {
+	public final String getSimpleNameOfGeneratedClass() {
 		return simpleNameOfGeneratedClass;
 	}
 
-	public String getFullyQualifiedNameOfGeneratedClass() {
+	public final String getFullyQualifiedNameOfGeneratedClass() {
 		return packageNameOfGeneratedClass + "." + simpleNameOfGeneratedClass;
 	}
 
-	public String getPackageNameOfGeneratedClass() {
+	public final String getPackageNameOfGeneratedClass() {
 		return packageNameOfGeneratedClass;
 	}
 
-	public Collection<DSLExtension> getDSLExtension() {
+	public final Collection<DSLExtension> getDSLExtension() {
 		return EXTENSION.stream().filter(e -> e.accept(moreMethod))
 				.collect(collectingAndThen(toList(), Collections::unmodifiableList));
 	}

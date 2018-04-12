@@ -1,11 +1,5 @@
 package ch.powerunit.extensions.matchers.common;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
-import java.util.stream.Stream;
-
-import javax.annotation.processing.AbstractProcessor;
-
 import ch.powerunit.Test;
 import ch.powerunit.TestSuite;
 
@@ -17,22 +11,12 @@ public class CommonUtilsTest implements TestSuite {
 	}
 
 	@Test
-	public void testGenerateFactoryClass() {
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		PrintWriter printStream = new PrintWriter(output);
-		CommonUtils.generateFactoryClass(printStream, AbstractProcessor.class, "pckName", "clazzName",
-				() -> Stream.of("yxx"));
-		printStream.flush();
-		String clean = output.toString().replaceAll("\r", "");
-		assertThat(clean).containsString("package pckName;");
-		assertThat(clean)
-				.containsString("@javax.annotation.Generated(value=\"javax.annotation.processing.AbstractProcessor");
-		assertThat(clean).containsString("public static final clazzName DSL = new clazzName() {};");
-		assertThat(clean).containsString("yxx");
+	public void testToJavaSyntax() {
+		assertThatFunction(CommonUtils::toJavaSyntax, "<\"><\r><\t><\n>").is("\"<\\\"><\\r><\\t><\\n>\"");
 	}
 
 	@Test
-	public void testToJavaSyntax() {
-		assertThatFunction(CommonUtils::toJavaSyntax, "<\"><\r><\t><\n>").is("\"<\\\"><\\r><\\t><\\n>\"");
+	public void testAddPrefix() {
+		assertThatBiFunction(CommonUtils::addPrefix, " ", "x\ny").is("\n x\n y\n");
 	}
 }

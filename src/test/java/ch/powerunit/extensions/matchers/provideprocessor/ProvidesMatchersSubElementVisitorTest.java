@@ -29,7 +29,7 @@ import ch.powerunit.Test;
 import ch.powerunit.TestRule;
 import ch.powerunit.TestSuite;
 import ch.powerunit.extensions.matchers.AddToMatcher;
-import ch.powerunit.extensions.matchers.provideprocessor.FieldDescription.Type;
+import ch.powerunit.extensions.matchers.provideprocessor.FieldDescriptionMirror.Type;
 
 public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 
@@ -102,7 +102,6 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 				.thenReturn(Type.NA);
 		when(executableElement.getReturnType()).thenReturn(typeMirror);
 		when(executableElement.getAnnotationsByType(AddToMatcher.class)).thenReturn(new AddToMatcher[] {});
-		when(providesMatchersAnnotatedElementMirror.getProcessingEnv()).thenReturn(processingEnv);
 		underTest = new ProvidesMatchersSubElementVisitor(roundMirror);
 	}
 

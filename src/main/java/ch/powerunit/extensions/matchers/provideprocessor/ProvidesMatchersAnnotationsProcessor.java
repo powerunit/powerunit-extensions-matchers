@@ -23,11 +23,8 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -43,13 +40,13 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.FileObject;
-import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
 import ch.powerunit.extensions.matchers.common.CommonUtils;
+import ch.powerunit.extensions.matchers.common.FactoryHelper;
+import ch.powerunit.extensions.matchers.common.FileObjectHelper;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatchers;
 
 /**
@@ -96,8 +93,9 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		factories.addAll(alias.stream()
 				.collect(toMap(ProvidesMatchersAnnotatedElementMirror::getFullyQualifiedNameOfGeneratedClass,
 						ProvidesMatchersAnnotatedElementMirror::process))
-				.entrySet().stream().map(e -> e.getValue().stream()
-						.map(m -> addPrefix("  ", m.asDefaultReference(e.getKey()))).collect(joining("\n")))
+				.entrySet()
+				.stream().map(e -> e.getValue().stream()
+						.map(m -> CommonUtils.addPrefix("  ", m.asDefaultReference(e.getKey()))).collect(joining("\n")))
 				.collect(toList()));
 		allGeneratedMatchers.getGeneratedMatcher()
 				.addAll(alias.stream().map(ProvidesMatchersAnnotatedElementMirror::asXml).collect(toList()));
@@ -110,43 +108,30 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		}
 	}
 
-	public static String addPrefix(String prefix, String input) {
-		return "\n" + Arrays.stream(input.split("\\R")).map(l -> prefix + l).collect(joining("\n")) + "\n";
-	}
-
 	private void processReport() {
-		try {
-			FileObject jfo = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "",
-					"META-INF/" + getClass().getName() + "/matchers.xml", allGeneratedMatchers.listElements());
-			try (OutputStream os = jfo.openOutputStream();) {
-				Marshaller m = JAXBContext.newInstance(GeneratedMatchers.class).createMarshaller();
-				m.setProperty("jaxb.formatted.output", true);
-				m.marshal(allGeneratedMatchers, os);
-			}
-		} catch (IOException | JAXBException e1) {
-			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
-					"Unable to create the file containing meta data about this generation, because of "
-							+ e1.getMessage());
-		}
-
+		FileObjectHelper.processFileWithIOException(
+				() -> processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "",
+						"META-INF/" + getClass().getName() + "/matchers.xml", allGeneratedMatchers.listElements()),
+				FileObject::openOutputStream, os -> {
+					Marshaller m = JAXBContext.newInstance(GeneratedMatchers.class).createMarshaller();
+					m.setProperty("jaxb.formatted.output", true);
+					m.marshal(allGeneratedMatchers, os);
+				} ,
+				e -> processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
+						"Unable to create the file containing meta data about this generation, because of "
+								+ e.getMessage()));
 	}
 
 	private void processFactory() {
-		try {
-			processingEnv.getMessager().printMessage(Kind.NOTE,
-					"The interface `" + factory + "` will be generated as a factory interface.");
-			JavaFileObject jfo = processingEnv.getFiler().createSourceFile(factory,
-					allGeneratedMatchers.listElements());
-			try (PrintWriter wjfo = new PrintWriter(jfo.openWriter());) {
-				CommonUtils.generateFactoryClass(wjfo, ProvidesMatchersAnnotationsProcessor.class,
+		FileObjectHelper.processFileWithIOException(
+				() -> processingEnv.getFiler().createSourceFile(factory, allGeneratedMatchers.listElements()),
+				jfo -> new PrintWriter(jfo.openWriter()),
+				wjfo -> FactoryHelper.generateFactoryClass(wjfo, ProvidesMatchersAnnotationsProcessor.class,
 						factory.replaceAll("\\.[^.]+$", ""), factory.replaceAll("^([^.]+\\.)*", ""),
-						() -> factories.stream());
-			}
-		} catch (IOException e1) {
-			processingEnv.getMessager().printMessage(Kind.ERROR,
-					"Unable to create the file containing the target class `" + factory + "`, because of "
-							+ e1.getMessage());
-		}
+						() -> factories.stream()),
+				e -> processingEnv.getMessager().printMessage(Kind.ERROR,
+						"Unable to create the file containing the target class `" + factory + "`, because of "
+								+ e.getMessage()));
 	}
 
 	public AnnotationMirror getProvideMatchersAnnotation(TypeElement provideMatchersTE,
