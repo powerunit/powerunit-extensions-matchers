@@ -21,13 +21,7 @@ package ch.powerunit.extensions.matchers.common;
 
 import static java.util.stream.Collectors.joining;
 
-import java.io.PrintWriter;
-import java.time.Instant;
 import java.util.Arrays;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-
-import javax.annotation.processing.AbstractProcessor;
 
 public class CommonUtils {
 	private CommonUtils() {
