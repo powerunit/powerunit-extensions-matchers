@@ -446,26 +446,6 @@ public class FieldDescription extends FieldDescriptionMirror {
 				+ "));";
 	}
 
-	public String getFieldAccessor() {
-		return fieldAccessor;
-	}
-
-	public String getFieldName() {
-		return fieldName;
-	}
-
-	public String getMethodFieldName() {
-		return methodFieldName;
-	}
-
-	public String getFieldType() {
-		return fieldType;
-	}
-
-	public Type getType() {
-		return type;
-	}
-
 	public boolean isIgnore() {
 		return ignore;
 	}
