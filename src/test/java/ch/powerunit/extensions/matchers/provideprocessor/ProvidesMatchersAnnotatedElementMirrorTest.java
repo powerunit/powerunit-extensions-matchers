@@ -2,9 +2,12 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
@@ -13,6 +16,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import javax.tools.JavaFileObject;
 
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -22,6 +26,7 @@ import ch.powerunit.Test;
 import ch.powerunit.TestRule;
 import ch.powerunit.TestSuite;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 
 public class ProvidesMatchersAnnotatedElementMirrorTest implements TestSuite {
 	@Rule
@@ -58,10 +63,16 @@ public class ProvidesMatchersAnnotatedElementMirrorTest implements TestSuite {
 	private Types types;
 
 	@Mock
+	private Filer filer;
+
+	@Mock
 	private ProvideMatchers provideMatcher;
 
 	@Mock
 	private RoundMirror roundMirror;
+
+	@Mock
+	private JavaFileObject javaFileObject;
 
 	private void prepareMock() {
 		when(roundMirror.getProcessingEnv()).thenReturn(processingEnv);
@@ -71,6 +82,13 @@ public class ProvidesMatchersAnnotatedElementMirrorTest implements TestSuite {
 
 		when(processingEnv.getElementUtils()).thenReturn(elements);
 		when(processingEnv.getTypeUtils()).thenReturn(types);
+		when(processingEnv.getFiler()).thenReturn(filer);
+		try {
+			when(filer.createSourceFile(Mockito.anyString(), Mockito.anyVararg())).thenReturn(javaFileObject);
+			when(javaFileObject.openWriter()).thenReturn(new StringWriter());
+		} catch (IOException e) {
+			// ignore
+		}
 
 		when(elements.getPackageOf(Mockito.any(Element.class))).thenReturn(packageElement);
 		when(elements.getTypeElement("java.lang.Object")).thenReturn(object);
@@ -112,6 +130,16 @@ public class ProvidesMatchersAnnotatedElementMirrorTest implements TestSuite {
 		assertThat(results).is(iterableWithSize(3));
 		assertThat(results.stream().map(DSLMethod::asStaticImplementation).collect(Collectors.joining("\n"))).is(
 				"/**\n * Start a DSL matcher for the {@link fqn.Sn Sn}.\n * <p>\n * The returned builder (which is also a Matcher), at this point accepts any object that is a {@link fqn.Sn Sn}.\n * \n * \n * @return the DSL matcher\n */\n@org.hamcrest.Factory\npublic static  fqn.SnMatchers.SnMatcher <Void> snWith() {\n  return new SnMatcherImpl<Void>();\n}\n\n/**\n * Start a DSL matcher for the {@link fqn.Sn Sn}.\n * <p>\n * The returned builder (which is also a Matcher), at this point accepts any object that is a {@link fqn.Sn Sn}.\n * @param parentBuilder the parentBuilder.\n * \n * \n * @param <_PARENT> used to reference, if necessary, a parent for this builder. By default Void is used an indicate no parent builder.\n * @return the DSL matcher\n */\n@org.hamcrest.Factory\npublic static <_PARENT> fqn.SnMatchers.SnMatcher <_PARENT> snWithParent(_PARENT parentBuilder) {\n  return new SnMatcherImpl<_PARENT>(parentBuilder);\n}\n\n/**\n * Start a DSL matcher for the {@link fqn.Sn Sn}.\n * @param other the other object to be used as a reference.\n * \n * \n * @return the DSL matcher\n */\n@org.hamcrest.Factory\npublic static  fqn.SnMatchers.SnMatcher <Void> snWithSameValue(fqn.Sn  other) {\n  SnMatcher <Void> m=new SnMatcherImpl<Void>();\n  return m;\n}\n");
+	}
+
+	@Test
+	public void testProcess() {
+		ProvidesMatchersAnnotatedElementMirror underTest = new ProvidesMatchersAnnotatedElementMirror(typeElement,
+				roundMirror);
+		GeneratedMatcher m = underTest.process();
+		assertThat(m).isNotNull();
+		assertThat(m.getFactories()).is(
+				"\n  /**\n   * Start a DSL matcher for the {@link fqn.Sn Sn}.\n   * <p>\n   * The returned builder (which is also a Matcher), at this point accepts any object that is a {@link fqn.Sn Sn}.\n   * \n   * \n   * @return the DSL matcher\n   */\n  default  fqn.SnMatchers.SnMatcher <Void> snWith() {\n    return fqn.SnMatchers.snWith();\n  }\n\n\n  /**\n   * Start a DSL matcher for the {@link fqn.Sn Sn}.\n   * <p>\n   * The returned builder (which is also a Matcher), at this point accepts any object that is a {@link fqn.Sn Sn}.\n   * @param parentBuilder the parentBuilder.\n   * \n   * \n   * @param <_PARENT> used to reference, if necessary, a parent for this builder. By default Void is used an indicate no parent builder.\n   * @return the DSL matcher\n   */\n  default <_PARENT> fqn.SnMatchers.SnMatcher <_PARENT> snWithParent(_PARENT parentBuilder) {\n    return fqn.SnMatchers.snWithParent(parentBuilder);\n  }\n\n\n  /**\n   * Start a DSL matcher for the {@link fqn.Sn Sn}.\n   * @param other the other object to be used as a reference.\n   * \n   * \n   * @return the DSL matcher\n   */\n  default  fqn.SnMatchers.SnMatcher <Void> snWithSameValue(fqn.Sn  other) {\n    return fqn.SnMatchers.snWithSameValue(other);\n  }\n");
 	}
 
 }
