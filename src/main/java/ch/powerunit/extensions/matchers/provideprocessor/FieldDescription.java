@@ -140,7 +140,7 @@ public class FieldDescription extends FieldDescriptionMirror {
 
 	public Supplier<String> generateFunctionForImplementation(AddToMatcher a) {
 		return () -> buildImplementation(generateDeclaration(a.suffix(), a.argument()),
-				Arrays.stream(a.body()).map(l -> l).collect(joining("\n")) + "\n" + "return this;");
+				Arrays.stream(a.body()).collect(joining("\n")) + "\nreturn this;");
 	}
 
 	public String getJavaDocFor(String addToDescription) {
@@ -187,8 +187,7 @@ public class FieldDescription extends FieldDescriptionMirror {
 	}
 
 	public String generateDeclaration(String postFix, String arguments) {
-		return new StringBuilder().append(defaultReturnMethod).append(" ").append(fieldName).append(postFix).append("(")
-				.append(arguments).append(")").toString();
+		return String.format("%1$s %2$s%3$s(%4$s)", defaultReturnMethod, fieldName, postFix, arguments);
 	}
 
 	public String getImplementationForDefault() {
@@ -209,7 +208,7 @@ public class FieldDescription extends FieldDescriptionMirror {
 	}
 
 	public String getImplementationInterface() {
-		return implGenerator.stream().map(g -> g.get()).collect(joining("\n"));
+		return implGenerator.stream().map(Supplier::get).collect(joining("\n"));
 	}
 
 	public String getDslForSupplier() {
@@ -362,7 +361,7 @@ public class FieldDescription extends FieldDescriptionMirror {
 	}
 
 	public String getDslInterface() {
-		return dslGenerator.stream().map(g -> g.get()).collect(joining("\n"));
+		return dslGenerator.stream().map(Supplier::get).collect(joining("\n"));
 	}
 
 	public String getMatcherForField() {
@@ -416,7 +415,6 @@ public class FieldDescription extends FieldDescriptionMirror {
 	}
 
 	public String getFieldCopy(String lhs, String rhs) {
-
 		if ((type == Type.LIST || type == Type.SET || type == Type.COLLECTION) && !"".equals(generic)) {
 			return getFieldCopyForList(lhs, rhs);
 		}
@@ -428,10 +426,9 @@ public class FieldDescription extends FieldDescriptionMirror {
 	}
 
 	public String asMatchesSafely() {
-		return new StringBuilder().append("if(!").append(fieldName).append(".matches(actual)) {\n")
-				.append("  mismatchDescription.appendText(\"[\"); ").append(fieldName)
-				.append(".describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");\n")
-				.append("  result=false;\n").append("}").toString();
+		return String.format(
+				"if(!%1$s.matches(actual)) {\n  mismatchDescription.appendText(\"[\"); %1$s.describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");\n  result=false;\n}",
+				fieldName);
 	}
 
 	public String asDescribeTo() {
@@ -439,11 +436,9 @@ public class FieldDescription extends FieldDescriptionMirror {
 	}
 
 	public String asMatcherField() {
-		String methodFieldName = getMethodFieldName();
-		return "private " + methodFieldName + "Matcher " + fieldName + " = new " + methodFieldName + "Matcher("
-				+ MATCHERS + ".anything(" + (ignore ? "\"This field is ignored \"+"
-						+ CommonUtils.toJavaSyntax(getDescriptionForIgnoreIfApplicable()) : "")
-				+ "));";
+		return String.format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));", getMethodFieldName(),
+				fieldName, MATCHERS, ignore ? ("\"This field is ignored \"+"
+						+ CommonUtils.toJavaSyntax(getDescriptionForIgnoreIfApplicable())) : "");
 	}
 
 	public boolean isIgnore() {
