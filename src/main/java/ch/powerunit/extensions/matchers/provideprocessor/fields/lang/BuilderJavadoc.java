@@ -24,10 +24,6 @@ import java.util.Optional;
 public interface BuilderJavadoc {
 	BuilderImplementation withJavaDoc(Optional<String> addToDescription, Optional<String> param, Optional<String> see);
 
-	default BuilderImplementation withDefaultJavaDoc() {
-		return withJavaDoc(Optional.empty(), Optional.empty(), Optional.empty());
-	}
-
 	default BuilderImplementation withJavaDoc(String addToDescription, String param, String see) {
 		return withJavaDoc(Optional.of(addToDescription), Optional.of(param), Optional.of(see));
 	}
@@ -38,6 +34,10 @@ public interface BuilderJavadoc {
 
 	default BuilderImplementation withJavaDoc(String addToDescription) {
 		return withJavaDoc(Optional.of(addToDescription), Optional.empty(), Optional.empty());
+	}
+
+	default BuilderImplementation withDefaultJavaDoc() {
+		return withJavaDoc(Optional.empty(), Optional.empty(), Optional.empty());
 	}
 
 }

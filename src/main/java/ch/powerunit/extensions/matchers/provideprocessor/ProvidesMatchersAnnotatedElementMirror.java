@@ -44,6 +44,7 @@ import javax.tools.Diagnostic.Kind;
 import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.common.FileObjectHelper;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.IgoreFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 
 public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirror {
@@ -76,14 +77,16 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 
 	private List<AbstractFieldDescription> generateFields(TypeElement typeElement,
 			ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor) {
-		return typeElement.getEnclosedElements()
-				.stream().map(
-						ie -> ie.accept(providesMatchersSubElementVisitor, this))
-				.filter(Optional::isPresent).map(t -> t.get())
-				.collect(collectingAndThen(
-						groupingBy(t -> t.getFieldName(),
-								reducing(null, (v1, v2) -> v1 == null ? v2 : v1.isIgnore() ? v1 : v2)),
-						c -> c == null ? emptyList() : c.values().stream().collect(toList())));
+		return typeElement.getEnclosedElements().stream()
+				.map(ie -> ie.accept(providesMatchersSubElementVisitor, this)).filter(
+						Optional::isPresent)
+				.map(t -> t.get()).collect(
+						collectingAndThen(
+								groupingBy(t -> t.getFieldName(),
+										reducing(null,
+												(v1, v2) -> v1 == null ? v2
+														: v1 instanceof IgoreFieldDescription ? v1 : v2)),
+								c -> c == null ? emptyList() : c.values().stream().collect(toList())));
 	}
 
 	public ProvidesMatchersAnnotatedElementMirror(TypeElement typeElement, RoundMirror roundMirror) {
@@ -248,9 +251,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 				.append(simpleNameOfGeneratedInterfaceMatcher).append("EndSyntaxicSugar ").append(genericParent)
 				.append(" {").append("\n");
 
-		sb.append(fields.stream().filter(AbstractFieldDescription::isNotIgnore)
-				.map(AbstractFieldDescription::getDslInterface).map(s -> CommonUtils.addPrefix("    ", s))
-				.collect(joining("\n"))).append("\n\n");
+		sb.append(fields.stream().map(AbstractFieldDescription::getDslInterface)
+				.map(s -> CommonUtils.addPrefix("    ", s)).collect(joining("\n"))).append("\n\n");
 
 		sb.append(generateAsPublicInterface());
 		sb.append("  }").append("\n");
@@ -387,8 +389,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 					.append("\n\n");
 		}
 
-		sb.append(fields.stream().filter(AbstractFieldDescription::isNotIgnore).map(f -> f.getImplementationInterface())
-				.map(s -> CommonUtils.addPrefix("    ", s)).collect(joining("\n"))).append("\n");
+		sb.append(fields.stream().map(f -> f.getImplementationInterface()).map(s -> CommonUtils.addPrefix("    ", s))
+				.collect(joining("\n"))).append("\n");
 
 		sb.append(generatePrivateImplementationForMatchersSafely()).append("\n")
 				.append(generatedPrivateImplementationForDescribeTo()).append("\n\n")
@@ -510,8 +512,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 		List<String> lines = new ArrayList<>();
 		lines.add(getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " m=new "
 				+ simpleNameOfGeneratedImplementationMatcher + genericNoParent + "();");
-		lines.addAll(fields.stream().filter(AbstractFieldDescription::isNotIgnore)
-				.map(f -> "    " + f.getFieldCopy("m", "other") + ";").collect(toList()));
+		lines.addAll(fields.stream().map(f -> "    " + f.getFieldCopy("m", "other") + ";").collect(toList()));
 		lines.add("return m;");
 		return new DSLMethod(javadoc,
 				fullGeneric + " " + getFullyQualifiedNameOfGeneratedClass() + "."
@@ -536,8 +537,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 		List<String> lines = new ArrayList<>();
 		lines.add(getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " m=new "
 				+ simpleNameOfGeneratedImplementationMatcher + genericNoParent + "(" + argumentForParentBuilder + ");");
-		lines.addAll(fields.stream().filter(AbstractFieldDescription::isNotIgnore)
-				.map(f -> "    " + f.getFieldCopy("m", "other") + ";").collect(toList()));
+		lines.addAll(fields.stream().map(f -> "    " + f.getFieldCopy("m", "other") + ";").collect(toList()));
 		lines.add("return m;");
 		return new DSLMethod(javadoc,
 				fullGeneric + " " + getFullyQualifiedNameOfGeneratedClass() + "."

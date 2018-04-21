@@ -28,6 +28,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.TypeKindVisitor8;
 import javax.tools.Diagnostic.Kind;
 
+import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 
 public final class FieldDescriptionProvider {
@@ -96,6 +97,10 @@ public final class FieldDescriptionProvider {
 		Type type = new ExtracTypeVisitor().visit((mirror.getFieldElement() instanceof ExecutableElement)
 				? ((ExecutableElement) mirror.getFieldElement()).getReturnType() : mirror.getFieldElement().asType(),
 				processingEnv);
+		if (mirror.getFieldElement().getAnnotation(IgnoreInMatcher.class) != null) {
+			return new IgoreFieldDescription(containingElementMirror, mirror);
+		}
+
 		switch (type) {
 		case ARRAY:
 			return new ArrayFieldDescription(containingElementMirror, mirror);

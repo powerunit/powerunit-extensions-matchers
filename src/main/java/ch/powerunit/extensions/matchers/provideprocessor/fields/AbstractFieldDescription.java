@@ -38,7 +38,6 @@ import javax.lang.model.type.TypeMirror;
 
 import ch.powerunit.extensions.matchers.AddToMatcher;
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
-import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvideMatchersMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
@@ -52,7 +51,6 @@ public abstract class AbstractFieldDescription {
 
 	private final List<FieldDSLMethod> dsl;
 	private final RoundMirror roundMirror;
-	private final boolean ignore;
 	protected final String generic;
 	protected final String defaultReturnMethod;
 	private final String fullyQualifiedNameEnclosingClassOfField;
@@ -90,7 +88,6 @@ public abstract class AbstractFieldDescription {
 		this.enclosingClassOfFieldGeneric = containingElementMirror.getGeneric();
 		this.fullyQualifiedNameEnclosingClassOfField = containingElementMirror
 				.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher();
-		this.ignore = mirror.getFieldElement().getAnnotation(IgnoreInMatcher.class) != null;
 		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
 		this.generic = computeGenericInformation(fieldTypeMirror);
 		this.fullyQualifiedNameMatcherInSameRound = computeFullyQualifiedNameMatcherInSameRound(roundMirror,
@@ -195,16 +192,7 @@ public abstract class AbstractFieldDescription {
 
 	public String asMatcherField() {
 		return String.format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));", getMethodFieldName(),
-				getFieldName(), MATCHERS, ignore ? ("\"This field is ignored \"+"
-						+ CommonUtils.toJavaSyntax(getDescriptionForIgnoreIfApplicable())) : "");
-	}
-
-	public boolean isIgnore() {
-		return ignore;
-	}
-
-	public boolean isNotIgnore() {
-		return !ignore;
+				getFieldName(), MATCHERS, "");
 	}
 
 	public String getDescriptionForIgnoreIfApplicable() {
@@ -238,7 +226,7 @@ public abstract class AbstractFieldDescription {
 
 	public GeneratedMatcherField asGeneratedMatcherField() {
 		GeneratedMatcherField gmf = new GeneratedMatcherField();
-		gmf.setFieldIsIgnored(ignore);
+		gmf.setFieldIsIgnored(true);
 		gmf.setFieldName(getFieldName());
 		gmf.setFieldAccessor(getFieldAccessor());
 		gmf.setGenericDetails(generic);
