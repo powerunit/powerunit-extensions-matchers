@@ -59,10 +59,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	private final TypeElement typeElementForClassAnnotatedWithProvideMatcher;
 	private final String methodShortClassName;
 	private final boolean hasParent;
-	private final String defaultReturnMethod;
 	private final String fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher;
 	private final String simpleNameOfGeneratedImplementationMatcher;
-	private final String genericForChaining;
 	private final List<AbstractFieldDescription> fields;
 	private final RoundMirror roundMirror;
 	private final Collection<Supplier<DSLMethod>> dslProvider;
@@ -92,11 +90,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 				.equals(typeElement.getSuperclass());
 		boolean hasParentInSameRound = roundMirror.isInSameRound(typeElement);
 		this.fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher = typeElement.getSuperclass().toString();
-		this.defaultReturnMethod = simpleNameOfClassAnnotatedWithProvideMatcher + "Matcher" + getGenericParent();
 		this.simpleNameOfGeneratedImplementationMatcher = simpleNameOfClassAnnotatedWithProvideMatcher + "MatcherImpl";
-		this.genericForChaining = getGenericParent().replaceAll("^<_PARENT",
-				"<" + getFullyQualifiedNameOfGeneratedClass() + "." + simpleNameOfGeneratedInterfaceMatcher
-						+ getGenericNoParent());
 		this.fields = generateFields(typeElement, new ProvidesMatchersSubElementVisitor(roundMirror));
 		List<Supplier<DSLMethod>> tmp = new ArrayList<>(
 				Arrays.asList(this::generateDefaultDSLStarter, this::generateDefaultForChainingDSLStarter));
@@ -508,7 +502,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	}
 
 	public String getDefaultReturnMethod() {
-		return defaultReturnMethod;
+		return simpleNameOfClassAnnotatedWithProvideMatcher + "Matcher" + getGenericParent();
 	}
 
 	public TypeElement getTypeElementForClassAnnotatedWithProvideMatcher() {

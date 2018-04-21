@@ -30,12 +30,16 @@ public abstract class ProvidesMatchersAnnotatedElementGenericMirror
 	protected final String generic;
 	protected final String fullGeneric;
 	protected final String simpleNameOfGeneratedInterfaceMatcher;
+	protected final String genericForChaining;
 
 	public ProvidesMatchersAnnotatedElementGenericMirror(TypeElement typeElement, RoundMirror roundMirror) {
 		super(typeElement, roundMirror);
 		this.generic = parseGeneric(typeElement);
 		this.fullGeneric = parseFullGeneric(typeElement);
 		this.simpleNameOfGeneratedInterfaceMatcher = simpleNameOfClassAnnotatedWithProvideMatcher + "Matcher";
+		this.genericForChaining = getGenericParent().replaceAll("^<_PARENT",
+				"<" + getFullyQualifiedNameOfGeneratedClass() + "." + simpleNameOfGeneratedInterfaceMatcher
+						+ getGenericNoParent());
 	}
 
 	private static String parseFullGeneric(TypeElement typeElement) {
