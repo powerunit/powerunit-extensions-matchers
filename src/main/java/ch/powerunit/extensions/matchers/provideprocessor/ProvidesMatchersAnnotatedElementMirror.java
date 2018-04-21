@@ -54,7 +54,6 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 	public static final String JAVADOC_WARNING_PARENT_MAY_BE_VOID = "<b>This method only works in the contexte of a parent builder. If the real type is Void, then nothing will be returned.</b>";
 
 	private final TypeElement typeElementForClassAnnotatedWithProvideMatcher;
-	private final ProcessingEnvironment processingEnv;
 	private final String fullyQualifiedNameOfClassAnnotatedWithProvideMatcher;
 	private final String simpleNameOfClassAnnotatedWithProvideMatcher;
 	private final String methodShortClassName;
@@ -69,7 +68,6 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 	private final String fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher;
 	private final String simpleNameOfGeneratedInterfaceMatcher;
 	private final String simpleNameOfGeneratedImplementationMatcher;
-	private final TypeElement typeElementForSuperClassOfClassAnnotatedWithProvideMatcher;
 	private final String genericForChaining;
 	private final List<AbstractFieldDescription> fields;
 	private final RoundMirror roundMirror;
@@ -93,7 +91,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 		super(roundMirror.getProcessingEnv(), typeElement);
 		this.roundMirror = roundMirror;
 		this.typeElementForClassAnnotatedWithProvideMatcher = typeElement;
-		this.processingEnv = roundMirror.getProcessingEnv();
+		ProcessingEnvironment processingEnv = roundMirror.getProcessingEnv();
 		this.fullyQualifiedNameOfClassAnnotatedWithProvideMatcher = typeElement.getQualifiedName().toString();
 		this.simpleNameOfClassAnnotatedWithProvideMatcher = typeElement.getSimpleName().toString();
 		this.methodShortClassName = simpleNameOfClassAnnotatedWithProvideMatcher.substring(0, 1).toLowerCase()
@@ -102,8 +100,6 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 				.equals(typeElement.getSuperclass());
 		boolean hasParentInSameRound = roundMirror.isInSameRound(typeElement);
 		this.fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher = typeElement.getSuperclass().toString();
-		this.typeElementForSuperClassOfClassAnnotatedWithProvideMatcher = (TypeElement) processingEnv.getTypeUtils()
-				.asElement(typeElement.getSuperclass());
 		this.generic = typeElement.getTypeParameters().stream().map(t -> t.toString())
 				.collect(collectingAndThen(joining(","), r -> r.isEmpty() ? "" : ("<" + r + ">")));
 		this.fullGeneric = typeElement.getTypeParameters().stream()
@@ -126,7 +122,9 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 			tmp.add(this::generateParentDSLStarter);
 			if (hasParentInSameRound) {
 				tmp.add(this::generateParentValueDSLStarter);
-				if (typeElementForSuperClassOfClassAnnotatedWithProvideMatcher.getTypeParameters().isEmpty()) {
+				if (((TypeElement) roundMirror.getProcessingEnv().getTypeUtils()
+						.asElement(typeElementForClassAnnotatedWithProvideMatcher.getSuperclass())).getTypeParameters()
+								.isEmpty()) {
 					tmp.add(this::generateParentInSameRoundWithChaningDSLStarter);
 				}
 			}
@@ -154,8 +152,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 	public Collection<DSLMethod> process() {
 		Collection<DSLMethod> results = new ArrayList<>();
 		FileObjectHelper.processFileWithIOException(
-				() -> processingEnv.getFiler().createSourceFile(getFullyQualifiedNameOfGeneratedClass(),
-						typeElementForClassAnnotatedWithProvideMatcher),
+				() -> roundMirror.getProcessingEnv().getFiler().createSourceFile(
+						getFullyQualifiedNameOfGeneratedClass(), typeElementForClassAnnotatedWithProvideMatcher),
 				jfo -> new PrintWriter(jfo.openWriter()), wjfo -> {
 					wjfo.println("package " + getPackageNameOfGeneratedClass() + ";");
 					wjfo.println();
@@ -180,17 +178,16 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 					wjfo.println("}");
 					results.addAll(tmp);
 				} ,
-				e -> processingEnv.getMessager().printMessage(Kind.ERROR,
+				e -> roundMirror.getProcessingEnv().getMessager().printMessage(Kind.ERROR,
 						"Unable to create the file containing the target class because of " + e,
 						typeElementForClassAnnotatedWithProvideMatcher));
 		return results;
 	}
 
 	public String generateMainJavaDoc() {
-		return "/**\n* This class provides matchers for the class {@link "
-				+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + "}.\n * \n * @see "
-				+ fullyQualifiedNameOfClassAnnotatedWithProvideMatcher
-				+ " The class for which matchers are provided.\n */\n";
+		return String.format(
+				"/**\n* This class provides matchers for the class {@link %1$s}.\n * \n * @see %1$s The class for which matchers are provided.\n */\n",
+				fullyQualifiedNameOfClassAnnotatedWithProvideMatcher);
 	}
 
 	public String generateMatchers() {
@@ -523,8 +520,9 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 	}
 
 	public ProvidesMatchersAnnotatedElementMirror getParentMirror() {
-		return roundMirror
-				.getByName(typeElementForSuperClassOfClassAnnotatedWithProvideMatcher.getQualifiedName().toString());
+		return roundMirror.getByName(((TypeElement) roundMirror.getProcessingEnv().getTypeUtils()
+				.asElement(typeElementForClassAnnotatedWithProvideMatcher.getSuperclass())).getQualifiedName()
+						.toString());
 	}
 
 	public DSLMethod generateParentValueDSLStarter() {
