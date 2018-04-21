@@ -391,7 +391,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 
 		sb.append(generatePrivateImplementationForMatchersSafely()).append("\n")
 				.append(generatedPrivateImplementationForDescribeTo()).append("\n\n")
-				.append(generatePrivateImplementationForEnd()).append("\n")
+				.append("    @Override\n    public _PARENT end() {\n      return _parentBuilder;\n    }\n\n\n")
 				.append(generatePrivateImplementationForAndWith()).append("\n").append("  }\n");
 		return sb.toString();
 	}
@@ -416,11 +416,6 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 				.append("        result=false;\n").append("        }\n").append("      }\n")
 				.append("      return result;\n").append("    }\n\n");
 		return sb.toString();
-	}
-
-	private String generatePrivateImplementationForEnd() {
-		return new StringBuilder().append("    @Override\n").append("    public _PARENT end() {\n")
-				.append("      return _parentBuilder;\n").append("    }\n\n").toString();
 	}
 
 	private String generatedPrivateImplementationForDescribeTo() {
