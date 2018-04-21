@@ -12,6 +12,12 @@ import ch.powerunit.TestSuite;
 public class FactoryHelperTest implements TestSuite {
 
 	@Test
+	public void testGenerateStaticDSL() {
+		assertThatFunction(FactoryHelper::generateStaticDSL, "clazzName").is(
+				"  /**\n   * Use this static field to access all the DSL syntax, without be required to implements this interface.\n  */\n  public static final clazzName DSL = new clazzName() {};\n\n");
+	}
+
+	@Test
 	public void testGenerateFactoryClass() {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		PrintWriter printStream = new PrintWriter(output);

@@ -30,12 +30,16 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.SimpleElementVisitor8;
 import javax.tools.Diagnostic.Kind;
 
+import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescriptionMirror;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescriptionProvider;
+
 /**
  * @author borettim
  *
  */
 public class ProvidesMatchersSubElementVisitor
-		extends SimpleElementVisitor8<Optional<FieldDescription>, ProvidesMatchersAnnotatedElementMirror> {
+		extends SimpleElementVisitor8<Optional<AbstractFieldDescription>, ProvidesMatchersAnnotatedElementMirror> {
 
 	private final Function<Element, Boolean> removeFromIgnoreList;
 	private final NameExtractorVisitor extractNameVisitor;
@@ -47,13 +51,15 @@ public class ProvidesMatchersSubElementVisitor
 		this.extractNameVisitor = new NameExtractorVisitor(processingEnv);
 	}
 
-	public Optional<FieldDescription> removeIfNeededAndThenReturn(Optional<FieldDescription> fieldDescription) {
+	public Optional<AbstractFieldDescription> removeIfNeededAndThenReturn(
+			Optional<AbstractFieldDescription> fieldDescription) {
 		fieldDescription.ifPresent(f -> removeFromIgnoreList.apply(f.getFieldElement()));
 		return fieldDescription;
 	}
 
 	@Override
-	public Optional<FieldDescription> visitVariable(VariableElement e, ProvidesMatchersAnnotatedElementMirror p) {
+	public Optional<AbstractFieldDescription> visitVariable(VariableElement e,
+			ProvidesMatchersAnnotatedElementMirror p) {
 		if (e.getModifiers().contains(Modifier.PUBLIC) && !e.getModifiers().contains(Modifier.STATIC)) {
 			String fieldName = e.getSimpleName().toString();
 			return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, fieldName);
@@ -63,7 +69,8 @@ public class ProvidesMatchersSubElementVisitor
 	}
 
 	@Override
-	public Optional<FieldDescription> visitExecutable(ExecutableElement e, ProvidesMatchersAnnotatedElementMirror p) {
+	public Optional<AbstractFieldDescription> visitExecutable(ExecutableElement e,
+			ProvidesMatchersAnnotatedElementMirror p) {
 		if (e.getModifiers().contains(Modifier.PUBLIC) && e.getParameters().size() == 0
 				&& !e.getModifiers().contains(Modifier.STATIC)) {
 			String simpleName = e.getSimpleName().toString();
@@ -83,7 +90,7 @@ public class ProvidesMatchersSubElementVisitor
 		}
 	}
 
-	private Optional<FieldDescription> visiteExecutableGet(ExecutableElement e, String prefix,
+	private Optional<AbstractFieldDescription> visiteExecutableGet(ExecutableElement e, String prefix,
 			ProvidesMatchersAnnotatedElementMirror p) {
 		String methodName = e.getSimpleName().toString();
 		String fieldNameDirect = methodName.replaceFirst(prefix, "");
@@ -91,15 +98,16 @@ public class ProvidesMatchersSubElementVisitor
 		return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, fieldName);
 	}
 
-	public Optional<FieldDescription> createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(
+	public Optional<AbstractFieldDescription> createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(
 			Element e, ProvidesMatchersAnnotatedElementMirror p, String fieldName) {
 		return removeIfNeededAndThenReturn(
 				((e instanceof ExecutableElement) ? ((ExecutableElement) e).getReturnType() : e.asType())
-						.accept(extractNameVisitor, false).map(f -> new FieldDescription(()->p, fieldName, f, e)));
+						.accept(extractNameVisitor, false).map(f -> FieldDescriptionProvider.of(() -> p,
+								new FieldDescriptionMirror(() -> p, fieldName, f, e))));
 	}
 
 	@Override
-	protected Optional<FieldDescription> defaultAction(Element e, ProvidesMatchersAnnotatedElementMirror p) {
+	protected Optional<AbstractFieldDescription> defaultAction(Element e, ProvidesMatchersAnnotatedElementMirror p) {
 		return Optional.empty();
 	}
 

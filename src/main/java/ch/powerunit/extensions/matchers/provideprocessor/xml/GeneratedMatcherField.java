@@ -30,8 +30,6 @@ public class GeneratedMatcherField {
 
 	private boolean fieldIsIgnored;
 
-	private String fieldCategory;
-
 	private String fieldAccessor;
 
 	private String genericDetails;
@@ -50,14 +48,6 @@ public class GeneratedMatcherField {
 
 	public void setFieldIsIgnored(boolean fieldIsIgnored) {
 		this.fieldIsIgnored = fieldIsIgnored;
-	}
-
-	public String getFieldCategory() {
-		return fieldCategory;
-	}
-
-	public void setFieldCategory(String fieldCategory) {
-		this.fieldCategory = fieldCategory;
 	}
 
 	public String getFieldAccessor() {

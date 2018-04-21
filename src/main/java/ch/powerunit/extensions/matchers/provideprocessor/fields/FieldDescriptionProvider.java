@@ -17,12 +17,10 @@
  * You should have received a copy of the GNU General Public License
  * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
  */
-package ch.powerunit.extensions.matchers.provideprocessor;
+package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -30,17 +28,17 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.TypeKindVisitor8;
 import javax.tools.Diagnostic.Kind;
 
-public class FieldDescriptionMirror {
+import ch.powerunit.extensions.matchers.IgnoreInMatcher;
+import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+
+public final class FieldDescriptionProvider {
+
+	private FieldDescriptionProvider() {
+	}
 
 	public static enum Type {
 		NA, ARRAY, COLLECTION, LIST, SET, OPTIONAL, COMPARABLE, STRING, SUPPLIER
 	}
-
-	protected final String fieldName;
-	protected final String fieldType;
-	protected final Type type;
-	protected final TypeElement fieldTypeAsTypeElement;
-	protected final Element fieldElement;
 
 	public static final class ExtracTypeVisitor extends TypeKindVisitor8<Type, ProcessingEnvironment> {
 
@@ -93,35 +91,34 @@ public class FieldDescriptionMirror {
 		}
 	}
 
-	public FieldDescriptionMirror(ProvidesMatchersAnnotatedElementData containingElementMirror, String fieldName,
-			String fieldType, Element fieldElement) {
-		ProcessingEnvironment processingEnv = containingElementMirror.getFullData().getRoundMirror().getProcessingEnv();
-		this.fieldName = fieldName;
-		this.fieldType = fieldType;
-		this.type = new ExtracTypeVisitor().visit((fieldElement instanceof ExecutableElement)
-				? ((ExecutableElement) fieldElement).getReturnType() : fieldElement.asType(), processingEnv);
-		this.fieldTypeAsTypeElement = processingEnv.getElementUtils().getTypeElement(fieldType);
-		this.fieldElement = fieldElement;
-	}
+	public static AbstractFieldDescription of(ProvidesMatchersAnnotatedElementData containingElementMirror,
+			FieldDescriptionMirror mirror) {
+		ProcessingEnvironment processingEnv = containingElementMirror.getRoundMirror().getProcessingEnv();
+		Type type = new ExtracTypeVisitor().visit((mirror.getFieldElement() instanceof ExecutableElement)
+				? ((ExecutableElement) mirror.getFieldElement()).getReturnType() : mirror.getFieldElement().asType(),
+				processingEnv);
+		if (mirror.getFieldElement().getAnnotation(IgnoreInMatcher.class) != null) {
+			return new IgoreFieldDescription(containingElementMirror, mirror);
+		}
 
-	public String getFieldAccessor() {
-		return fieldElement.getSimpleName().toString() + ((fieldElement instanceof ExecutableElement) ? "()" : "");
-	}
-
-	public String getFieldName() {
-		return fieldName;
-	}
-
-	public String getMethodFieldName() {
-		return fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-	}
-
-	public String getFieldType() {
-		return fieldType;
-	}
-
-	public Element getFieldElement() {
-		return fieldElement;
+		switch (type) {
+		case ARRAY:
+			return new ArrayFieldDescription(containingElementMirror, mirror);
+		case COLLECTION:
+		case SET:
+		case LIST:
+			return new CollectionFieldDescription(containingElementMirror, mirror);
+		case COMPARABLE:
+			return new ComparableFieldDescription(containingElementMirror, mirror);
+		case OPTIONAL:
+			return new OptionalFieldDescription(containingElementMirror, mirror);
+		case STRING:
+			return new StringFieldDescription(containingElementMirror, mirror);
+		case SUPPLIER:
+			return new SupplierFieldDescription(containingElementMirror, mirror);
+		default:
+			return new DefaultFieldDescription(containingElementMirror, mirror);
+		}
 	}
 
 }
