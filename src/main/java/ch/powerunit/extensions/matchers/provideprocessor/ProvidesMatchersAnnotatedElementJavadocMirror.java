@@ -20,6 +20,7 @@
 package ch.powerunit.extensions.matchers.provideprocessor;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 import javax.lang.model.element.TypeElement;
 
@@ -40,7 +41,7 @@ public class ProvidesMatchersAnnotatedElementJavadocMirror extends ProvideMatche
 		this.fullyQualifiedNameOfClassAnnotatedWithProvideMatcher = typeElement.getQualifiedName().toString();
 		this.simpleNameOfClassAnnotatedWithProvideMatcher = typeElement.getSimpleName().toString();
 		this.paramJavadoc = extractParamCommentFromJavadoc(
-				roundMirror.getProcessingEnv().getElementUtils().getDocComment(typeElement));
+				roundMirror.getProcessingEnv().getElementUtils().getDocComment(typeElement)).replaceAll("\\R", "\n");
 	}
 
 	protected String getDefaultLinkForAnnotatedClass() {
@@ -53,18 +54,22 @@ public class ProvidesMatchersAnnotatedElementJavadocMirror extends ProvideMatche
 		return generateJavaDoc(description, Optional.of(moreDetails), param, returnDescription, false, false);
 	}
 
+	private Function<String, String> asJavadocFormat(String prefix) {
+		return t -> String.format("%1$s%2$s\n", prefix, t);
+	}
+
 	protected String generateJavaDoc(String description, Optional<String> moreDetails, Optional<String> param,
 			Optional<String> returnDescription, boolean withParam, boolean withParent) {
 		StringBuilder sb = new StringBuilder("/**\n * ").append(description).append(".\n")
-				.append(moreDetails.map(t -> String.format(" * <p>\n * %1$s\n", t)).orElse(""))
-				.append(param.map(t -> String.format(" * @param %1$s\n", t)).orElse(""));
+				.append(moreDetails.map(asJavadocFormat(" * <p>\n * ")).orElse(""))
+				.append(param.map(asJavadocFormat(" * @param ")).orElse(""));
 		if (withParam) {
-			sb.append(paramJavadoc.replaceAll("\\R", "\n")).append(" * \n");
+			sb.append(paramJavadoc).append(" * \n");
 		}
 		if (withParent) {
 			sb.append(DEFAULT_PARAM_PARENT);
 		}
-		sb.append(returnDescription.map(t -> String.format(" * @return %1$s\n", t)).orElse("")).append(" */\n");
+		sb.append(returnDescription.map(asJavadocFormat(" * @return ")).orElse("")).append(" */\n");
 		return sb.toString();
 	}
 
