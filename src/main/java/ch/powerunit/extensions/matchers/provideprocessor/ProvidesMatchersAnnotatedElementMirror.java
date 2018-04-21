@@ -47,21 +47,15 @@ import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDes
 import ch.powerunit.extensions.matchers.provideprocessor.fields.IgoreFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 
-public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnnotatedElementJavadocMirror {
+public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnnotatedElementGenericMirror {
 
 	public static final String DEFAULT_FEATUREMATCHER_FORCONVERTER = "\n  private static <_TARGET,_SOURCE> org.hamcrest.Matcher<_SOURCE> asFeatureMatcher(String msg,java.util.function.Function<_SOURCE,_TARGET> converter,org.hamcrest.Matcher<? super _TARGET> matcher) {\n   return new org.hamcrest.FeatureMatcher<_SOURCE,_TARGET>(matcher, msg, msg) {\n     protected _TARGET featureValueOf(_SOURCE actual) {\n      return converter.apply(actual);\n    }};\n  }\n\n";
 
 	private final TypeElement typeElementForClassAnnotatedWithProvideMatcher;
 	private final String methodShortClassName;
 	private final boolean hasParent;
-	private final String generic;
-	private final String fullGeneric;
-	private final String genericParent;
-	private final String genericNoParent;
-	private final String fullGenericParent;
 	private final String defaultReturnMethod;
 	private final String fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher;
-	private final String simpleNameOfGeneratedInterfaceMatcher;
 	private final String simpleNameOfGeneratedImplementationMatcher;
 	private final String genericForChaining;
 	private final List<AbstractFieldDescription> fields;
@@ -93,17 +87,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 				.equals(typeElement.getSuperclass());
 		boolean hasParentInSameRound = roundMirror.isInSameRound(typeElement);
 		this.fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher = typeElement.getSuperclass().toString();
-		this.generic = typeElement.getTypeParameters().stream().map(t -> t.toString())
-				.collect(collectingAndThen(joining(","), r -> r.isEmpty() ? "" : ("<" + r + ">")));
-		this.fullGeneric = typeElement.getTypeParameters().stream()
-				.map(t -> t.toString() + " extends "
-						+ t.getBounds().stream().map(b -> b.toString()).collect(joining("&")))
-				.collect(collectingAndThen(joining(","), r -> r.isEmpty() ? "" : ("<" + r + ">")));
-		this.genericParent = getAddParentToGeneric(generic);
-		this.genericNoParent = getAddNoParentToGeneric(generic);
-		this.fullGenericParent = getAddParentToGeneric(fullGeneric);
 		this.defaultReturnMethod = simpleNameOfClassAnnotatedWithProvideMatcher + "Matcher" + genericParent;
-		this.simpleNameOfGeneratedInterfaceMatcher = simpleNameOfClassAnnotatedWithProvideMatcher + "Matcher";
 		this.simpleNameOfGeneratedImplementationMatcher = simpleNameOfClassAnnotatedWithProvideMatcher + "MatcherImpl";
 		this.genericForChaining = genericParent.replaceAll("^<_PARENT", "<" + getFullyQualifiedNameOfGeneratedClass()
 				+ "." + simpleNameOfGeneratedInterfaceMatcher + genericNoParent);
@@ -127,18 +111,6 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 				.map(t -> t.getDSLMethodFor(() -> this)).flatMap(Collection::stream).collect(toList()));
 
 		this.dslProvider = unmodifiableList(tmp);
-	}
-
-	public String getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() {
-		return simpleNameOfGeneratedInterfaceMatcher + " " + genericParent;
-	}
-
-	public String getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() {
-		return simpleNameOfGeneratedInterfaceMatcher + " " + genericNoParent;
-	}
-
-	public String getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() {
-		return fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " " + generic;
 	}
 
 	public Collection<DSLMethod> process() {
@@ -543,32 +515,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 		return "Start a DSL matcher for the " + getDefaultLinkForAnnotatedClass();
 	}
 
-	private static String getAddParentToGeneric(String generic) {
-		if ("".equals(generic)) {
-			return "<_PARENT>";
-		} else {
-			return generic.replaceFirst("<", "<_PARENT,");
-		}
-	}
-
-	private static String getAddNoParentToGeneric(String generic) {
-		if ("".equals(generic)) {
-			return "<Void>";
-		} else {
-			return generic.replaceFirst("<", "<Void,");
-		}
-	}
-
 	public String getDefaultReturnMethod() {
 		return defaultReturnMethod;
-	}
-
-	public String getFullGeneric() {
-		return fullGeneric;
-	}
-
-	public String getGeneric() {
-		return generic;
 	}
 
 	public TypeElement getTypeElementForClassAnnotatedWithProvideMatcher() {

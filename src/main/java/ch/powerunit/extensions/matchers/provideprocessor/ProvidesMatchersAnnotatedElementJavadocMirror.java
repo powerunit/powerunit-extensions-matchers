@@ -24,7 +24,7 @@ import java.util.function.Function;
 
 import javax.lang.model.element.TypeElement;
 
-public class ProvidesMatchersAnnotatedElementJavadocMirror extends ProvideMatchersMirror {
+public abstract class ProvidesMatchersAnnotatedElementJavadocMirror extends ProvideMatchersMirror {
 
 	private static final String DEFAULT_PARAM_PARENT = " * @param <_PARENT> used to reference, if necessary, a parent for this builder. By default Void is used an indicate no parent builder.\n";
 
