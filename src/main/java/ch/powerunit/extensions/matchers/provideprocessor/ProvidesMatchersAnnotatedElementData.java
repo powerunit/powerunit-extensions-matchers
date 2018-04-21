@@ -23,6 +23,10 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 public interface ProvidesMatchersAnnotatedElementData {
 	ProvidesMatchersAnnotatedElementMirror getFullData();
 
+	default RoundMirror getRoundMirror() {
+		return getFullData().getRoundMirror();
+	}
+
 	default String getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() {
 		return getFullData().getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric();
 	}
@@ -46,7 +50,7 @@ public interface ProvidesMatchersAnnotatedElementData {
 	default String getMethodShortClassName() {
 		return getFullData().getMethodShortClassName();
 	}
-	
+
 	default String getDefaultReturnMethod() {
 		return getFullData().getDefaultReturnMethod();
 	}
@@ -58,5 +62,5 @@ public interface ProvidesMatchersAnnotatedElementData {
 	default String generateDSLWithSameValueMethodName() {
 		return getMethodShortClassName() + "WithSameValue";
 	}
-	
+
 }

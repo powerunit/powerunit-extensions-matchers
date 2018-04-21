@@ -35,7 +35,7 @@ public class FieldDescriptionMirror {
 
 	public FieldDescriptionMirror(ProvidesMatchersAnnotatedElementData containingElementMirror, String fieldName,
 			String fieldType, Element fieldElement) {
-		ProcessingEnvironment processingEnv = containingElementMirror.getFullData().getRoundMirror().getProcessingEnv();
+		ProcessingEnvironment processingEnv = containingElementMirror.getRoundMirror().getProcessingEnv();
 		this.fieldName = fieldName;
 		this.fieldType = fieldType;
 		this.fieldTypeAsTypeElement = processingEnv.getElementUtils().getTypeElement(fieldType);

@@ -92,7 +92,7 @@ public final class FieldDescriptionProvider {
 
 	public static AbstractFieldDescription of(ProvidesMatchersAnnotatedElementData containingElementMirror,
 			FieldDescriptionMirror mirror) {
-		ProcessingEnvironment processingEnv = containingElementMirror.getFullData().getRoundMirror().getProcessingEnv();
+		ProcessingEnvironment processingEnv = containingElementMirror.getRoundMirror().getProcessingEnv();
 		Type type = new ExtracTypeVisitor().visit((mirror.getFieldElement() instanceof ExecutableElement)
 				? ((ExecutableElement) mirror.getFieldElement()).getReturnType() : mirror.getFieldElement().asType(),
 				processingEnv);

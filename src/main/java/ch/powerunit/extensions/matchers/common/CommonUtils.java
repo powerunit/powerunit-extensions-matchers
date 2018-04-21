@@ -56,11 +56,4 @@ public class CommonUtils {
 		return "\n" + Arrays.stream(input.split("\\R")).map(l -> prefix + l).collect(joining("\n")) + "\n";
 	}
 
-	public static String generateStaticDSL(String className) {
-		return new StringBuilder().append("  /**").append("\n")
-				.append("   * Use this static field to access all the DSL syntax, without be required to implements this interface.")
-				.append("\n").append("  */").append("\n")
-				.append("  public static final " + className + " DSL = new " + className + "() {};").append("\n")
-				.append("\n").toString();
-	}
 }

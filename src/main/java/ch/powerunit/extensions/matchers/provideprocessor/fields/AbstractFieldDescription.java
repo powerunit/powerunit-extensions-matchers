@@ -83,7 +83,7 @@ public abstract class AbstractFieldDescription {
 	public AbstractFieldDescription(ProvidesMatchersAnnotatedElementData containingElementMirror,
 			FieldDescriptionMirror mirror) {
 		this.mirror = mirror;
-		this.roundMirror = containingElementMirror.getFullData().getRoundMirror();
+		this.roundMirror = containingElementMirror.getRoundMirror();
 		TypeMirror fieldTypeMirror = (mirror.getFieldElement() instanceof ExecutableElement)
 				? ((ExecutableElement) mirror.getFieldElement()).getReturnType() : mirror.getFieldElement().asType();
 		this.enclosingClassOfFieldFullGeneric = containingElementMirror.getFullGeneric();
@@ -107,6 +107,14 @@ public abstract class AbstractFieldDescription {
 		this.dsl = Collections.unmodifiableList(tmp);
 	}
 
+	public String getMethodFieldName() {
+		return mirror.getMethodFieldName();
+	}
+
+	public TypeElement getFieldTypeAsTypeElement() {
+		return mirror.getFieldTypeAsTypeElement();
+	}
+
 	protected abstract Collection<FieldDSLMethod> getFieldDslMethodFor();
 
 	public String getImplementationInterface() {
@@ -119,7 +127,7 @@ public abstract class AbstractFieldDescription {
 	}
 
 	public String getMatcherForField() {
-		String methodFieldName = mirror.getMethodFieldName();
+		String methodFieldName = getMethodFieldName();
 		StringBuilder sb = new StringBuilder();
 		sb.append("private static class " + methodFieldName + "Matcher" + enclosingClassOfFieldFullGeneric
 				+ " extends org.hamcrest.FeatureMatcher<" + fullyQualifiedNameEnclosingClassOfField
@@ -142,7 +150,7 @@ public abstract class AbstractFieldDescription {
 	}
 
 	public String getSameValueMatcherFor(String target) {
-		String name = mirror.getFieldTypeAsTypeElement().getSimpleName().toString();
+		String name = getFieldTypeAsTypeElement().getSimpleName().toString();
 		String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
 		return fullyQualifiedNameMatcherInSameRound + "." + lname + "WithSameValue(" + target + ")";
 	}
@@ -169,8 +177,7 @@ public abstract class AbstractFieldDescription {
 	}
 
 	public String getFieldCopy(String lhs, String rhs) {
-		if (fullyQualifiedNameMatcherInSameRound != null
-				&& mirror.getFieldTypeAsTypeElement().getTypeParameters().isEmpty()) {
+		if (fullyQualifiedNameMatcherInSameRound != null && getFieldTypeAsTypeElement().getTypeParameters().isEmpty()) {
 			return getFieldCopySameRound(lhs, rhs);
 		}
 		return getFieldCopyDefault(lhs, rhs);
@@ -187,8 +194,8 @@ public abstract class AbstractFieldDescription {
 	}
 
 	public String asMatcherField() {
-		return String.format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));",
-				mirror.getMethodFieldName(), getFieldName(), MATCHERS, ignore ? ("\"This field is ignored \"+"
+		return String.format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));", getMethodFieldName(),
+				getFieldName(), MATCHERS, ignore ? ("\"This field is ignored \"+"
 						+ CommonUtils.toJavaSyntax(getDescriptionForIgnoreIfApplicable())) : "");
 	}
 

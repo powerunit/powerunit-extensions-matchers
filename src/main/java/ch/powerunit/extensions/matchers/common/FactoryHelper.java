@@ -21,9 +21,17 @@ public final class FactoryHelper {
 				+ Instant.now().toString() + "\")");
 		wjfo.println("public interface " + className + " {");
 		wjfo.println();
-		wjfo.println(CommonUtils.generateStaticDSL(className));
+		wjfo.println(generateStaticDSL(className));
 		wjfo.println();
 		bodyProvider.get().forEach(wjfo::println);
 		wjfo.println("}");
+	}
+	
+	public static String generateStaticDSL(String className) {
+		return new StringBuilder().append("  /**").append("\n")
+				.append("   * Use this static field to access all the DSL syntax, without be required to implements this interface.")
+				.append("\n").append("  */").append("\n")
+				.append("  public static final " + className + " DSL = new " + className + "() {};").append("\n")
+				.append("\n").toString();
 	}
 }
