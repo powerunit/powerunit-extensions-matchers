@@ -47,22 +47,15 @@ import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDes
 import ch.powerunit.extensions.matchers.provideprocessor.fields.IgoreFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 
-public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirror {
+public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnnotatedElementJavadocMirror {
 
 	public static final String DEFAULT_FEATUREMATCHER_FORCONVERTER = "\n  private static <_TARGET,_SOURCE> org.hamcrest.Matcher<_SOURCE> asFeatureMatcher(String msg,java.util.function.Function<_SOURCE,_TARGET> converter,org.hamcrest.Matcher<? super _TARGET> matcher) {\n   return new org.hamcrest.FeatureMatcher<_SOURCE,_TARGET>(matcher, msg, msg) {\n     protected _TARGET featureValueOf(_SOURCE actual) {\n      return converter.apply(actual);\n    }};\n  }\n\n";
 
-	public static final String JAVADOC_WARNING_SYNTAXIC_SUGAR_NO_CHANGE_ANYMORE = "<b>This method is a syntaxic sugar that end the DSL and make clear that the matcher can't be change anymore.</b>";
-
-	public static final String JAVADOC_WARNING_PARENT_MAY_BE_VOID = "<b>This method only works in the contexte of a parent builder. If the real type is Void, then nothing will be returned.</b>";
-
 	private final TypeElement typeElementForClassAnnotatedWithProvideMatcher;
-	private final String fullyQualifiedNameOfClassAnnotatedWithProvideMatcher;
-	private final String simpleNameOfClassAnnotatedWithProvideMatcher;
 	private final String methodShortClassName;
 	private final boolean hasParent;
 	private final String generic;
 	private final String fullGeneric;
-	private final String paramJavadoc;
 	private final String genericParent;
 	private final String genericNoParent;
 	private final String fullGenericParent;
@@ -90,12 +83,10 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 	}
 
 	public ProvidesMatchersAnnotatedElementMirror(TypeElement typeElement, RoundMirror roundMirror) {
-		super(roundMirror.getProcessingEnv(), typeElement);
+		super(typeElement, roundMirror);
 		this.roundMirror = roundMirror;
 		this.typeElementForClassAnnotatedWithProvideMatcher = typeElement;
 		ProcessingEnvironment processingEnv = roundMirror.getProcessingEnv();
-		this.fullyQualifiedNameOfClassAnnotatedWithProvideMatcher = typeElement.getQualifiedName().toString();
-		this.simpleNameOfClassAnnotatedWithProvideMatcher = typeElement.getSimpleName().toString();
 		this.methodShortClassName = simpleNameOfClassAnnotatedWithProvideMatcher.substring(0, 1).toLowerCase()
 				+ simpleNameOfClassAnnotatedWithProvideMatcher.substring(1);
 		this.hasParent = !processingEnv.getElementUtils().getTypeElement("java.lang.Object").asType()
@@ -108,7 +99,6 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 				.map(t -> t.toString() + " extends "
 						+ t.getBounds().stream().map(b -> b.toString()).collect(joining("&")))
 				.collect(collectingAndThen(joining(","), r -> r.isEmpty() ? "" : ("<" + r + ">")));
-		this.paramJavadoc = extractParamCommentFromJavadoc(processingEnv.getElementUtils().getDocComment(typeElement));
 		this.genericParent = getAddParentToGeneric(generic);
 		this.genericNoParent = getAddNoParentToGeneric(generic);
 		this.fullGenericParent = getAddParentToGeneric(fullGeneric);
@@ -549,56 +539,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 						"m._parent = new SuperClassMatcher(tmp);", "return tmp;" });
 	}
 
-	private String getDefaultLinkForAnnotatedClass() {
-		return "{@link " + fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " "
-				+ simpleNameOfClassAnnotatedWithProvideMatcher + "}";
-	}
-
 	private String getDefaultDescriptionForDsl() {
 		return "Start a DSL matcher for the " + getDefaultLinkForAnnotatedClass();
-	}
-
-	private String generateJavaDocWithoutParamNeitherParent(String description, String moreDetails,
-			Optional<String> param, Optional<String> returnDescription) {
-		return generateJavaDoc(description, Optional.of(moreDetails), param, returnDescription, false, false);
-	}
-
-	private String generateJavaDoc(String description, Optional<String> moreDetails, Optional<String> param,
-			Optional<String> returnDescription, boolean withParam, boolean withParent) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("/**\n * ").append(description).append(".\n");
-		moreDetails.ifPresent(t -> sb.append(" * <p>\n").append(" * ").append(t).append("\n"));
-		param.ifPresent(t -> sb.append(" * @param ").append(t).append("\n"));
-		if (withParam) {
-			sb.append(paramJavadoc.replaceAll("\\R", "\n")).append(" * \n");
-		}
-		if (withParent) {
-			sb.append(
-					" * @param <_PARENT> used to reference, if necessary, a parent for this builder. By default Void is used an indicate no parent builder.\n");
-		}
-		returnDescription.ifPresent(t -> sb.append(" * @return ").append(t).append("\n"));
-		sb.append(" */\n");
-		return sb.toString();
-	}
-
-	private static String extractParamCommentFromJavadoc(String docComment) {
-		if (docComment == null) {
-			return " * \n";
-		}
-		boolean insideParam = false;
-		StringBuilder sb = new StringBuilder(" * \n");
-		for (String line : docComment.split("\\R")) {
-			if (insideParam && line.matches("^\\s*@.*$")) {
-				insideParam = false;
-			}
-			if (line.matches("^\\s*@param.*$")) {
-				insideParam = true;
-			}
-			if (insideParam) {
-				sb.append(" *").append(line).append("\n");
-			}
-		}
-		return sb.toString();
 	}
 
 	private static String getAddParentToGeneric(String generic) {
@@ -615,10 +557,6 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 		} else {
 			return generic.replaceFirst("<", "<Void,");
 		}
-	}
-
-	public String getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher() {
-		return fullyQualifiedNameOfClassAnnotatedWithProvideMatcher;
 	}
 
 	public String getDefaultReturnMethod() {
@@ -639,10 +577,6 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 
 	public String getMethodShortClassName() {
 		return methodShortClassName;
-	}
-
-	public String getSimpleNameOfClassAnnotatedWithProvideMatcher() {
-		return simpleNameOfClassAnnotatedWithProvideMatcher;
 	}
 
 	public GeneratedMatcher asXml() {
