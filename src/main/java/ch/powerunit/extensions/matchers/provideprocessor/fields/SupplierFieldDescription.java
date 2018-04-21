@@ -33,7 +33,7 @@ public class SupplierFieldDescription extends DefaultFieldDescription {
 
 	@Override
 	protected Collection<FieldDSLMethod> getSpecificFieldDslMethodFor() {
-		return Collections.singleton(FieldDSLMethodBuilder.of(this)
+		return Collections.singleton(getDslMethodBuilder()
 				.withDeclaration("SupplierResult", "org.hamcrest.Matcher<? super " + this.generic + "> matcherOnResult")
 				.withJavaDoc(
 						" Validate that the result of the supplier is accepted by another matcher (the result of the execution must be stable)",

@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.lang.BuilderDeclaration;
 
 public class DefaultFieldDescription extends AbstractFieldDescription {
 
@@ -35,6 +36,10 @@ public class DefaultFieldDescription extends AbstractFieldDescription {
 
 	protected Collection<FieldDSLMethod> getSpecificFieldDslMethodFor() {
 		return Collections.emptyList();
+	}
+	
+	protected final BuilderDeclaration getDslMethodBuilder() {
+		return FieldDSLMethodBuilder.of(this);
 	}
 
 	@Override

@@ -33,8 +33,8 @@ public class ArrayFieldDescription extends DefaultFieldDescription {
 
 	@Override
 	protected Collection<FieldDSLMethod> getSpecificFieldDslMethodFor() {
-		return Collections.singleton(
-				FieldDSLMethodBuilder.of(this).withDeclaration("IsEmpty", "").withJavaDoc("that the array is empty")
+		return Collections
+				.singleton(getDslMethodBuilder().withDeclaration("IsEmpty", "").withJavaDoc("that the array is empty")
 						.havingDefault("(org.hamcrest.Matcher)" + MATCHERS + ".emptyArray()"));
 	}
 
