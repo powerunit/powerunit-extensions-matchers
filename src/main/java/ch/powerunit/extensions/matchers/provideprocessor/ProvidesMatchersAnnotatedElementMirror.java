@@ -68,7 +68,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 		return typeElement.getEnclosedElements().stream()
 				.map(ie -> ie.accept(providesMatchersSubElementVisitor, this)).filter(
 						Optional::isPresent)
-				.map(t -> t.get()).collect(
+				.map(Optional::get).collect(
 						collectingAndThen(
 								groupingBy(t -> t.getFieldName(),
 										reducing(null,

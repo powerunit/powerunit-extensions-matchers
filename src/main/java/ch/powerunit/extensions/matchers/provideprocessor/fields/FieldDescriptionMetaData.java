@@ -39,9 +39,7 @@ public abstract class FieldDescriptionMetaData {
 
 	protected final String generic;
 	protected final String defaultReturnMethod;
-	private final String fullyQualifiedNameEnclosingClassOfField;
-	private final String enclosingClassOfFieldFullGeneric;
-	private final String enclosingClassOfFieldGeneric;
+	private final ProvidesMatchersAnnotatedElementData containingElementMirror;
 	protected final String fullyQualifiedNameMatcherInSameRound;
 	protected final FieldDescriptionMirror mirror;
 
@@ -55,14 +53,11 @@ public abstract class FieldDescriptionMetaData {
 
 	public FieldDescriptionMetaData(ProvidesMatchersAnnotatedElementData containingElementMirror,
 			FieldDescriptionMirror mirror) {
+		this.containingElementMirror = containingElementMirror;
 		this.mirror = mirror;
 		RoundMirror roundMirror = containingElementMirror.getRoundMirror();
 		TypeMirror fieldTypeMirror = (mirror.getFieldElement() instanceof ExecutableElement)
 				? ((ExecutableElement) mirror.getFieldElement()).getReturnType() : mirror.getFieldElement().asType();
-		this.enclosingClassOfFieldFullGeneric = containingElementMirror.getFullGeneric();
-		this.enclosingClassOfFieldGeneric = containingElementMirror.getGeneric();
-		this.fullyQualifiedNameEnclosingClassOfField = containingElementMirror
-				.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher();
 		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
 		this.generic = computeGenericInformation(fieldTypeMirror);
 		this.fullyQualifiedNameMatcherInSameRound = mirror.computeFullyQualifiedNameMatcherInSameRound(roundMirror);
@@ -71,8 +66,9 @@ public abstract class FieldDescriptionMetaData {
 	public String getMatcherForField() {
 		return String.format(
 				"private static class %1$sMatcher%2$s extends org.hamcrest.FeatureMatcher<%3$s%4$s,%5$s> {\n  public %1$sMatcher(org.hamcrest.Matcher<? super %5$s> matcher) {\n    super(matcher,\"%6$s\",\"%6$s\");\n  }\n  protected %5$s featureValueOf(%3$s%4$s actual) {\n    return actual.%7$s;\n  }\n}\n",
-				getMethodFieldName(), enclosingClassOfFieldFullGeneric, fullyQualifiedNameEnclosingClassOfField,
-				enclosingClassOfFieldGeneric, getFieldType(), getFieldName(), getFieldAccessor());
+				getMethodFieldName(), containingElementMirror.getFullGeneric(),
+				getFullyQualifiedNameEnclosingClassOfField(), containingElementMirror.getGeneric(), getFieldType(),
+				getFieldName(), getFieldAccessor());
 	}
 
 	public String getFieldCopyDefault(String lhs, String rhs) {
@@ -114,7 +110,7 @@ public abstract class FieldDescriptionMetaData {
 	}
 
 	public String getFullyQualifiedNameEnclosingClassOfField() {
-		return fullyQualifiedNameEnclosingClassOfField;
+		return containingElementMirror.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher();
 	}
 
 	public String getDefaultReturnMethod() {
