@@ -50,6 +50,10 @@ import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 
 public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnnotatedElementGenericMirror {
 
+	private static final String JAVADOC_ANDWITHAS = "    /**\n     * Add a matcher on the object itself and not on a specific field, but convert the object before passing it to the matcher.\n     * <p>\n     * <i>This method, when used more than once, just add more matcher to the list.</i>\n     * @param converter the function to convert the object.\n     * @param otherMatcher the matcher on the converter object itself.\n     * @param <_TARGETOBJECT> the type of the target object\n     * @return the DSL to continue\n     */\n";
+
+	private static final String JAVADOC_ANDWITH = "    /**\n     * Add a matcher on the object itself and not on a specific field.\n     * <p>\n     * <i>This method, when used more than once, just add more matcher to the list.</i>\n     * @param otherMatcher the matcher on the object itself.\n     * @return the DSL to continue\n     */\n";
+
 	public static final String DEFAULT_FEATUREMATCHER_FORCONVERTER = "\n  private static <_TARGET,_SOURCE> org.hamcrest.Matcher<_SOURCE> asFeatureMatcher(String msg,java.util.function.Function<_SOURCE,_TARGET> converter,org.hamcrest.Matcher<? super _TARGET> matcher) {\n   return new org.hamcrest.FeatureMatcher<_SOURCE,_TARGET>(matcher, msg, msg) {\n     protected _TARGET featureValueOf(_SOURCE actual) {\n      return converter.apply(actual);\n    }};\n  }\n\n";
 
 	private final TypeElement typeElementForClassAnnotatedWithProvideMatcher;
@@ -218,22 +222,11 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 				+ getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + "> otherMatcher";
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("    /**\n     * Add a matcher on the object itself and not on a specific field.\n");
-		sb.append(
-				"     * <p>\n     * <i>This method, when used more than once, just add more matcher to the list.</i>\n");
-		sb.append("     * @param otherMatcher the matcher on the object itself.\n");
-		sb.append("     * @return the DSL to continue\n     */\n");
+		sb.append(JAVADOC_ANDWITH);
 		sb.append("    ").append(getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent()).append(" andWith(")
 				.append(otherMatcher).append(");\n\n");
 
-		sb.append(
-				"    /**\n     * Add a matcher on the object itself and not on a specific field, but convert the object before passing it to the matcher.\n");
-		sb.append(
-				"     * <p>\n     * <i>This method, when used more than once, just add more matcher to the list.</i>\n");
-		sb.append("     * @param converter the function to convert the object.\n");
-		sb.append("     * @param otherMatcher the matcher on the converter object itself.\n");
-		sb.append("     * @param <_TARGETOBJECT> the type of the target object\n");
-		sb.append("     * @return the DSL to continue\n     */\n");
+		sb.append(JAVADOC_ANDWITHAS);
 		sb.append("    default <_TARGETOBJECT> ").append(getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent())
 				.append(" andWithAs(java.util.function.Function<")
 				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric())
