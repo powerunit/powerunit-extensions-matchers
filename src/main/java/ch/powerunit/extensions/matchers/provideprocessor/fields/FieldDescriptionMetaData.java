@@ -69,22 +69,10 @@ public abstract class FieldDescriptionMetaData {
 	}
 
 	public String getMatcherForField() {
-		String methodFieldName = getMethodFieldName();
-		StringBuilder sb = new StringBuilder();
-		sb.append("private static class " + methodFieldName + "Matcher" + enclosingClassOfFieldFullGeneric
-				+ " extends org.hamcrest.FeatureMatcher<" + fullyQualifiedNameEnclosingClassOfField
-				+ enclosingClassOfFieldGeneric + "," + getFieldType() + "> {\n");
-		sb.append("  public " + methodFieldName + "Matcher(org.hamcrest.Matcher<? super " + getFieldType()
-				+ "> matcher) {\n");
-		sb.append("    super(matcher,\"" + getFieldName() + "\",\"" + getFieldName() + "\");\n");
-		sb.append("  }\n");
-
-		sb.append("  protected " + getFieldType() + " featureValueOf(" + fullyQualifiedNameEnclosingClassOfField
-				+ enclosingClassOfFieldGeneric + " actual) {\n");
-		sb.append("    return actual." + getFieldAccessor() + ";\n");
-		sb.append("  }\n");
-		sb.append("}\n");
-		return sb.toString();
+		return String.format(
+				"private static class %1$sMatcher%2$s extends org.hamcrest.FeatureMatcher<%3$s%4$s,%5$s> {\n  public %1$sMatcher(org.hamcrest.Matcher<? super %5$s> matcher) {\n    super(matcher,\"%6$s\",\"%6$s\");\n  }\n  protected %5$s featureValueOf(%3$s%4$s actual) {\n    return actual.%7$s;\n  }\n}\n",
+				getMethodFieldName(), enclosingClassOfFieldFullGeneric, fullyQualifiedNameEnclosingClassOfField,
+				enclosingClassOfFieldGeneric, getFieldType(), getFieldName(), getFieldAccessor());
 	}
 
 	public String getFieldCopyDefault(String lhs, String rhs) {
