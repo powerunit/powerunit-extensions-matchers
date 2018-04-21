@@ -193,9 +193,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	private String generateExposedPublicInterface() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(addPrefix("  ",
-				generateJavaDoc(getDslInterfaceDescription(), Optional.empty(), Optional.empty(), Optional.empty(),
-						true, true)))
-				.append("\n").append("  public static interface ").append(simpleNameOfGeneratedInterfaceMatcher)
+				generateDefaultJavaDoc(Optional.empty(), Optional.empty(), Optional.empty(), true, true))).append("\n")
+				.append("  public static interface ").append(simpleNameOfGeneratedInterfaceMatcher)
 				.append(getFullGenericParent()).append(" extends org.hamcrest.Matcher<")
 				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append(">,")
 				.append(simpleNameOfGeneratedInterfaceMatcher).append("BuildSyntaxicSugar ").append(generic).append(",")
@@ -208,10 +207,6 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 		sb.append(generateAsPublicInterface());
 		sb.append("  }").append("\n");
 		return sb.toString();
-	}
-
-	private String getDslInterfaceDescription() {
-		return getDslInterfaceMatcherDescription();
 	}
 
 	private String getDslInterfaceMatcherDescription() {
@@ -401,6 +396,21 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 		return dslProvider.stream().map(Supplier::get).collect(toList());
 	}
 
+	public String getDefaultStarterBody(boolean withParentBuilder) {
+		if (withParentBuilder) {
+			return hasParent
+					? ("return new " + simpleNameOfGeneratedImplementationMatcher + getGenericParent()
+							+ "(org.hamcrest.Matchers.anything(),parentBuilder);")
+					: ("return new " + simpleNameOfGeneratedImplementationMatcher + getGenericParent()
+							+ "(parentBuilder);");
+		} else {
+			return hasParent
+					? ("return new " + simpleNameOfGeneratedImplementationMatcher + getGenericNoParent()
+							+ "(org.hamcrest.Matchers.anything());")
+					: ("return new " + simpleNameOfGeneratedImplementationMatcher + getGenericNoParent() + "();");
+		}
+	}
+
 	public DSLMethod generateDefaultDSLStarter() {
 		return new DSLMethod(
 				generateDefaultJavaDoc(
@@ -411,9 +421,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 				fullGeneric + " " + getFullyQualifiedNameOfGeneratedClass() + "."
 						+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " " + methodShortClassName
 						+ "With",
-				hasParent ? ("return new " + simpleNameOfGeneratedImplementationMatcher + getGenericNoParent()
-						+ "(org.hamcrest.Matchers.anything());")
-						: ("return new " + simpleNameOfGeneratedImplementationMatcher + getGenericNoParent() + "();"));
+				getDefaultStarterBody(false));
 	}
 
 	public DSLMethod generateDefaultForChainingDSLStarter() {
@@ -426,12 +434,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 				getFullGenericParent() + " " + getFullyQualifiedNameOfGeneratedClass() + "."
 						+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + " " + methodShortClassName
 						+ "WithParent",
-				new String[] { "_PARENT", "parentBuilder" },
-				hasParent
-						? ("return new " + simpleNameOfGeneratedImplementationMatcher + getGenericParent()
-								+ "(org.hamcrest.Matchers.anything(),parentBuilder);")
-						: ("return new " + simpleNameOfGeneratedImplementationMatcher + getGenericParent()
-								+ "(parentBuilder);"));
+				new String[] { "_PARENT", "parentBuilder" }, getDefaultStarterBody(true));
 	}
 
 	public DSLMethod generateParentDSLStarter() {
