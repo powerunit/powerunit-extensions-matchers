@@ -27,71 +27,21 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
 
 import ch.powerunit.extensions.matchers.AddToMatcher;
-import ch.powerunit.extensions.matchers.provideprocessor.ProvideMatchersMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
-import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
-import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcherField;
 
-public abstract class AbstractFieldDescription {
-
-	public static final String SEE_TEXT_FOR_IS_MATCHER = "org.hamcrest.Matchers#is(java.lang.Object)";
-	public static final String SEE_TEXT_FOR_HAMCREST_MATCHER = "org.hamcrest.Matchers The main class from hamcrest that provides default matchers.";
-	public static final String MATCHERS = "org.hamcrest.Matchers";
+public abstract class AbstractFieldDescription extends FieldDescriptionMetaData {
 
 	private final List<FieldDSLMethod> dsl;
-	private final RoundMirror roundMirror;
-	protected final String generic;
-	protected final String defaultReturnMethod;
-	private final String fullyQualifiedNameEnclosingClassOfField;
-	private final String enclosingClassOfFieldFullGeneric;
-	private final String enclosingClassOfFieldGeneric;
-	protected final String fullyQualifiedNameMatcherInSameRound;
-	protected final FieldDescriptionMirror mirror;
-
-	public static final String computeGenericInformation(TypeMirror fieldTypeMirror) {
-		if (fieldTypeMirror instanceof DeclaredType) {
-			DeclaredType dt = ((DeclaredType) fieldTypeMirror);
-			return dt.getTypeArguments().stream().map(Object::toString).collect(joining(","));
-		}
-		return "";
-	}
-
-	public static final String computeFullyQualifiedNameMatcherInSameRound(RoundMirror roundMirror,
-			Element fieldElement, TypeElement fieldTypeAsTypeElement) {
-		ProcessingEnvironment processingEnv = roundMirror.getProcessingEnv();
-		if (roundMirror.isInSameRound(processingEnv.getTypeUtils().asElement(fieldElement.asType()))
-				&& fieldTypeAsTypeElement != null) {
-			return new ProvideMatchersMirror(processingEnv, fieldTypeAsTypeElement)
-					.getFullyQualifiedNameOfGeneratedClass();
-		}
-		return null;
-	}
 
 	public AbstractFieldDescription(ProvidesMatchersAnnotatedElementData containingElementMirror,
 			FieldDescriptionMirror mirror) {
-		this.mirror = mirror;
-		this.roundMirror = containingElementMirror.getRoundMirror();
-		TypeMirror fieldTypeMirror = (mirror.getFieldElement() instanceof ExecutableElement)
-				? ((ExecutableElement) mirror.getFieldElement()).getReturnType() : mirror.getFieldElement().asType();
-		this.enclosingClassOfFieldFullGeneric = containingElementMirror.getFullGeneric();
-		this.enclosingClassOfFieldGeneric = containingElementMirror.getGeneric();
-		this.fullyQualifiedNameEnclosingClassOfField = containingElementMirror
-				.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher();
-		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
-		this.generic = computeGenericInformation(fieldTypeMirror);
-		this.fullyQualifiedNameMatcherInSameRound = computeFullyQualifiedNameMatcherInSameRound(roundMirror,
-				mirror.getFieldElement(), mirror.getFieldTypeAsTypeElement());
+		super(containingElementMirror, mirror);
+		this.dsl = Collections.unmodifiableList(generatedFieldDSLMethod(mirror));
+	}
 
+	private List<FieldDSLMethod> generatedFieldDSLMethod(FieldDescriptionMirror mirror) {
 		List<FieldDSLMethod> tmp = new ArrayList<>();
 
 		tmp.addAll(getFieldDslMethodFor());
@@ -100,15 +50,7 @@ public abstract class AbstractFieldDescription {
 				.map(a -> FieldDSLMethodBuilder.of(this).withDeclaration(a.suffix(), a.argument()).withDefaultJavaDoc()
 						.havingImplementation(Arrays.stream(a.body()).collect(joining("\n")) + "\nreturn this;"))
 				.filter(Objects::nonNull).forEach(tmp::add);
-		this.dsl = Collections.unmodifiableList(tmp);
-	}
-
-	public String getMethodFieldName() {
-		return mirror.getMethodFieldName();
-	}
-
-	public TypeElement getFieldTypeAsTypeElement() {
-		return mirror.getFieldTypeAsTypeElement();
+		return tmp;
 	}
 
 	protected abstract Collection<FieldDSLMethod> getFieldDslMethodFor();
@@ -119,112 +61,6 @@ public abstract class AbstractFieldDescription {
 
 	public String getDslInterface() {
 		return dsl.stream().map(FieldDSLMethod::asDSLMethod).collect(joining("\n"));
-
-	}
-
-	public String getMatcherForField() {
-		String methodFieldName = getMethodFieldName();
-		StringBuilder sb = new StringBuilder();
-		sb.append("private static class " + methodFieldName + "Matcher" + enclosingClassOfFieldFullGeneric
-				+ " extends org.hamcrest.FeatureMatcher<" + fullyQualifiedNameEnclosingClassOfField
-				+ enclosingClassOfFieldGeneric + "," + getFieldType() + "> {\n");
-		sb.append("  public " + methodFieldName + "Matcher(org.hamcrest.Matcher<? super " + getFieldType()
-				+ "> matcher) {\n");
-		sb.append("    super(matcher,\"" + getFieldName() + "\",\"" + getFieldName() + "\");\n");
-		sb.append("  }\n");
-
-		sb.append("  protected " + getFieldType() + " featureValueOf(" + fullyQualifiedNameEnclosingClassOfField
-				+ enclosingClassOfFieldGeneric + " actual) {\n");
-		sb.append("    return actual." + getFieldAccessor() + ";\n");
-		sb.append("  }\n");
-		sb.append("}\n");
-		return sb.toString();
-	}
-
-	public String getFieldCopyDefault(String lhs, String rhs) {
-		return lhs + "." + getFieldName() + "(" + MATCHERS + ".is(" + rhs + "." + getFieldAccessor() + "))";
-	}
-
-	public String getSameValueMatcherFor(String target) {
-		String name = getFieldTypeAsTypeElement().getSimpleName().toString();
-		String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
-		return fullyQualifiedNameMatcherInSameRound + "." + lname + "WithSameValue(" + target + ")";
-	}
-
-	public String getFieldCopySameRound(String lhs, String rhs) {
-		String fieldAccessor = getFieldAccessor();
-		return lhs + "." + getFieldName() + "(" + rhs + "." + fieldAccessor + "==null?" + MATCHERS + ".nullValue():"
-				+ getSameValueMatcherFor(rhs + "." + fieldAccessor) + ")";
-	}
-
-	public String generateMatcherBuilderReferenceFor(String generic) {
-		return Optional.ofNullable(roundMirror.getByName(generic)).map(
-				t -> t.getFullyQualifiedNameOfGeneratedClass() + "::" + t.getMethodShortClassName() + "WithSameValue")
-				.orElse(MATCHERS + "::is");
-	}
-
-	public String getFieldCopyForList(String lhs, String rhs) {
-		String fieldAccessor = getFieldAccessor();
-		return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + getFieldName() + "(" + MATCHERS
-				+ ".nullValue()); } else if (" + rhs + "." + fieldAccessor + ".isEmpty()) {" + lhs + "."
-				+ getFieldName() + "IsEmptyIterable(); } else {" + lhs + "." + getFieldName() + "Contains(" + rhs + "."
-				+ fieldAccessor + ".stream().map(" + generateMatcherBuilderReferenceFor(generic)
-				+ ").collect(java.util.stream.Collectors.toList())); }";
-	}
-
-	public String getFieldCopy(String lhs, String rhs) {
-		if (fullyQualifiedNameMatcherInSameRound != null && getFieldTypeAsTypeElement().getTypeParameters().isEmpty()) {
-			return getFieldCopySameRound(lhs, rhs);
-		}
-		return getFieldCopyDefault(lhs, rhs);
-	}
-
-	public String asMatchesSafely() {
-		return String.format(
-				"if(!%1$s.matches(actual)) {\n  mismatchDescription.appendText(\"[\"); %1$s.describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");\n  result=false;\n}",
-				getFieldName());
-	}
-
-	public String asDescribeTo() {
-		return "description.appendText(\"[\").appendDescriptionOf(" + getFieldName() + ").appendText(\"]\\n\");";
-	}
-
-	public String asMatcherField() {
-		return String.format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));", getMethodFieldName(),
-				getFieldName(), MATCHERS, "");
-	}
-
-	public String getFullyQualifiedNameEnclosingClassOfField() {
-		return fullyQualifiedNameEnclosingClassOfField;
-	}
-
-	public String getDefaultReturnMethod() {
-		return defaultReturnMethod;
-	}
-
-	public String getFieldAccessor() {
-		return mirror.getFieldAccessor();
-	}
-
-	public String getFieldName() {
-		return mirror.getFieldName();
-	}
-
-	public String getFieldType() {
-		return mirror.getFieldType();
-	}
-
-	public Element getFieldElement() {
-		return mirror.getFieldElement();
-	}
-
-	public GeneratedMatcherField asGeneratedMatcherField() {
-		GeneratedMatcherField gmf = new GeneratedMatcherField();
-		gmf.setFieldIsIgnored(true);
-		gmf.setFieldName(getFieldName());
-		gmf.setFieldAccessor(getFieldAccessor());
-		gmf.setGenericDetails(generic);
-		return gmf;
 	}
 
 }

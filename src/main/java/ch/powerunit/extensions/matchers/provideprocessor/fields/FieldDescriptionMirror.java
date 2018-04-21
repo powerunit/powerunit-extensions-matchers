@@ -24,7 +24,9 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 
+import ch.powerunit.extensions.matchers.provideprocessor.ProvideMatchersMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
 
 public class FieldDescriptionMirror {
 
@@ -64,6 +66,16 @@ public class FieldDescriptionMirror {
 
 	public TypeElement getFieldTypeAsTypeElement() {
 		return fieldTypeAsTypeElement;
+	}
+
+	public String computeFullyQualifiedNameMatcherInSameRound(RoundMirror roundMirror) {
+		ProcessingEnvironment processingEnv = roundMirror.getProcessingEnv();
+		if (roundMirror.isInSameRound(processingEnv.getTypeUtils().asElement(fieldElement.asType()))
+				&& fieldTypeAsTypeElement != null) {
+			return new ProvideMatchersMirror(processingEnv, fieldTypeAsTypeElement)
+					.getFullyQualifiedNameOfGeneratedClass();
+		}
+		return null;
 	}
 
 }

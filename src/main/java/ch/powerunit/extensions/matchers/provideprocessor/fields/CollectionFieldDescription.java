@@ -23,16 +23,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
 
 public class CollectionFieldDescription extends DefaultFieldDescription {
 
 	private static final String DEFAULT_JAVADOC_MATCHER_ON_ELEMENTS = "matchersOnElements the matchers on the elements";
 
+	private final RoundMirror roundMirror;
+
 	public CollectionFieldDescription(ProvidesMatchersAnnotatedElementData containingElementMirror,
 			FieldDescriptionMirror mirror) {
 		super(containingElementMirror, mirror);
+		roundMirror = containingElementMirror.getRoundMirror();
 	}
 
 	@Override
@@ -88,6 +93,21 @@ public class CollectionFieldDescription extends DefaultFieldDescription {
 			return getFieldCopyForList(lhs, rhs);
 		}
 		return super.getFieldCopy(lhs, rhs);
+	}
+
+	public String getFieldCopyForList(String lhs, String rhs) {
+		String fieldAccessor = getFieldAccessor();
+		return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + getFieldName() + "(" + MATCHERS
+				+ ".nullValue()); } else if (" + rhs + "." + fieldAccessor + ".isEmpty()) {" + lhs + "."
+				+ getFieldName() + "IsEmptyIterable(); } else {" + lhs + "." + getFieldName() + "Contains(" + rhs + "."
+				+ fieldAccessor + ".stream().map(" + generateMatcherBuilderReferenceFor(generic)
+				+ ").collect(java.util.stream.Collectors.toList())); }";
+	}
+
+	public String generateMatcherBuilderReferenceFor(String generic) {
+		return Optional.ofNullable(roundMirror.getByName(generic)).map(
+				t -> t.getFullyQualifiedNameOfGeneratedClass() + "::" + t.getMethodShortClassName() + "WithSameValue")
+				.orElse(MATCHERS + "::is");
 	}
 
 }

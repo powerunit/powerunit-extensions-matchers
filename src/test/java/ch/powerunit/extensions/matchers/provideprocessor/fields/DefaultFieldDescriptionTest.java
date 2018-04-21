@@ -152,19 +152,6 @@ public class DefaultFieldDescriptionTest implements TestSuite {
 	}
 
 	@Test
-	public void testComputeFullyQualifiedNameMatcherInSameRoundFalseThenNull() {
-		assertThat(AbstractFieldDescription.computeFullyQualifiedNameMatcherInSameRound(roundMirror, executableElement,
-				typeElement)).isNull();
-	}
-
-	@Test
-	public void testComputeFullyQualifiedNameMatcherInSameRoundTrueNullThenNull() {
-		when(roundMirror.isInSameRound(Mockito.any())).thenReturn(true);
-		assertThat(AbstractFieldDescription.computeFullyQualifiedNameMatcherInSameRound(roundMirror, executableElement,
-				null)).isNull();
-	}
-
-	@Test
 	public void testAsMatcherField() {
 		DefaultFieldDescription undertest = new DefaultFieldDescription(() -> provideMatchersAnnotatedElementMirror,
 				new FieldDescriptionMirror(() -> provideMatchersAnnotatedElementMirror, "field", "boolean",
