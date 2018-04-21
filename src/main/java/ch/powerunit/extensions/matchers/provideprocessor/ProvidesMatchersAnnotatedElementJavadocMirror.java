@@ -58,6 +58,12 @@ public abstract class ProvidesMatchersAnnotatedElementJavadocMirror extends Prov
 		return t -> String.format("%1$s%2$s\n", prefix, t);
 	}
 
+	protected String generateDefaultJavaDoc(Optional<String> moreDetails, Optional<String> param,
+			Optional<String> returnDescription, boolean withParam, boolean withParent) {
+		return generateJavaDoc(getDefaultDescriptionForDsl(), moreDetails, param, returnDescription, withParam,
+				withParent);
+	}
+
 	protected String generateJavaDoc(String description, Optional<String> moreDetails, Optional<String> param,
 			Optional<String> returnDescription, boolean withParam, boolean withParent) {
 		StringBuilder sb = new StringBuilder("/**\n * ").append(description).append(".\n")
@@ -71,6 +77,10 @@ public abstract class ProvidesMatchersAnnotatedElementJavadocMirror extends Prov
 		}
 		sb.append(returnDescription.map(asJavadocFormat(" * @return ")).orElse("")).append(" */\n");
 		return sb.toString();
+	}
+
+	private String getDefaultDescriptionForDsl() {
+		return "Start a DSL matcher for the " + getDefaultLinkForAnnotatedClass();
 	}
 
 	private static String extractParamCommentFromJavadoc(String docComment) {

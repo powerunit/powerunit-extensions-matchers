@@ -36,16 +36,24 @@ public abstract class ProvidesMatchersAnnotatedElementGenericMirror
 
 	public ProvidesMatchersAnnotatedElementGenericMirror(TypeElement typeElement, RoundMirror roundMirror) {
 		super(typeElement, roundMirror);
-		this.generic = typeElement.getTypeParameters().stream().map(t -> t.toString())
-				.collect(collectingAndThen(joining(","), r -> r.isEmpty() ? "" : ("<" + r + ">")));
-		this.fullGeneric = typeElement.getTypeParameters().stream()
-				.map(t -> t.toString() + " extends "
-						+ t.getBounds().stream().map(b -> b.toString()).collect(joining("&")))
-				.collect(collectingAndThen(joining(","), r -> r.isEmpty() ? "" : ("<" + r + ">")));
+		this.generic = parseGeneric(typeElement);
+		this.fullGeneric = parseFullGeneric(typeElement);
 		this.genericParent = getAddParentToGeneric(generic);
 		this.genericNoParent = getAddNoParentToGeneric(generic);
 		this.fullGenericParent = getAddParentToGeneric(fullGeneric);
 		this.simpleNameOfGeneratedInterfaceMatcher = simpleNameOfClassAnnotatedWithProvideMatcher + "Matcher";
+	}
+
+	private static String parseFullGeneric(TypeElement typeElement) {
+		return typeElement.getTypeParameters().stream()
+				.map(t -> t.toString() + " extends "
+						+ t.getBounds().stream().map(b -> b.toString()).collect(joining("&")))
+				.collect(collectingAndThen(joining(","), r -> r.isEmpty() ? "" : ("<" + r + ">")));
+	}
+
+	private static String parseGeneric(TypeElement typeElement) {
+		return typeElement.getTypeParameters().stream().map(t -> t.toString())
+				.collect(collectingAndThen(joining(","), r -> r.isEmpty() ? "" : ("<" + r + ">")));
 	}
 
 	public String getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() {
