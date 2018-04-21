@@ -88,10 +88,11 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 				.equals(typeElement.getSuperclass());
 		boolean hasParentInSameRound = roundMirror.isInSameRound(typeElement);
 		this.fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher = typeElement.getSuperclass().toString();
-		this.defaultReturnMethod = simpleNameOfClassAnnotatedWithProvideMatcher + "Matcher" + genericParent;
+		this.defaultReturnMethod = simpleNameOfClassAnnotatedWithProvideMatcher + "Matcher" + getGenericParent();
 		this.simpleNameOfGeneratedImplementationMatcher = simpleNameOfClassAnnotatedWithProvideMatcher + "MatcherImpl";
-		this.genericForChaining = genericParent.replaceAll("^<_PARENT", "<" + getFullyQualifiedNameOfGeneratedClass()
-				+ "." + simpleNameOfGeneratedInterfaceMatcher + genericNoParent);
+		this.genericForChaining = getGenericParent().replaceAll("^<_PARENT",
+				"<" + getFullyQualifiedNameOfGeneratedClass() + "." + simpleNameOfGeneratedInterfaceMatcher
+						+ getGenericNoParent());
 		this.fields = generateFields(typeElement, new ProvidesMatchersSubElementVisitor(roundMirror));
 		List<Supplier<DSLMethod>> tmp = new ArrayList<>(
 				Arrays.asList(this::generateDefaultDSLStarter, this::generateDefaultForChainingDSLStarter));
@@ -195,10 +196,10 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 				generateJavaDoc(getDslInterfaceDescription(), Optional.empty(), Optional.empty(), Optional.empty(),
 						true, true)))
 				.append("\n").append("  public static interface ").append(simpleNameOfGeneratedInterfaceMatcher)
-				.append(fullGenericParent).append(" extends org.hamcrest.Matcher<")
+				.append(getFullGenericParent()).append(" extends org.hamcrest.Matcher<")
 				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append(">,")
 				.append(simpleNameOfGeneratedInterfaceMatcher).append("BuildSyntaxicSugar ").append(generic).append(",")
-				.append(simpleNameOfGeneratedInterfaceMatcher).append("EndSyntaxicSugar ").append(genericParent)
+				.append(simpleNameOfGeneratedInterfaceMatcher).append("EndSyntaxicSugar ").append(getGenericParent())
 				.append(" {").append("\n");
 
 		sb.append(fields.stream().map(AbstractFieldDescription::getDslInterface).map(s -> addPrefix("    ", s))
@@ -272,7 +273,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 						Optional.empty(), Optional.empty(), Optional.empty(), true, true)))
 				.append("\n");
 		sb.append("  public static interface " + simpleNameOfGeneratedInterfaceMatcher + "EndSyntaxicSugar"
-				+ fullGenericParent + " extends org.hamcrest.Matcher<"
+				+ getFullGenericParent() + " extends org.hamcrest.Matcher<"
 				+ getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + "> {").append("\n");
 		sb.append(addPrefix("  ",
 				generateJavaDocWithoutParamNeitherParent("Method that return the parent builder",
@@ -312,7 +313,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	private String generatePrivateImplementation() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("  /* package protected */ static class ").append(simpleNameOfGeneratedImplementationMatcher)
-				.append(fullGenericParent).append(" extends org.hamcrest.TypeSafeDiagnosingMatcher<")
+				.append(getFullGenericParent()).append(" extends org.hamcrest.TypeSafeDiagnosingMatcher<")
 				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append("> implements ")
 				.append(getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + " {\n");
 		sb.append("    " + fields.stream().map(AbstractFieldDescription::asMatcherField).collect(joining("\n    ")))
@@ -410,9 +411,9 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 				fullGeneric + " " + getFullyQualifiedNameOfGeneratedClass() + "."
 						+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " " + methodShortClassName
 						+ "With",
-				hasParent ? ("return new " + simpleNameOfGeneratedImplementationMatcher + genericNoParent
+				hasParent ? ("return new " + simpleNameOfGeneratedImplementationMatcher + getGenericNoParent()
 						+ "(org.hamcrest.Matchers.anything());")
-						: ("return new " + simpleNameOfGeneratedImplementationMatcher + genericNoParent + "();"));
+						: ("return new " + simpleNameOfGeneratedImplementationMatcher + getGenericNoParent() + "();"));
 	}
 
 	public DSLMethod generateDefaultForChainingDSLStarter() {
@@ -422,14 +423,14 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 								"The returned builder (which is also a Matcher), at this point accepts any object that is a "
 										+ getDefaultLinkForAnnotatedClass() + "."),
 						Optional.of("parentBuilder the parentBuilder."), Optional.of("the DSL matcher"), true, true),
-				fullGenericParent + " " + getFullyQualifiedNameOfGeneratedClass() + "."
+				getFullGenericParent() + " " + getFullyQualifiedNameOfGeneratedClass() + "."
 						+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + " " + methodShortClassName
 						+ "WithParent",
 				new String[] { "_PARENT", "parentBuilder" },
 				hasParent
-						? ("return new " + simpleNameOfGeneratedImplementationMatcher + genericParent
+						? ("return new " + simpleNameOfGeneratedImplementationMatcher + getGenericParent()
 								+ "(org.hamcrest.Matchers.anything(),parentBuilder);")
-						: ("return new " + simpleNameOfGeneratedImplementationMatcher + genericParent
+						: ("return new " + simpleNameOfGeneratedImplementationMatcher + getGenericParent()
 								+ "(parentBuilder);"));
 	}
 
@@ -454,7 +455,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 				false);
 		List<String> lines = new ArrayList<>();
 		lines.add(getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " m=new "
-				+ simpleNameOfGeneratedImplementationMatcher + genericNoParent + "();");
+				+ simpleNameOfGeneratedImplementationMatcher + getGenericNoParent() + "();");
 		lines.addAll(fields.stream().map(f -> "    " + f.getFieldCopy("m", "other") + ";").collect(toList()));
 		lines.add("return m;");
 		return new DSLMethod(javadoc,
@@ -480,7 +481,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 				false);
 		List<String> lines = new ArrayList<>();
 		lines.add(getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " m=new "
-				+ simpleNameOfGeneratedImplementationMatcher + genericNoParent + "(" + argumentForParentBuilder + ");");
+				+ simpleNameOfGeneratedImplementationMatcher + getGenericNoParent() + "(" + argumentForParentBuilder
+				+ ");");
 		lines.addAll(fields.stream().map(f -> "    " + f.getFieldCopy("m", "other") + ";").collect(toList()));
 		lines.add("return m;");
 		return new DSLMethod(javadoc,
@@ -499,8 +501,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 						+ parentMirror.simpleNameOfGeneratedInterfaceMatcher + genericForChaining + " "
 						+ methodShortClassName + "WithParent",
 				new String[] {
-						simpleNameOfGeneratedImplementationMatcher + genericNoParent + " m=new "
-								+ simpleNameOfGeneratedImplementationMatcher + genericNoParent
+						simpleNameOfGeneratedImplementationMatcher + getGenericNoParent() + " m=new "
+								+ simpleNameOfGeneratedImplementationMatcher + getGenericNoParent()
 								+ "(org.hamcrest.Matchers.anything());",
 						parentMirror.getFullyQualifiedNameOfGeneratedClass() + "."
 								+ parentMirror.simpleNameOfGeneratedInterfaceMatcher + " tmp = "

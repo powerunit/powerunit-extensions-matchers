@@ -29,18 +29,12 @@ public abstract class ProvidesMatchersAnnotatedElementGenericMirror
 
 	protected final String generic;
 	protected final String fullGeneric;
-	protected final String genericParent;
-	protected final String genericNoParent;
-	protected final String fullGenericParent;
 	protected final String simpleNameOfGeneratedInterfaceMatcher;
 
 	public ProvidesMatchersAnnotatedElementGenericMirror(TypeElement typeElement, RoundMirror roundMirror) {
 		super(typeElement, roundMirror);
 		this.generic = parseGeneric(typeElement);
 		this.fullGeneric = parseFullGeneric(typeElement);
-		this.genericParent = getAddParentToGeneric(generic);
-		this.genericNoParent = getAddNoParentToGeneric(generic);
-		this.fullGenericParent = getAddParentToGeneric(fullGeneric);
 		this.simpleNameOfGeneratedInterfaceMatcher = simpleNameOfClassAnnotatedWithProvideMatcher + "Matcher";
 	}
 
@@ -57,11 +51,11 @@ public abstract class ProvidesMatchersAnnotatedElementGenericMirror
 	}
 
 	public String getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() {
-		return simpleNameOfGeneratedInterfaceMatcher + " " + genericParent;
+		return simpleNameOfGeneratedInterfaceMatcher + " " + getGenericParent();
 	}
 
 	public String getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() {
-		return simpleNameOfGeneratedInterfaceMatcher + " " + genericNoParent;
+		return simpleNameOfGeneratedInterfaceMatcher + " " + getGenericNoParent();
 	}
 
 	public String getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() {
@@ -90,6 +84,18 @@ public abstract class ProvidesMatchersAnnotatedElementGenericMirror
 
 	public String getGeneric() {
 		return generic;
+	}
+
+	public String getGenericParent() {
+		return getAddParentToGeneric(generic);
+	}
+
+	public String getGenericNoParent() {
+		return getAddNoParentToGeneric(generic);
+	}
+
+	public String getFullGenericParent() {
+		return getAddParentToGeneric(fullGeneric);
 	}
 
 }
