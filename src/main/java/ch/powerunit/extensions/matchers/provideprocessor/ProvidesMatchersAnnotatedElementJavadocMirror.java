@@ -41,7 +41,7 @@ public class ProvidesMatchersAnnotatedElementJavadocMirror extends ProvideMatche
 		this.fullyQualifiedNameOfClassAnnotatedWithProvideMatcher = typeElement.getQualifiedName().toString();
 		this.simpleNameOfClassAnnotatedWithProvideMatcher = typeElement.getSimpleName().toString();
 		this.paramJavadoc = extractParamCommentFromJavadoc(
-				roundMirror.getProcessingEnv().getElementUtils().getDocComment(typeElement)).replaceAll("\\R", "\n");
+				roundMirror.getProcessingEnv().getElementUtils().getDocComment(typeElement));
 	}
 
 	protected String getDefaultLinkForAnnotatedClass() {
@@ -90,7 +90,7 @@ public class ProvidesMatchersAnnotatedElementJavadocMirror extends ProvideMatche
 				sb.append(" *").append(line).append("\n");
 			}
 		}
-		return sb.toString();
+		return sb.toString().replaceAll("\\R", "\n");
 	}
 
 	public String getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher() {
