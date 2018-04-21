@@ -1,4 +1,4 @@
-package ch.powerunit.extensions.matchers.provideprocessor;
+package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
 import static org.mockito.Mockito.when;
 
@@ -16,11 +16,10 @@ public class FieldDSLMethodTest implements TestSuite {
 	public final TestRule rules = mockitoRule().around(before(this::prepareMock));
 
 	@Mock
-	private FieldDescription fieldDescription;
+	private AbstractFieldDescription fieldDescription;
 
 	private void prepareMock() {
 		when(fieldDescription.getFieldName()).thenReturn("fn");
-		when(fieldDescription.getMethodFieldName()).thenReturn("mfn");
 		when(fieldDescription.getFieldAccessor()).thenReturn("fa");
 		when(fieldDescription.getFullyQualifiedNameEnclosingClassOfField()).thenReturn("fqnecof");
 		when(fieldDescription.getFieldType()).thenReturn("ft");

@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
  */
-package ch.powerunit.extensions.matchers.provideprocessor;
+package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -35,7 +35,7 @@ public class FieldDSLMethod {
 		this.impl = impl;
 	}
 
-	public static BuilderDeclaration of(FieldDescription fieldDescription) {
+	public static BuilderDeclaration of(AbstractFieldDescription fieldDescription) {
 		return new Builder(fieldDescription);
 	}
 
@@ -81,11 +81,11 @@ public class FieldDSLMethod {
 	}
 
 	public static class Builder implements BuilderDeclaration, BuilderJavadoc, BuilderImplementation {
-		private final FieldDescription fieldDescription;
+		private final AbstractFieldDescription fieldDescription;
 		private String declaration;
 		private String javadoc;
 
-		private Builder(FieldDescription fieldDescription) {
+		private Builder(AbstractFieldDescription fieldDescription) {
 			this.fieldDescription = fieldDescription;
 		}
 
@@ -121,7 +121,7 @@ public class FieldDSLMethod {
 
 	}
 
-	public static String getJavaDocFor(FieldDescription fieldDescription, Optional<String> addToDescription,
+	public static String getJavaDocFor(AbstractFieldDescription fieldDescription, Optional<String> addToDescription,
 			Optional<String> param, Optional<String> see) {
 		String linkToAccessor = "{@link " + fieldDescription.getFullyQualifiedNameEnclosingClassOfField() + "#"
 				+ fieldDescription.getFieldAccessor() + " This field is accessed by using this approach}.";
@@ -151,7 +151,7 @@ public class FieldDSLMethod {
 		return String.format("%1$s\n%2$s;\n", javadoc.replaceAll("\\R", "\n"), declaration);
 	}
 
-	public static String buildDefaultDsl(FieldDescription fieldDescription, String javadoc, String declaration,
+	public static String buildDefaultDsl(AbstractFieldDescription fieldDescription, String javadoc, String declaration,
 			String innerMatcher) {
 		return String.format("%1$s\ndefault %2$s{\n  return %3$s(%4$s);\n}", javadoc.replaceAll("\\R", "\n"),
 				declaration, fieldDescription.getFieldName(), innerMatcher);

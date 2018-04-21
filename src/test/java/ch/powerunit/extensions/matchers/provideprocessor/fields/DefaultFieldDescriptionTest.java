@@ -1,4 +1,4 @@
-package ch.powerunit.extensions.matchers.provideprocessor;
+package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
 import static org.mockito.Mockito.when;
 
@@ -27,8 +27,10 @@ import ch.powerunit.Test;
 import ch.powerunit.TestRule;
 import ch.powerunit.TestSuite;
 import ch.powerunit.extensions.matchers.AddToMatcher;
+import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
+import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
 
-public class FieldDescriptionTest implements TestSuite {
+public class DefaultFieldDescriptionTest implements TestSuite {
 	@Rule
 	public final TestRule rules = mockitoRule().around(before(this::prepareMock));
 
@@ -101,7 +103,7 @@ public class FieldDescriptionTest implements TestSuite {
 
 	@Test
 	public void testComputeGenericInformationIsNotDeclaredTypeThenEmptyString() {
-		assertThatFunction(FieldDescription::computeGenericInformation, fieldTypeMirrorMainInterface).is("");
+		assertThatFunction(AbstractFieldDescription::computeGenericInformation, fieldTypeMirrorMainInterface).is("");
 	}
 
 	@Test
@@ -110,72 +112,63 @@ public class FieldDescriptionTest implements TestSuite {
 		when(fieldTypeMirror2.toString()).thenReturn("Y");
 		when(fieldTypeMirrorAsDeclaredType.getTypeArguments())
 				.thenReturn((List) Arrays.asList(fieldTypeMirror1, fieldTypeMirror2));
-		assertThatFunction(FieldDescription::computeGenericInformation, fieldTypeMirrorAsDeclaredType).is("X,Y");
+		assertThatFunction(AbstractFieldDescription::computeGenericInformation, fieldTypeMirrorAsDeclaredType)
+				.is("X,Y");
 	}
 
 	@Test
 	public void testAsDescribeTo() {
-		FieldDescription undertest = new FieldDescription(() -> provideMatchersAnnotatedElementMirror, "field",
-				"boolean", executableElement);
+		DefaultFieldDescription undertest = new DefaultFieldDescription(() -> provideMatchersAnnotatedElementMirror,
+				new FieldDescriptionMirror(() -> provideMatchersAnnotatedElementMirror, "field", "boolean",
+						executableElement));
 		assertThat(undertest.asDescribeTo())
 				.is("description.appendText(\"[\").appendDescriptionOf(field).appendText(\"]\\n\");");
 	}
 
 	@Test
 	public void testAsMatchesSafely() {
-		FieldDescription undertest = new FieldDescription(() -> provideMatchersAnnotatedElementMirror, "field",
-				"boolean", executableElement);
+		DefaultFieldDescription undertest = new DefaultFieldDescription(() -> provideMatchersAnnotatedElementMirror,
+				new FieldDescriptionMirror(() -> provideMatchersAnnotatedElementMirror, "field", "boolean",
+						executableElement));
 		assertThat(undertest.asMatchesSafely()).is(
 				"if(!field.matches(actual)) {\n  mismatchDescription.appendText(\"[\"); field.describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");\n  result=false;\n}");
 	}
 
 	@Test
 	public void testGetFieldCopy() {
-		FieldDescription undertest = new FieldDescription(() -> provideMatchersAnnotatedElementMirror, "field",
-				"java.lang.String", executableElement);
+		DefaultFieldDescription undertest = new DefaultFieldDescription(() -> provideMatchersAnnotatedElementMirror,
+				new FieldDescriptionMirror(() -> provideMatchersAnnotatedElementMirror, "field", "boolean",
+						executableElement));
 		assertThat(undertest.getFieldCopy("a", "b")).is("a.field(org.hamcrest.Matchers.is(b.field()))");
 	}
 
 	@Test
 	public void testGetMatcherForField() {
-		FieldDescription undertest = new FieldDescription(() -> provideMatchersAnnotatedElementMirror, "field",
-				"boolean", executableElement);
+		DefaultFieldDescription undertest = new DefaultFieldDescription(() -> provideMatchersAnnotatedElementMirror,
+				new FieldDescriptionMirror(() -> provideMatchersAnnotatedElementMirror, "field", "boolean",
+						executableElement));
 		assertThat(undertest.getMatcherForField()).is(
 				"private static class FieldMatcher extends org.hamcrest.FeatureMatcher<fqn.sn,boolean> {\n  public FieldMatcher(org.hamcrest.Matcher<? super boolean> matcher) {\n    super(matcher,\"field\",\"field\");\n  }\n  protected boolean featureValueOf(fqn.sn actual) {\n    return actual.field();\n  }\n}\n");
 	}
 
 	@Test
 	public void testComputeFullyQualifiedNameMatcherInSameRoundFalseThenNull() {
-		assertThat(FieldDescription.computeFullyQualifiedNameMatcherInSameRound(roundMirror, executableElement,
+		assertThat(AbstractFieldDescription.computeFullyQualifiedNameMatcherInSameRound(roundMirror, executableElement,
 				typeElement)).isNull();
 	}
 
 	@Test
 	public void testComputeFullyQualifiedNameMatcherInSameRoundTrueNullThenNull() {
 		when(roundMirror.isInSameRound(Mockito.any())).thenReturn(true);
-		assertThat(FieldDescription.computeFullyQualifiedNameMatcherInSameRound(roundMirror, executableElement, null))
-				.isNull();
-	}
-
-	@Test
-	public void testGetSameValueMatcherFor() {
-		FieldDescription undertest = new FieldDescription(() -> provideMatchersAnnotatedElementMirror, "field",
-				"java.lang.String", executableElement);
-		assertThat(undertest.getSameValueMatcherFor("target")).is("null.fieldWithSameValue(target)");
-	}
-
-	@Test
-	public void testGetFieldCopySameRound() {
-		FieldDescription undertest = new FieldDescription(() -> provideMatchersAnnotatedElementMirror, "field",
-				"java.lang.String", executableElement);
-		assertThat(undertest.getFieldCopySameRound("rhs", "lhs")).is(
-				"rhs.field(lhs.field()==null?org.hamcrest.Matchers.nullValue():null.fieldWithSameValue(lhs.field()))");
+		assertThat(AbstractFieldDescription.computeFullyQualifiedNameMatcherInSameRound(roundMirror, executableElement,
+				null)).isNull();
 	}
 
 	@Test
 	public void testAsMatcherField() {
-		FieldDescription undertest = new FieldDescription(() -> provideMatchersAnnotatedElementMirror, "field",
-				"java.lang.String", executableElement);
+		DefaultFieldDescription undertest = new DefaultFieldDescription(() -> provideMatchersAnnotatedElementMirror,
+				new FieldDescriptionMirror(() -> provideMatchersAnnotatedElementMirror, "field", "boolean",
+						executableElement));
 		assertThat(undertest.asMatcherField())
 				.is("private FieldMatcher field = new FieldMatcher(org.hamcrest.Matchers.anything());");
 	}
