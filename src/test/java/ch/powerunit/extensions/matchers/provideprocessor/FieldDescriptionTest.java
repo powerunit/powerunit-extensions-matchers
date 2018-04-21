@@ -130,22 +130,6 @@ public class FieldDescriptionTest implements TestSuite {
 	}
 
 	@Test
-	public void testGetDslForDefault() {
-		FieldDescription undertest = new FieldDescription(() -> provideMatchersAnnotatedElementMirror, "field",
-				"boolean", executableElement);
-		assertThat(undertest.getDslForDefault()).is(
-				"/**\n * Add a validation on the field `field`.\n * <p>\n *\n * <i>{@link fqn.sn#field() This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @param matcher a Matcher on the field.\n * @return the DSL to continue the construction of the matcher.\n * @see org.hamcrest.Matchers The main class from hamcrest that provides default matchers.\n */\nnull field(org.hamcrest.Matcher<? super boolean> matcher);\n\n/**\n * Add a validation on the field `field`.\n * <p>\n *\n * <i>{@link fqn.sn#field() This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @param value an expected value for the field, which will be compared using the is matcher.\n * @return the DSL to continue the construction of the matcher.\n * @see org.hamcrest.Matchers#is(java.lang.Object)\n */\ndefault null field(boolean value){\n  return field(org.hamcrest.Matchers.is(value));\n}\n/**\n * Add a validation on the field `field` by converting the received field before validat it.\n * <p>\n *\n * <i>{@link fqn.sn#field() This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @param converter a function to convert the field.\n * @param matcher a matcher on the resulting.\n * @param <_TARGETFIELD> The type which this field must be converter.\n * @return the DSL to continue the construction of the matcher.\n */\ndefault <_TARGETFIELD> null fieldAs(java.util.function.Function<boolean,_TARGETFIELD> converter,org.hamcrest.Matcher<? super _TARGETFIELD> matcher){\n  return field(asFeatureMatcher(\" <field is converted> \",converter,matcher));\n}\n");
-	}
-
-	@Test
-	public void testGetDslForString() {
-		FieldDescription undertest = new FieldDescription(() -> provideMatchersAnnotatedElementMirror, "field",
-				"java.lang.String", executableElement);
-		assertThat(undertest.getDslForString()).is(
-				"/**\n * Add a validation on the field `field` that the string contains another one.\n * <p>\n *\n * <i>{@link fqn.sn#field() This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @param other the string is contains in the other one.\n * @return the DSL to continue the construction of the matcher.\n * @see org.hamcrest.Matchers#containsString(java.lang.String)\n */\ndefault null fieldContainsString(String other){\n  return field(org.hamcrest.Matchers.containsString(other));\n}/**\n * Add a validation on the field `field` that the string starts with another one.\n * <p>\n *\n * <i>{@link fqn.sn#field() This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @param other the string to use to compare.\n * @return the DSL to continue the construction of the matcher.\n * @see org.hamcrest.Matchers#startsWith(java.lang.String)\n */\ndefault null fieldStartsWith(String other){\n  return field(org.hamcrest.Matchers.startsWith(other));\n}/**\n * Add a validation on the field `field` that the string ends with another one.\n * <p>\n *\n * <i>{@link fqn.sn#field() This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @param other the string to use to compare.\n * @return the DSL to continue the construction of the matcher.\n * @see org.hamcrest.Matchers#endsWith(java.lang.String)\n */\ndefault null fieldEndsWith(String other){\n  return field(org.hamcrest.Matchers.endsWith(other));\n}");
-	}
-
-	@Test
 	public void testGetFieldCopy() {
 		FieldDescription undertest = new FieldDescription(() -> provideMatchersAnnotatedElementMirror, "field",
 				"java.lang.String", executableElement);
@@ -171,31 +155,6 @@ public class FieldDescriptionTest implements TestSuite {
 		when(roundMirror.isInSameRound(Mockito.any())).thenReturn(true);
 		assertThat(FieldDescription.computeFullyQualifiedNameMatcherInSameRound(roundMirror, executableElement, null))
 				.isNull();
-	}
-
-	@Test
-	public void testBuildImplementationOneLine() {
-		assertThatBiFunction(FieldDescription::buildImplementation, "name", "ligne1")
-				.is("@Override\npublic name {\n  ligne1\n}\n");
-	}
-
-	@Test
-	public void testBuildImplementationTwoLine() {
-		assertThatBiFunction(FieldDescription::buildImplementation, "name", "ligne1\nligne2")
-				.is("@Override\npublic name {\n  ligne1\n  ligne2\n}\n");
-	}
-
-	@Test
-	public void testBuildDsl() {
-		assertThatBiFunction(FieldDescription::buildDsl, "javadoc", "declaration").is("javadoc\ndeclaration;\n");
-	}
-
-	@Test
-	public void testBuildDefaultDsl() {
-		FieldDescription undertest = new FieldDescription(() -> provideMatchersAnnotatedElementMirror, "field",
-				"boolean", executableElement);
-		assertThat(undertest.buildDefaultDsl("javadoc", "declaration", "inner"))
-				.is("javadoc\ndefault declaration{\n  return field(inner);\n}");
 	}
 
 	@Test
