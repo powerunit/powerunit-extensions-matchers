@@ -101,7 +101,7 @@ public abstract class AbstractFieldDescription {
 		tmp.addAll(getFieldDslMethodFor());
 		AddToMatcher addToMatchers[] = mirror.getFieldElement().getAnnotationsByType(AddToMatcher.class);
 		Arrays.stream(addToMatchers)
-				.map(a -> FieldDSLMethod.of(this).withDeclaration(a.suffix(), a.argument()).withDefaultJavaDoc()
+				.map(a -> FieldDSLMethodBuilder.of(this).withDeclaration(a.suffix(), a.argument()).withDefaultJavaDoc()
 						.havingImplementation(Arrays.stream(a.body()).collect(joining("\n")) + "\nreturn this;"))
 				.filter(Objects::nonNull).forEach(tmp::add);
 		this.dsl = Collections.unmodifiableList(tmp);
@@ -123,23 +123,22 @@ public abstract class AbstractFieldDescription {
 		StringBuilder sb = new StringBuilder();
 		sb.append("private static class " + methodFieldName + "Matcher" + enclosingClassOfFieldFullGeneric
 				+ " extends org.hamcrest.FeatureMatcher<" + fullyQualifiedNameEnclosingClassOfField
-				+ enclosingClassOfFieldGeneric + "," + mirror.getFieldType() + "> {\n");
-		sb.append("  public " + methodFieldName + "Matcher(org.hamcrest.Matcher<? super " + mirror.getFieldType()
+				+ enclosingClassOfFieldGeneric + "," + getFieldType() + "> {\n");
+		sb.append("  public " + methodFieldName + "Matcher(org.hamcrest.Matcher<? super " + getFieldType()
 				+ "> matcher) {\n");
-		sb.append("    super(matcher,\"" + mirror.getFieldName() + "\",\"" + mirror.getFieldName() + "\");\n");
+		sb.append("    super(matcher,\"" + getFieldName() + "\",\"" + getFieldName() + "\");\n");
 		sb.append("  }\n");
 
-		sb.append("  protected " + mirror.getFieldType() + " featureValueOf(" + fullyQualifiedNameEnclosingClassOfField
+		sb.append("  protected " + getFieldType() + " featureValueOf(" + fullyQualifiedNameEnclosingClassOfField
 				+ enclosingClassOfFieldGeneric + " actual) {\n");
-		sb.append("    return actual." + mirror.getFieldAccessor() + ";\n");
+		sb.append("    return actual." + getFieldAccessor() + ";\n");
 		sb.append("  }\n");
 		sb.append("}\n");
 		return sb.toString();
 	}
 
 	public String getFieldCopyDefault(String lhs, String rhs) {
-		return lhs + "." + mirror.getFieldName() + "(" + MATCHERS + ".is(" + rhs + "." + mirror.getFieldAccessor()
-				+ "))";
+		return lhs + "." + getFieldName() + "(" + MATCHERS + ".is(" + rhs + "." + getFieldAccessor() + "))";
 	}
 
 	public String getSameValueMatcherFor(String target) {
@@ -149,9 +148,9 @@ public abstract class AbstractFieldDescription {
 	}
 
 	public String getFieldCopySameRound(String lhs, String rhs) {
-		String fieldAccessor = mirror.getFieldAccessor();
-		return lhs + "." + mirror.getFieldName() + "(" + rhs + "." + fieldAccessor + "==null?" + MATCHERS
-				+ ".nullValue():" + getSameValueMatcherFor(rhs + "." + fieldAccessor) + ")";
+		String fieldAccessor = getFieldAccessor();
+		return lhs + "." + getFieldName() + "(" + rhs + "." + fieldAccessor + "==null?" + MATCHERS + ".nullValue():"
+				+ getSameValueMatcherFor(rhs + "." + fieldAccessor) + ")";
 	}
 
 	public String generateMatcherBuilderReferenceFor(String generic) {
@@ -161,12 +160,12 @@ public abstract class AbstractFieldDescription {
 	}
 
 	public String getFieldCopyForList(String lhs, String rhs) {
-		String fieldAccessor = mirror.getFieldAccessor();
-		return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + mirror.getFieldName() + "(" + MATCHERS
+		String fieldAccessor = getFieldAccessor();
+		return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + getFieldName() + "(" + MATCHERS
 				+ ".nullValue()); } else if (" + rhs + "." + fieldAccessor + ".isEmpty()) {" + lhs + "."
-				+ mirror.getFieldName() + "IsEmptyIterable(); } else {" + lhs + "." + mirror.getFieldName()
-				+ "Contains(" + rhs + "." + fieldAccessor + ".stream().map("
-				+ generateMatcherBuilderReferenceFor(generic) + ").collect(java.util.stream.Collectors.toList())); }";
+				+ getFieldName() + "IsEmptyIterable(); } else {" + lhs + "." + getFieldName() + "Contains(" + rhs + "."
+				+ fieldAccessor + ".stream().map(" + generateMatcherBuilderReferenceFor(generic)
+				+ ").collect(java.util.stream.Collectors.toList())); }";
 	}
 
 	public String getFieldCopy(String lhs, String rhs) {
@@ -180,20 +179,17 @@ public abstract class AbstractFieldDescription {
 	public String asMatchesSafely() {
 		return String.format(
 				"if(!%1$s.matches(actual)) {\n  mismatchDescription.appendText(\"[\"); %1$s.describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");\n  result=false;\n}",
-				mirror.getFieldName());
+				getFieldName());
 	}
 
 	public String asDescribeTo() {
-		return "description.appendText(\"[\").appendDescriptionOf(" + mirror.getFieldName() + ").appendText(\"]\\n\");";
+		return "description.appendText(\"[\").appendDescriptionOf(" + getFieldName() + ").appendText(\"]\\n\");";
 	}
 
 	public String asMatcherField() {
-		return String
-				.format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));",
-						mirror.getMethodFieldName(), mirror
-								.getFieldName(),
-						MATCHERS, ignore ? ("\"This field is ignored \"+"
-								+ CommonUtils.toJavaSyntax(getDescriptionForIgnoreIfApplicable())) : "");
+		return String.format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));",
+				mirror.getMethodFieldName(), getFieldName(), MATCHERS, ignore ? ("\"This field is ignored \"+"
+						+ CommonUtils.toJavaSyntax(getDescriptionForIgnoreIfApplicable())) : "");
 	}
 
 	public boolean isIgnore() {
@@ -205,7 +201,7 @@ public abstract class AbstractFieldDescription {
 	}
 
 	public String getDescriptionForIgnoreIfApplicable() {
-		return Optional.ofNullable(mirror.getFieldElement().getAnnotation(IgnoreInMatcher.class)).map(i -> i.comments())
+		return Optional.ofNullable(getFieldElement().getAnnotation(IgnoreInMatcher.class)).map(i -> i.comments())
 				.orElse("");
 	}
 
@@ -236,8 +232,8 @@ public abstract class AbstractFieldDescription {
 	public GeneratedMatcherField asGeneratedMatcherField() {
 		GeneratedMatcherField gmf = new GeneratedMatcherField();
 		gmf.setFieldIsIgnored(ignore);
-		gmf.setFieldName(mirror.getFieldName());
-		gmf.setFieldAccessor(mirror.getFieldAccessor());
+		gmf.setFieldName(getFieldName());
+		gmf.setFieldAccessor(getFieldAccessor());
 		gmf.setGenericDetails(generic);
 		return gmf;
 	}

@@ -36,18 +36,18 @@ public class DefaultFieldDescription extends AbstractFieldDescription {
 	protected Collection<? extends FieldDSLMethod> getFieldDslMethodFor() {
 		List<FieldDSLMethod> tmp = new ArrayList<>();
 
-		tmp.add(FieldDSLMethod.of(this)
+		tmp.add(FieldDSLMethodBuilder.of(this)
 				.withDeclaration("org.hamcrest.Matcher<? super " + mirror.getFieldType() + "> matcher")
 				.withJavaDoc("", "matcher a Matcher on the field", SEE_TEXT_FOR_HAMCREST_MATCHER)
 				.havingImplementation(mirror.getFieldName() + "= new " + mirror.getMethodFieldName()
 						+ "Matcher(matcher);\nreturn this;"));
 
-		tmp.add(FieldDSLMethod.of(this).withDeclaration(mirror.getFieldType() + " value")
+		tmp.add(FieldDSLMethodBuilder.of(this).withDeclaration(mirror.getFieldType() + " value")
 				.withJavaDoc("", "value an expected value for the field, which will be compared using the is matcher",
 						SEE_TEXT_FOR_IS_MATCHER)
 				.havingDefault(MATCHERS + ".is(value)"));
 
-		tmp.add(FieldDSLMethod.of(this)
+		tmp.add(FieldDSLMethodBuilder.of(this)
 				.withGenericDeclaration("<_TARGETFIELD>", "As",
 						"java.util.function.Function<" + mirror.getFieldType()
 								+ ",_TARGETFIELD> converter,org.hamcrest.Matcher<? super _TARGETFIELD> matcher")
@@ -60,7 +60,7 @@ public class DefaultFieldDescription extends AbstractFieldDescription {
 			String name = mirror.getFieldTypeAsTypeElement().getSimpleName().toString();
 			String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
 
-			tmp.add(FieldDSLMethod.of(this)
+			tmp.add(FieldDSLMethodBuilder.of(this)
 					.withExplicitDeclaration(fullyQualifiedNameMatcherInSameRound + "." + name + "Matcher" + "<"
 							+ defaultReturnMethod + "> " + mirror.getFieldName() + "With()")
 					.withJavaDoc("by starting a matcher for this field")

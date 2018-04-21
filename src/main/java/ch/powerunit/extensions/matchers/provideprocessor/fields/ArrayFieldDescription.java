@@ -35,7 +35,7 @@ public class ArrayFieldDescription extends DefaultFieldDescription {
 	@Override
 	protected Collection<? extends FieldDSLMethod> getFieldDslMethodFor() {
 		List<FieldDSLMethod> tmp = new ArrayList<>(super.getFieldDslMethodFor());
-		tmp.add(FieldDSLMethod.of(this).withDeclaration("IsEmpty", "").withJavaDoc("that the array is empty")
+		tmp.add(FieldDSLMethodBuilder.of(this).withDeclaration("IsEmpty", "").withJavaDoc("that the array is empty")
 				.havingDefault("(org.hamcrest.Matcher)" + MATCHERS + ".emptyArray()"));
 		return tmp;
 	}

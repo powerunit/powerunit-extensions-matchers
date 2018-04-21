@@ -19,143 +19,15 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
-import java.util.Arrays;
-import java.util.Optional;
-
 public class FieldDSLMethod {
-
-	private static final String MATCHERS = "org.hamcrest.Matchers";
 
 	private final String dsl;
 
 	private final String impl;
 
-	private FieldDSLMethod(String dsl, String impl) {
+	public FieldDSLMethod(String dsl, String impl) {
 		this.dsl = dsl;
 		this.impl = impl;
-	}
-
-	public static BuilderDeclaration of(AbstractFieldDescription fieldDescription) {
-		return new Builder(fieldDescription);
-	}
-
-	public static interface BuilderDeclaration {
-		default BuilderJavadoc withDeclaration(String postFix, String arguments) {
-			return withGenericDeclaration("", postFix, arguments);
-		}
-
-		BuilderJavadoc withExplicitDeclaration(String declaration);
-
-		default BuilderJavadoc withDeclaration(String arguments) {
-			return withDeclaration("", arguments);
-		}
-
-		BuilderJavadoc withGenericDeclaration(String generic, String postFix, String arguments);
-	}
-
-	public static interface BuilderJavadoc {
-		BuilderImplementation withJavaDoc(Optional<String> addToDescription, Optional<String> param,
-				Optional<String> see);
-
-		default BuilderImplementation withDefaultJavaDoc() {
-			return withJavaDoc(Optional.empty(), Optional.empty(), Optional.empty());
-		}
-
-		default BuilderImplementation withJavaDoc(String addToDescription, String param, String see) {
-			return withJavaDoc(Optional.of(addToDescription), Optional.of(param), Optional.of(see));
-		}
-
-		default BuilderImplementation withJavaDoc(String addToDescription, String param) {
-			return withJavaDoc(Optional.of(addToDescription), Optional.of(param), Optional.empty());
-		}
-
-		default BuilderImplementation withJavaDoc(String addToDescription) {
-			return withJavaDoc(Optional.of(addToDescription), Optional.empty(), Optional.empty());
-		}
-	}
-
-	public static interface BuilderImplementation {
-		FieldDSLMethod havingDefault(String innerMatcher);
-
-		FieldDSLMethod havingImplementation(String body);
-	}
-
-	public static class Builder implements BuilderDeclaration, BuilderJavadoc, BuilderImplementation {
-		private final AbstractFieldDescription fieldDescription;
-		private String declaration;
-		private String javadoc;
-
-		private Builder(AbstractFieldDescription fieldDescription) {
-			this.fieldDescription = fieldDescription;
-		}
-
-		@Override
-		public BuilderImplementation withJavaDoc(Optional<String> addToDescription, Optional<String> param,
-				Optional<String> see) {
-			javadoc = getJavaDocFor(fieldDescription, addToDescription, param, see);
-			return this;
-		}
-
-		@Override
-		public FieldDSLMethod havingDefault(String innerMatcher) {
-			return new FieldDSLMethod(buildDefaultDsl(fieldDescription, javadoc, declaration, innerMatcher), "");
-		}
-
-		@Override
-		public FieldDSLMethod havingImplementation(String body) {
-			return new FieldDSLMethod(buildDsl(javadoc, declaration), buildImplementation(declaration, body));
-		}
-
-		@Override
-		public BuilderJavadoc withExplicitDeclaration(String declaration) {
-			this.declaration = declaration;
-			return this;
-		}
-
-		@Override
-		public BuilderJavadoc withGenericDeclaration(String generic, String postFix, String arguments) {
-			this.declaration = generic + " " + String.format("%1$s %2$s%3$s(%4$s)",
-					fieldDescription.getDefaultReturnMethod(), fieldDescription.getFieldName(), postFix, arguments);
-			return this;
-		}
-
-	}
-
-	public static String getJavaDocFor(AbstractFieldDescription fieldDescription, Optional<String> addToDescription,
-			Optional<String> param, Optional<String> see) {
-		String linkToAccessor = "{@link " + fieldDescription.getFullyQualifiedNameEnclosingClassOfField() + "#"
-				+ fieldDescription.getFieldAccessor() + " This field is accessed by using this approach}.";
-		StringBuilder sb = new StringBuilder();
-		sb.append("/**\n * Add a validation on the field `").append(fieldDescription.getFieldName()).append("`");
-		addToDescription.ifPresent(t -> sb.append(" ").append(t));
-		sb.append(".\n * <p>").append("\n *\n * <i>").append(linkToAccessor).append("</i>\n * <p>\n");
-		sb.append(
-				" * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n");
-		sb.append(
-				" * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link "
-						+ MATCHERS + "#both(org.hamcrest.Matcher)}.\n");
-		sb.append(" *\n");
-		param.ifPresent(
-				t -> Arrays.stream(t.split("\n")).forEach(l -> sb.append(" * @param ").append(l).append(".\n")));
-		sb.append(" * @return the DSL to continue the construction of the matcher.\n");
-		see.ifPresent(t -> sb.append(" * @see ").append(t).append("\n"));
-		sb.append(" */");
-		return sb.toString();
-	}
-
-	public static String buildImplementation(String declaration, String body) {
-		return String.format("@Override\npublic %1$s {\n  %2$s\n}\n", declaration, body.replaceAll("\\R", "\n" + "  "));
-	}
-
-	public static String buildDsl(String javadoc, String declaration) {
-		return String.format("%1$s\n%2$s;\n", javadoc.replaceAll("\\R", "\n"), declaration);
-	}
-
-	public static String buildDefaultDsl(AbstractFieldDescription fieldDescription, String javadoc, String declaration,
-			String innerMatcher) {
-		return String.format("%1$s\ndefault %2$s{\n  return %3$s(%4$s);\n}", javadoc.replaceAll("\\R", "\n"),
-				declaration, fieldDescription.getFieldName(), innerMatcher);
-
 	}
 
 	public String asDSLMethod() {

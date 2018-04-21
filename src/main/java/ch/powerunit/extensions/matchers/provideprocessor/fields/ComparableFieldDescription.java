@@ -37,24 +37,24 @@ public class ComparableFieldDescription extends DefaultFieldDescription {
 	protected Collection<? extends FieldDSLMethod> getFieldDslMethodFor() {
 		List<FieldDSLMethod> tmp = new ArrayList<>(super.getFieldDslMethodFor());
 		tmp.addAll(Arrays.asList(
-				FieldDSLMethod.of(this).withDeclaration("ComparesEqualTo", this.getFieldType() + " value")
+				FieldDSLMethodBuilder.of(this).withDeclaration("ComparesEqualTo", this.getFieldType() + " value")
 						.withJavaDoc("that this field is equals to another one, using the compareTo method",
 								"value the value to compare with", MATCHERS + "#comparesEqualTo(java.lang.Comparable)")
 				.havingDefault(MATCHERS + ".comparesEqualTo(value)"),
-				FieldDSLMethod.of(this).withDeclaration("LessThan", this.getFieldType() + " value")
+				FieldDSLMethodBuilder.of(this).withDeclaration("LessThan", this.getFieldType() + " value")
 						.withJavaDoc("that this field is less than another value", "value the value to compare with",
 								MATCHERS + "#lessThan(java.lang.Comparable)")
 						.havingDefault(MATCHERS + ".lessThan(value)"),
-				FieldDSLMethod.of(this).withDeclaration("lessThanOrEqualTo", this.getFieldType() + " value")
+				FieldDSLMethodBuilder.of(this).withDeclaration("lessThanOrEqualTo", this.getFieldType() + " value")
 						.withJavaDoc("that this field is less or equal than another value",
 								"value the value to compare with",
 								MATCHERS + "#lessThanOrEqualTo(java.lang.Comparable)")
 						.havingDefault(MATCHERS + ".lessThanOrEqualTo(value)"),
-				FieldDSLMethod.of(this).withDeclaration("GreaterThan", this.getFieldType() + " value")
+				FieldDSLMethodBuilder.of(this).withDeclaration("GreaterThan", this.getFieldType() + " value")
 						.withJavaDoc("that this field is greater than another value", "value the value to compare with",
 								MATCHERS + "#greaterThan(java.lang.Comparable)")
 						.havingDefault(MATCHERS + ".greaterThan(value)"),
-				FieldDSLMethod.of(this).withDeclaration("GreaterThanOrEqualTo", this.getFieldType() + " value")
+				FieldDSLMethodBuilder.of(this).withDeclaration("GreaterThanOrEqualTo", this.getFieldType() + " value")
 						.withJavaDoc("that this field is greater or equal than another value",
 								"value the value to compare with",
 								MATCHERS + "#greaterThanOrEqualTo(java.lang.Comparable)")

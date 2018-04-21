@@ -35,7 +35,7 @@ public class SupplierFieldDescription extends DefaultFieldDescription {
 	@Override
 	protected Collection<? extends FieldDSLMethod> getFieldDslMethodFor() {
 		List<FieldDSLMethod> tmp = new ArrayList<>(super.getFieldDslMethodFor());
-		tmp.add(FieldDSLMethod.of(this)
+		tmp.add(FieldDSLMethodBuilder.of(this)
 				.withDeclaration("SupplierResult", "org.hamcrest.Matcher<? super " + this.generic + "> matcherOnResult")
 				.withJavaDoc(
 						" Validate that the result of the supplier is accepted by another matcher (the result of the execution must be stable)",
