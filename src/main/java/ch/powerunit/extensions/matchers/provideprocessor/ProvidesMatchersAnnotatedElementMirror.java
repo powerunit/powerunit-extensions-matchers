@@ -49,6 +49,8 @@ import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 
 public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirror {
 
+	public static final String DEFAULT_FEATUREMATCHER_FORCONVERTER = "\n  private static <_TARGET,_SOURCE> org.hamcrest.Matcher<_SOURCE> asFeatureMatcher(String msg,java.util.function.Function<_SOURCE,_TARGET> converter,org.hamcrest.Matcher<? super _TARGET> matcher) {\n   return new org.hamcrest.FeatureMatcher<_SOURCE,_TARGET>(matcher, msg, msg) {\n     protected _TARGET featureValueOf(_SOURCE actual) {\n      return converter.apply(actual);\n    }};\n  }\n\n";
+
 	public static final String JAVADOC_WARNING_SYNTAXIC_SUGAR_NO_CHANGE_ANYMORE = "<b>This method is a syntaxic sugar that end the DSL and make clear that the matcher can't be change anymore.</b>";
 
 	public static final String JAVADOC_WARNING_PARENT_MAY_BE_VOID = "<b>This method only works in the contexte of a parent builder. If the real type is Void, then nothing will be returned.</b>";
@@ -192,22 +194,11 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 
 	public String generateMatchers() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(generateFeatureMatcher());
+		sb.append(DEFAULT_FEATUREMATCHER_FORCONVERTER);
 		sb.append(generateFieldsMatcher());
 		if (hasParent) {
 			sb.append(generateParentMatcher());
 		}
-		return sb.toString();
-	}
-
-	public String generateFeatureMatcher() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("\n")
-				.append("  private static <_TARGET,_SOURCE> org.hamcrest.Matcher<_SOURCE> asFeatureMatcher(String msg,java.util.function.Function<_SOURCE,_TARGET> converter,org.hamcrest.Matcher<? super _TARGET> matcher) {")
-				.append("\n").append("   return new org.hamcrest.FeatureMatcher<_SOURCE,_TARGET>(matcher, msg, msg) {")
-				.append("\n").append("     protected _TARGET featureValueOf(_SOURCE actual) {").append("\n")
-				.append("      return converter.apply(actual);").append("\n").append("    }};").append("\n")
-				.append("  }").append("\n").append("\n");
 		return sb.toString();
 	}
 
@@ -350,9 +341,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvideMatchersMirro
 	}
 
 	public String generatePrivateImplementationConstructor(String argument, String... body) {
-		return new StringBuilder().append("    public ").append(simpleNameOfGeneratedImplementationMatcher).append("(")
-				.append(argument).append(") {\n")
-				.append(Arrays.stream(body).map(l -> "      " + l).collect(joining("\n"))).append("    }").toString();
+		return String.format("    public %1$s(%2$s) {\n%3$s    }", simpleNameOfGeneratedImplementationMatcher, argument,
+				Arrays.stream(body).map(l -> "      " + l).collect(joining("\n")));
 	}
 
 	private String generatePrivateImplementation() {
