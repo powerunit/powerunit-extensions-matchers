@@ -37,7 +37,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import ch.powerunit.extensions.matchers.AddToMatcher;
-import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvideMatchersMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
@@ -193,11 +192,6 @@ public abstract class AbstractFieldDescription {
 	public String asMatcherField() {
 		return String.format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));", getMethodFieldName(),
 				getFieldName(), MATCHERS, "");
-	}
-
-	public String getDescriptionForIgnoreIfApplicable() {
-		return Optional.ofNullable(getFieldElement().getAnnotation(IgnoreInMatcher.class)).map(i -> i.comments())
-				.orElse("");
 	}
 
 	public String getFullyQualifiedNameEnclosingClassOfField() {

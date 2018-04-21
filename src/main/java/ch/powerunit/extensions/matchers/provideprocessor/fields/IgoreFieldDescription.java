@@ -21,7 +21,9 @@ package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 
+import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcherField;
@@ -65,6 +67,11 @@ public final class IgoreFieldDescription extends AbstractFieldDescription {
 	@Override
 	public String getFieldCopy(String lhs, String rhs) {
 		return "/* ignored - " + getFieldName() + " */";
+	}
+
+	public String getDescriptionForIgnoreIfApplicable() {
+		return Optional.ofNullable(getFieldElement().getAnnotation(IgnoreInMatcher.class)).map(i -> i.comments())
+				.orElse("");
 	}
 
 }
