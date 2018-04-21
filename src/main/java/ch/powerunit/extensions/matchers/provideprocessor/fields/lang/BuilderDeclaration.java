@@ -17,25 +17,19 @@
  * You should have received a copy of the GNU General Public License
  * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
  */
-package ch.powerunit.extensions.matchers.provideprocessor.fields;
+package ch.powerunit.extensions.matchers.provideprocessor.fields.lang;
 
-import java.util.Collection;
-import java.util.Collections;
+public interface BuilderDeclaration {
+	BuilderJavadoc withExplicitDeclaration(String declaration);
 
-import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+	BuilderJavadoc withGenericDeclaration(String generic, String postFix, String arguments);
 
-public class ArrayFieldDescription extends DefaultFieldDescription {
-
-	public ArrayFieldDescription(ProvidesMatchersAnnotatedElementData containingElementMirror,
-			FieldDescriptionMirror mirror) {
-		super(containingElementMirror, mirror);
+	default BuilderJavadoc withDeclaration(String postFix, String arguments) {
+		return withGenericDeclaration("", postFix, arguments);
 	}
 
-	@Override
-	protected Collection<FieldDSLMethod> getSpecificFieldDslMethodFor() {
-		return Collections.singleton(
-				FieldDSLMethodBuilder.of(this).withDeclaration("IsEmpty", "").withJavaDoc("that the array is empty")
-						.havingDefault("(org.hamcrest.Matcher)" + MATCHERS + ".emptyArray()"));
+	default BuilderJavadoc withDeclaration(String arguments) {
+		return withDeclaration("", arguments);
 	}
 
 }

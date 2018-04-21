@@ -19,10 +19,8 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 
@@ -34,9 +32,8 @@ public class ComparableFieldDescription extends DefaultFieldDescription {
 	}
 
 	@Override
-	protected Collection<? extends FieldDSLMethod> getFieldDslMethodFor() {
-		List<FieldDSLMethod> tmp = new ArrayList<>(super.getFieldDslMethodFor());
-		tmp.addAll(Arrays.asList(
+	protected Collection<FieldDSLMethod> getSpecificFieldDslMethodFor() {
+		return Arrays.asList(
 				FieldDSLMethodBuilder.of(this).withDeclaration("ComparesEqualTo", this.getFieldType() + " value")
 						.withJavaDoc("that this field is equals to another one, using the compareTo method",
 								"value the value to compare with", MATCHERS + "#comparesEqualTo(java.lang.Comparable)")
@@ -58,8 +55,7 @@ public class ComparableFieldDescription extends DefaultFieldDescription {
 						.withJavaDoc("that this field is greater or equal than another value",
 								"value the value to compare with",
 								MATCHERS + "#greaterThanOrEqualTo(java.lang.Comparable)")
-						.havingDefault(MATCHERS + ".greaterThanOrEqualTo(value)")));
-		return tmp;
+						.havingDefault(MATCHERS + ".greaterThanOrEqualTo(value)"));
 	}
 
 }

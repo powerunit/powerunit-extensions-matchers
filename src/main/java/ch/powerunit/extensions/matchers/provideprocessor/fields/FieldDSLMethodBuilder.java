@@ -22,53 +22,16 @@ package ch.powerunit.extensions.matchers.provideprocessor.fields;
 import java.util.Arrays;
 import java.util.Optional;
 
+import ch.powerunit.extensions.matchers.provideprocessor.fields.lang.BuilderDeclaration;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.lang.BuilderImplementation;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.lang.BuilderJavadoc;
+
 public class FieldDSLMethodBuilder {
 
 	private static final String MATCHERS = "org.hamcrest.Matchers";
 
 	public static BuilderDeclaration of(AbstractFieldDescription fieldDescription) {
 		return new Builder(fieldDescription);
-	}
-
-	public static interface BuilderDeclaration {
-		BuilderJavadoc withExplicitDeclaration(String declaration);
-
-		BuilderJavadoc withGenericDeclaration(String generic, String postFix, String arguments);
-
-		default BuilderJavadoc withDeclaration(String postFix, String arguments) {
-			return withGenericDeclaration("", postFix, arguments);
-		}
-
-		default BuilderJavadoc withDeclaration(String arguments) {
-			return withDeclaration("", arguments);
-		}
-	}
-
-	public static interface BuilderJavadoc {
-		BuilderImplementation withJavaDoc(Optional<String> addToDescription, Optional<String> param,
-				Optional<String> see);
-
-		default BuilderImplementation withDefaultJavaDoc() {
-			return withJavaDoc(Optional.empty(), Optional.empty(), Optional.empty());
-		}
-
-		default BuilderImplementation withJavaDoc(String addToDescription, String param, String see) {
-			return withJavaDoc(Optional.of(addToDescription), Optional.of(param), Optional.of(see));
-		}
-
-		default BuilderImplementation withJavaDoc(String addToDescription, String param) {
-			return withJavaDoc(Optional.of(addToDescription), Optional.of(param), Optional.empty());
-		}
-
-		default BuilderImplementation withJavaDoc(String addToDescription) {
-			return withJavaDoc(Optional.of(addToDescription), Optional.empty(), Optional.empty());
-		}
-	}
-
-	public static interface BuilderImplementation {
-		FieldDSLMethod havingDefault(String innerMatcher);
-
-		FieldDSLMethod havingImplementation(String body);
 	}
 
 	public static class Builder implements BuilderDeclaration, BuilderJavadoc, BuilderImplementation {

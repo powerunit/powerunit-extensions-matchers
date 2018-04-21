@@ -21,6 +21,7 @@ package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
@@ -32,8 +33,12 @@ public class DefaultFieldDescription extends AbstractFieldDescription {
 		super(containingElementMirror, mirror);
 	}
 
+	protected Collection<FieldDSLMethod> getSpecificFieldDslMethodFor() {
+		return Collections.emptyList();
+	}
+
 	@Override
-	protected Collection<? extends FieldDSLMethod> getFieldDslMethodFor() {
+	protected final Collection<FieldDSLMethod> getFieldDslMethodFor() {
 		List<FieldDSLMethod> tmp = new ArrayList<>();
 
 		tmp.add(FieldDSLMethodBuilder.of(this)
@@ -69,6 +74,7 @@ public class DefaultFieldDescription extends AbstractFieldDescription {
 							+ mirror.getFieldName() + "(tmp);\nreturn tmp;"));
 		}
 
+		tmp.addAll(getSpecificFieldDslMethodFor());
 		return tmp;
 	}
 

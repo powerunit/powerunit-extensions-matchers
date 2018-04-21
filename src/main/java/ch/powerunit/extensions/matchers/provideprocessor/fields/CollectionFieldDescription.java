@@ -36,9 +36,8 @@ public class CollectionFieldDescription extends DefaultFieldDescription {
 	}
 
 	@Override
-	protected Collection<? extends FieldDSLMethod> getFieldDslMethodFor() {
-		List<FieldDSLMethod> tmp = new ArrayList<>(super.getFieldDslMethodFor());
-		tmp.addAll(getFieldDslMethodForIterableAndComparable());
+	protected Collection<FieldDSLMethod> getSpecificFieldDslMethodFor() {
+		List<FieldDSLMethod> tmp = new ArrayList<>(getFieldDslMethodForIterableAndComparable());
 		if (!"".equals(generic)) {
 			tmp.addAll(getDslForIterableWithGeneric());
 		}

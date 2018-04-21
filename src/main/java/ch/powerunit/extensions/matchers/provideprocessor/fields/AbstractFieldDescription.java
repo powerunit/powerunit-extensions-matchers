@@ -107,7 +107,7 @@ public abstract class AbstractFieldDescription {
 		this.dsl = Collections.unmodifiableList(tmp);
 	}
 
-	protected abstract Collection<? extends FieldDSLMethod> getFieldDslMethodFor();
+	protected abstract Collection<FieldDSLMethod> getFieldDslMethodFor();
 
 	public String getImplementationInterface() {
 		return dsl.stream().map(FieldDSLMethod::asImplementationMethod).collect(joining("\n"));

@@ -19,10 +19,8 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 
@@ -34,9 +32,8 @@ public class OptionalFieldDescription extends DefaultFieldDescription {
 	}
 
 	@Override
-	protected Collection<? extends FieldDSLMethod> getFieldDslMethodFor() {
-		List<FieldDSLMethod> tmp = new ArrayList<>(super.getFieldDslMethodFor());
-		tmp.addAll(Arrays.asList(
+	protected Collection<FieldDSLMethod> getSpecificFieldDslMethodFor() {
+		return Arrays.asList(
 				FieldDSLMethodBuilder.of(this).withDeclaration("IsPresent", "").withJavaDoc("with a present optional")
 						.havingDefault("new org.hamcrest.CustomTypeSafeMatcher<" + this.getFieldType()
 								+ ">(\"optional is present\"){ public boolean matchesSafely(" + this.getFieldType()
@@ -45,8 +42,7 @@ public class OptionalFieldDescription extends DefaultFieldDescription {
 						.withJavaDoc("with a not present optional")
 						.havingDefault("new org.hamcrest.CustomTypeSafeMatcher<" + this.getFieldType()
 								+ ">(\"optional is not present\"){ public boolean matchesSafely(" + this.getFieldType()
-								+ " o) {return !o.isPresent();}}")));
-		return tmp;
+								+ " o) {return !o.isPresent();}}"));
 	}
 
 }

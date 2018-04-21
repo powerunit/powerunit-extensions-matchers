@@ -34,8 +34,8 @@ public class StringFieldDescription extends ComparableFieldDescription {
 	}
 
 	@Override
-	protected Collection<? extends FieldDSLMethod> getFieldDslMethodFor() {
-		List<FieldDSLMethod> tmp = new ArrayList<>(super.getFieldDslMethodFor());
+	protected Collection<FieldDSLMethod> getSpecificFieldDslMethodFor() {
+		List<FieldDSLMethod> tmp = new ArrayList<>(super.getSpecificFieldDslMethodFor());
 		tmp.addAll(Arrays.asList(
 				FieldDSLMethodBuilder.of(this).withDeclaration("ContainsString", "String other")
 						.withJavaDoc("that the string contains another one",

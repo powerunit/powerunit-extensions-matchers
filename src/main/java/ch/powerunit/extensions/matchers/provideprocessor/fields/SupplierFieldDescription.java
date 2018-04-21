@@ -19,9 +19,8 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
 
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 
@@ -33,16 +32,14 @@ public class SupplierFieldDescription extends DefaultFieldDescription {
 	}
 
 	@Override
-	protected Collection<? extends FieldDSLMethod> getFieldDslMethodFor() {
-		List<FieldDSLMethod> tmp = new ArrayList<>(super.getFieldDslMethodFor());
-		tmp.add(FieldDSLMethodBuilder.of(this)
+	protected Collection<FieldDSLMethod> getSpecificFieldDslMethodFor() {
+		return Collections.singleton(FieldDSLMethodBuilder.of(this)
 				.withDeclaration("SupplierResult", "org.hamcrest.Matcher<? super " + this.generic + "> matcherOnResult")
 				.withJavaDoc(
 						" Validate that the result of the supplier is accepted by another matcher (the result of the execution must be stable)",
 						"matcherOnResult a Matcher on result of the supplier execution")
 				.havingDefault("asFeatureMatcher(\"with supplier result\",(java.util.function.Supplier<" + this.generic
 						+ "> s) -> s.get(),matcherOnResult)"));
-		return tmp;
 	}
 
 }
