@@ -25,6 +25,8 @@ import javax.lang.model.element.TypeElement;
 
 public class ProvidesMatchersAnnotatedElementJavadocMirror extends ProvideMatchersMirror {
 
+	private static final String DEFAULT_PARAM_PARENT = " * @param <_PARENT> used to reference, if necessary, a parent for this builder. By default Void is used an indicate no parent builder.\n";
+
 	public static final String JAVADOC_WARNING_SYNTAXIC_SUGAR_NO_CHANGE_ANYMORE = "<b>This method is a syntaxic sugar that end the DSL and make clear that the matcher can't be change anymore.</b>";
 
 	public static final String JAVADOC_WARNING_PARENT_MAY_BE_VOID = "<b>This method only works in the context of a parent builder. If the real type is Void, then nothing will be returned.</b>";
@@ -53,19 +55,16 @@ public class ProvidesMatchersAnnotatedElementJavadocMirror extends ProvideMatche
 
 	protected String generateJavaDoc(String description, Optional<String> moreDetails, Optional<String> param,
 			Optional<String> returnDescription, boolean withParam, boolean withParent) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("/**\n * ").append(description).append(".\n");
-		moreDetails.ifPresent(t -> sb.append(" * <p>\n").append(" * ").append(t).append("\n"));
-		param.ifPresent(t -> sb.append(" * @param ").append(t).append("\n"));
+		StringBuilder sb = new StringBuilder("/**\n * ").append(description).append(".\n")
+				.append(moreDetails.map(t -> String.format(" * <p>\n * %1$s\n", t)).orElse(""))
+				.append(param.map(t -> String.format(" * @param %1$s\n", t)).orElse(""));
 		if (withParam) {
 			sb.append(paramJavadoc.replaceAll("\\R", "\n")).append(" * \n");
 		}
 		if (withParent) {
-			sb.append(
-					" * @param <_PARENT> used to reference, if necessary, a parent for this builder. By default Void is used an indicate no parent builder.\n");
+			sb.append(DEFAULT_PARAM_PARENT);
 		}
-		returnDescription.ifPresent(t -> sb.append(" * @return ").append(t).append("\n"));
-		sb.append(" */\n");
+		sb.append(returnDescription.map(t -> String.format(" * @return %1$s\n", t)).orElse("")).append(" */\n");
 		return sb.toString();
 	}
 
