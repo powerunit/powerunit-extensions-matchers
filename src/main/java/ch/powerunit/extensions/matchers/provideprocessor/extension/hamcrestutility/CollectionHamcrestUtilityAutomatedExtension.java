@@ -24,18 +24,20 @@ public class CollectionHamcrestUtilityAutomatedExtension extends AbstractHamcres
 
 	@Override
 	protected Collection<FieldDSLMethod> acceptHamcrestUtility(AbstractFieldDescription field) {
+		String expectedElement = getExpectedElement();
+		String genericMatcher = "org.hamcrest.Matcher<" + field.getGeneric() + ">";
 		return Arrays.asList(
 				builderFor(field, "hasNoDuplicates", "").withJavaDoc("That this collection contains no duplication")
-						.havingDefault("(org.hamcrest.Matcher)" + getExpectedElement()
+						.havingDefault("(org.hamcrest.Matcher)" + expectedElement
 								+ ".hasNoDuplicates(java.lang.Object.class)"),
-				builderFor(field, "hasFirstItem", "org.hamcrest.Matcher<" + field.getGeneric() + "> matcher")
+				builderFor(field, "hasFirstItem", genericMatcher + " matcher")
 						.withJavaDoc(Optional.of("having first item with a specific value"),
 								Optional.of("matcher matcher on the item"), Optional.empty())
-						.havingDefault(getExpectedElement() + ".hasFirstItem(matcher)"),
-				builderFor(field, "hasLastItem", "org.hamcrest.Matcher<" + field.getGeneric() + "> matcher")
+						.havingDefault(expectedElement + ".hasFirstItem(matcher)"),
+				builderFor(field, "hasLastItem", genericMatcher + " matcher")
 						.withJavaDoc(Optional.of("having last item with a specific value"),
 								Optional.of("matcher matcher on the item"), Optional.empty())
-						.havingDefault(getExpectedElement() + ".hasLastItem(matcher)"));
+						.havingDefault(expectedElement + ".hasLastItem(matcher)"));
 	}
 
 }
