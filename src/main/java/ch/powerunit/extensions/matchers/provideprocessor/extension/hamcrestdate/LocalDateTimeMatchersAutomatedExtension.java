@@ -22,15 +22,15 @@ import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethodBu
  * @author borettim
  *
  */
-public class LocalDateMatchersAutomatedExtension extends AutomatedExtension {
+public class LocalDateTimeMatchersAutomatedExtension extends AutomatedExtension {
 
-	private static final String TARGET_ELEMENT = "org.exparity.hamcrest.date.LocalDateMatchers";
+	private static final String TARGET_ELEMENT = "org.exparity.hamcrest.date.LocalDateTimeMatchers";
 
 	private TypeMirror knownType;
 
-	public LocalDateMatchersAutomatedExtension(RoundMirror roundMirror) {
+	public LocalDateTimeMatchersAutomatedExtension(RoundMirror roundMirror) {
 		super(roundMirror, TARGET_ELEMENT);
-		knownType = roundMirror.getProcessingEnv().getElementUtils().getTypeElement("java.time.LocalDate").asType();
+		knownType = roundMirror.getProcessingEnv().getElementUtils().getTypeElement("java.time.LocalDateTime").asType();
 	}
 
 	/*
@@ -46,27 +46,30 @@ public class LocalDateMatchersAutomatedExtension extends AutomatedExtension {
 			return Collections.emptyList();
 		}
 		return Arrays.asList(
-				FieldDSLMethodBuilder.of(field).withDeclaration("After", "java.time.LocalDate after")
-						.withJavaDoc("Verify that this LocalDate is after another one",
-								"after the LocalDate to compare with", TARGET_ELEMENT + "#after(java.time.LocalDate)")
+				FieldDSLMethodBuilder.of(field).withDeclaration("After", "java.time.LocalDateTime after")
+						.withJavaDoc("Verify that this LocalDateTime is after another one",
+								"after the LocalDate to compare with",
+								TARGET_ELEMENT + "#after(java.time.LocalDateTime)")
 				.havingDefault(TARGET_ELEMENT + ".after(after)"),
-				FieldDSLMethodBuilder.of(field).withDeclaration("SameOrAfter", "java.time.LocalDate date")
-						.withJavaDoc("Verify that this LocalDate is after or same another one",
+				FieldDSLMethodBuilder.of(field).withDeclaration("SameOrAfter", "java.time.LocalDateTime date")
+						.withJavaDoc("Verify that this LocalDateTime is after or same another one",
 								"date the LocalDate to compare with",
-								TARGET_ELEMENT + "#sameOrAfter(java.time.LocalDate)")
+								TARGET_ELEMENT + "#sameOrAfter(java.time.LocalDateTime)")
 						.havingDefault(TARGET_ELEMENT + ".sameOrAfter(date)"),
-				FieldDSLMethodBuilder.of(field).withDeclaration("Before", "java.time.LocalDate before")
-						.withJavaDoc("Verify that this LocalDate is before another one",
-								"before the LocalDate to compare with", TARGET_ELEMENT + "#before(java.time.LocalDate)")
+				FieldDSLMethodBuilder.of(field).withDeclaration("Before", "java.time.LocalDateTime before")
+						.withJavaDoc("Verify that this LocalDateTime is before another one",
+								"before the LocalDate to compare with",
+								TARGET_ELEMENT + "#before(java.time.LocalDateTime)")
 						.havingDefault(TARGET_ELEMENT + ".before(before)"),
-				FieldDSLMethodBuilder.of(field).withDeclaration("SameorBefore", "java.time.LocalDate date")
-						.withJavaDoc("Verify that this LocalDate is same or before another one",
+				FieldDSLMethodBuilder.of(field).withDeclaration("SameorBefore", "java.time.LocalDateTime date")
+						.withJavaDoc("Verify that this LocalDateTime is same or before another one",
 								"date the LocalDate to compare with",
-								TARGET_ELEMENT + "#sameOrBefore(java.time.LocalDate)")
+								TARGET_ELEMENT + "#sameOrBefore(java.time.LocalDateTime)")
 						.havingDefault(TARGET_ELEMENT + ".sameOrBefore(date)"),
-				FieldDSLMethodBuilder.of(field).withDeclaration("SameDay", "java.time.LocalDate date")
-						.withJavaDoc("Verify that this LocalDate is same day another one",
-								"date the LocalDate to compare with", TARGET_ELEMENT + "#sameDay(java.time.LocalDate)")
+				FieldDSLMethodBuilder.of(field).withDeclaration("SameDay", "java.time.LocalDateTime date")
+						.withJavaDoc("Verify that this LocalDateTime is same day another one",
+								"date the LocalDate to compare with",
+								TARGET_ELEMENT + "#sameDay(java.time.LocalDateTime)")
 						.havingDefault(TARGET_ELEMENT + ".sameDay(date)"));
 	}
 

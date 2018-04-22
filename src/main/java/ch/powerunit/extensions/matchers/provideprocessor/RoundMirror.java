@@ -44,6 +44,7 @@ import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.AutomatedExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.LocalDateMatchersAutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.LocalDateTimeMatchersAutomatedExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethod;
 
@@ -66,8 +67,9 @@ public class RoundMirror {
 				roundEnv.getElementsAnnotatedWith(IgnoreInMatcher.class));
 		elementsWithOtherAnnotations.put(AddToMatcher.class, roundEnv.getElementsAnnotatedWith(AddToMatcher.class));
 		elementsWithOtherAnnotations.put(AddToMatchers.class, roundEnv.getElementsAnnotatedWith(AddToMatchers.class));
-		AUTOMATED_EXTENSIONS = Arrays.asList(new LocalDateMatchersAutomatedExtension(this)).stream()
-				.filter(AutomatedExtension::isPresent)
+		AUTOMATED_EXTENSIONS = Arrays
+				.asList(new LocalDateMatchersAutomatedExtension(this), new LocalDateTimeMatchersAutomatedExtension(this))
+				.stream().filter(AutomatedExtension::isPresent)
 				.collect(collectingAndThen(toList(), Collections::unmodifiableList));
 	}
 
