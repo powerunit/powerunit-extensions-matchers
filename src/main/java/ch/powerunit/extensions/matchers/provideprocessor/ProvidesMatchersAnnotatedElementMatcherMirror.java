@@ -35,6 +35,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescriptionMetaData;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.IgoreFieldDescription;
 
 public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
@@ -61,7 +62,7 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 						Optional::isPresent)
 				.map(Optional::get).collect(
 						collectingAndThen(
-								groupingBy(t -> t.getFieldName(),
+								groupingBy(FieldDescriptionMetaData::getFieldName,
 										reducing(null,
 												(v1, v2) -> v1 == null ? v2
 														: v1 instanceof IgoreFieldDescription ? v1 : v2)),
@@ -222,16 +223,15 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	}
 
 	protected String generatePrivateImplementation() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("  /* package protected */ static class ").append(simpleNameOfGeneratedImplementationMatcher)
-				.append(getFullGenericParent()).append(" extends org.hamcrest.TypeSafeDiagnosingMatcher<")
+		StringBuilder sb = new StringBuilder("  /* package protected */ static class ")
+				.append(simpleNameOfGeneratedImplementationMatcher).append(getFullGenericParent())
+				.append(" extends org.hamcrest.TypeSafeDiagnosingMatcher<")
 				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append("> implements ")
-				.append(getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + " {\n");
-		sb.append("    " + fields.stream().map(AbstractFieldDescription::asMatcherField).collect(joining("\n    ")))
-				.append("\n");
-
-		sb.append("    private final _PARENT _parentBuilder;\n\n").append(
-				"    private final java.util.List<org.hamcrest.Matcher> nextMatchers = new java.util.ArrayList<>();\n");
+				.append(getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + " {\n")
+				.append("    "
+						+ fields.stream().map(AbstractFieldDescription::asMatcherField).collect(joining("\n    ")))
+				.append("\n")
+				.append("    private final _PARENT _parentBuilder;\n\n    private final java.util.List<org.hamcrest.Matcher> nextMatchers = new java.util.ArrayList<>();\n");
 		if (hasParent) {
 			sb.append("    private SuperClassMatcher _parent;\n\n")
 					.append(generatePrivateImplementationConstructor(
@@ -256,9 +256,9 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 				.collect(joining("\n"))).append("\n");
 
 		sb.append(generatePrivateImplementationForMatchersSafely()).append("\n")
-				.append(generatedPrivateImplementationForDescribeTo()).append("\n\n")
-				.append("    @Override\n    public _PARENT end() {\n      return _parentBuilder;\n    }\n\n\n")
-				.append(generatePrivateImplementationForAndWith()).append("\n").append("  }\n");
+				.append(generatedPrivateImplementationForDescribeTo())
+				.append("\n\n    @Override\n    public _PARENT end() {\n      return _parentBuilder;\n    }\n\n\n")
+				.append(generatePrivateImplementationForAndWith()).append("\n  }\n");
 		return sb.toString();
 	}
 

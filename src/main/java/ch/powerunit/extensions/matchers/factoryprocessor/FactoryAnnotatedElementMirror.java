@@ -86,16 +86,22 @@ class FactoryAnnotatedElementMirror {
 						.append("\n").toString();
 	}
 
+	private String getGeneric() {
+		return new StringBuilder("<")
+				.append(element.getTypeParameters()
+						.stream().map(
+								(ve) -> ve.getSimpleName().toString()
+										+ (ve.getBounds().isEmpty() ? ""
+												: (" extends " + ve.getBounds().stream().map(Object::toString)
+														.collect(joining("&")))))
+						.collect(joining(",")))
+				.append("> ").toString();
+	}
+
 	private String getDeclaration() {
 		StringBuilder sb = new StringBuilder();
 		if (!element.getTypeParameters().isEmpty()) {
-			sb.append("<")
-					.append(element.getTypeParameters().stream()
-							.map((ve) -> ve.getSimpleName().toString() + (ve.getBounds().isEmpty() ? ""
-									: (" extends "
-											+ ve.getBounds().stream().map(Object::toString).collect(joining("&")))))
-							.collect(joining(",")))
-					.append("> ");
+			sb.append(getGeneric());
 		}
 		sb.append(element.getReturnType().toString()).append(" ").append(element.getSimpleName().toString())
 				.append("(");
