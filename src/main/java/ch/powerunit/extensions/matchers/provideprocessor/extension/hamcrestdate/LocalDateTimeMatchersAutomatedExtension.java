@@ -30,7 +30,7 @@ public class LocalDateTimeMatchersAutomatedExtension extends AutomatedExtension 
 
 	public LocalDateTimeMatchersAutomatedExtension(RoundMirror roundMirror) {
 		super(roundMirror, TARGET_ELEMENT);
-		knownType = roundMirror.getProcessingEnv().getElementUtils().getTypeElement("java.time.LocalDateTime").asType();
+		knownType = getMirrorOr("java.time.LocalDateTime");
 	}
 
 	/*

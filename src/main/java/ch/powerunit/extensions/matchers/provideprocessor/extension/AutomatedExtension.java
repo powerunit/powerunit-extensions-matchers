@@ -48,6 +48,10 @@ public abstract class AutomatedExtension {
 	public abstract Collection<FieldDSLMethod> accept(AbstractFieldDescription field);
 
 	public abstract Collection<Supplier<DSLMethod>> accept(ProvidesMatchersAnnotatedElementData clazz);
+	
+	protected TypeMirror getMirrorOr(String name) {
+		return roundMirror.getProcessingEnv().getElementUtils().getTypeElement(name).asType();
+	}
 
 	protected boolean isSameType(TypeElement fromField, TypeMirror compareWith) {
 		return fromField != null
