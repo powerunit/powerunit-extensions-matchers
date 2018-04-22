@@ -19,14 +19,17 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
+
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
@@ -45,7 +48,7 @@ import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescription
 
 public class RoundMirror {
 
-	private final AutomatedExtension AUTOMATED_EXTENSIONS[] = {};
+	private final Collection<AutomatedExtension> AUTOMATED_EXTENSIONS;
 
 	private final RoundEnvironment roundEnv;
 	private final ProcessingEnvironment processingEnv;
@@ -62,6 +65,8 @@ public class RoundMirror {
 				roundEnv.getElementsAnnotatedWith(IgnoreInMatcher.class));
 		elementsWithOtherAnnotations.put(AddToMatcher.class, roundEnv.getElementsAnnotatedWith(AddToMatcher.class));
 		elementsWithOtherAnnotations.put(AddToMatchers.class, roundEnv.getElementsAnnotatedWith(AddToMatchers.class));
+		AUTOMATED_EXTENSIONS = Arrays.<AutomatedExtension> asList().stream().filter(AutomatedExtension::isPresent)
+				.collect(collectingAndThen(toList(), Collections::unmodifiableList));
 	}
 
 	public ProcessingEnvironment getProcessingEnv() {
@@ -125,13 +130,11 @@ public class RoundMirror {
 	}
 
 	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData target) {
-		return Arrays.stream(AUTOMATED_EXTENSIONS).map(ae -> ae.accept(target)).flatMap(Collection::stream)
-				.collect(Collectors.toList());
+		return AUTOMATED_EXTENSIONS.stream().map(ae -> ae.accept(target)).flatMap(Collection::stream).collect(toList());
 	}
 
 	public Collection<FieldDSLMethod> getFieldDSLMethodFor(FieldDescriptionMetaData target) {
-		return Arrays.stream(AUTOMATED_EXTENSIONS).map(ae -> ae.accept(target)).flatMap(Collection::stream)
-				.collect(Collectors.toList());
+		return AUTOMATED_EXTENSIONS.stream().map(ae -> ae.accept(target)).flatMap(Collection::stream).collect(toList());
 	}
 
 }
