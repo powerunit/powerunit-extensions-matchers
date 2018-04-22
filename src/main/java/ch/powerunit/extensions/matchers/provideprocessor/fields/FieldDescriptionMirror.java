@@ -30,10 +30,10 @@ import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
 
 public class FieldDescriptionMirror {
 
-	protected final String fieldName;
-	protected final String fieldType;
-	protected final TypeElement fieldTypeAsTypeElement;
-	protected final Element fieldElement;
+	private final String fieldName;
+	private final String fieldType;
+	private final TypeElement fieldTypeAsTypeElement;
+	private final Element fieldElement;
 
 	public FieldDescriptionMirror(ProvidesMatchersAnnotatedElementData containingElementMirror, String fieldName,
 			String fieldType, Element fieldElement) {
