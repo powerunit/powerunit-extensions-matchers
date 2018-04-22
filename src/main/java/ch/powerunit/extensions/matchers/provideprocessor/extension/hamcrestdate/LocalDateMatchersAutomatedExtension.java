@@ -45,10 +45,19 @@ public class LocalDateMatchersAutomatedExtension extends AutomatedExtension {
 		if (!isSameType(field.getFieldTypeAsTypeElement(), knownType)) {
 			return Collections.emptyList();
 		}
-		return Arrays.asList(FieldDSLMethodBuilder.of(field).withDeclaration("After", "java.time.LocalDate after")
-				.withJavaDoc("Verify that this LocalDate is after another on", "after the LocalDate to compare with",
-						TARGET_ELEMENT + "#after(java.time.LocalDate)")
-				.havingDefault(TARGET_ELEMENT + ".after(after)"));
+		return Arrays.asList(
+				FieldDSLMethodBuilder.of(field).withDeclaration("After", "java.time.LocalDate after")
+						.withJavaDoc("Verify that this LocalDate is after another on",
+								"after the LocalDate to compare with", TARGET_ELEMENT + "#after(java.time.LocalDate)")
+				.havingDefault(TARGET_ELEMENT + ".after(after)"),
+				FieldDSLMethodBuilder.of(field).withDeclaration("Before", "java.time.LocalDate before")
+						.withJavaDoc("Verify that this LocalDate is before another on",
+								"before the LocalDate to compare with", TARGET_ELEMENT + "#before(java.time.LocalDate)")
+						.havingDefault(TARGET_ELEMENT + ".before(before)"),
+				FieldDSLMethodBuilder.of(field).withDeclaration("SameDay", "java.time.LocalDate date")
+						.withJavaDoc("Verify that this LocalDate is same day another on",
+								"date the LocalDate to compare with", TARGET_ELEMENT + "#sameDay(java.time.LocalDate)")
+						.havingDefault(TARGET_ELEMENT + ".sameDay(date)"));
 	}
 
 	/*
