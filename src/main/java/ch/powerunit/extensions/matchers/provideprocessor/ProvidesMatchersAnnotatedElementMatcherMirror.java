@@ -38,7 +38,7 @@ import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescription
 import ch.powerunit.extensions.matchers.provideprocessor.fields.IgoreFieldDescription;
 
 public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
-		extends ProvidesMatchersAnnotatedElementGenericMirror {
+		extends ProvidesMatchersAnnotatedElementGeneralMirror {
 
 	private static final String PRIVATE_IMPLEMENTATION_END = "\n\n    @Override\n    public _PARENT end() {\n      return _parentBuilder;\n    }\n\n\n";
 
@@ -54,13 +54,9 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 
 	private static final String JAVADOC_ANDWITH = "    /**\n     * Add a matcher on the object itself and not on a specific field.\n     * <p>\n     * <i>This method, when used more than once, just add more matcher to the list.</i>\n     * @param otherMatcher the matcher on the object itself.\n     * @return the DSL to continue\n     */\n";
 
-	public static final String DEFAULT_FEATUREMATCHER_FORCONVERTER = "\n  private static <_TARGET,_SOURCE> org.hamcrest.Matcher<_SOURCE> asFeatureMatcher(String msg,java.util.function.Function<_SOURCE,_TARGET> converter,org.hamcrest.Matcher<? super _TARGET> matcher) {\n   return new org.hamcrest.FeatureMatcher<_SOURCE,_TARGET>(matcher, msg, msg) {\n     protected _TARGET featureValueOf(_SOURCE actual) {\n      return converter.apply(actual);\n    }};\n  }\n\n";
+	private static final String DEFAULT_FEATUREMATCHER_FORCONVERTER = "\n  private static <_TARGET,_SOURCE> org.hamcrest.Matcher<_SOURCE> asFeatureMatcher(String msg,java.util.function.Function<_SOURCE,_TARGET> converter,org.hamcrest.Matcher<? super _TARGET> matcher) {\n   return new org.hamcrest.FeatureMatcher<_SOURCE,_TARGET>(matcher, msg, msg) {\n     protected _TARGET featureValueOf(_SOURCE actual) {\n      return converter.apply(actual);\n    }};\n  }\n\n";
 
-	protected final TypeElement typeElementForClassAnnotatedWithProvideMatcher;
-	protected final String methodShortClassName;
-	protected final Optional<String> fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher;
 	protected final List<AbstractFieldDescription> fields;
-	protected final RoundMirror roundMirror;
 
 	private List<AbstractFieldDescription> generateFields(TypeElement typeElement,
 			ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor) {
@@ -78,18 +74,6 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 
 	public ProvidesMatchersAnnotatedElementMatcherMirror(TypeElement typeElement, RoundMirror roundMirror) {
 		super(typeElement, roundMirror);
-		this.roundMirror = roundMirror;
-		this.typeElementForClassAnnotatedWithProvideMatcher = typeElement;
-		this.methodShortClassName = simpleNameOfClassAnnotatedWithProvideMatcher.substring(0, 1).toLowerCase()
-				+ simpleNameOfClassAnnotatedWithProvideMatcher.substring(1);
-		if (!roundMirror.getProcessingEnv().getElementUtils().getTypeElement("java.lang.Object").asType()
-				.equals(typeElement.getSuperclass())) {
-			this.fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher = Optional
-					.ofNullable(typeElement.getSuperclass().toString());
-		} else {
-			this.fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher = Optional.empty();
-		}
-
 		this.fields = generateFields(typeElement, new ProvidesMatchersSubElementVisitor(roundMirror));
 	}
 
@@ -273,34 +257,6 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 				"    @Override\n    public %1$s andWith(org.hamcrest.Matcher<? super %2$s> otherMatcher) {\n      nextMatchers.add(java.util.Objects.requireNonNull(otherMatcher,\"A matcher is expected\"));\n      return this;\n    }\n",
 				getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent(),
 				getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric());
-	}
-
-	public String getDefaultReturnMethod() {
-		return simpleNameOfClassAnnotatedWithProvideMatcher + "Matcher" + getGenericParent();
-	}
-
-	public TypeElement getTypeElementForClassAnnotatedWithProvideMatcher() {
-		return typeElementForClassAnnotatedWithProvideMatcher;
-	}
-
-	public String getMethodShortClassName() {
-		return methodShortClassName;
-	}
-
-	public String getSimpleNameOfGeneratedImplementationMatcher() {
-		return simpleNameOfClassAnnotatedWithProvideMatcher + "MatcherImpl";
-	}
-
-	public String getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent() {
-		return getSimpleNameOfGeneratedImplementationMatcher() + getGenericNoParent();
-	}
-	
-	public String getSimpleNameOfGeneratedImplementationMatcherWithGenericParent() {
-		return getSimpleNameOfGeneratedImplementationMatcher() + getGenericParent();
-	}
-
-	public RoundMirror getRoundMirror() {
-		return roundMirror;
 	}
 
 }
