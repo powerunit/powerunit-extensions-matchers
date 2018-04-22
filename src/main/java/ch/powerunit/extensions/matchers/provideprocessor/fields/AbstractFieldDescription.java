@@ -38,7 +38,9 @@ public abstract class AbstractFieldDescription extends FieldDescriptionMetaData 
 	public AbstractFieldDescription(ProvidesMatchersAnnotatedElementData containingElementMirror,
 			FieldDescriptionMirror mirror) {
 		super(containingElementMirror, mirror);
-		this.dsl = Collections.unmodifiableList(generatedFieldDSLMethod(mirror));
+		List<FieldDSLMethod> base = new ArrayList<>(generatedFieldDSLMethod(mirror));
+		base.addAll(containingElementMirror.getRoundMirror().getFieldDSLMethodFor(this));
+		this.dsl = Collections.unmodifiableList(base);
 	}
 
 	private List<FieldDSLMethod> generatedFieldDSLMethod(FieldDescriptionMirror mirror) {

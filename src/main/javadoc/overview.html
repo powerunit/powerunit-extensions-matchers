@@ -33,12 +33,15 @@
 					object with another.</li>
 				<li>For some specific type, add method to do some matching with
 					more clean name, like XXXIsPresent for an Optional.</li>
+				<li>If some library are available, add special matchers.</li>
 			</ul></li>
-		<li><b>Generating class with all the matchers, directly during annotation processing</b><br />
-			<i>This processor requires to set the parameter <code>ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor.factory</code>
+		<li><b>Generating class with all the matchers, directly
+				during annotation processing</b><br /> <i>This processor requires
+				to set the parameter <code>ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor.factory</code>
 				(<code>-A</code> parameter).
 		</i><br />This processor create <code>DSL</code> interface for each
-			factory method of the matchers, in the interface defined by this parameter.</li>
+			factory method of the matchers, in the interface defined by this
+			parameter.</li>
 		<li><b>Processing of the Factory annotation (from hamcrest).</b><br />
 			<i>This processor requires to set the parameter <code>ch.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets</code>
 				(<code>-A</code> parameter).

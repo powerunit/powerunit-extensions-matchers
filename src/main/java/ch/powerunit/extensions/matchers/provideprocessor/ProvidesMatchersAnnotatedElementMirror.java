@@ -66,7 +66,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 		}
 		tmp.addAll(Optional.ofNullable(getDSLExtension()).orElseGet(Collections::emptyList).stream()
 				.map(t -> t.getDSLMethodFor(() -> this)).flatMap(Collection::stream).collect(toList()));
-
+		tmp.addAll(roundMirror.getDSLMethodFor(() -> this));
 		this.dslProvider = unmodifiableList(tmp);
 	}
 

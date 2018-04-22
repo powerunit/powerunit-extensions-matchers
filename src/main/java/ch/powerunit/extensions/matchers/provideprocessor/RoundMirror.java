@@ -19,11 +19,17 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
+
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
@@ -36,8 +42,17 @@ import ch.powerunit.extensions.matchers.AddToMatcher;
 import ch.powerunit.extensions.matchers.AddToMatchers;
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.AutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.LocalDateMatchersAutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.LocalDateTimeMatchersAutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.LocalTimeMatchersAutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.ZonedDateTimeMatchersAutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethod;
 
 public class RoundMirror {
+
+	private final Collection<AutomatedExtension> AUTOMATED_EXTENSIONS;
 
 	private final RoundEnvironment roundEnv;
 	private final ProcessingEnvironment processingEnv;
@@ -54,6 +69,13 @@ public class RoundMirror {
 				roundEnv.getElementsAnnotatedWith(IgnoreInMatcher.class));
 		elementsWithOtherAnnotations.put(AddToMatcher.class, roundEnv.getElementsAnnotatedWith(AddToMatcher.class));
 		elementsWithOtherAnnotations.put(AddToMatchers.class, roundEnv.getElementsAnnotatedWith(AddToMatchers.class));
+		AUTOMATED_EXTENSIONS = Arrays
+				.asList(new LocalDateMatchersAutomatedExtension(this),
+						new LocalDateTimeMatchersAutomatedExtension(this),
+						new LocalTimeMatchersAutomatedExtension(this),
+						new ZonedDateTimeMatchersAutomatedExtension(this))
+				.stream().filter(AutomatedExtension::isPresent)
+				.collect(collectingAndThen(toList(), Collections::unmodifiableList));
 	}
 
 	public ProcessingEnvironment getProcessingEnv() {
@@ -114,6 +136,14 @@ public class RoundMirror {
 				.getTypeElement("ch.powerunit.extensions.matchers.ProvideMatchers").asType();
 		return getProcessingEnv().getElementUtils().getAllAnnotationMirrors(e).stream()
 				.filter(a -> a.getAnnotationType().equals(pmtm)).findAny().orElse(null);
+	}
+
+	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData target) {
+		return AUTOMATED_EXTENSIONS.stream().map(ae -> ae.accept(target)).flatMap(Collection::stream).collect(toList());
+	}
+
+	public Collection<FieldDSLMethod> getFieldDSLMethodFor(AbstractFieldDescription target) {
+		return AUTOMATED_EXTENSIONS.stream().map(ae -> ae.accept(target)).flatMap(Collection::stream).collect(toList());
 	}
 
 }
