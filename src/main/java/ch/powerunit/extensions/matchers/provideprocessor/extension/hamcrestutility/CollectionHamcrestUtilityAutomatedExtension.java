@@ -31,7 +31,11 @@ public class CollectionHamcrestUtilityAutomatedExtension extends AbstractHamcres
 				builderFor(field, "hasFirstItem", "org.hamcrest.Matcher<" + field.getGeneric() + "> matcher")
 						.withJavaDoc(Optional.of("having first item with a specific value"),
 								Optional.of("matcher matcher on the item"), Optional.empty())
-						.havingDefault(getExpectedElement() + ".hasFirstItem(matcher)"));
+						.havingDefault(getExpectedElement() + ".hasFirstItem(matcher)"),
+				builderFor(field, "hasLastItem", "org.hamcrest.Matcher<" + field.getGeneric() + "> matcher")
+						.withJavaDoc(Optional.of("having last item with a specific value"),
+								Optional.of("matcher matcher on the item"), Optional.empty())
+						.havingDefault(getExpectedElement() + ".hasLastItem(matcher)"));
 	}
 
 }
