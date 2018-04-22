@@ -46,8 +46,11 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 
 	private static final String JAVADOC_ANDWITH = "    /**\n     * Add a matcher on the object itself and not on a specific field.\n     * <p>\n     * <i>This method, when used more than once, just add more matcher to the list.</i>\n     * @param otherMatcher the matcher on the object itself.\n     * @return the DSL to continue\n     */\n";
 
+	private final String dslInterfaceDescription;
+
 	public ProvidesMatchersAnnotatedElementMatcherMirror(TypeElement typeElement, RoundMirror roundMirror) {
 		super(typeElement, roundMirror);
+		this.dslInterfaceDescription = "DSL interface for matcher on " + getDefaultLinkForAnnotatedClass();
 	}
 
 	public String generatePublicInterface() {
@@ -70,10 +73,6 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 						.append("\n\n").append(generateAsPublicInterface()).append("  }\n").toString();
 	}
 
-	private String getDslInterfaceMatcherDescription() {
-		return "DSL interface for matcher on " + getDefaultLinkForAnnotatedClass();
-	}
-
 	private String generateAsPublicInterface() {
 		String fully = getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric();
 		String otherMatcher = "org.hamcrest.Matcher<? super " + fully + "> otherMatcher";
@@ -82,34 +81,34 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 		StringBuilder sb = new StringBuilder(JAVADOC_ANDWITH).append("    ").append(interfaceWithGeneric)
 				.append(" andWith(").append(otherMatcher).append(");\n\n");
 
-		sb.append(JAVADOC_ANDWITHAS).append("    default <_TARGETOBJECT> ").append(interfaceWithGeneric)
-				.append(" andWithAs(java.util.function.Function<").append(fully)
-				.append(",_TARGETOBJECT> converter,org.hamcrest.Matcher<? super _TARGETOBJECT> otherMatcher) {\n")
-				.append("      return andWith(asFeatureMatcher(\" <object is converted> \",converter,otherMatcher));\n")
-				.append("    }\n\n");
+		sb.append(JAVADOC_ANDWITHAS)
+				.append(String.format(
+						"    default <_TARGETOBJECT> %1$s andWithAs(java.util.function.Function<%2$s,_TARGETOBJECT> converter,org.hamcrest.Matcher<? super _TARGETOBJECT> otherMatcher) {\n      return andWith(asFeatureMatcher(\" <object is converted> \",converter,otherMatcher));\n    }\n\n",
+						interfaceWithGeneric, fully));
 
 		sb.append(addPrefix("  ",
 				generateJavaDocWithoutParamNeitherParent(
 						"Method that return the matcher itself and accept one single Matcher on the object itself.",
 						JAVADOC_WARNING_SYNTAXIC_SUGAR_NO_CHANGE_ANYMORE,
 						Optional.of("otherMatcher the matcher on the object itself."), Optional.of("the matcher"))))
-				.append("\n").append("    default org.hamcrest.Matcher<").append(fully).append("> buildWith(")
-				.append(otherMatcher).append(") {\n      return andWith(otherMatcher);\n    }\n\n");
+				.append(String.format(
+						"\n    default org.hamcrest.Matcher<%1$s> buildWith(%2$s) {\n      return andWith(otherMatcher);\n    }\n\n",
+						fully, otherMatcher));
 
 		sb.append(addPrefix("  ", generateJavaDocWithoutParamNeitherParent(
 				"Method that return the parent builder and accept one single Matcher on the object itself.",
 				JAVADOC_WARNING_PARENT_MAY_BE_VOID, Optional.of("otherMatcher the matcher on the object itself."),
-				Optional.of("the parent builder or null if not applicable")))).append("    default _PARENT endWith(")
-				.append(otherMatcher).append("){\n      return andWith(otherMatcher).end();\n    }\n");
+				Optional.of("the parent builder or null if not applicable"))))
+				.append(String.format(
+						"    default _PARENT endWith(%1$s){\n      return andWith(otherMatcher).end();\n    }\n",
+						otherMatcher));
 		return sb.toString();
 	}
 
 	private String generateMainParentPublicInterface() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(addPrefix("  ",
-				generateJavaDoc(getDslInterfaceMatcherDescription() + " to support the end syntaxic sugar",
-						Optional.empty(), Optional.empty(), Optional.empty(), true, true)))
-				.append("\n");
+		sb.append(addPrefix("  ", generateJavaDoc(dslInterfaceDescription + " to support the end syntaxic sugar",
+				Optional.empty(), Optional.empty(), Optional.empty(), true, true))).append("\n");
 		sb.append("  public static interface " + simpleNameOfGeneratedInterfaceMatcher + "EndSyntaxicSugar"
 				+ getFullGenericParent() + " extends org.hamcrest.Matcher<"
 				+ getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + "> {\n");
@@ -124,11 +123,10 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	private String generateMainBuildPublicInterface() {
 		String fullyWithGeneric = getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric();
 		return new StringBuilder(addPrefix("  ",
-				generateJavaDoc(getDslInterfaceMatcherDescription() + " to support the build syntaxic sugar",
-						Optional.empty(), Optional.empty(), Optional.empty(), true, false)))
-								.append("\n  public static interface ").append(simpleNameOfGeneratedInterfaceMatcher)
-								.append("BuildSyntaxicSugar").append(fullGeneric)
-								.append(" extends org.hamcrest.Matcher<")
+				generateJavaDoc(dslInterfaceDescription + " to support the build syntaxic sugar", Optional.empty(),
+						Optional.empty(), Optional.empty(), true, false))).append("\n  public static interface ")
+								.append(simpleNameOfGeneratedInterfaceMatcher).append("BuildSyntaxicSugar")
+								.append(fullGeneric).append(" extends org.hamcrest.Matcher<")
 								.append(fullyWithGeneric).append(
 										"> {\n")
 						.append(addPrefix("  ",
