@@ -97,10 +97,11 @@ public class CollectionFieldDescription extends DefaultFieldDescription {
 
 	public String getFieldCopyForList(String lhs, String rhs) {
 		String fieldAccessor = getFieldAccessor();
-		return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + getFieldName() + "(" + MATCHERS
-				+ ".nullValue()); } else if (" + rhs + "." + fieldAccessor + ".isEmpty()) {" + lhs + "."
-				+ getFieldName() + "IsEmptyIterable(); } else {" + lhs + "." + getFieldName() + "Contains(" + rhs + "."
-				+ fieldAccessor + ".stream().map(" + generateMatcherBuilderReferenceFor(generic)
+		String fieldName = getFieldName();
+		return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + fieldName + "(" + MATCHERS
+				+ ".nullValue()); } else if (" + rhs + "." + fieldAccessor + ".isEmpty()) {" + lhs + "." + fieldName
+				+ "IsEmptyIterable(); } else {" + lhs + "." + fieldName + "Contains(" + rhs + "." + fieldAccessor
+				+ ".stream().map(" + generateMatcherBuilderReferenceFor(generic)
 				+ ").collect(java.util.stream.Collectors.toList())); }";
 	}
 
