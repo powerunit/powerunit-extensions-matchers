@@ -217,31 +217,27 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	}
 
 	protected String generatePrivateImplementation() {
+		String parentEntry = fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher
+				.map(p -> "    private SuperClassMatcher _parent;\n\n"
+						+ generatePrivateImplementationConstructor("org.hamcrest.Matcher<? super " + p + "> parent",
+								"this._parent=new SuperClassMatcher(parent);", "this._parentBuilder=null;")
+						+ "\n\n"
+						+ generatePrivateImplementationConstructor(
+								"org.hamcrest.Matcher<? super " + p + "> parent,_PARENT parentBuilder",
+								"this._parent=new SuperClassMatcher(parent);", "this._parentBuilder=parentBuilder;")
+						+ "\n\n")
+				.orElseGet(() -> generatePrivateImplementationConstructor("", "this._parentBuilder=null;") + "\n\n"
+						+ generatePrivateImplementationConstructor("_PARENT parentBuilder",
+								"this._parentBuilder=parentBuilder;")
+						+ "\n\n");
 		return new StringBuilder("  /* package protected */ static class ")
 				.append(simpleNameOfGeneratedImplementationMatcher).append(getFullGenericParent())
 				.append(" extends org.hamcrest.TypeSafeDiagnosingMatcher<")
 				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append("> implements ")
-				.append(getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + " {\n")
-				.append("    "
-						+ fields.stream().map(AbstractFieldDescription::asMatcherField).collect(joining("\n    ")))
-				.append("\n")
-				.append("    private final _PARENT _parentBuilder;\n\n    private final java.util.List<org.hamcrest.Matcher> nextMatchers = new java.util.ArrayList<>();\n")
-				.append(fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher
-						.map(p -> "    private SuperClassMatcher _parent;\n\n"
-								+ generatePrivateImplementationConstructor(
-										"org.hamcrest.Matcher<? super " + p + "> parent",
-										"this._parent=new SuperClassMatcher(parent);", "this._parentBuilder=null;")
-								+ "\n\n"
-								+ generatePrivateImplementationConstructor(
-										"org.hamcrest.Matcher<? super " + p + "> parent,_PARENT parentBuilder",
-										"this._parent=new SuperClassMatcher(parent);",
-										"this._parentBuilder=parentBuilder;")
-								+ "\n\n")
-						.orElseGet(
-								() -> generatePrivateImplementationConstructor("", "this._parentBuilder=null;") + "\n\n"
-										+ generatePrivateImplementationConstructor("_PARENT parentBuilder",
-												"this._parentBuilder=parentBuilder;")
-										+ "\n\n"))
+				.append(getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + " {\n    ")
+				.append(fields.stream().map(AbstractFieldDescription::asMatcherField).collect(joining("\n    ")))
+				.append("\n    private final _PARENT _parentBuilder;\n\n    private final java.util.List<org.hamcrest.Matcher> nextMatchers = new java.util.ArrayList<>();\n")
+				.append(parentEntry)
 				.append(fields.stream().map(AbstractFieldDescription::getImplementationInterface)
 						.map(s -> addPrefix("    ", s)).collect(joining("\n")))
 				.append("\n").append(generatePrivateImplementationForMatchersSafely()).append("\n")
