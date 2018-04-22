@@ -58,30 +58,29 @@ public class CollectionFieldDescription extends DefaultFieldDescription {
 	}
 
 	public List<FieldDSLMethod> getDslForIterableWithGeneric() {
+		String tgeneric = this.generic;
+		String genericmatcher = "org.hamcrest.Matcher<" + tgeneric + ">";
 		return Arrays.asList(
-				getDslMethodBuilder().withDeclaration("Contains", this.generic + "... elements")
+				getDslMethodBuilder().withDeclaration("Contains", tgeneric + "... elements")
 						.withJavaDoc("that the iterable contains the received elements", "elements the elements",
 								MATCHERS + "#contains(java.lang.Object[])")
-						.havingDefault(MATCHERS + ".contains(elements)"),
-				getDslMethodBuilder()
-						.withDeclaration("Contains", "org.hamcrest.Matcher<" + this.generic + ">... matchersOnElements")
+				.havingDefault(MATCHERS + ".contains(elements)"),
+				getDslMethodBuilder().withDeclaration("Contains", genericmatcher + "... matchersOnElements")
 						.withJavaDoc("that the iterable contains the received elements, using matchers",
 								DEFAULT_JAVADOC_MATCHER_ON_ELEMENTS, MATCHERS + "#contains(org.hamcrest.Matcher[])")
 						.havingDefault(MATCHERS + ".contains(matchersOnElements)"),
-				getDslMethodBuilder().withDeclaration("ContainsInAnyOrder", this.generic + "... elements")
+				getDslMethodBuilder().withDeclaration("ContainsInAnyOrder", tgeneric + "... elements")
 						.withJavaDoc("that the iterable contains the received elements in any order",
 								"elements the elements", MATCHERS + "#containsInAnyOrder(java.lang.Object[])")
 						.havingDefault(MATCHERS + ".containsInAnyOrder(elements)"),
-				getDslMethodBuilder()
-						.withDeclaration("ContainsInAnyOrder",
-								"org.hamcrest.Matcher<" + this.generic + ">... matchersOnElements")
+				getDslMethodBuilder().withDeclaration("ContainsInAnyOrder", genericmatcher + "... matchersOnElements")
 						.withJavaDoc("that the iterable contains the received elements, using matchers in any order",
 								DEFAULT_JAVADOC_MATCHER_ON_ELEMENTS,
 								MATCHERS + "#containsInAnyOrder(org.hamcrest.Matcher[])")
 						.havingDefault(MATCHERS + ".containsInAnyOrder(matchersOnElements)"),
 				getDslMethodBuilder()
 						.withDeclaration("Contains",
-								"java.util.List<org.hamcrest.Matcher<? super " + this.generic + ">> matchersOnElements")
+								"java.util.List<org.hamcrest.Matcher<? super " + tgeneric + ">> matchersOnElements")
 						.withJavaDoc("that the iterable contains the received elements, using list of matcher",
 								DEFAULT_JAVADOC_MATCHER_ON_ELEMENTS, MATCHERS + "#contains(java.util.List)")
 						.havingDefault(MATCHERS + ".contains(matchersOnElements)"));
@@ -97,10 +96,11 @@ public class CollectionFieldDescription extends DefaultFieldDescription {
 
 	public String getFieldCopyForList(String lhs, String rhs) {
 		String fieldAccessor = getFieldAccessor();
-		return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + getFieldName() + "(" + MATCHERS
-				+ ".nullValue()); } else if (" + rhs + "." + fieldAccessor + ".isEmpty()) {" + lhs + "."
-				+ getFieldName() + "IsEmptyIterable(); } else {" + lhs + "." + getFieldName() + "Contains(" + rhs + "."
-				+ fieldAccessor + ".stream().map(" + generateMatcherBuilderReferenceFor(generic)
+		String fieldName = getFieldName();
+		return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + fieldName + "(" + MATCHERS
+				+ ".nullValue()); } else if (" + rhs + "." + fieldAccessor + ".isEmpty()) {" + lhs + "." + fieldName
+				+ "IsEmptyIterable(); } else {" + lhs + "." + fieldName + "Contains(" + rhs + "." + fieldAccessor
+				+ ".stream().map(" + generateMatcherBuilderReferenceFor(generic)
 				+ ").collect(java.util.stream.Collectors.toList())); }";
 	}
 

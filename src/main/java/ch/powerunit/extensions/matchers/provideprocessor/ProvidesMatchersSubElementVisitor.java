@@ -38,8 +38,8 @@ import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescription
  * @author borettim
  *
  */
-public class ProvidesMatchersSubElementVisitor
-		extends SimpleElementVisitor8<Optional<AbstractFieldDescription>, ProvidesMatchersAnnotatedElementMirror> {
+public class ProvidesMatchersSubElementVisitor extends
+		SimpleElementVisitor8<Optional<AbstractFieldDescription>, ProvidesMatchersAnnotatedElementMatcherMirror> {
 
 	private final Function<Element, Boolean> removeFromIgnoreList;
 	private final NameExtractorVisitor extractNameVisitor;
@@ -59,7 +59,7 @@ public class ProvidesMatchersSubElementVisitor
 
 	@Override
 	public Optional<AbstractFieldDescription> visitVariable(VariableElement e,
-			ProvidesMatchersAnnotatedElementMirror p) {
+			ProvidesMatchersAnnotatedElementMatcherMirror p) {
 		if (e.getModifiers().contains(Modifier.PUBLIC) && !e.getModifiers().contains(Modifier.STATIC)) {
 			String fieldName = e.getSimpleName().toString();
 			return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, fieldName);
@@ -70,7 +70,7 @@ public class ProvidesMatchersSubElementVisitor
 
 	@Override
 	public Optional<AbstractFieldDescription> visitExecutable(ExecutableElement e,
-			ProvidesMatchersAnnotatedElementMirror p) {
+			ProvidesMatchersAnnotatedElementMatcherMirror p) {
 		if (e.getModifiers().contains(Modifier.PUBLIC) && e.getParameters().size() == 0
 				&& !e.getModifiers().contains(Modifier.STATIC)) {
 			String simpleName = e.getSimpleName().toString();
@@ -91,7 +91,7 @@ public class ProvidesMatchersSubElementVisitor
 	}
 
 	private Optional<AbstractFieldDescription> visiteExecutableGet(ExecutableElement e, String prefix,
-			ProvidesMatchersAnnotatedElementMirror p) {
+			ProvidesMatchersAnnotatedElementMatcherMirror p) {
 		String methodName = e.getSimpleName().toString();
 		String fieldNameDirect = methodName.replaceFirst(prefix, "");
 		String fieldName = fieldNameDirect.substring(0, 1).toLowerCase() + fieldNameDirect.substring(1);
@@ -99,7 +99,7 @@ public class ProvidesMatchersSubElementVisitor
 	}
 
 	public Optional<AbstractFieldDescription> createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(
-			Element e, ProvidesMatchersAnnotatedElementMirror p, String fieldName) {
+			Element e, ProvidesMatchersAnnotatedElementMatcherMirror p, String fieldName) {
 		return removeIfNeededAndThenReturn(
 				((e instanceof ExecutableElement) ? ((ExecutableElement) e).getReturnType() : e.asType())
 						.accept(extractNameVisitor, false).map(f -> FieldDescriptionProvider.of(() -> p,
@@ -107,7 +107,8 @@ public class ProvidesMatchersSubElementVisitor
 	}
 
 	@Override
-	protected Optional<AbstractFieldDescription> defaultAction(Element e, ProvidesMatchersAnnotatedElementMirror p) {
+	protected Optional<AbstractFieldDescription> defaultAction(Element e,
+			ProvidesMatchersAnnotatedElementMatcherMirror p) {
 		return Optional.empty();
 	}
 

@@ -21,7 +21,7 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 
 @FunctionalInterface
 public interface ProvidesMatchersAnnotatedElementData {
-	ProvidesMatchersAnnotatedElementMirror getFullData();
+	ProvidesMatchersAnnotatedElementMatcherMirror getFullData();
 
 	default RoundMirror getRoundMirror() {
 		return getFullData().getRoundMirror();

@@ -71,6 +71,12 @@ class FactoryAnnotatedElementMirror {
 		return result;
 	}
 
+	public String getParam() {
+		String param = element.getParameters().stream()
+				.map(ve -> ve.asType().toString() + " " + ve.getSimpleName().toString()).collect(joining(","));
+		return element.isVarArgs() ? param.replaceAll(VAR_ARG_REGEX, "...") : param;
+	}
+
 	private String convertParameterForSee(VariableElement ve) {
 		Element e = processingEnv.getTypeUtils().asElement(ve.asType());
 		if (e == null || ve.asType().getKind() == TypeKind.TYPEVAR) {
@@ -80,35 +86,40 @@ class FactoryAnnotatedElementMirror {
 				+ processingEnv.getTypeUtils().asElement(ve.asType()).getSimpleName();
 	}
 
-	public String generateFactory() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("  /**\n   * " + doc.map(t -> t.replaceAll("\n", "\n   * ").replaceAll("  * $", "\n"))
+	private String getJavadoc() {
+		return new StringBuilder("  /**\n   * " + doc.map(t -> t.replaceAll("\n", "\n   * ").replaceAll("  * $", "\n"))
 				.orElse("No javadoc found from the source method.")).append("\n   * @see " + getSeeValue() + "\n   */")
-				.append("\n");
-		sb.append("  default ");
+						.append("\n").toString();
+	}
+
+	private String getGeneric() {
 		if (!element.getTypeParameters().isEmpty()) {
-			sb.append("<")
+			return new StringBuilder("<")
 					.append(element.getTypeParameters().stream()
-							.map((ve) -> ve.getSimpleName().toString() + (ve.getBounds().isEmpty() ? ""
-									: (" extends "
-											+ ve.getBounds().stream().map(Object::toString).collect(joining("&")))))
+							.map(ve -> ve.getSimpleName().toString()
+									+ (ve.getBounds().isEmpty() ? ""
+											: (" extends " + ve.getBounds().stream().map(Object::toString)
+													.collect(joining("&")))))
 							.collect(joining(",")))
-					.append("> ");
+					.append("> ").toString();
 		}
-		sb.append(element.getReturnType().toString()).append(" ").append(element.getSimpleName().toString())
-				.append("(");
-		String param = element.getParameters().stream()
-				.map((ve) -> ve.asType().toString() + " " + ve.getSimpleName().toString()).collect(joining(","));
-		sb.append(element.isVarArgs() ? param.replaceAll(VAR_ARG_REGEX, "...") : param);
-		sb.append(") {").append("\n")
-				.append(TypeKind.VOID != element.getReturnType().getKind() ? "    return " : "    ");
-		sb.append(processingEnv.getElementUtils().getPackageOf(element.getEnclosingElement()).getQualifiedName()
-				.toString()).append(".")
-				.append(element.getEnclosingElement().getSimpleName().toString())
-				.append(".").append(element.getSimpleName().toString()).append("(").append(element.getParameters()
-						.stream().map((ve) -> ve.getSimpleName().toString()).collect(joining(",")))
-				.append(");\n  }\n\n");
-		return sb.toString();
+		return "";
+	}
+
+	private String getDeclaration() {
+		return String.format("%1$s%2$s %3$s(%4$s)", getGeneric(), element.getReturnType(), element.getSimpleName(),
+				getParam());
+	}
+
+	public String generateFactory() {
+		return new StringBuilder(getJavadoc()).append("  default ").append(getDeclaration()).append(" {\n")
+				.append(TypeKind.VOID != element.getReturnType().getKind() ? "    return " : "    ")
+				.append(processingEnv.getElementUtils().getPackageOf(element.getEnclosingElement()).getQualifiedName()
+						.toString())
+				.append(".").append(element.getEnclosingElement().getSimpleName().toString()).append(".")
+				.append(element.getSimpleName().toString()).append("(").append(element.getParameters().stream()
+						.map((ve) -> ve.getSimpleName().toString()).collect(joining(",")))
+				.append(");\n  }\n\n").toString();
 	}
 
 }

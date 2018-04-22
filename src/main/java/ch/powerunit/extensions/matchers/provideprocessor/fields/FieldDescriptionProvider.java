@@ -20,6 +20,7 @@
 package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
@@ -93,11 +94,12 @@ public final class FieldDescriptionProvider {
 
 	public static AbstractFieldDescription of(ProvidesMatchersAnnotatedElementData containingElementMirror,
 			FieldDescriptionMirror mirror) {
+		Element te = mirror.getFieldElement();
 		ProcessingEnvironment processingEnv = containingElementMirror.getRoundMirror().getProcessingEnv();
-		Type type = new ExtracTypeVisitor().visit((mirror.getFieldElement() instanceof ExecutableElement)
-				? ((ExecutableElement) mirror.getFieldElement()).getReturnType() : mirror.getFieldElement().asType(),
+		Type type = new ExtracTypeVisitor().visit(
+				(te instanceof ExecutableElement) ? ((ExecutableElement) te).getReturnType() : te.asType(),
 				processingEnv);
-		if (mirror.getFieldElement().getAnnotation(IgnoreInMatcher.class) != null) {
+		if (te.getAnnotation(IgnoreInMatcher.class) != null) {
 			return new IgoreFieldDescription(containingElementMirror, mirror);
 		}
 
