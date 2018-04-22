@@ -57,8 +57,7 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 
 	protected final TypeElement typeElementForClassAnnotatedWithProvideMatcher;
 	protected final String methodShortClassName;
-	protected final boolean hasParent;
-	protected final String fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher;
+	protected final Optional<String> fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher;
 	protected final String simpleNameOfGeneratedImplementationMatcher;
 	protected final List<AbstractFieldDescription> fields;
 	protected final RoundMirror roundMirror;
@@ -84,9 +83,13 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 		ProcessingEnvironment processingEnv = roundMirror.getProcessingEnv();
 		this.methodShortClassName = simpleNameOfClassAnnotatedWithProvideMatcher.substring(0, 1).toLowerCase()
 				+ simpleNameOfClassAnnotatedWithProvideMatcher.substring(1);
-		this.hasParent = !processingEnv.getElementUtils().getTypeElement("java.lang.Object").asType()
-				.equals(typeElement.getSuperclass());
-		this.fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher = typeElement.getSuperclass().toString();
+		if (!processingEnv.getElementUtils().getTypeElement("java.lang.Object").asType()
+				.equals(typeElement.getSuperclass())) {
+			this.fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher = Optional
+					.ofNullable(typeElement.getSuperclass().toString());
+		} else {
+			this.fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher = Optional.empty();
+		}
 		this.simpleNameOfGeneratedImplementationMatcher = simpleNameOfClassAnnotatedWithProvideMatcher + "MatcherImpl";
 		this.fields = generateFields(typeElement, new ProvidesMatchersSubElementVisitor(roundMirror));
 	}
@@ -95,9 +98,8 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 		StringBuilder sb = new StringBuilder();
 		sb.append(DEFAULT_FEATUREMATCHER_FORCONVERTER);
 		sb.append(generateFieldsMatcher());
-		if (hasParent) {
-			sb.append(generateParentMatcher());
-		}
+		sb.append(fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.map(this::generateParentMatcher)
+				.orElse(""));
 		return sb.toString();
 	}
 
@@ -106,11 +108,10 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 				.collect(joining("\n")) + "\n";
 	}
 
-	public String generateParentMatcher() {
+	public String generateParentMatcher(String parent) {
 		return String.format(
 				"  private static class SuperClassMatcher%1$s extends org.hamcrest.FeatureMatcher<%2$s,%3$s> {\n\n    public SuperClassMatcher(org.hamcrest.Matcher<? super %3$s> matcher) {\n      super(matcher,\"parent\",\"parent\");\n  }\n\n\n    protected %3$s featureValueOf(%2$s actual) {\n      return actual;\n    }\n\n  }\n\n\n",
-				fullGeneric, fullyQualifiedNameOfClassAnnotatedWithProvideMatcher,
-				fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher);
+				fullGeneric, fullyQualifiedNameOfClassAnnotatedWithProvideMatcher, parent);
 	}
 
 	public String generatePublicInterface() {
@@ -229,16 +230,15 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 						+ fields.stream().map(AbstractFieldDescription::asMatcherField).collect(joining("\n    ")))
 				.append("\n")
 				.append("    private final _PARENT _parentBuilder;\n\n    private final java.util.List<org.hamcrest.Matcher> nextMatchers = new java.util.ArrayList<>();\n");
-		if (hasParent) {
+		if (fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()) {
 			sb.append("    private SuperClassMatcher _parent;\n\n")
-					.append(generatePrivateImplementationConstructor(
-							"org.hamcrest.Matcher<? super "
-									+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher + "> parent",
-							"this._parent=new SuperClassMatcher(parent);", "this._parentBuilder=null;"))
+					.append(generatePrivateImplementationConstructor("org.hamcrest.Matcher<? super "
+							+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.get() + "> parent",
+					"this._parent=new SuperClassMatcher(parent);", "this._parentBuilder=null;"))
 					.append("\n\n")
 					.append(generatePrivateImplementationConstructor(
 							"org.hamcrest.Matcher<? super "
-									+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher
+									+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.get()
 									+ "> parent,_PARENT parentBuilder",
 							"this._parent=new SuperClassMatcher(parent);", "this._parentBuilder=parentBuilder;"))
 					.append("\n\n");
@@ -264,7 +264,7 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 				.append(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher)
 				.append(" actual, org.hamcrest.Description mismatchDescription) {\n")
 				.append("      boolean result=true;\n");
-		if (hasParent) {
+		if (fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()) {
 			sb.append(PARENT_VALIDATION);
 		}
 		fields.stream().map(f -> f.asMatchesSafely() + "\n").map(f -> addPrefix("      ", f)).forEach(sb::append);
@@ -278,7 +278,7 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 				"    @Override\n    public void describeTo(org.hamcrest.Description description) {\n")
 						.append("      description.appendText(\"an instance of ")
 						.append(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher).append(" with\\n\");\n");
-		if (hasParent) {
+		if (fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()) {
 			sb.append(PARENT_DESCRIBETO);
 		}
 		fields.stream().map(f -> f.asDescribeTo() + "\n").map(f -> addPrefix("      ", f)).forEach(sb::append);

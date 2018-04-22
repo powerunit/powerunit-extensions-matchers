@@ -50,7 +50,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 		boolean hasParentInSameRound = roundMirror.isInSameRound(typeElement);
 		List<Supplier<DSLMethod>> tmp = new ArrayList<>(
 				Arrays.asList(this::generateDefaultDSLStarter, this::generateDefaultForChainingDSLStarter));
-		if (hasParent) {
+		if (fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()) {
 			tmp.add(this::generateParentDSLStarter);
 			if (hasParentInSameRound) {
 				tmp.add(this::generateParentValueDSLStarter);
@@ -115,13 +115,13 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 
 	public String getDefaultStarterBody(boolean withParentBuilder) {
 		if (withParentBuilder) {
-			return hasParent
+			return fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()
 					? ("return new " + simpleNameOfGeneratedImplementationMatcher + getGenericParent()
 							+ "(org.hamcrest.Matchers.anything(),parentBuilder);")
 					: ("return new " + simpleNameOfGeneratedImplementationMatcher + getGenericParent()
 							+ "(parentBuilder);");
 		} else {
-			return hasParent
+			return fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()
 					? ("return new " + simpleNameOfGeneratedImplementationMatcher + getGenericNoParent()
 							+ "(org.hamcrest.Matchers.anything());")
 					: ("return new " + simpleNameOfGeneratedImplementationMatcher + getGenericNoParent() + "();");
@@ -163,7 +163,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 						+ "With",
 				new String[] {
 						"org.hamcrest.Matcher<? super "
-								+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher + ">",
+								+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.get() + ">",
 						"matcherOnParent" },
 				"return " + getFullyQualifiedNameOfGeneratedClass() + "." + methodShortClassName
 						+ "With(matcherOnParent);");
