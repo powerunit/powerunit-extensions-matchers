@@ -3,6 +3,7 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,11 +29,14 @@ public abstract class AbstractHamcrestDateMatchersAutomatedExtension extends Aut
 
 	private final String targetType;
 
+	private final boolean withSameDay;
+
 	public AbstractHamcrestDateMatchersAutomatedExtension(RoundMirror roundMirror, String targetElement,
-			String targetType) {
+			String targetType, boolean withSameDay) {
 		super(roundMirror, targetElement);
 		this.targetType = targetType;
 		knownType = getMirrorOr(targetType);
+		this.withSameDay = withSameDay;
 	}
 
 	private FieldDSLMethod builderFor(AbstractFieldDescription field, String targetMethod) {
@@ -58,8 +62,12 @@ public abstract class AbstractHamcrestDateMatchersAutomatedExtension extends Aut
 		if (!isSameType(field.getFieldTypeAsTypeElement(), knownType)) {
 			return Collections.emptyList();
 		}
-		return Arrays.asList(builderFor(field, "after"), builderFor(field, "sameOrAfter"), builderFor(field, "before"),
-				builderFor(field, "sameOrBefore"), builderFor(field, "sameDay"));
+		Collection<FieldDSLMethod> tmp = new ArrayList<>(Arrays.asList(builderFor(field, "after"),
+				builderFor(field, "sameOrAfter"), builderFor(field, "before"), builderFor(field, "sameOrBefore")));
+		if (withSameDay) {
+			tmp.add(builderFor(field, "sameDay"));
+		}
+		return Collections.unmodifiableCollection(tmp);
 	}
 
 	/*

@@ -12,7 +12,7 @@ import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
 public class LocalDateMatchersAutomatedExtension extends AbstractHamcrestDateMatchersAutomatedExtension {
 
 	public LocalDateMatchersAutomatedExtension(RoundMirror roundMirror) {
-		super(roundMirror, "org.exparity.hamcrest.date.LocalDateMatchers", "java.time.LocalDate");
+		super(roundMirror, "org.exparity.hamcrest.date.LocalDateMatchers", "java.time.LocalDate", true);
 	}
 
 }
