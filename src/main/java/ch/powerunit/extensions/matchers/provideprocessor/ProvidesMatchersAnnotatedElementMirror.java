@@ -114,17 +114,16 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	}
 
 	public String getDefaultStarterBody(boolean withParentBuilder) {
+		String targetImpl = withParentBuilder ? getSimpleNameOfGeneratedImplementationMatcherWithGenericParent()
+				: getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent();
 		if (withParentBuilder) {
 			return fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()
-					? ("return new " + getSimpleNameOfGeneratedImplementationMatcher() + getGenericParent()
-							+ "(org.hamcrest.Matchers.anything(),parentBuilder);")
-					: ("return new " + getSimpleNameOfGeneratedImplementationMatcher() + getGenericParent()
-							+ "(parentBuilder);");
+					? ("return new " + targetImpl + "(org.hamcrest.Matchers.anything(),parentBuilder);")
+					: ("return new " + targetImpl + "(parentBuilder);");
 		} else {
 			return fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()
-					? ("return new " + getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent()
-							+ "(org.hamcrest.Matchers.anything());")
-					: ("return new " + getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent() + "();");
+					? ("return new " + targetImpl + "(org.hamcrest.Matchers.anything());")
+					: ("return new " + targetImpl + "();");
 		}
 	}
 

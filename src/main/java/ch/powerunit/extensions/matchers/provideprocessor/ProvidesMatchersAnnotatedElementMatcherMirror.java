@@ -145,13 +145,12 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	private String generateAsPublicInterface() {
 		String fully = getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric();
 		String otherMatcher = "org.hamcrest.Matcher<? super " + fully + "> otherMatcher";
+		String interfaceWithGeneric = getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent();
 
-		StringBuilder sb = new StringBuilder(JAVADOC_ANDWITH).append("    ")
-				.append(getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent()).append(" andWith(")
-				.append(otherMatcher).append(");\n\n");
+		StringBuilder sb = new StringBuilder(JAVADOC_ANDWITH).append("    ").append(interfaceWithGeneric)
+				.append(" andWith(").append(otherMatcher).append(");\n\n");
 
-		sb.append(JAVADOC_ANDWITHAS).append("    default <_TARGETOBJECT> ")
-				.append(getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent())
+		sb.append(JAVADOC_ANDWITHAS).append("    default <_TARGETOBJECT> ").append(interfaceWithGeneric)
 				.append(" andWithAs(java.util.function.Function<").append(fully)
 				.append(",_TARGETOBJECT> converter,org.hamcrest.Matcher<? super _TARGETOBJECT> otherMatcher) {\n")
 				.append("      return andWith(asFeatureMatcher(\" <object is converted> \",converter,otherMatcher));\n")
@@ -191,20 +190,20 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	}
 
 	private String generateMainBuildPublicInterface() {
+		String fullyWithGeneric = getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric();
 		return new StringBuilder(addPrefix("  ",
 				generateJavaDoc(getDslInterfaceMatcherDescription() + " to support the build syntaxic sugar",
 						Optional.empty(), Optional.empty(), Optional.empty(), true, false)))
 								.append("\n  public static interface ").append(simpleNameOfGeneratedInterfaceMatcher)
 								.append("BuildSyntaxicSugar").append(fullGeneric)
 								.append(" extends org.hamcrest.Matcher<")
-								.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append(
+								.append(fullyWithGeneric).append(
 										"> {\n")
 						.append(addPrefix("  ",
 								generateJavaDocWithoutParamNeitherParent("Method that return the matcher itself.",
 										JAVADOC_WARNING_SYNTAXIC_SUGAR_NO_CHANGE_ANYMORE, Optional.empty(),
 										Optional.of("the matcher"))))
-								.append("\n    default org.hamcrest.Matcher<")
-								.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric())
+								.append("\n    default org.hamcrest.Matcher<").append(fullyWithGeneric)
 								.append("> build() {\n      return this;\n    }\n  }\n").toString();
 	}
 
@@ -294,6 +293,10 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 
 	public String getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent() {
 		return getSimpleNameOfGeneratedImplementationMatcher() + getGenericNoParent();
+	}
+	
+	public String getSimpleNameOfGeneratedImplementationMatcherWithGenericParent() {
+		return getSimpleNameOfGeneratedImplementationMatcher() + getGenericParent();
 	}
 
 	public RoundMirror getRoundMirror() {
