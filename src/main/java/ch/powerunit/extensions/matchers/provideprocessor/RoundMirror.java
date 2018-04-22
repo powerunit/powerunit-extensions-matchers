@@ -19,11 +19,14 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
@@ -36,8 +39,13 @@ import ch.powerunit.extensions.matchers.AddToMatcher;
 import ch.powerunit.extensions.matchers.AddToMatchers;
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.AutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethod;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescriptionMetaData;
 
 public class RoundMirror {
+
+	private final AutomatedExtension AUTOMATED_EXTENSIONS[] = {};
 
 	private final RoundEnvironment roundEnv;
 	private final ProcessingEnvironment processingEnv;
@@ -114,6 +122,16 @@ public class RoundMirror {
 				.getTypeElement("ch.powerunit.extensions.matchers.ProvideMatchers").asType();
 		return getProcessingEnv().getElementUtils().getAllAnnotationMirrors(e).stream()
 				.filter(a -> a.getAnnotationType().equals(pmtm)).findAny().orElse(null);
+	}
+
+	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData target) {
+		return Arrays.stream(AUTOMATED_EXTENSIONS).map(ae -> ae.accept(target)).flatMap(Collection::stream)
+				.collect(Collectors.toList());
+	}
+
+	public Collection<FieldDSLMethod> getFieldDSLMethodFor(FieldDescriptionMetaData target) {
+		return Arrays.stream(AUTOMATED_EXTENSIONS).map(ae -> ae.accept(target)).flatMap(Collection::stream)
+				.collect(Collectors.toList());
 	}
 
 }
