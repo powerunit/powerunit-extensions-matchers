@@ -19,6 +19,14 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
+
+import org.mockito.Mock;
+
+import ch.powerunit.Rule;
+import ch.powerunit.Test;
+import ch.powerunit.TestRule;
 import ch.powerunit.TestSuite;
 
 /**
@@ -27,4 +35,17 @@ import ch.powerunit.TestSuite;
  */
 public class RoundMirrorTest implements TestSuite {
 
+	@Mock
+	private RoundEnvironment roundEnv;
+
+	@Mock
+	private ProcessingEnvironment processingEnv;
+
+	@Rule
+	public final TestRule rules = mockitoRule();
+
+	@Test
+	public void testConstructor() {
+		RoundMirror underTest = new RoundMirror(roundEnv, processingEnv);
+	}
 }
