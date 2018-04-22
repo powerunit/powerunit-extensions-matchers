@@ -22,6 +22,7 @@ package ch.powerunit.extensions.matchers.provideprocessor.extension;
 import java.util.Collection;
 import java.util.function.Supplier;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
@@ -41,18 +42,21 @@ public abstract class AutomatedExtension {
 
 	protected final RoundMirror roundMirror;
 
+	protected final ProcessingEnvironment processingEnv;
+
 	public AutomatedExtension(RoundMirror roundMirror, String expectedElement) {
 		this.expectedElement = expectedElement;
 		this.roundMirror = roundMirror;
-		this.targetElement = roundMirror.getProcessingEnv().getElementUtils().getTypeElement(expectedElement);
+		this.processingEnv = roundMirror.getProcessingEnv();
+		this.targetElement = processingEnv.getElementUtils().getTypeElement(expectedElement);
 	}
 
 	public abstract Collection<FieldDSLMethod> accept(AbstractFieldDescription field);
 
 	public abstract Collection<Supplier<DSLMethod>> accept(ProvidesMatchersAnnotatedElementData clazz);
 
-	protected TypeMirror getMirrorOr(String name) {
-		return roundMirror.getProcessingEnv().getElementUtils().getTypeElement(name).asType();
+	protected TypeMirror getMirrorFor(String name) {
+		return processingEnv.getElementUtils().getTypeElement(name).asType();
 	}
 
 	protected BuilderDeclaration builderFor(AbstractFieldDescription field) {
@@ -60,8 +64,12 @@ public abstract class AutomatedExtension {
 	}
 
 	protected boolean isSameType(TypeElement fromField, TypeMirror compareWith) {
-		return fromField != null
-				&& roundMirror.getProcessingEnv().getTypeUtils().isSameType(compareWith, fromField.asType());
+		return fromField != null && processingEnv.getTypeUtils().isSameType(compareWith, fromField.asType());
+	}
+
+	protected boolean isAssignableWithErasure(TypeElement fromField, TypeMirror compareWith) {
+		return fromField != null && processingEnv.getTypeUtils().isAssignable(fromField.asType(),
+				processingEnv.getTypeUtils().erasure(compareWith));
 	}
 
 	public final boolean isPresent() {

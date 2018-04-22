@@ -141,6 +141,10 @@ public abstract class FieldDescriptionMetaData {
 		return mirror.getFieldTypeAsTypeElement();
 	}
 
+	public String getGeneric() {
+		return generic;
+	}
+
 	public GeneratedMatcherField asGeneratedMatcherField() {
 		GeneratedMatcherField gmf = new GeneratedMatcherField();
 		gmf.setFieldIsIgnored(true);

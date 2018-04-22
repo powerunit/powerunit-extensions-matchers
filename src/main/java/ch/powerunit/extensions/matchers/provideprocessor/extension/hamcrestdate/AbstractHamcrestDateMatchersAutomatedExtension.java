@@ -35,7 +35,7 @@ public abstract class AbstractHamcrestDateMatchersAutomatedExtension extends Aut
 			String targetType, boolean withSameDay) {
 		super(roundMirror, targetElement);
 		this.targetType = targetType;
-		knownType = getMirrorOr(targetType);
+		knownType = getMirrorFor(targetType);
 		this.withSameDay = withSameDay;
 	}
 

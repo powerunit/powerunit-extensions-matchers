@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -47,13 +48,13 @@ import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.
 import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.LocalDateTimeMatchersAutomatedExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.LocalTimeMatchersAutomatedExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.ZonedDateTimeMatchersAutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestutility.CollectionHamcrestUtilityAutomatedExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethod;
 
 public class RoundMirror {
 
 	private final Collection<AutomatedExtension> AUTOMATED_EXTENSIONS;
-
 	private final RoundEnvironment roundEnv;
 	private final ProcessingEnvironment processingEnv;
 	private final Set<? extends Element> elementsWithPM;
@@ -69,13 +70,15 @@ public class RoundMirror {
 				roundEnv.getElementsAnnotatedWith(IgnoreInMatcher.class));
 		elementsWithOtherAnnotations.put(AddToMatcher.class, roundEnv.getElementsAnnotatedWith(AddToMatcher.class));
 		elementsWithOtherAnnotations.put(AddToMatchers.class, roundEnv.getElementsAnnotatedWith(AddToMatchers.class));
-		AUTOMATED_EXTENSIONS = Arrays
-				.asList(new LocalDateMatchersAutomatedExtension(this),
-						new LocalDateTimeMatchersAutomatedExtension(this),
-						new LocalTimeMatchersAutomatedExtension(this),
-						new ZonedDateTimeMatchersAutomatedExtension(this))
-				.stream().filter(AutomatedExtension::isPresent)
+		AUTOMATED_EXTENSIONS = getDefaultExtension().stream().filter(AutomatedExtension::isPresent)
 				.collect(collectingAndThen(toList(), Collections::unmodifiableList));
+	}
+
+	private final List<AutomatedExtension> getDefaultExtension() {
+		return Arrays.asList(new LocalDateMatchersAutomatedExtension(this),
+				new LocalDateTimeMatchersAutomatedExtension(this), new LocalTimeMatchersAutomatedExtension(this),
+				new ZonedDateTimeMatchersAutomatedExtension(this),
+				new CollectionHamcrestUtilityAutomatedExtension(this));
 	}
 
 	public ProcessingEnvironment getProcessingEnv() {
