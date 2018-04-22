@@ -104,22 +104,17 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	}
 
 	private String generateExposedPublicInterface() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(addPrefix("  ",
+		return new StringBuilder(addPrefix("  ",
 				generateDefaultJavaDoc(Optional.empty(), Optional.empty(), Optional.empty(), true, true))).append("\n")
-				.append("  public static interface ").append(simpleNameOfGeneratedInterfaceMatcher)
-				.append(getFullGenericParent()).append(" extends org.hamcrest.Matcher<")
-				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append(">,")
-				.append(simpleNameOfGeneratedInterfaceMatcher).append("BuildSyntaxicSugar ").append(generic).append(",")
-				.append(simpleNameOfGeneratedInterfaceMatcher).append("EndSyntaxicSugar ").append(getGenericParent())
-				.append(" {\n");
-
-		sb.append(fields.stream().map(AbstractFieldDescription::getDslInterface).map(s -> addPrefix("    ", s))
-				.collect(joining("\n"))).append("\n\n");
-
-		sb.append(generateAsPublicInterface());
-		sb.append("  }\n");
-		return sb.toString();
+						.append("  public static interface ").append(simpleNameOfGeneratedInterfaceMatcher)
+						.append(getFullGenericParent()).append(" extends org.hamcrest.Matcher<")
+						.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append(">,")
+						.append(simpleNameOfGeneratedInterfaceMatcher).append("BuildSyntaxicSugar ").append(generic)
+						.append(",").append(simpleNameOfGeneratedInterfaceMatcher).append("EndSyntaxicSugar ")
+						.append(getGenericParent()).append(" {\n")
+						.append(fields.stream().map(AbstractFieldDescription::getDslInterface)
+								.map(s -> addPrefix("    ", s)).collect(joining("\n")))
+						.append("\n\n").append(generateAsPublicInterface()).append("  }\n").toString();
 	}
 
 	private String getDslInterfaceMatcherDescription() {
@@ -229,9 +224,9 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	}
 
 	private String generatePrivateImplementationForMatchersSafely() {
-		StringBuilder sb = new StringBuilder("    @Override\n    protected boolean matchesSafely(")
-				.append(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher)
-				.append(" actual, org.hamcrest.Description mismatchDescription) {\n      boolean result=true;\n");
+		StringBuilder sb = new StringBuilder(String.format(
+				"    @Override\n    protected boolean matchesSafely(%1$s actual, org.hamcrest.Description mismatchDescription) {\n      boolean result=true;\n",
+				fullyQualifiedNameOfClassAnnotatedWithProvideMatcher));
 		if (fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()) {
 			sb.append(PARENT_VALIDATION);
 		}
@@ -241,9 +236,9 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	}
 
 	private String generatedPrivateImplementationForDescribeTo() {
-		StringBuilder sb = new StringBuilder(
-				"    @Override\n    public void describeTo(org.hamcrest.Description description) {\n      description.appendText(\"an instance of ")
-						.append(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher).append(" with\\n\");\n");
+		StringBuilder sb = new StringBuilder(String.format(
+				"    @Override\n    public void describeTo(org.hamcrest.Description description) {\n      description.appendText(\"an instance of %1$s with\\n\");\n",
+				fullyQualifiedNameOfClassAnnotatedWithProvideMatcher));
 		if (fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()) {
 			sb.append(PARENT_DESCRIBETO);
 		}
