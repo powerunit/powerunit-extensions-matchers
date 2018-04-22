@@ -20,25 +20,17 @@
 package ch.powerunit.extensions.matchers.provideprocessor;
 
 import static ch.powerunit.extensions.matchers.common.CommonUtils.addPrefix;
-import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.reducing;
-import static java.util.stream.Collectors.toList;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 import javax.lang.model.element.TypeElement;
 
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
-import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescriptionMetaData;
-import ch.powerunit.extensions.matchers.provideprocessor.fields.IgoreFieldDescription;
 
 public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
-		extends ProvidesMatchersAnnotatedElementGeneralMirror {
+		extends ProvidesMatchersAnnotatedElementFieldMatcherMirror {
 
 	private static final String PRIVATE_IMPLEMENTATION_END = "\n\n    @Override\n    public _PARENT end() {\n      return _parentBuilder;\n    }\n\n\n";
 
@@ -54,47 +46,8 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 
 	private static final String JAVADOC_ANDWITH = "    /**\n     * Add a matcher on the object itself and not on a specific field.\n     * <p>\n     * <i>This method, when used more than once, just add more matcher to the list.</i>\n     * @param otherMatcher the matcher on the object itself.\n     * @return the DSL to continue\n     */\n";
 
-	private static final String DEFAULT_FEATUREMATCHER_FORCONVERTER = "\n  private static <_TARGET,_SOURCE> org.hamcrest.Matcher<_SOURCE> asFeatureMatcher(String msg,java.util.function.Function<_SOURCE,_TARGET> converter,org.hamcrest.Matcher<? super _TARGET> matcher) {\n   return new org.hamcrest.FeatureMatcher<_SOURCE,_TARGET>(matcher, msg, msg) {\n     protected _TARGET featureValueOf(_SOURCE actual) {\n      return converter.apply(actual);\n    }};\n  }\n\n";
-
-	protected final List<AbstractFieldDescription> fields;
-
-	private List<AbstractFieldDescription> generateFields(TypeElement typeElement,
-			ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor) {
-		return typeElement.getEnclosedElements().stream()
-				.map(ie -> ie.accept(providesMatchersSubElementVisitor, this)).filter(
-						Optional::isPresent)
-				.map(Optional::get).collect(
-						collectingAndThen(
-								groupingBy(FieldDescriptionMetaData::getFieldName,
-										reducing(null,
-												(v1, v2) -> v1 == null ? v2
-														: v1 instanceof IgoreFieldDescription ? v1 : v2)),
-								c -> c == null ? emptyList() : c.values().stream().collect(toList())));
-	}
-
 	public ProvidesMatchersAnnotatedElementMatcherMirror(TypeElement typeElement, RoundMirror roundMirror) {
 		super(typeElement, roundMirror);
-		this.fields = generateFields(typeElement, new ProvidesMatchersSubElementVisitor(roundMirror));
-	}
-
-	public String generateMatchers() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(DEFAULT_FEATUREMATCHER_FORCONVERTER);
-		sb.append(generateFieldsMatcher());
-		sb.append(fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.map(this::generateParentMatcher)
-				.orElse(""));
-		return sb.toString();
-	}
-
-	public String generateFieldsMatcher() {
-		return fields.stream().map(FieldDescriptionMetaData::getMatcherForField).map(f -> addPrefix("  ", f))
-				.collect(joining("\n")) + "\n";
-	}
-
-	public String generateParentMatcher(String parent) {
-		return String.format(
-				"  private static class SuperClassMatcher%1$s extends org.hamcrest.FeatureMatcher<%2$s,%3$s> {\n\n    public SuperClassMatcher(org.hamcrest.Matcher<? super %3$s> matcher) {\n      super(matcher,\"parent\",\"parent\");\n  }\n\n\n    protected %3$s featureValueOf(%2$s actual) {\n      return actual;\n    }\n\n  }\n\n\n",
-				fullGeneric, fullyQualifiedNameOfClassAnnotatedWithProvideMatcher, parent);
 	}
 
 	public String generatePublicInterface() {
