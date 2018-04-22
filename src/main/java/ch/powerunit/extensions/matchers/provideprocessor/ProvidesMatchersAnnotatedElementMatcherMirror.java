@@ -41,6 +41,8 @@ import ch.powerunit.extensions.matchers.provideprocessor.fields.IgoreFieldDescri
 public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 		extends ProvidesMatchersAnnotatedElementGenericMirror {
 
+	private static final String PRIVATE_IMPLEMENTATION_END = "\n\n    @Override\n    public _PARENT end() {\n      return _parentBuilder;\n    }\n\n\n";
+
 	private static final String NEXTMATCHERS_DESCRIBETO = "      for(org.hamcrest.Matcher nMatcher : nextMatchers) {\n        description.appendText(\"[object itself \").appendDescriptionOf(nMatcher).appendText(\"]\\n\");\n      }\n    }\n";
 
 	private static final String PARENT_DESCRIBETO = "      description.appendText(\"[\").appendDescriptionOf(_parent).appendText(\"]\\n\");\n";
@@ -221,7 +223,7 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	}
 
 	protected String generatePrivateImplementation() {
-		StringBuilder sb = new StringBuilder("  /* package protected */ static class ")
+		return new StringBuilder("  /* package protected */ static class ")
 				.append(simpleNameOfGeneratedImplementationMatcher).append(getFullGenericParent())
 				.append(" extends org.hamcrest.TypeSafeDiagnosingMatcher<")
 				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append("> implements ")
@@ -229,34 +231,28 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 				.append("    "
 						+ fields.stream().map(AbstractFieldDescription::asMatcherField).collect(joining("\n    ")))
 				.append("\n")
-				.append("    private final _PARENT _parentBuilder;\n\n    private final java.util.List<org.hamcrest.Matcher> nextMatchers = new java.util.ArrayList<>();\n");
-		if (fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()) {
-			sb.append("    private SuperClassMatcher _parent;\n\n")
-					.append(generatePrivateImplementationConstructor("org.hamcrest.Matcher<? super "
-							+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.get() + "> parent",
-					"this._parent=new SuperClassMatcher(parent);", "this._parentBuilder=null;"))
-					.append("\n\n")
-					.append(generatePrivateImplementationConstructor(
-							"org.hamcrest.Matcher<? super "
-									+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.get()
-									+ "> parent,_PARENT parentBuilder",
-							"this._parent=new SuperClassMatcher(parent);", "this._parentBuilder=parentBuilder;"))
-					.append("\n\n");
-		} else {
-			sb.append(generatePrivateImplementationConstructor("", "this._parentBuilder=null;")).append("\n\n")
-					.append(generatePrivateImplementationConstructor("_PARENT parentBuilder",
-							"this._parentBuilder=parentBuilder;"))
-					.append("\n\n");
-		}
-
-		sb.append(fields.stream().map(AbstractFieldDescription::getImplementationInterface)
-				.map(s -> addPrefix("    ", s)).collect(joining("\n"))).append("\n");
-
-		sb.append(generatePrivateImplementationForMatchersSafely()).append("\n")
-				.append(generatedPrivateImplementationForDescribeTo())
-				.append("\n\n    @Override\n    public _PARENT end() {\n      return _parentBuilder;\n    }\n\n\n")
-				.append(generatePrivateImplementationForAndWith()).append("\n  }\n");
-		return sb.toString();
+				.append("    private final _PARENT _parentBuilder;\n\n    private final java.util.List<org.hamcrest.Matcher> nextMatchers = new java.util.ArrayList<>();\n")
+				.append(fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher
+						.map(p -> "    private SuperClassMatcher _parent;\n\n"
+								+ generatePrivateImplementationConstructor(
+										"org.hamcrest.Matcher<? super " + p + "> parent",
+										"this._parent=new SuperClassMatcher(parent);", "this._parentBuilder=null;")
+								+ "\n\n"
+								+ generatePrivateImplementationConstructor(
+										"org.hamcrest.Matcher<? super " + p + "> parent,_PARENT parentBuilder",
+										"this._parent=new SuperClassMatcher(parent);",
+										"this._parentBuilder=parentBuilder;")
+								+ "\n\n")
+						.orElseGet(
+								() -> generatePrivateImplementationConstructor("", "this._parentBuilder=null;") + "\n\n"
+										+ generatePrivateImplementationConstructor("_PARENT parentBuilder",
+												"this._parentBuilder=parentBuilder;")
+										+ "\n\n"))
+				.append(fields.stream().map(AbstractFieldDescription::getImplementationInterface)
+						.map(s -> addPrefix("    ", s)).collect(joining("\n")))
+				.append("\n").append(generatePrivateImplementationForMatchersSafely()).append("\n")
+				.append(generatedPrivateImplementationForDescribeTo()).append(PRIVATE_IMPLEMENTATION_END)
+				.append(generatePrivateImplementationForAndWith()).append("\n  }\n").toString();
 	}
 
 	private String generatePrivateImplementationForMatchersSafely() {
