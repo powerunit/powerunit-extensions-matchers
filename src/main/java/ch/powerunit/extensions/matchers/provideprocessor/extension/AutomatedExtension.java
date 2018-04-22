@@ -30,6 +30,8 @@ import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotat
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethod;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethodBuilder;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.lang.BuilderDeclaration;
 
 public abstract class AutomatedExtension {
 
@@ -48,9 +50,13 @@ public abstract class AutomatedExtension {
 	public abstract Collection<FieldDSLMethod> accept(AbstractFieldDescription field);
 
 	public abstract Collection<Supplier<DSLMethod>> accept(ProvidesMatchersAnnotatedElementData clazz);
-	
+
 	protected TypeMirror getMirrorOr(String name) {
 		return roundMirror.getProcessingEnv().getElementUtils().getTypeElement(name).asType();
+	}
+
+	protected BuilderDeclaration builderFor(AbstractFieldDescription field) {
+		return FieldDSLMethodBuilder.of(field);
 	}
 
 	protected boolean isSameType(TypeElement fromField, TypeMirror compareWith) {

@@ -46,27 +46,27 @@ public class LocalDateTimeMatchersAutomatedExtension extends AutomatedExtension 
 			return Collections.emptyList();
 		}
 		return Arrays.asList(
-				FieldDSLMethodBuilder.of(field).withDeclaration("After", "java.time.LocalDateTime after")
+				builderFor(field).withDeclaration("After", "java.time.LocalDateTime after")
 						.withJavaDoc("Verify that this LocalDateTime is after another one",
 								"after the LocalDate to compare with",
 								TARGET_ELEMENT + "#after(java.time.LocalDateTime)")
 				.havingDefault(TARGET_ELEMENT + ".after(after)"),
-				FieldDSLMethodBuilder.of(field).withDeclaration("SameOrAfter", "java.time.LocalDateTime date")
+				builderFor(field).withDeclaration("SameOrAfter", "java.time.LocalDateTime date")
 						.withJavaDoc("Verify that this LocalDateTime is after or same another one",
 								"date the LocalDate to compare with",
 								TARGET_ELEMENT + "#sameOrAfter(java.time.LocalDateTime)")
 						.havingDefault(TARGET_ELEMENT + ".sameOrAfter(date)"),
-				FieldDSLMethodBuilder.of(field).withDeclaration("Before", "java.time.LocalDateTime before")
+				builderFor(field).withDeclaration("Before", "java.time.LocalDateTime before")
 						.withJavaDoc("Verify that this LocalDateTime is before another one",
 								"before the LocalDate to compare with",
 								TARGET_ELEMENT + "#before(java.time.LocalDateTime)")
 						.havingDefault(TARGET_ELEMENT + ".before(before)"),
-				FieldDSLMethodBuilder.of(field).withDeclaration("SameorBefore", "java.time.LocalDateTime date")
+				builderFor(field).withDeclaration("SameorBefore", "java.time.LocalDateTime date")
 						.withJavaDoc("Verify that this LocalDateTime is same or before another one",
 								"date the LocalDate to compare with",
 								TARGET_ELEMENT + "#sameOrBefore(java.time.LocalDateTime)")
 						.havingDefault(TARGET_ELEMENT + ".sameOrBefore(date)"),
-				FieldDSLMethodBuilder.of(field).withDeclaration("SameDay", "java.time.LocalDateTime date")
+				builderFor(field).withDeclaration("SameDay", "java.time.LocalDateTime date")
 						.withJavaDoc("Verify that this LocalDateTime is same day another one",
 								"date the LocalDate to compare with",
 								TARGET_ELEMENT + "#sameDay(java.time.LocalDateTime)")
