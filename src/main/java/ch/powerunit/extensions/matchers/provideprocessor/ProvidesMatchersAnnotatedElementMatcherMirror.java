@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;

@@ -169,21 +169,25 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 						+ "With(matcherOnParent);");
 	}
 
-	public DSLMethod generateNoParentValueDSLStarter() {
+	public DSLMethod generatParentValueDSLStarter(String argumentForParentBuilder) {
+		String genericNoParent = getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent();
 		String javadoc = generateDefaultJavaDoc(Optional.empty(),
 				Optional.of("other the other object to be used as a reference."), Optional.of("the DSL matcher"), true,
 				false);
 		List<String> lines = new ArrayList<>();
-		lines.add(getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " m=new "
-				+ getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent() + "();");
+		lines.add(genericNoParent + " m=new " + getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent() + "("
+				+ argumentForParentBuilder + ");");
 		lines.addAll(fields.stream().map(f -> "    " + f.getFieldCopy("m", "other") + ";").collect(toList()));
 		lines.add("return m;");
 		return new DSLMethod(javadoc,
-				fullGeneric + " " + getFullyQualifiedNameOfGeneratedClass() + "."
-						+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " " + methodShortClassName
-						+ "WithSameValue",
+				fullGeneric + " " + getFullyQualifiedNameOfGeneratedClass() + "." + genericNoParent + " "
+						+ methodShortClassName + "WithSameValue",
 				new String[] { getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(), "other" },
 				lines.toArray(new String[0]));
+	}
+
+	public DSLMethod generateNoParentValueDSLStarter() {
+		return generatParentValueDSLStarter("");
 	}
 
 	public ProvidesMatchersAnnotatedElementMirror getParentMirror() {
@@ -196,21 +200,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 		ProvidesMatchersAnnotatedElementMirror parentMirror = getParentMirror();
 		String argumentForParentBuilder = parentMirror.getFullyQualifiedNameOfGeneratedClass() + "."
 				+ parentMirror.methodShortClassName + "WithSameValue(other)";
-		String javadoc = generateDefaultJavaDoc(Optional.empty(),
-				Optional.of("other the other object to be used as a reference."), Optional.of("the DSL matcher"), true,
-				false);
-		List<String> lines = new ArrayList<>();
-		lines.add(getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " m=new "
-				+ getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent() + "(" + argumentForParentBuilder
-				+ ");");
-		lines.addAll(fields.stream().map(f -> "    " + f.getFieldCopy("m", "other") + ";").collect(toList()));
-		lines.add("return m;");
-		return new DSLMethod(javadoc,
-				fullGeneric + " " + getFullyQualifiedNameOfGeneratedClass() + "."
-						+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " " + methodShortClassName
-						+ "WithSameValue",
-				new String[] { getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(), "other" },
-				lines.toArray(new String[0]));
+		return generatParentValueDSLStarter(argumentForParentBuilder);
 	}
 
 	public DSLMethod generateParentInSameRoundWithChaningDSLStarter() {

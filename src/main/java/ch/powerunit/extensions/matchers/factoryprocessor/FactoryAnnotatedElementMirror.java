@@ -71,6 +71,12 @@ class FactoryAnnotatedElementMirror {
 		return result;
 	}
 
+	public String getParam() {
+		String param = element.getParameters().stream()
+				.map((ve) -> ve.asType().toString() + " " + ve.getSimpleName().toString()).collect(joining(","));
+		return element.isVarArgs() ? param.replaceAll(VAR_ARG_REGEX, "...") : param;
+	}
+
 	private String convertParameterForSee(VariableElement ve) {
 		Element e = processingEnv.getTypeUtils().asElement(ve.asType());
 		if (e == null || ve.asType().getKind() == TypeKind.TYPEVAR) {
@@ -87,29 +93,23 @@ class FactoryAnnotatedElementMirror {
 	}
 
 	private String getGeneric() {
-		return new StringBuilder("<")
-				.append(element.getTypeParameters()
-						.stream().map(
-								(ve) -> ve.getSimpleName().toString()
-										+ (ve.getBounds().isEmpty() ? ""
-												: (" extends " + ve.getBounds().stream().map(Object::toString)
-														.collect(joining("&")))))
-						.collect(joining(",")))
-				.append("> ").toString();
+		if (!element.getTypeParameters().isEmpty()) {
+			return new StringBuilder("<")
+					.append(element.getTypeParameters().stream()
+							.map((ve) -> ve.getSimpleName().toString()
+									+ (ve.getBounds().isEmpty() ? ""
+											: (" extends " + ve.getBounds().stream().map(Object::toString)
+													.collect(joining("&")))))
+							.collect(joining(",")))
+					.append("> ").toString();
+		} else {
+			return "";
+		}
 	}
 
 	private String getDeclaration() {
-		StringBuilder sb = new StringBuilder();
-		if (!element.getTypeParameters().isEmpty()) {
-			sb.append(getGeneric());
-		}
-		sb.append(element.getReturnType().toString()).append(" ").append(element.getSimpleName().toString())
-				.append("(");
-		String param = element.getParameters().stream()
-				.map((ve) -> ve.asType().toString() + " " + ve.getSimpleName().toString()).collect(joining(","));
-		sb.append(element.isVarArgs() ? param.replaceAll(VAR_ARG_REGEX, "...") : param);
-		sb.append(")");
-		return sb.toString();
+		return String.format("%1$s%2$s %3$s(%4$s)", getGeneric(), element.getReturnType(), element.getSimpleName(),
+				getParam());
 	}
 
 	public String generateFactory() {
