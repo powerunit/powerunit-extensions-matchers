@@ -43,8 +43,9 @@ import ch.powerunit.extensions.matchers.AddToMatchers;
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.AutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.LocalDateMatchersAutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethod;
-import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescriptionMetaData;
 
 public class RoundMirror {
 
@@ -65,7 +66,8 @@ public class RoundMirror {
 				roundEnv.getElementsAnnotatedWith(IgnoreInMatcher.class));
 		elementsWithOtherAnnotations.put(AddToMatcher.class, roundEnv.getElementsAnnotatedWith(AddToMatcher.class));
 		elementsWithOtherAnnotations.put(AddToMatchers.class, roundEnv.getElementsAnnotatedWith(AddToMatchers.class));
-		AUTOMATED_EXTENSIONS = Arrays.<AutomatedExtension> asList().stream().filter(AutomatedExtension::isPresent)
+		AUTOMATED_EXTENSIONS = Arrays.asList(new LocalDateMatchersAutomatedExtension(this)).stream()
+				.filter(AutomatedExtension::isPresent)
 				.collect(collectingAndThen(toList(), Collections::unmodifiableList));
 	}
 
@@ -133,7 +135,7 @@ public class RoundMirror {
 		return AUTOMATED_EXTENSIONS.stream().map(ae -> ae.accept(target)).flatMap(Collection::stream).collect(toList());
 	}
 
-	public Collection<FieldDSLMethod> getFieldDSLMethodFor(FieldDescriptionMetaData target) {
+	public Collection<FieldDSLMethod> getFieldDSLMethodFor(AbstractFieldDescription target) {
 		return AUTOMATED_EXTENSIONS.stream().map(ae -> ae.accept(target)).flatMap(Collection::stream).collect(toList());
 	}
 

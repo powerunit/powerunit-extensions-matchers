@@ -38,8 +38,8 @@ import ch.powerunit.TestSuite;
 import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethod;
-import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescriptionMetaData;
 
 public class AutomatedExtensionTest implements TestSuite {
 
@@ -64,7 +64,7 @@ public class AutomatedExtensionTest implements TestSuite {
 		}
 
 		@Override
-		public Collection<FieldDSLMethod> accept(FieldDescriptionMetaData field) {
+		public Collection<FieldDSLMethod> accept(AbstractFieldDescription field) {
 			return null;
 		}
 

@@ -23,12 +23,13 @@ import java.util.Collection;
 import java.util.function.Supplier;
 
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 
 import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethod;
-import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescriptionMetaData;
 
 public abstract class AutomatedExtension {
 
@@ -36,14 +37,22 @@ public abstract class AutomatedExtension {
 
 	private final TypeElement targetElement;
 
+	protected final RoundMirror roundMirror;
+
 	public AutomatedExtension(RoundMirror roundMirror, String expectedElement) {
 		this.expectedElement = expectedElement;
+		this.roundMirror = roundMirror;
 		this.targetElement = roundMirror.getProcessingEnv().getElementUtils().getTypeElement(expectedElement);
 	}
 
-	public abstract Collection<FieldDSLMethod> accept(FieldDescriptionMetaData field);
+	public abstract Collection<FieldDSLMethod> accept(AbstractFieldDescription field);
 
 	public abstract Collection<Supplier<DSLMethod>> accept(ProvidesMatchersAnnotatedElementData clazz);
+
+	protected boolean isSameType(TypeElement fromField, TypeMirror compareWith) {
+		return fromField != null
+				&& roundMirror.getProcessingEnv().getTypeUtils().isSameType(compareWith, fromField.asType());
+	}
 
 	public final boolean isPresent() {
 		return targetElement != null;

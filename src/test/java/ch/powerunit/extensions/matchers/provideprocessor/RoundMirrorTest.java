@@ -19,10 +19,15 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
+import static org.mockito.Mockito.when;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
 
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import ch.powerunit.Rule;
 import ch.powerunit.Test;
@@ -41,8 +46,19 @@ public class RoundMirrorTest implements TestSuite {
 	@Mock
 	private ProcessingEnvironment processingEnv;
 
+	@Mock
+	private Elements elements;
+
+	@Mock
+	private TypeElement te1;
+
 	@Rule
-	public final TestRule rules = mockitoRule();
+	public final TestRule rules = mockitoRule().around(before(this::prepare));
+
+	private void prepare() {
+		when(processingEnv.getElementUtils()).thenReturn(elements);
+		when(elements.getTypeElement(Mockito.anyString())).thenReturn(te1);
+	}
 
 	@Test
 	public void testConstructor() {
