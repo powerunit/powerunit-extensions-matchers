@@ -183,8 +183,10 @@ import java.lang.annotation.Target;
  * </ul>
  * <hr>
  * <p>
- * <b>Extensions</b> The framework, since version 0.1.0, is able to detect
- * others library and use it :
+ * <b>Extensions</b>
+ * <p>
+ * The framework, since version 0.1.0, is able to detect others library and use
+ * it :
  * <ul>
  * <li>If <a href="https://github.com/exparity/hamcrest-date">Hamcrest Date</a>
  * is available, additional DSL method are added for the Java 8 Date objects.
