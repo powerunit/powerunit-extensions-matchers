@@ -3,8 +3,9 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestutility;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Optional;
 
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
@@ -23,9 +24,14 @@ public class CollectionHamcrestUtilityAutomatedExtension extends AbstractHamcres
 
 	@Override
 	protected Collection<FieldDSLMethod> acceptHamcrestUtility(AbstractFieldDescription field) {
-		return Collections.singleton(builderFor(field, "hasNoDuplicates", "")
-				.withJavaDoc("That this collection contains no duplication")
-				.havingDefault("(org.hamcrest.Matcher)" + getExpectedElement() + ".hasNoDuplicates(java.lang.Object.class)"));
+		return Arrays.asList(
+				builderFor(field, "hasNoDuplicates", "").withJavaDoc("That this collection contains no duplication")
+						.havingDefault("(org.hamcrest.Matcher)" + getExpectedElement()
+								+ ".hasNoDuplicates(java.lang.Object.class)"),
+				builderFor(field, "hasFirstItem", "org.hamcrest.Matcher<" + field.getGeneric() + "> matcher")
+						.withJavaDoc(Optional.of("having first item with a specific value"),
+								Optional.of("matcher matcher on the item"), Optional.empty())
+						.havingDefault(getExpectedElement() + ".hasFirstItem(matcher)"));
 	}
 
 }
