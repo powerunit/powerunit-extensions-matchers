@@ -102,9 +102,8 @@ class FactoryAnnotatedElementMirror {
 													.collect(joining("&")))))
 							.collect(joining(",")))
 					.append("> ").toString();
-		} else {
-			return "";
 		}
+		return "";
 	}
 
 	private String getDeclaration() {
