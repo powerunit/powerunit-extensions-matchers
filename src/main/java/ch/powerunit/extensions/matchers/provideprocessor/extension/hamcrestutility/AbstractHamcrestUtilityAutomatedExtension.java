@@ -39,6 +39,8 @@ public abstract class AbstractHamcrestUtilityAutomatedExtension extends Automate
 		return builderFor(field).withDeclaration(suffix, arguments);
 	}
 
+	protected abstract Collection<FieldDSLMethod> acceptHamcrestUtility(AbstractFieldDescription field);
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -53,8 +55,6 @@ public abstract class AbstractHamcrestUtilityAutomatedExtension extends Automate
 		}
 		return acceptHamcrestUtility(field);
 	}
-
-	protected abstract Collection<FieldDSLMethod> acceptHamcrestUtility(AbstractFieldDescription field);
 
 	/*
 	 * (non-Javadoc)
