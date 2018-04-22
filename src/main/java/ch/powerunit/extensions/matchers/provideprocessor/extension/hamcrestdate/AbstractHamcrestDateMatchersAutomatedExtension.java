@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.lang.model.type.TypeMirror;
 
@@ -16,7 +17,6 @@ import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.AutomatedExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethod;
-import ch.powerunit.extensions.matchers.provideprocessor.fields.lang.BuilderJavadoc;
 
 /**
  * @author borettim
@@ -35,8 +35,15 @@ public abstract class AbstractHamcrestDateMatchersAutomatedExtension extends Aut
 		knownType = getMirrorOr(targetType);
 	}
 
-	private BuilderJavadoc builderFor(AbstractFieldDescription field, String suffix) {
-		return builderFor(field).withDeclaration(suffix, targetType + " date");
+	private FieldDSLMethod builderFor(AbstractFieldDescription field, String targetMethod) {
+		String suffix = targetMethod.substring(0, 1).toUpperCase() + targetMethod.substring(1);
+		String readable = Arrays.stream(targetMethod.split("(?=[A-Z])")).collect(Collectors.joining(" ")).toLowerCase();
+		String target = getExpectedElement();
+		return builderFor(field).withDeclaration(suffix, targetType + " date")
+				.withJavaDoc("Verify that this `" + targetType + "` is " + readable + " another one",
+						"date the `" + targetType + "` to compare with",
+						target + "#" + targetMethod + "(" + targetType + ")")
+				.havingDefault(target + "." + targetMethod + "(date)");
 	}
 
 	/*
@@ -51,32 +58,8 @@ public abstract class AbstractHamcrestDateMatchersAutomatedExtension extends Aut
 		if (!isSameType(field.getFieldTypeAsTypeElement(), knownType)) {
 			return Collections.emptyList();
 		}
-		String target = getExpectedElement();
-		return Arrays.asList(
-				builderFor(field, "After")
-						.withJavaDoc("Verify that this `" + targetType + "` is after another one",
-								"date the `" + targetType + "` to compare with", target + "#after(" + targetType + ")")
-						.havingDefault(target + ".after(date)"),
-				builderFor(field, "SameOrAfter")
-						.withJavaDoc("Verify that this `" + targetType + "` is after or same another one",
-								"date the LocalDate to compare with", target + "#sameOrAfter(" + targetType + ")")
-						.havingDefault(
-								target + ".sameOrAfter(date)"),
-				builderFor(field, "Before")
-						.withJavaDoc("Verify that this `" + targetType + "` is before another one",
-								"date the `" + targetType + "` to compare with",
-								target + "#before(" + targetType + ")")
-						.havingDefault(target + ".before(date)"),
-				builderFor(field, "SameOrBefore")
-						.withJavaDoc("Verify that this `" + targetType + "` is same or before another one",
-								"date the `" + targetType + "` to compare with",
-								target + "#sameOrBefore(" + targetType + ")")
-						.havingDefault(target + ".sameOrBefore(date)"),
-				builderFor(field, "SameDay")
-						.withJavaDoc("Verify that this `" + targetType + "` is same day another one",
-								"date the `" + targetType + "` to compare with",
-								target + "#sameDay(" + targetType + ")")
-						.havingDefault(target + ".sameDay(date)"));
+		return Arrays.asList(builderFor(field, "after"), builderFor(field, "sameOrAfter"), builderFor(field, "before"),
+				builderFor(field, "sameOrBefore"), builderFor(field, "sameDay"));
 	}
 
 	/*
