@@ -231,26 +231,23 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	private String generatePrivateImplementationForMatchersSafely() {
 		StringBuilder sb = new StringBuilder("    @Override\n    protected boolean matchesSafely(")
 				.append(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher)
-				.append(" actual, org.hamcrest.Description mismatchDescription) {\n")
-				.append("      boolean result=true;\n");
+				.append(" actual, org.hamcrest.Description mismatchDescription) {\n      boolean result=true;\n");
 		if (fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()) {
 			sb.append(PARENT_VALIDATION);
 		}
-		fields.stream().map(f -> f.asMatchesSafely() + "\n").map(f -> addPrefix("      ", f)).forEach(sb::append);
-
+		fields.stream().map(f -> addPrefix("      ", f.asMatchesSafely() + "\n")).forEach(sb::append);
 		sb.append(NEXTMATCHERS_VALIDATION);
 		return sb.toString();
 	}
 
 	private String generatedPrivateImplementationForDescribeTo() {
 		StringBuilder sb = new StringBuilder(
-				"    @Override\n    public void describeTo(org.hamcrest.Description description) {\n")
-						.append("      description.appendText(\"an instance of ")
+				"    @Override\n    public void describeTo(org.hamcrest.Description description) {\n      description.appendText(\"an instance of ")
 						.append(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher).append(" with\\n\");\n");
 		if (fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()) {
 			sb.append(PARENT_DESCRIBETO);
 		}
-		fields.stream().map(f -> f.asDescribeTo() + "\n").map(f -> addPrefix("      ", f)).forEach(sb::append);
+		fields.stream().map(f -> addPrefix("      ", f.asDescribeTo() + "\n")).forEach(sb::append);
 		sb.append(NEXTMATCHERS_DESCRIBETO);
 		return sb.toString();
 	}
