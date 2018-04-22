@@ -60,7 +60,6 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	protected final TypeElement typeElementForClassAnnotatedWithProvideMatcher;
 	protected final String methodShortClassName;
 	protected final Optional<String> fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher;
-	protected final String simpleNameOfGeneratedImplementationMatcher;
 	protected final List<AbstractFieldDescription> fields;
 	protected final RoundMirror roundMirror;
 
@@ -82,17 +81,16 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 		super(typeElement, roundMirror);
 		this.roundMirror = roundMirror;
 		this.typeElementForClassAnnotatedWithProvideMatcher = typeElement;
-		ProcessingEnvironment processingEnv = roundMirror.getProcessingEnv();
 		this.methodShortClassName = simpleNameOfClassAnnotatedWithProvideMatcher.substring(0, 1).toLowerCase()
 				+ simpleNameOfClassAnnotatedWithProvideMatcher.substring(1);
-		if (!processingEnv.getElementUtils().getTypeElement("java.lang.Object").asType()
+		if (!roundMirror.getProcessingEnv().getElementUtils().getTypeElement("java.lang.Object").asType()
 				.equals(typeElement.getSuperclass())) {
 			this.fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher = Optional
 					.ofNullable(typeElement.getSuperclass().toString());
 		} else {
 			this.fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher = Optional.empty();
 		}
-		this.simpleNameOfGeneratedImplementationMatcher = simpleNameOfClassAnnotatedWithProvideMatcher + "MatcherImpl";
+
 		this.fields = generateFields(typeElement, new ProvidesMatchersSubElementVisitor(roundMirror));
 	}
 
@@ -212,8 +210,8 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	}
 
 	public String generatePrivateImplementationConstructor(String argument, String... body) {
-		return String.format("    public %1$s(%2$s) {\n%3$s    }", simpleNameOfGeneratedImplementationMatcher, argument,
-				Arrays.stream(body).map(l -> "      " + l).collect(joining("\n")));
+		return String.format("    public %1$s(%2$s) {\n%3$s    }", getSimpleNameOfGeneratedImplementationMatcher(),
+				argument, Arrays.stream(body).map(l -> "      " + l).collect(joining("\n")));
 	}
 
 	protected String generatePrivateImplementation() {
@@ -231,7 +229,7 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 								"this._parentBuilder=parentBuilder;")
 						+ "\n\n");
 		return new StringBuilder("  /* package protected */ static class ")
-				.append(simpleNameOfGeneratedImplementationMatcher).append(getFullGenericParent())
+				.append(getSimpleNameOfGeneratedImplementationMatcher()).append(getFullGenericParent())
 				.append(" extends org.hamcrest.TypeSafeDiagnosingMatcher<")
 				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append("> implements ")
 				.append(getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + " {\n    ")
@@ -289,6 +287,14 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 
 	public String getMethodShortClassName() {
 		return methodShortClassName;
+	}
+
+	public String getSimpleNameOfGeneratedImplementationMatcher() {
+		return simpleNameOfClassAnnotatedWithProvideMatcher + "MatcherImpl";
+	}
+
+	public String getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent() {
+		return getSimpleNameOfGeneratedImplementationMatcher() + getGenericNoParent();
 	}
 
 	public RoundMirror getRoundMirror() {

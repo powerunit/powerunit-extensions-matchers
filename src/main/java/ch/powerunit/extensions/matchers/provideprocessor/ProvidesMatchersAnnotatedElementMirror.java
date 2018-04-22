@@ -116,15 +116,15 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	public String getDefaultStarterBody(boolean withParentBuilder) {
 		if (withParentBuilder) {
 			return fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()
-					? ("return new " + simpleNameOfGeneratedImplementationMatcher + getGenericParent()
+					? ("return new " + getSimpleNameOfGeneratedImplementationMatcher() + getGenericParent()
 							+ "(org.hamcrest.Matchers.anything(),parentBuilder);")
-					: ("return new " + simpleNameOfGeneratedImplementationMatcher + getGenericParent()
+					: ("return new " + getSimpleNameOfGeneratedImplementationMatcher() + getGenericParent()
 							+ "(parentBuilder);");
 		} else {
 			return fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()
-					? ("return new " + simpleNameOfGeneratedImplementationMatcher + getGenericNoParent()
+					? ("return new " + getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent()
 							+ "(org.hamcrest.Matchers.anything());")
-					: ("return new " + simpleNameOfGeneratedImplementationMatcher + getGenericNoParent() + "();");
+					: ("return new " + getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent() + "();");
 		}
 	}
 
@@ -175,7 +175,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 				false);
 		List<String> lines = new ArrayList<>();
 		lines.add(getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " m=new "
-				+ simpleNameOfGeneratedImplementationMatcher + getGenericNoParent() + "();");
+				+ getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent() + "();");
 		lines.addAll(fields.stream().map(f -> "    " + f.getFieldCopy("m", "other") + ";").collect(toList()));
 		lines.add("return m;");
 		return new DSLMethod(javadoc,
@@ -201,7 +201,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 				false);
 		List<String> lines = new ArrayList<>();
 		lines.add(getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " m=new "
-				+ simpleNameOfGeneratedImplementationMatcher + getGenericNoParent() + "(" + argumentForParentBuilder
+				+ getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent() + "(" + argumentForParentBuilder
 				+ ");");
 		lines.addAll(fields.stream().map(f -> "    " + f.getFieldCopy("m", "other") + ";").collect(toList()));
 		lines.add("return m;");
@@ -221,8 +221,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 						+ parentMirror.simpleNameOfGeneratedInterfaceMatcher + genericForChaining + " "
 						+ methodShortClassName + "WithParent",
 				new String[] {
-						simpleNameOfGeneratedImplementationMatcher + getGenericNoParent() + " m=new "
-								+ simpleNameOfGeneratedImplementationMatcher + getGenericNoParent()
+						getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent() + " m=new "
+								+ getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent()
 								+ "(org.hamcrest.Matchers.anything());",
 						parentMirror.getFullyQualifiedNameOfGeneratedClass() + "."
 								+ parentMirror.simpleNameOfGeneratedInterfaceMatcher + " tmp = "
