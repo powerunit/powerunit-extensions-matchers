@@ -3,83 +3,16 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.function.Supplier;
-
-import javax.lang.model.type.TypeMirror;
-
-import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
-import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
-import ch.powerunit.extensions.matchers.provideprocessor.extension.AutomatedExtension;
-import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
-import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethod;
-import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethodBuilder;
 
 /**
  * @author borettim
  *
  */
-public class LocalDateMatchersAutomatedExtension extends AutomatedExtension {
-
-	private static final String TARGET_ELEMENT = "org.exparity.hamcrest.date.LocalDateMatchers";
-
-	private TypeMirror knownType;
+public class LocalDateMatchersAutomatedExtension extends AbstractHamcrestDateMatchersAutomatedExtension {
 
 	public LocalDateMatchersAutomatedExtension(RoundMirror roundMirror) {
-		super(roundMirror, TARGET_ELEMENT);
-		knownType = getMirrorOr("java.time.LocalDate");
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see ch.powerunit.extensions.matchers.provideprocessor.extension.
-	 * AutomatedExtension#accept(ch.powerunit.extensions.matchers.
-	 * provideprocessor.fields.FieldDescriptionMetaData)
-	 */
-	@Override
-	public Collection<FieldDSLMethod> accept(AbstractFieldDescription field) {
-		if (!isSameType(field.getFieldTypeAsTypeElement(), knownType)) {
-			return Collections.emptyList();
-		}
-		return Arrays.asList(
-				builderFor(field).withDeclaration("After", "java.time.LocalDate after")
-						.withJavaDoc("Verify that this LocalDate is after another one",
-								"after the LocalDate to compare with", TARGET_ELEMENT + "#after(java.time.LocalDate)")
-				.havingDefault(TARGET_ELEMENT + ".after(after)"),
-				builderFor(field).withDeclaration("SameOrAfter", "java.time.LocalDate date")
-						.withJavaDoc("Verify that this LocalDate is after or same another one",
-								"date the LocalDate to compare with",
-								TARGET_ELEMENT + "#sameOrAfter(java.time.LocalDate)")
-						.havingDefault(TARGET_ELEMENT + ".sameOrAfter(date)"),
-				builderFor(field).withDeclaration("Before", "java.time.LocalDate before")
-						.withJavaDoc("Verify that this LocalDate is before another one",
-								"before the LocalDate to compare with", TARGET_ELEMENT + "#before(java.time.LocalDate)")
-						.havingDefault(TARGET_ELEMENT + ".before(before)"),
-				builderFor(field).withDeclaration("SameorBefore", "java.time.LocalDate date")
-						.withJavaDoc("Verify that this LocalDate is same or before another one",
-								"date the LocalDate to compare with",
-								TARGET_ELEMENT + "#sameOrBefore(java.time.LocalDate)")
-						.havingDefault(TARGET_ELEMENT + ".sameOrBefore(date)"),
-				builderFor(field).withDeclaration("SameDay", "java.time.LocalDate date")
-						.withJavaDoc("Verify that this LocalDate is same day another one",
-								"date the LocalDate to compare with", TARGET_ELEMENT + "#sameDay(java.time.LocalDate)")
-						.havingDefault(TARGET_ELEMENT + ".sameDay(date)"));
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see ch.powerunit.extensions.matchers.provideprocessor.extension.
-	 * AutomatedExtension#accept(ch.powerunit.extensions.matchers.
-	 * provideprocessor.ProvidesMatchersAnnotatedElementData)
-	 */
-	@Override
-	public Collection<Supplier<DSLMethod>> accept(ProvidesMatchersAnnotatedElementData clazz) {
-		return Collections.emptyList();
+		super(roundMirror, "org.exparity.hamcrest.date.LocalDateMatchers", "java.time.LocalDate");
 	}
 
 }
