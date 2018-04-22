@@ -33,12 +33,13 @@ public class SupplierFieldDescription extends DefaultFieldDescription {
 
 	@Override
 	protected Collection<FieldDSLMethod> getSpecificFieldDslMethodFor() {
+		String tgeneric = this.generic;
 		return Collections.singleton(getDslMethodBuilder()
-				.withDeclaration("SupplierResult", "org.hamcrest.Matcher<? super " + this.generic + "> matcherOnResult")
+				.withDeclaration("SupplierResult", "org.hamcrest.Matcher<? super " + tgeneric + "> matcherOnResult")
 				.withJavaDoc(
 						" Validate that the result of the supplier is accepted by another matcher (the result of the execution must be stable)",
 						"matcherOnResult a Matcher on result of the supplier execution")
-				.havingDefault("asFeatureMatcher(\"with supplier result\",(java.util.function.Supplier<" + this.generic
+				.havingDefault("asFeatureMatcher(\"with supplier result\",(java.util.function.Supplier<" + tgeneric
 						+ "> s) -> s.get(),matcherOnResult)"));
 	}
 

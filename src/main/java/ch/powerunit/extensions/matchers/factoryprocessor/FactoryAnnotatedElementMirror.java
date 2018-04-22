@@ -73,7 +73,7 @@ class FactoryAnnotatedElementMirror {
 
 	public String getParam() {
 		String param = element.getParameters().stream()
-				.map((ve) -> ve.asType().toString() + " " + ve.getSimpleName().toString()).collect(joining(","));
+				.map(ve -> ve.asType().toString() + " " + ve.getSimpleName().toString()).collect(joining(","));
 		return element.isVarArgs() ? param.replaceAll(VAR_ARG_REGEX, "...") : param;
 	}
 
@@ -96,7 +96,7 @@ class FactoryAnnotatedElementMirror {
 		if (!element.getTypeParameters().isEmpty()) {
 			return new StringBuilder("<")
 					.append(element.getTypeParameters().stream()
-							.map((ve) -> ve.getSimpleName().toString()
+							.map(ve -> ve.getSimpleName().toString()
 									+ (ve.getBounds().isEmpty() ? ""
 											: (" extends " + ve.getBounds().stream().map(Object::toString)
 													.collect(joining("&")))))

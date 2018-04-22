@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 
@@ -70,10 +71,11 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	}
 
 	public Collection<DSLMethod> process() {
+		RoundMirror rm = roundMirror;
+		Element te = typeElementForClassAnnotatedWithProvideMatcher;
 		Collection<DSLMethod> results = new ArrayList<>();
 		FileObjectHelper.processFileWithIOException(
-				() -> roundMirror.getProcessingEnv().getFiler().createSourceFile(
-						getFullyQualifiedNameOfGeneratedClass(), typeElementForClassAnnotatedWithProvideMatcher),
+				() -> rm.getProcessingEnv().getFiler().createSourceFile(getFullyQualifiedNameOfGeneratedClass(), te),
 				jfo -> new PrintWriter(jfo.openWriter()), wjfo -> {
 					wjfo.println("package " + getPackageNameOfGeneratedClass() + ";");
 					wjfo.println();
@@ -96,10 +98,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 					tmp.stream().map(m -> addPrefix("  ", m.asStaticImplementation())).forEach(wjfo::println);
 					wjfo.println("}");
 					results.addAll(tmp);
-				} ,
-				e -> roundMirror.getProcessingEnv().getMessager().printMessage(Kind.ERROR,
-						"Unable to create the file containing the target class because of " + e,
-						typeElementForClassAnnotatedWithProvideMatcher));
+				} , e -> rm.getProcessingEnv().getMessager().printMessage(Kind.ERROR,
+						"Unable to create the file containing the target class because of " + e, te));
 		return results;
 	}
 
@@ -154,16 +154,17 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 
 	public DSLMethod generateParentDSLStarter() {
 		String mscn = methodShortClassName;
+		String fqngc = getFullyQualifiedNameOfGeneratedClass();
 		return new DSLMethod(
 				generateDefaultJavaDoc(Optional.empty(), Optional.of("matcherOnParent the matcher on the parent data."),
 						Optional.of("the DSL matcher"), true, false),
-				fullGeneric + " " + getFullyQualifiedNameOfGeneratedClass() + "."
-						+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " " + mscn + "With",
+				fullGeneric + " " + fqngc + "." + getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " "
+						+ mscn + "With",
 				new String[] {
 						"org.hamcrest.Matcher<? super "
 								+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.get() + ">",
-						"matcherOnParent" },
-				"return " + getFullyQualifiedNameOfGeneratedClass() + "." + mscn + "With(matcherOnParent);");
+								"matcherOnParent" },
+				"return " + fqngc + "." + mscn + "With(matcherOnParent);");
 	}
 
 	public DSLMethod generatParentValueDSLStarter(String argumentForParentBuilder) {
@@ -204,16 +205,14 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	public DSLMethod generateParentInSameRoundWithChaningDSLStarter() {
 		String implGenericNoParent = getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent();
 		ProvidesMatchersAnnotatedElementMirror parentMirror = getParentMirror();
+		String pmfqngc = parentMirror.getFullyQualifiedNameOfGeneratedClass();
 		return new DSLMethod(
 				generateDefaultJavaDoc(Optional.empty(), Optional.empty(), Optional.of("the DSL matcher"), true, false),
-				fullGeneric + " " + parentMirror.getFullyQualifiedNameOfGeneratedClass() + "."
-						+ parentMirror.simpleNameOfGeneratedInterfaceMatcher + genericForChaining + " "
-						+ methodShortClassName + "WithParent",
+				fullGeneric + " " + pmfqngc + "." + parentMirror.simpleNameOfGeneratedInterfaceMatcher
+						+ genericForChaining + " " + methodShortClassName + "WithParent",
 				new String[] {
 						implGenericNoParent + " m=new " + implGenericNoParent + "(org.hamcrest.Matchers.anything());",
-						parentMirror.getFullyQualifiedNameOfGeneratedClass() + "."
-								+ parentMirror.simpleNameOfGeneratedInterfaceMatcher + " tmp = "
-								+ parentMirror.getFullyQualifiedNameOfGeneratedClass() + "."
+						pmfqngc + "." + parentMirror.simpleNameOfGeneratedInterfaceMatcher + " tmp = " + pmfqngc + "."
 								+ parentMirror.methodShortClassName + "WithParent(m);",
 						"m._parent = new SuperClassMatcher(tmp);", "return tmp;" });
 	}
