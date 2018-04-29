@@ -23,10 +23,24 @@
           img="http://www.powerunit.ch/powerunit/logo.png"/>
     <logo name="Travis-ci" href="https://travis-ci.org/powerunit/powerunit-extensions-matchers"
           img="https://travis-ci.org/powerunit/powerunit-extensions-matchers.svg?branch=master"/>
+	<logo name="Vulnerability" href="https://snyk.io/test/github/powerunit/powerunit-extensions-matchers/badge.svg?targetFile=pom.xml"
+	      img="https://snyk.io/test/github/powerunit/powerunit-extensions-matchers/badge.svg?targetFile=pom.xml"/>          
     <logo name="Codacy" href="https://www.codacy.com/app/mathieu.boretti/powerunit-extensions-matchers?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=powerunit/powerunit-extensions-matchers&amp;utm_campaign=Badge_Grades"
           img="https://api.codacy.com/project/badge/Grade/54e6f34a650147e48b1864a420695a1c"/>
     <logo name="Codacy / Coverage" href="https://www.codacy.com/app/mathieu.boretti/powerunit-extensions-matchers?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=powerunit/powerunit-extensions-matchers&amp;utm_campaign=Badge_Coverage"
           img="https://api.codacy.com/project/badge/Coverage/54e6f34a650147e48b1864a420695a1c"/>
+    <logo name="Coveralls" href="https://coveralls.io/github/powerunit/powerunit-extensions-matchers?branch=master"
+          img="https://coveralls.io/repos/github/powerunit/powerunit-extensions-matchers/badge.svg?branch=master" />
+    <logo name="Codecov" href="https://codecov.io/gh/powerunit/powerunit-extensions-matchers"
+          img="https://codecov.io/gh/powerunit/powerunit-extensions-matchers/branch/master/graph/badge.svg" />
+    <logo name="Codefactor" href="https://www.codefactor.io/repository/github/powerunit/powerunit-extensions-matchers"
+          img="https://www.codefactor.io/repository/github/powerunit/powerunit-extensions-matchers/badge" />
+    <logo name="Bettercode" href="https://bettercodehub.com/results/powerunit/powerunit-extensions-matchers"
+          img="https://bettercodehub.com/edge/badge/powerunit/powerunit-extensions-matchers?branch=master"/>
+    <logo name="Codebeat" href="https://codebeat.co/projects/github-com-powerunit-powerunit-extensions-matchers-master"
+          img="https://codebeat.co/badges/cdebf167-fee0-46b4-b33d-c613f1586a9d" />
+    <logo name="Maven" href="https://maven-badges.herokuapp.com/maven-central/ch.powerunit.extensions/powerunit-extensions-matchers"
+          img="https://maven-badges.herokuapp.com/maven-central/ch.powerunit.extensions/powerunit-extensions-matchers/badge.svg" />
   </poweredBy>
   
   <body>
@@ -35,6 +49,12 @@
   		<link rel="shortcut icon" type="image/png" href="logo.png" />
   	]]></head>
     <menu ref="reports" />
+    <menu name="General documentations">
+      <item name="FAQ" href="faq.html" />
+      <item name="Samples" collapse="true" href="simple.html">
+        <item name="Simple usage" href="simple.html"/>
+      </item>
+    </menu>
     <menu name="Linked projects">
       <item name="PowerUnit" href="http://www.powerunit.ch/powerunit"/>
     </menu>
