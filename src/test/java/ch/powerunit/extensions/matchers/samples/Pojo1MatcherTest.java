@@ -140,6 +140,13 @@ public class Pojo1MatcherTest implements TestSuite {
 	}
 
 	@Test
+	public void testKOMatcherWithExtensionUtility() {
+		Pojo1 p1 = new Pojo1();
+		p1.msg6 = Arrays.asList("a", "b");
+		assertThat(p1).is(Pojo1Matchers.pojo1With().msg6HasFirstItem(is("a")));
+	}
+
+	@Test
 	@Ignore
 	public void testKOMatcher() {
 		Pojo1 p = new Pojo1();

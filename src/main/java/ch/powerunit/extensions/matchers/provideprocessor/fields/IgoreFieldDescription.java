@@ -52,8 +52,8 @@ public final class IgoreFieldDescription extends AbstractFieldDescription {
 
 	@Override
 	public String asMatcherField() {
-		return String.format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));", getMethodFieldName(),
-				getFieldName(), MATCHERS,
+		return String.format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));",
+				getMirror().getMethodFieldName(), getFieldName(), MATCHERS,
 				"\"This field is ignored \"+" + CommonUtils.toJavaSyntax(getDescriptionForIgnoreIfApplicable()));
 	}
 

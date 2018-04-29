@@ -191,6 +191,9 @@ import java.lang.annotation.Target;
  * <li>If <a href="https://github.com/exparity/hamcrest-date">Hamcrest Date</a>
  * is available, additional DSL method are added for the Java 8 Date objects.
  * </li>
+ * <li>If <a href="https://github.com/NitorCreations/matchers">Hamcrest 1.3
+ * Utility Matchers</a> is available, additional DSL method are added for the
+ * collections.</li>
  * </ul>
  * 
  * @author borettim
