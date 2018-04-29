@@ -66,7 +66,7 @@ public abstract class FieldDescriptionMetaData {
 	public String getMatcherForField() {
 		return String.format(
 				"private static class %1$sMatcher%2$s extends org.hamcrest.FeatureMatcher<%3$s%4$s,%5$s> {\n  public %1$sMatcher(org.hamcrest.Matcher<? super %5$s> matcher) {\n    super(matcher,\"%6$s\",\"%6$s\");\n  }\n  protected %5$s featureValueOf(%3$s%4$s actual) {\n    return actual.%7$s;\n  }\n}\n",
-				getMethodFieldName(), containingElementMirror.getFullGeneric(),
+				mirror.getMethodFieldName(), containingElementMirror.getFullGeneric(),
 				getFullyQualifiedNameEnclosingClassOfField(), containingElementMirror.getGeneric(), getFieldType(),
 				getFieldName(), getFieldAccessor());
 	}
@@ -76,7 +76,7 @@ public abstract class FieldDescriptionMetaData {
 	}
 
 	public String getSameValueMatcherFor(String target) {
-		String name = getFieldTypeAsTypeElement().getSimpleName().toString();
+		String name = mirror.getFieldTypeAsTypeElement().getSimpleName().toString();
 		String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
 		return fullyQualifiedNameMatcherInSameRound + "." + lname + "WithSameValue(" + target + ")";
 	}
@@ -88,7 +88,7 @@ public abstract class FieldDescriptionMetaData {
 	}
 
 	public String getFieldCopy(String lhs, String rhs) {
-		if (fullyQualifiedNameMatcherInSameRound != null && getFieldTypeAsTypeElement().getTypeParameters().isEmpty()) {
+		if (fullyQualifiedNameMatcherInSameRound != null && mirror.getFieldTypeAsTypeElement().getTypeParameters().isEmpty()) {
 			return getFieldCopySameRound(lhs, rhs);
 		}
 		return getFieldCopyDefault(lhs, rhs);
@@ -105,7 +105,7 @@ public abstract class FieldDescriptionMetaData {
 	}
 
 	public String asMatcherField() {
-		return String.format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));", getMethodFieldName(),
+		return String.format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));", mirror.getMethodFieldName(),
 				getFieldName(), MATCHERS, "");
 	}
 
@@ -133,14 +133,9 @@ public abstract class FieldDescriptionMetaData {
 		return mirror.getFieldElement();
 	}
 
-	public String getMethodFieldName() {
-		return mirror.getMethodFieldName();
+	public FieldDescriptionMirror getMirror() {
+		return mirror;
 	}
-
-	public TypeElement getFieldTypeAsTypeElement() {
-		return mirror.getFieldTypeAsTypeElement();
-	}
-
 	public String getGeneric() {
 		return generic;
 	}

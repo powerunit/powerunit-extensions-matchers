@@ -59,7 +59,7 @@ public abstract class AbstractHamcrestDateMatchersAutomatedExtension extends Aut
 	 */
 	@Override
 	public Collection<FieldDSLMethod> accept(AbstractFieldDescription field) {
-		if (!isSameType(field.getFieldTypeAsTypeElement(), knownType)) {
+		if (!isSameType(field.getMirror().getFieldTypeAsTypeElement(), knownType)) {
 			return Collections.emptyList();
 		}
 		Collection<FieldDSLMethod> tmp = new ArrayList<>(Arrays.asList(builderFor(field, "after"),
