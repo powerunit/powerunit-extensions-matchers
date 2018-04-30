@@ -20,7 +20,7 @@
 package ch.powerunit.extensions.matchers.provideprocessor;
 
 @FunctionalInterface
-public interface ProvidesMatchersAnnotatedElementData {
+public interface ProvidesMatchersAnnotatedElementData extends RoundMirrorSupport {
 	ProvidesMatchersAnnotatedElementFieldMatcherMirror getFullData();
 
 	default RoundMirror getRoundMirror() {

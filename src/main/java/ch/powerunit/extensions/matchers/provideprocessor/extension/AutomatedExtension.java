@@ -24,17 +24,17 @@ import java.util.function.Supplier;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
 
 import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
+import ch.powerunit.extensions.matchers.provideprocessor.RoundMirrorSupport;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethodBuilder;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.lang.BuilderDeclaration;
 
-public abstract class AutomatedExtension {
+public abstract class AutomatedExtension implements RoundMirrorSupport {
 
 	private final String expectedElement;
 
@@ -55,21 +55,8 @@ public abstract class AutomatedExtension {
 
 	public abstract Collection<Supplier<DSLMethod>> accept(ProvidesMatchersAnnotatedElementData clazz);
 
-	protected TypeMirror getMirrorFor(String name) {
-		return processingEnv.getElementUtils().getTypeElement(name).asType();
-	}
-
 	protected BuilderDeclaration builderFor(AbstractFieldDescription field) {
 		return FieldDSLMethodBuilder.of(field);
-	}
-
-	protected boolean isSameType(TypeElement fromField, TypeMirror compareWith) {
-		return fromField != null && processingEnv.getTypeUtils().isSameType(compareWith, fromField.asType());
-	}
-
-	protected boolean isAssignableWithErasure(TypeElement fromField, TypeMirror compareWith) {
-		return fromField != null && processingEnv.getTypeUtils().isAssignable(fromField.asType(),
-				processingEnv.getTypeUtils().erasure(compareWith));
 	}
 
 	public final boolean isPresent() {
@@ -82,5 +69,10 @@ public abstract class AutomatedExtension {
 
 	public final TypeElement getTargetElement() {
 		return targetElement;
+	}
+
+	@Override
+	public RoundMirror getRoundMirror() {
+		return roundMirror;
 	}
 }

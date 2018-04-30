@@ -24,7 +24,7 @@ import java.util.Optional;
 import javax.lang.model.element.TypeElement;
 
 public abstract class ProvidesMatchersAnnotatedElementGeneralMirror
-		extends ProvidesMatchersAnnotatedElementGenericMirror {
+		extends ProvidesMatchersAnnotatedElementGenericMirror implements RoundMirrorSupport {
 
 	protected final TypeElement typeElementForClassAnnotatedWithProvideMatcher;
 	protected final String methodShortClassName;
