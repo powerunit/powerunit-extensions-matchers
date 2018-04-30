@@ -31,12 +31,17 @@ public interface RoundMirrorSupport {
 		return getRoundMirror().getProcessingEnv();
 	}
 
+	default TypeMirror getMirrorFor(String name) {
+		return getProcessingEnv().getElementUtils().getTypeElement(name).asType();
+	}
+
 	default boolean isSameType(TypeElement fromField, TypeMirror compareWith) {
 		return fromField != null && getProcessingEnv().getTypeUtils().isSameType(compareWith, fromField.asType());
 	}
 
-	default TypeMirror getMirrorOr(String name) {
-		return getProcessingEnv().getElementUtils().getTypeElement(name).asType();
+	default boolean isAssignableWithErasure(TypeElement fromField, TypeMirror compareWith) {
+		return fromField != null && getProcessingEnv().getTypeUtils().isAssignable(fromField.asType(),
+				getProcessingEnv().getTypeUtils().erasure(compareWith));
 	}
 
 	default ProvidesMatchersAnnotatedElementMirror getByName(String name) {

@@ -55,21 +55,8 @@ public abstract class AutomatedExtension implements RoundMirrorSupport {
 
 	public abstract Collection<Supplier<DSLMethod>> accept(ProvidesMatchersAnnotatedElementData clazz);
 
-	protected TypeMirror getMirrorFor(String name) {
-		return processingEnv.getElementUtils().getTypeElement(name).asType();
-	}
-
 	protected BuilderDeclaration builderFor(AbstractFieldDescription field) {
 		return FieldDSLMethodBuilder.of(field);
-	}
-
-	protected boolean isSameType(TypeElement fromField, TypeMirror compareWith) {
-		return fromField != null && processingEnv.getTypeUtils().isSameType(compareWith, fromField.asType());
-	}
-
-	protected boolean isAssignableWithErasure(TypeElement fromField, TypeMirror compareWith) {
-		return fromField != null && processingEnv.getTypeUtils().isAssignable(fromField.asType(),
-				processingEnv.getTypeUtils().erasure(compareWith));
 	}
 
 	public final boolean isPresent() {
