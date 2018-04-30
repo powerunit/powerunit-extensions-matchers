@@ -7,7 +7,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.SimpleElementVisitor8;
 import javax.tools.Diagnostic.Kind;
 
-class ProvidesMatchersElementVisitor extends SimpleElementVisitor8<Optional<TypeElement>, Void> {
+class ProvidesMatchersElementVisitor extends SimpleElementVisitor8<Optional<TypeElement>, Void>
+		implements RoundMirrorSupport {
 
 	private final RoundMirror roundMirror;
 
@@ -39,5 +40,10 @@ class ProvidesMatchersElementVisitor extends SimpleElementVisitor8<Optional<Type
 		roundMirror.getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING,
 				"The annotation `ProvideMatchers` is used on an " + type + ", which is not supported", e,
 				roundMirror.getProvideMatchersAnnotation(e));
+	}
+
+	@Override
+	public RoundMirror getRoundMirror() {
+		return roundMirror;
 	}
 }

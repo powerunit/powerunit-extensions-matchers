@@ -24,17 +24,17 @@ import java.util.function.Supplier;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
 
 import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
+import ch.powerunit.extensions.matchers.provideprocessor.RoundMirrorSupport;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethodBuilder;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.lang.BuilderDeclaration;
 
-public abstract class AutomatedExtension {
+public abstract class AutomatedExtension implements RoundMirrorSupport {
 
 	private final String expectedElement;
 
@@ -82,5 +82,10 @@ public abstract class AutomatedExtension {
 
 	public final TypeElement getTargetElement() {
 		return targetElement;
+	}
+
+	@Override
+	public RoundMirror getRoundMirror() {
+		return roundMirror;
 	}
 }
