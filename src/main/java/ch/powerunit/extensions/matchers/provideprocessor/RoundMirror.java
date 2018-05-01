@@ -52,18 +52,15 @@ import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestutili
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethod;
 
-public class RoundMirror {
+public class RoundMirror extends AbstractRoundMirrorReferenceToProcessingEnv {
 
 	private final Collection<AutomatedExtension> AUTOMATED_EXTENSIONS;
-	private final RoundEnvironment roundEnv;
-	private final ProcessingEnvironment processingEnv;
 	private final Set<? extends Element> elementsWithPM;
 	private final Map<Class<?>, Set<? extends Element>> elementsWithOtherAnnotations;
 	private final Map<String, ProvidesMatchersAnnotatedElementMirror> alias = new HashMap<>();
 
 	public RoundMirror(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
-		this.roundEnv = roundEnv;
-		this.processingEnv = processingEnv;
+		super(roundEnv, processingEnv);
 		this.elementsWithOtherAnnotations = new HashMap<>();
 		this.elementsWithPM = roundEnv.getElementsAnnotatedWith(ProvideMatchers.class);
 		elementsWithOtherAnnotations.put(IgnoreInMatcher.class,
@@ -79,10 +76,6 @@ public class RoundMirror {
 				new LocalDateTimeMatchersAutomatedExtension(this), new LocalTimeMatchersAutomatedExtension(this),
 				new ZonedDateTimeMatchersAutomatedExtension(this),
 				new CollectionHamcrestUtilityAutomatedExtension(this));
-	}
-
-	public ProcessingEnvironment getProcessingEnv() {
-		return processingEnv;
 	}
 
 	public Collection<ProvidesMatchersAnnotatedElementMirror> parse() {
