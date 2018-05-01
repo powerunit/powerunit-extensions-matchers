@@ -10,7 +10,7 @@ Simple usage of the framework
 </dependency>
 +-----
 
-The library will be used as an annotation processor. Then just add the annotation on a bean :
+ The library will be used as an annotation processor. Then just add the annotation on a bean :
 
 +-----
 package mypackage;
@@ -23,7 +23,7 @@ public class SimplePojo {
 }
 +-----
 
-This will generate a class with a lot of entry, but with some static methods :
+ This will generate a class with a lot of inner classes, but with some interesting static methods :
 
 +-----
 package mypackage;
@@ -78,3 +78,7 @@ public class SimplePojoMatchers {
 
 }
 +-----
+
+ The easy method to be used to start the DSL to validate the bean, is to use the method name simplePojoWith (bean name followed by <<<With>>>). This return a builder (which is also
+ a matcher). Then method for each fields are provided (use the auto completion of the editor) to specify an expectation on this field. Global expectation (on the object itself) may
+ also be provided by using the method named <<<andWith>>>. A <<<build>>> method is also provided as a syntaxic sugar to end the builder.

@@ -53,6 +53,7 @@
       <item name="FAQ" href="faq.html" />
       <item name="Samples" collapse="true" href="simple.html">
         <item name="Simple usage" href="simple.html"/>
+        <item name="Archetype usage" href="archetype.html"/>
       </item>
     </menu>
     <menu name="Linked projects">
