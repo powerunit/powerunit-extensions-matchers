@@ -1,3 +1,243 @@
 Archetype
 
- TODO
+ An archetype is provided to simplify the creation of a project that use this framework. Just use the <<<archetype:generate>>> goal of maven : 
+ 
++-----
+mvn archetype:generate -DarchetypeArtifactId=powerunit-extensions-matchers-archetype -DarchetypeGroupId=ch.powerunit.extensions -DarchetypeVersion=XXX
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Maven Stub Project (No POM) 1
+[INFO] ------------------------------------------------------------------------
+[INFO]
+[INFO] >>> maven-archetype-plugin:3.0.1:generate (default-cli) > generate-sources @ standalone-pom >>>
+[INFO]
+[INFO] <<< maven-archetype-plugin:3.0.1:generate (default-cli) < generate-sources @ standalone-pom <<<
+[INFO]
+[INFO] --- maven-archetype-plugin:3.0.1:generate (default-cli) @ standalone-pom ---
+[INFO] Generating project in Interactive mode
+[INFO] Archetype repository not defined. Using the one from [ch.powerunit.extensions:powerunit-extensions-matchers-archetype:XXX] found in catalog remote
+Define value for property 'groupId': mygroupid
+Define value for property 'artifactId': myartifactid
+Define value for property 'version' 1.0-SNAPSHOT: :
+Define value for property 'package' mygroupid: :
+Confirm properties configuration:
+groupId: mygroupid
+artifactId: myartifactid
+version: 1.0-SNAPSHOT
+package: mygroupid
+ Y: : y
+[INFO] ----------------------------------------------------------------------------
+[INFO] Using following parameters for creating project from Archetype: powerunit-extensions-matchers-archetype:0.1.0-SNAPSHOT
+[INFO] ----------------------------------------------------------------------------
+[INFO] Parameter: groupId, Value: mygroupid
+[INFO] Parameter: artifactId, Value: myartifactid
+[INFO] Parameter: version, Value: 1.0-SNAPSHOT
+[INFO] Parameter: package, Value: mygroupid
+[INFO] Parameter: packageInPathFormat, Value: mygroupid
+[INFO] Parameter: package, Value: mygroupid
+[INFO] Parameter: version, Value: 1.0-SNAPSHOT
+[INFO] Parameter: groupId, Value: mygroupid
+[INFO] Parameter: artifactId, Value: myartifactid
+[WARNING] Don't override file XXX
+[WARNING] Don't override file XXX
+[INFO] Project created from Archetype in dir: XXX
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 29.711 s
+[INFO] Finished at: 2018-05-01T21:20:01+02:00
+[INFO] Final Memory: 13M/177M
+[INFO] ------------------------------------------------------------------------
++-----
+
+ And then, it is only required to run the <<<mvn clean install>>> :
+
++-----
+mvn -e clean install
+[INFO] Error stacktraces are turned on.
+[INFO] Scanning for projects...
+[WARNING]
+[WARNING] Some problems were encountered while building the effective model for mygroupid:myartifactid:jar:1.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-compiler-plugin is missing. @ line 39, column 12
+[WARNING]
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING]
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING]
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] Building myartifactid 1.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO]
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ myartifactid ---
+[INFO]
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ myartifactid ---
+[WARNING] Using platform encoding (Cp1252 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] skip non existing resourceDirectory XXX\myartifactid\src\main\resources
+[INFO]
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ myartifactid ---
+[INFO] Changes detected - recompiling the module!
+[WARNING] File encoding has not been set, using platform encoding Cp1252, i.e. build is platform dependent!
+[INFO] Compiling 2 source files to XXX\myartifactid\target\classes
+[INFO]
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ myartifactid ---
+[WARNING] Using platform encoding (Cp1252 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] skip non existing resourceDirectory XXX\myartifactid\src\test\resources
+[INFO]
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ myartifactid ---
+[INFO] Changes detected - recompiling the module!
+[WARNING] File encoding has not been set, using platform encoding Cp1252, i.e. build is platform dependent!
+[INFO] Compiling 1 source file to XXX\myartifactid\target\test-classes
+[INFO]
+[INFO] --- maven-surefire-plugin:2.21.0:test (default-test) @ myartifactid ---
+[INFO] Surefire report directory: XXX\myartifactid\target\surefire-reports
+[INFO] Using configured provider ch.powerunit.surefire.PowerUnitProvider
+[INFO] parallel='none', perCoreThreadCount=true, threadCount=0, useUnlimitedThreads=false, threadCountSuites=0, threadCountClasses=0, threadCountMethods=0, parallelOptimized=true
+[INFO]
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running mygroupid.SimplePojoTest (of <none>)
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.02 s - in mygroupid.SimplePojoTest (of <none>)
+[INFO]
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO]
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ myartifactid ---
+[INFO] Building jar: XXX\myartifactid\target\myartifactid-1.0-SNAPSHOT.jar
+[INFO]
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ myartifactid ---
+[INFO] Installing XXX\myartifactid\target\myartifactid-1.0-SNAPSHOT.jar to XXX\.m2\repository\mygroupid\myartifactid\1.0-SNAPSHOT\myartifactid-1.0-SNAPSHOT.jar
+[INFO] Installing XXX\myartifactid\pom.xml to XXX\.m2\repository\mygroupid\myartifactid\1.0-SNAPSHOT\myartifactid-1.0-SNAPSHOT.pom
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 11.625 s
+[INFO] Finished at: 2018-05-01T21:23:02+02:00
+[INFO] Final Memory: 17M/199M
+[INFO] ------------------------------------------------------------------------
++-----
+
+The POM will look like
+
++-----
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>mygroupid</groupId>
+	<artifactId>myartifactid</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<properties>
+		<!-- Java 8 at least is required -->
+		<java.source.version>1.8</java.source.version>
+		<java.target.version>1.8</java.target.version>
+		<powerunit.extension.matcher.version>XXX</powerunit.extension.matcher.version>
+		<!-- This part is optional and is linked with powerunit -->
+		<powerunit.version>0.5.0</powerunit.version>
+		<surefire.version>2.21.0</surefire.version>
+	</properties>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<!-- Enable powerunit as test framework (optional) -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>${surefire.version}</version>
+					<dependencies>
+						<dependency>
+							<groupId>ch.powerunit</groupId>
+							<artifactId>powerunit</artifactId>
+							<version>${powerunit.version}</version>
+						</dependency>
+					</dependencies>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+					<compilerArgs>
+						<!-- configuration that generate one single class with all the factory -->
+						<compilerArg>-Ach.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets=.*:mygroupid.AllMatchers</compilerArg>
+					</compilerArgs>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+
+	<dependencies>
+		<dependency>
+			<groupId>ch.powerunit.extensions</groupId>
+			<artifactId>powerunit-extensions-matchers</artifactId>
+			<version>${powerunit.extension.matcher.version}</version>
+		</dependency>
+		<!-- optional - powerunit test framework -->
+		<dependency>
+			<groupId>ch.powerunit</groupId>
+			<artifactId>powerunit</artifactId>
+			<version>${powerunit.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>
++-----
+
+ The main source files will look like :
+ 
++-----
+package mygroupid;
+
+import ch.powerunit.extensions.matchers.ProvideMatchers;
+
+@ProvideMatchers
+public class SimplePojo {
+	public String oneField;
+}
+
+package mygroupid;
+
+import ch.powerunit.extensions.matchers.ProvideMatchers;
+
+@ProvideMatchers
+public class TwoFieldsPojo {
+	public String firstField;
+	
+	public String secondField;
+}
++-----
+
+ The test source files will look like :
+ 
++-----
+package mygroupid;
+
+import ch.powerunit.Test;
+import ch.powerunit.TestSuite;
+
+//implements the AllMatchers interface to have access to the generated matchers
+//TestSuite provide the DSL for powerunit
+public class SimplePojoTest implements TestSuite, AllMatchers {
+
+	@Test
+	public void testPojoValueWithGeneratedMatcher() {
+		SimplePojo p = new SimplePojo();
+		p.oneField = "x";
+		assertThat(p).is(simplePojoWith().oneField("x"));
+	}
+}
++-----
+
+ This sample class use the DSL provided by the generated class.
