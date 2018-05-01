@@ -121,7 +121,7 @@ mvn -e clean install
 [INFO] ------------------------------------------------------------------------
 +-----
 
-The POM will look like
+ The POM will look like
 
 +-----
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
