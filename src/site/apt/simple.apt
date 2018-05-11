@@ -1,0 +1,85 @@
+Simple usage of the framework
+
+ The simple way to use this framework is to add this library as a dependency :
+ 
++-----
+<dependency>
+ <groupId>ch.powerunit.extensions</groupId>
+ <artifactId>powerunit-extensions-matchers</artifactId>
+ <version>XXX</version>
+</dependency>
++-----
+
+ The library will be used as an annotation processor. Then just add the annotation on a bean :
+
++-----
+package mypackage;
+
+import ch.powerunit.extensions.matchers.ProvideMatchers;
+
+@ProvideMatchers
+public class SimplePojo {
+	public String oneField;
+}
++-----
+
+ This will generate a class with a lot of inner classes, but with some interesting static methods :
+
++-----
+package mypackage;
+
+public class SimplePojoMatchers {
+
+  ...
+
+  /**
+   * Start a DSL matcher for the {@link mypackage.SimplePojo SimplePojo}.
+   * <p>
+   * The returned builder (which is also a Matcher), at this point accepts any object that is a {@link mypackage.SimplePojo SimplePojo}.
+   * 
+   * 
+   * @return the DSL matcher
+   */
+  @org.hamcrest.Factory
+  public static  mypackage.SimplePojoMatchers.SimplePojoMatcher <Void> simplePojoWith() {
+    return new SimplePojoMatcherImpl<Void>();
+  }
+
+
+  /**
+   * Start a DSL matcher for the {@link mypackage.SimplePojo SimplePojo}.
+   * <p>
+   * The returned builder (which is also a Matcher), at this point accepts any object that is a {@link mypackage.SimplePojo SimplePojo}.
+   * @param parentBuilder the parentBuilder.
+   * 
+   * 
+   * @param <_PARENT> used to reference, if necessary, a parent for this builder. By default Void is used an indicate no parent builder.
+   * @return the DSL matcher
+   */
+  @org.hamcrest.Factory
+  public static <_PARENT> mypackage.SimplePojoMatchers.SimplePojoMatcher <_PARENT> simplePojoWithParent(_PARENT parentBuilder) {
+    return new SimplePojoMatcherImpl<_PARENT>(parentBuilder);
+  }
+
+
+  /**
+   * Start a DSL matcher for the {@link mypackage.SimplePojo SimplePojo}.
+   * @param other the other object to be used as a reference.
+   * 
+   * 
+   * @return the DSL matcher
+   */
+  @org.hamcrest.Factory
+  public static  mypackage.SimplePojoMatchers.SimplePojoMatcher <Void> simplePojoWithSameValue(mypackage.SimplePojo  other) {
+    SimplePojoMatcher <Void> m=new SimplePojoMatcherImpl<Void>();
+        m.oneField(org.hamcrest.Matchers.is(other.oneField));
+    return m;
+  }
+
+}
++-----
+
+ The easy method to be used to start the DSL to validate the bean, is to use the method name simplePojoWith (bean name followed by <<<With>>>). This return a builder (which is also
+ a matcher). Then method for each fields are provided (use the auto completion of the editor) to specify an expectation on this field. Global expectation (on the object itself) may
+ also be provided by using the method named <<<andWith>>>. A <<<build>>> method is also provided as a syntaxic sugar to end the builder.
+ 

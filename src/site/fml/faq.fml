@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faqs xmlns="http://maven.apache.org/FML/1.0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd"
+	title="Frequently Asked Questions" toplink="true">
+
+	<part id="general">
+		<title>General</title>
+
+		<faq id="whats-powerunit-extensions-matchers">
+			<question>
+				What is Powerunit Extensions Matchers?
+			</question>
+			<answer>
+				<p>Powerunit Extensions Matchers is an extension to the Powerunit
+					framework (not required), and provides support to generate Hamcrest
+					Matchers for beans.
+				</p>
+			</answer>
+		</faq>
+
+		<faq id="why-use-powerunit-extensions-matchers">
+			<question>
+				Why should I use Powerunit Extension Matchers?
+			</question>
+			<answer>
+				<p>Hamcrest is a very nice way to do assertion in unit test, but for
+					complex beans, it may not be easy to test all fields by using
+					getter.
+				</p>
+				<p>By providing generation of hamcrest matchers, completion is
+					available and null check is done on the bean itself.
+				</p>
+			</answer>
+		</faq>
+
+		<faq id="how-use-powerunit-extensions-matchers">
+			<question>
+				How can I use Powerunit Extension Matchers?
+			</question>
+			<answer>
+				<p>
+					Just add a dependency to
+					<code>ch.powerunit.extensions:powerunit-extensions-matchers</code>
+					and annotate a bean with
+					<code>@ProvideMatchers</code>
+					. Depending on the expectation, others configurations may be
+					required to activate the annotation
+					processor or change parameters.
+				</p>
+			</answer>
+		</faq>
+
+	</part>
+
+	<part id="usage">
+		<title>Usage</title>
+
+		<faq id="howto-generate-a-matcher">
+			<question>
+				How to generate matchers for a class ?
+			</question>
+			<answer>
+				<p>
+					In short, just annotate the class with
+					<code>@ProvideMatchers</code>
+					.
+				</p>
+				<p>
+					Using this annotation indicates that a class, containing all
+					generated matchers, must be generated. This class, by default, will
+					have the same name and package that the annotated class, but with
+					<code>Matchers</code>
+					added to the end of the name.
+				</p>
+			</answer>
+		</faq>
+
+	</part>
+
+	<part id="extensions">
+		<title>Extensions</title>
+
+		<faq id="what-are-extensions">
+			<question>
+				What is the concept of extension in this framework ?
+			</question>
+			<answer>
+				<p>
+					This framework, by itself, is able to generate various DSL for
+					Pojo classes. In case some libraries are detected in the classpath,
+					at compile time, specific DSL methods are added to use these
+					library. This feature is available since version 0.1.0.
+				</p>
+				<ul>
+					<li>
+						If
+						<a href="https://github.com/exparity/hamcrest-date">Hamcrest Date</a>
+						is available, additional DSL method are added for the Java 8 Date
+						objects.
+					</li>
+					<li>
+						If
+						<a href="https://github.com/NitorCreations/matchers">Hamcrest 1.3
+							Utility Matchers
+						</a>
+						is available, additional DSL method are added for the
+						collections.
+					</li>
+				</ul>
+			</answer>
+		</faq>
+	</part>
+</faqs>
