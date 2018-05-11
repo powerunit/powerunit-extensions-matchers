@@ -77,4 +77,37 @@
 
 	</part>
 
+	<part id="extensions">
+		<title>Extensions</title>
+
+		<faq id="what-are-extensions">
+			<question>
+				What is the concept of extension in this framework ?
+			</question>
+			<answer>
+				<p>
+					This framework, by itself, is able to generate various DSL for
+					Pojo classes. In case some libraries are detected in the classpath,
+					at compile time, specific DSL methods are added to use these
+					library. This feature is available since version 0.1.0.
+				</p>
+				<ul>
+					<li>
+						If
+						<a href="https://github.com/exparity/hamcrest-date">Hamcrest Date</a>
+						is available, additional DSL method are added for the Java 8 Date
+						objects.
+					</li>
+					<li>
+						If
+						<a href="https://github.com/NitorCreations/matchers">Hamcrest 1.3
+							Utility Matchers
+						</a>
+						is available, additional DSL method are added for the
+						collections.
+					</li>
+				</ul>
+			</answer>
+		</faq>
+	</part>
 </faqs>
