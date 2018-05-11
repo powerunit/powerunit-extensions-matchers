@@ -240,4 +240,4 @@ public class SimplePojoTest implements TestSuite, AllMatchers {
 }
 +-----
 
- This sample class use the DSL provided by the generated class.
+ This sample class uses the DSL provided by the generated class.
