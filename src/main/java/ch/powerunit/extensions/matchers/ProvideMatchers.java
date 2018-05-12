@@ -194,6 +194,9 @@ import java.lang.annotation.Target;
  * <li>If <a href="https://github.com/NitorCreations/matchers">Hamcrest 1.3
  * Utility Matchers</a> is available, additional DSL method are added for the
  * collections.</li>
+ * <li>If <a href="https://github.com/spotify/java-hamcrest">Spotify Hamcrest
+ * (jackson)</a> is available and the {@link #JSON_EXTENSION} is used on
+ * {@link #extensions()}, then method to validate String as json are added.</li>
  * </ul>
  * 
  * @author borettim
@@ -254,4 +257,26 @@ public @interface ProvideMatchers {
 	 */
 	ComplementaryExpositionMethod[]moreMethod() default {};
 
+	/**
+	 * This attribute may be used to enable some extensions for this objects.
+	 * <p>
+	 * By default, no extension are enabled.
+	 * 
+	 * @return the extension to be used or an empty array by default.
+	 * @since 0.1.0
+	 * @see #JSON_EXTENSION An extension to add a validation on String, as JSON,
+	 *      based on the
+	 *      <a href="https://github.com/spotify/java-hamcrest">Spotify
+	 *      Matchers</a>.
+	 */
+	String[]extensions() default {};
+
+	/**
+	 * May be use as part of {@link #extensions()} to enable, if available, an
+	 * extension an each String to be validated by using a json validation.
+	 * 
+	 * 
+	 * @since 0.1.0
+	 */
+	public static final String JSON_EXTENSION = "json-extension";
 }

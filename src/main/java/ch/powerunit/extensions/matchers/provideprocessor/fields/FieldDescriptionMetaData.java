@@ -30,7 +30,7 @@ import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotat
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcherField;
 
-public abstract class FieldDescriptionMetaData {
+public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionContainerMetaData {
 
 	public static final String SEE_TEXT_FOR_IS_MATCHER = "org.hamcrest.Matchers#is(java.lang.Object)";
 	public static final String SEE_TEXT_FOR_HAMCREST_MATCHER = "org.hamcrest.Matchers The main class from hamcrest that provides default matchers.";
@@ -38,7 +38,6 @@ public abstract class FieldDescriptionMetaData {
 
 	protected final String generic;
 	protected final String defaultReturnMethod;
-	private final ProvidesMatchersAnnotatedElementData containingElementMirror;
 	protected final String fullyQualifiedNameMatcherInSameRound;
 	protected final FieldDescriptionMirror mirror;
 
@@ -52,7 +51,7 @@ public abstract class FieldDescriptionMetaData {
 
 	public FieldDescriptionMetaData(ProvidesMatchersAnnotatedElementData containingElementMirror,
 			FieldDescriptionMirror mirror) {
-		this.containingElementMirror = containingElementMirror;
+		super(containingElementMirror);
 		this.mirror = mirror;
 		RoundMirror roundMirror = containingElementMirror.getRoundMirror();
 		TypeMirror fieldTypeMirror = (mirror.getFieldElement() instanceof ExecutableElement)
@@ -87,7 +86,8 @@ public abstract class FieldDescriptionMetaData {
 	}
 
 	public String getFieldCopy(String lhs, String rhs) {
-		if (fullyQualifiedNameMatcherInSameRound != null && mirror.getFieldTypeAsTypeElement().getTypeParameters().isEmpty()) {
+		if (fullyQualifiedNameMatcherInSameRound != null
+				&& mirror.getFieldTypeAsTypeElement().getTypeParameters().isEmpty()) {
 			return getFieldCopySameRound(lhs, rhs);
 		}
 		return getFieldCopyDefault(lhs, rhs);
@@ -104,8 +104,8 @@ public abstract class FieldDescriptionMetaData {
 	}
 
 	public String asMatcherField() {
-		return String.format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));", mirror.getMethodFieldName(),
-				getFieldName(), MATCHERS, "");
+		return String.format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));",
+				mirror.getMethodFieldName(), getFieldName(), MATCHERS, "");
 	}
 
 	public String getFullyQualifiedNameEnclosingClassOfField() {
@@ -135,6 +135,7 @@ public abstract class FieldDescriptionMetaData {
 	public FieldDescriptionMirror getMirror() {
 		return mirror;
 	}
+
 	public String getGeneric() {
 		return generic;
 	}
