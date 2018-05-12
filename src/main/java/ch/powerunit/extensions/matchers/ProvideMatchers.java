@@ -194,6 +194,9 @@ import java.lang.annotation.Target;
  * <li>If <a href="https://github.com/NitorCreations/matchers">Hamcrest 1.3
  * Utility Matchers</a> is available, additional DSL method are added for the
  * collections.</li>
+ * <li>If <a href="https://github.com/spotify/java-hamcrest">Spotify Hamcrest
+ * (jackson)</a> is available and the {@link #JSON_EXTENSION} is used on
+ * {@link #extensions()}, then method to validate String as json are added.</li>
  * </ul>
  * 
  * @author borettim
