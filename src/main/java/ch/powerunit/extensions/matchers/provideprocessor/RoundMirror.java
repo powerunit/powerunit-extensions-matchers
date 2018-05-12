@@ -44,6 +44,7 @@ import ch.powerunit.extensions.matchers.AddToMatchers;
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.AutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.beanmatchers.DefaultBeanMatchersAutomatedExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.LocalDateMatchersAutomatedExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.LocalDateTimeMatchersAutomatedExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.LocalTimeMatchersAutomatedExtension;
@@ -76,7 +77,8 @@ public class RoundMirror extends AbstractRoundMirrorReferenceToProcessingEnv {
 		return Arrays.asList(new LocalDateMatchersAutomatedExtension(this),
 				new LocalDateTimeMatchersAutomatedExtension(this), new LocalTimeMatchersAutomatedExtension(this),
 				new ZonedDateTimeMatchersAutomatedExtension(this),
-				new CollectionHamcrestUtilityAutomatedExtension(this),new JsonStringSpotifyAutomatedExtension(this));
+				new CollectionHamcrestUtilityAutomatedExtension(this), new JsonStringSpotifyAutomatedExtension(this),
+				new DefaultBeanMatchersAutomatedExtension(this));
 	}
 
 	public Collection<ProvidesMatchersAnnotatedElementMirror> parse() {
