@@ -55,7 +55,7 @@ public class DefaultFieldDescription extends AbstractFieldDescription {
 		tmp.add(FieldDSLMethodBuilder.of(this).withDeclaration(ft + " value")
 				.withJavaDoc("", "value an expected value for the field, which will be compared using the is matcher",
 						SEE_TEXT_FOR_IS_MATCHER)
-				.havingDefault(MATCHERS + ".is(value)"));
+				.havingDefault("(org.hamcrest.Matcher)"+MATCHERS + ".is((java.lang.Object)value)"));
 		tmp.add(FieldDSLMethodBuilder.of(this)
 				.withGenericDeclaration("<_TARGETFIELD>", "As",
 						"java.util.function.Function<" + ft

@@ -139,7 +139,7 @@ public class DefaultFieldDescriptionTest implements TestSuite {
 		DefaultFieldDescription undertest = new DefaultFieldDescription(() -> provideMatchersAnnotatedElementMirror,
 				new FieldDescriptionMirror(() -> provideMatchersAnnotatedElementMirror, "field", "boolean",
 						executableElement));
-		assertThat(undertest.getFieldCopy("a", "b")).is("a.field(org.hamcrest.Matchers.is(b.field()))");
+		assertThat(undertest.getFieldCopy("a", "b")).is("a.field((org.hamcrest.Matcher)org.hamcrest.Matchers.is((java.lang.Object)b.field()))");
 	}
 
 	@Test
