@@ -49,7 +49,7 @@ import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.
 import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.LocalTimeMatchersAutomatedExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.ZonedDateTimeMatchersAutomatedExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestutility.CollectionHamcrestUtilityAutomatedExtension;
-import ch.powerunit.extensions.matchers.provideprocessor.extension.spotify.JsonStringSpotifyAutmatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.spotify.JsonStringSpotifyAutomatedExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethod;
 
@@ -76,7 +76,7 @@ public class RoundMirror extends AbstractRoundMirrorReferenceToProcessingEnv {
 		return Arrays.asList(new LocalDateMatchersAutomatedExtension(this),
 				new LocalDateTimeMatchersAutomatedExtension(this), new LocalTimeMatchersAutomatedExtension(this),
 				new ZonedDateTimeMatchersAutomatedExtension(this),
-				new CollectionHamcrestUtilityAutomatedExtension(this),new JsonStringSpotifyAutmatedExtension(this));
+				new CollectionHamcrestUtilityAutomatedExtension(this),new JsonStringSpotifyAutomatedExtension(this));
 	}
 
 	public Collection<ProvidesMatchersAnnotatedElementMirror> parse() {

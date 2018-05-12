@@ -30,9 +30,9 @@ import ch.powerunit.extensions.matchers.provideprocessor.fields.StringFieldDescr
  * @author borettim
  *
  */
-public class JsonStringSpotifyAutmatedExtension extends AbstractSpotifyAutomatedExtension {
+public class JsonStringSpotifyAutomatedExtension extends AbstractSpotifyAutomatedExtension {
 
-	public JsonStringSpotifyAutmatedExtension(RoundMirror roundMirror) {
+	public JsonStringSpotifyAutomatedExtension(RoundMirror roundMirror) {
 		super(roundMirror);
 	}
 
