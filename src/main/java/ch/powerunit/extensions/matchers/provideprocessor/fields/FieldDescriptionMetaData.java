@@ -70,7 +70,7 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 	}
 
 	public String getFieldCopyDefault(String lhs, String rhs) {
-		return lhs + "." + getFieldName() + "(" + MATCHERS + ".is(" + rhs + "." + getFieldAccessor() + "))";
+		return lhs + "." + getFieldName() + "((org.hamcrest.Matcher)" + MATCHERS + ".is((java.lang.Object)" + rhs + "." + getFieldAccessor() + "))";
 	}
 
 	public String getSameValueMatcherFor(String target) {
