@@ -197,6 +197,8 @@ import java.lang.annotation.Target;
  * <li>If <a href="https://github.com/spotify/java-hamcrest">Spotify Hamcrest
  * (jackson)</a> is available and the {@link #JSON_EXTENSION} is used on
  * {@link #extensions()}, then method to validate String as json are added.</li>
+ * <li>If <a href="https://github.com/orien/bean-matchers">Bean Matchers</a> is
+ * available additional method to validate Class field.</li>
  * </ul>
  * 
  * @author borettim
