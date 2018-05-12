@@ -87,7 +87,8 @@ public abstract class FieldDescriptionMetaData {
 	}
 
 	public String getFieldCopy(String lhs, String rhs) {
-		if (fullyQualifiedNameMatcherInSameRound != null && mirror.getFieldTypeAsTypeElement().getTypeParameters().isEmpty()) {
+		if (fullyQualifiedNameMatcherInSameRound != null
+				&& mirror.getFieldTypeAsTypeElement().getTypeParameters().isEmpty()) {
 			return getFieldCopySameRound(lhs, rhs);
 		}
 		return getFieldCopyDefault(lhs, rhs);
@@ -104,8 +105,8 @@ public abstract class FieldDescriptionMetaData {
 	}
 
 	public String asMatcherField() {
-		return String.format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));", mirror.getMethodFieldName(),
-				getFieldName(), MATCHERS, "");
+		return String.format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));",
+				mirror.getMethodFieldName(), getFieldName(), MATCHERS, "");
 	}
 
 	public String getFullyQualifiedNameEnclosingClassOfField() {
@@ -135,8 +136,13 @@ public abstract class FieldDescriptionMetaData {
 	public FieldDescriptionMirror getMirror() {
 		return mirror;
 	}
+
 	public String getGeneric() {
 		return generic;
+	}
+
+	public ProvidesMatchersAnnotatedElementData getContainingElementMirror() {
+		return containingElementMirror;
 	}
 
 	public GeneratedMatcherField asGeneratedMatcherField() {

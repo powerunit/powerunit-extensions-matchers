@@ -45,13 +45,13 @@ public class ProvideMatchersMirror {
 			new ContainsDSLExtension(), new ArrayContainingDSLExtension(), new HasItemsExtension(),
 			new ContainsInAnyOrderDSLExtension(), new ArrayContainingInAnyOrderDSLExtension(), new AnyOfExtension()));
 
-	private final String comments;
+	private final ProvideMatchers pm;
 	private final String simpleNameOfGeneratedClass;
 	private final String packageNameOfGeneratedClass;
 	private final ComplementaryExpositionMethod[] moreMethod;
 
 	public ProvideMatchersMirror(ProcessingEnvironment processingEnv, TypeElement annotatedElement) {
-		ProvideMatchers pm = annotatedElement.getAnnotation(ProvideMatchers.class);
+		pm = annotatedElement.getAnnotation(ProvideMatchers.class);
 		if ("".equals(pm.matchersClassName())) {
 			simpleNameOfGeneratedClass = annotatedElement.getSimpleName().toString() + "Matchers";
 		} else {
@@ -63,12 +63,16 @@ public class ProvideMatchersMirror {
 		} else {
 			packageNameOfGeneratedClass = pm.matchersPackageName();
 		}
-		this.comments = pm.comments();
 		this.moreMethod = pm.moreMethod();
 	}
 
 	public final String getComments() {
-		return comments;
+		return pm.comments();
+	}
+	
+	public final String[] getExtension() {
+		return pm.extensions();
+		
 	}
 
 	public final String getSimpleNameOfGeneratedClass() {
