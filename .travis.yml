@@ -1,6 +1,7 @@
 language: java
 jdk:
 - oraclejdk8
+- oraclejdk9
 sudo: false
 install:
 - "mvn dependency:resolve dependency:resolve-plugins"
