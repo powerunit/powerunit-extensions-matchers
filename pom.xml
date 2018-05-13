@@ -316,7 +316,7 @@
 				<configuration>
 					<excludePackageNames>ch.powerunit.extensions.matchers.factoryprocessor*:ch.powerunit.extensions.matchers.provideprocessor*:ch.powerunit.extensions.matchers.common*</excludePackageNames>
 					<docfilessubdirs>true</docfilessubdirs>
-					<linksource>true</linksource>
+					<linksource>false</linksource>
 					<links>
 						<link>http://hamcrest.org/JavaHamcrest/javadoc/1.3/</link>
 					</links>
