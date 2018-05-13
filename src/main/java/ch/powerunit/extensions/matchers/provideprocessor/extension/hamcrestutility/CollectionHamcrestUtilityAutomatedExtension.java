@@ -43,9 +43,10 @@ public class CollectionHamcrestUtilityAutomatedExtension extends AbstractHamcres
 		String expectedElement = getExpectedElement();
 		String genericMatcher = "org.hamcrest.Matcher<" + field.getGeneric() + ">";
 		return Arrays.asList(
-				builderFor(field, "hasNoDuplicates", "").withJavaDoc("That this collection contains no duplication")
-						.havingDefault("(org.hamcrest.Matcher)" + expectedElement
-								+ ".hasNoDuplicates(java.lang.Object.class)"),
+				builderFor(field, "hasNoDuplicates", "")
+						.withJavaDocAndDefault("That this collection contains no duplication",
+								"(org.hamcrest.Matcher)" + expectedElement
+										+ ".hasNoDuplicates(java.lang.Object.class)"),
 				builderFor(field, "hasFirstItem", genericMatcher + " matcher")
 						.withJavaDoc(Optional.of("having first item with a specific value"),
 								Optional.of("matcher matcher on the item"), Optional.empty())

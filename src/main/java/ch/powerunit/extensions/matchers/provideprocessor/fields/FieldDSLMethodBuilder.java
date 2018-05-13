@@ -73,6 +73,17 @@ public class FieldDSLMethodBuilder {
 			return this;
 		}
 
+		@Override
+		public FieldDSLMethod withExplicitDeclarationJavadocAndImplementation(String declaration,
+				String addToDescription, String body) {
+			return withExplicitDeclaration(declaration).withJavaDoc(addToDescription).havingImplementation(body);
+		}
+
+		@Override
+		public FieldDSLMethod withJavaDocAndDefault(String addToDescription, String innerMatcher) {
+			return withJavaDoc(addToDescription).havingDefault(innerMatcher);
+		}
+
 	}
 
 	public static String getJavaDocFor(AbstractFieldDescription fieldDescription, Optional<String> addToDescription,
