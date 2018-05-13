@@ -6,7 +6,7 @@ sudo: false
 install:
 - "mvn dependency:resolve dependency:resolve-plugins"
 script:
-- "mvn clean install"
+- "mvn -e -X clean install"
 after_success:
 - "mvn jacoco:report coveralls:report -DrepoToken=${repoToken}"
 - "bash <(curl -s https://codecov.io/bash) -c -Funit"
