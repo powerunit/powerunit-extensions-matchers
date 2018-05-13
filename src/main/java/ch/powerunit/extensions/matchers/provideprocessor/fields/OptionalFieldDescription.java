@@ -35,12 +35,13 @@ public class OptionalFieldDescription extends DefaultFieldDescription {
 	protected Collection<FieldDSLMethod> getSpecificFieldDslMethodFor() {
 		String fieldType = getFieldType();
 		return Arrays.asList(
-				getDslMethodBuilder().withDeclaration("IsPresent", "").withJavaDoc("with a present optional")
-						.havingDefault("new org.hamcrest.CustomTypeSafeMatcher<" + fieldType
+				getDslMethodBuilder().withSuffixDeclarationJavadocAndDefault("IsPresent", "with a present optional",
+						"new org.hamcrest.CustomTypeSafeMatcher<" + fieldType
 								+ ">(\"optional is present\"){ public boolean matchesSafely(" + fieldType
 								+ " o) {return o.isPresent();}}"),
-				getDslMethodBuilder().withDeclaration("IsNotPresent", "").withJavaDoc("with a not present optional")
-						.havingDefault("new org.hamcrest.CustomTypeSafeMatcher<" + fieldType
+				getDslMethodBuilder().withSuffixDeclarationJavadocAndDefault("IsNotPresent",
+						"with a not present optional",
+						"new org.hamcrest.CustomTypeSafeMatcher<" + fieldType
 								+ ">(\"optional is not present\"){ public boolean matchesSafely(" + fieldType
 								+ " o) {return !o.isPresent();}}"));
 	}

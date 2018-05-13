@@ -21,7 +21,7 @@ package ch.powerunit.extensions.matchers.provideprocessor.fields.lang;
 
 import java.util.Optional;
 
-public interface BuilderJavadoc {
+public interface BuilderJavadoc extends BuilderShortCutJavadoc{
 	BuilderImplementation withJavaDoc(Optional<String> addToDescription, Optional<String> param, Optional<String> see);
 
 	default BuilderImplementation withJavaDoc(String addToDescription, String param, String see) {

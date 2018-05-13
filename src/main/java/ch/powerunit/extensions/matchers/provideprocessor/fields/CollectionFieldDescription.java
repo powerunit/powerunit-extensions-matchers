@@ -52,10 +52,10 @@ public class CollectionFieldDescription extends DefaultFieldDescription implemen
 
 	public List<FieldDSLMethod> getFieldDslMethodForIterableAndComparable() {
 		return Arrays.asList(
-				getDslMethodBuilder().withDeclaration("IsEmptyIterable", "").withJavaDoc("that the iterable is empty")
-						.havingDefault("(org.hamcrest.Matcher)" + MATCHERS + ".emptyIterable()"),
-				getDslMethodBuilder().withDeclaration("IsEmpty", "").withJavaDoc("that the collection is empty")
-						.havingDefault("(org.hamcrest.Matcher)" + MATCHERS + ".empty()"));
+				getDslMethodBuilder().withSuffixDeclarationJavadocAndDefault("IsEmptyIterable",
+						"that the iterable is empty", "(org.hamcrest.Matcher)" + MATCHERS + ".emptyIterable()"),
+				getDslMethodBuilder().withSuffixDeclarationJavadocAndDefault("IsEmpty", "that the collection is empty",
+						"(org.hamcrest.Matcher)" + MATCHERS + ".empty()"));
 	}
 
 	public List<FieldDSLMethod> getDslForIterableWithGeneric() {

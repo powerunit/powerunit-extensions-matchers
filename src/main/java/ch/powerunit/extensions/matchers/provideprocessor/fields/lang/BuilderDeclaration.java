@@ -19,10 +19,14 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.fields.lang;
 
-public interface BuilderDeclaration {
+public interface BuilderDeclaration extends BuilderShortCutDeclaration{
 	BuilderJavadoc withExplicitDeclaration(String declaration);
 
 	BuilderJavadoc withGenericDeclaration(String generic, String postFix, String arguments);
+	
+	default BuilderJavadoc withSuffixDeclaration(String postfix) {
+		return withDeclaration(postfix,"");
+	}
 
 	default BuilderJavadoc withDeclaration(String postFix, String arguments) {
 		return withGenericDeclaration("", postFix, arguments);

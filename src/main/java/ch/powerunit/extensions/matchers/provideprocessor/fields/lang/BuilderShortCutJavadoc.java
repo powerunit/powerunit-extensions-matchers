@@ -17,24 +17,14 @@
  * You should have received a copy of the GNU General Public License
  * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
  */
-package ch.powerunit.extensions.matchers.provideprocessor.fields;
+package ch.powerunit.extensions.matchers.provideprocessor.fields.lang;
 
-import java.util.Collection;
-import java.util.Collections;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethod;
 
-import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
-
-public class ArrayFieldDescription extends DefaultFieldDescription {
-
-	public ArrayFieldDescription(ProvidesMatchersAnnotatedElementData containingElementMirror,
-			FieldDescriptionMirror mirror) {
-		super(containingElementMirror, mirror);
-	}
-
-	@Override
-	protected Collection<FieldDSLMethod> getSpecificFieldDslMethodFor() {
-		return Collections.singleton(getDslMethodBuilder().withSuffixDeclarationJavadocAndDefault("IsEmpty",
-				"that the array is empty", "(org.hamcrest.Matcher)" + MATCHERS + ".emptyArray()"));
-	}
-
+/**
+ * @author borettim
+ *
+ */
+public interface BuilderShortCutJavadoc {
+	FieldDSLMethod withJavaDocAndDefault(String addToDescription, String innerMatcher);
 }
