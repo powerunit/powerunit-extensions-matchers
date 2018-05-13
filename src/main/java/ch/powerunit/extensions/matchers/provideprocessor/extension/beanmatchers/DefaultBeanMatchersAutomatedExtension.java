@@ -39,7 +39,7 @@ public class DefaultBeanMatchersAutomatedExtension extends AbstractBeanMatchersA
 
 	@Override
 	protected Collection<FieldDSLMethod> acceptBeanMatchers(AbstractFieldDescription field) {
-		return Collections.singletonList(builderFor(field).withDeclaration("IsAValidBean", "").withJavaDocAndDefault(
+		return Collections.singletonList(builderFor(field).withSuffixDeclarationJavadocAndDefault("IsAValidBean",
 				"Check that this field (clazz) is a correct bean, based on Bean Matchers",
 				"org.hamcrest.CoreMatchers.allOf(com.google.code.beanmatchers.BeanMatchers.hasValidBeanConstructor(),com.google.code.beanmatchers.BeanMatchers.hasValidGettersAndSetters(),com.google.code.beanmatchers.BeanMatchers.hasValidBeanHashCode(),com.google.code.beanmatchers.BeanMatchers.hasValidBeanEquals(),com.google.code.beanmatchers.BeanMatchers.hasValidBeanToString())"));
 	}

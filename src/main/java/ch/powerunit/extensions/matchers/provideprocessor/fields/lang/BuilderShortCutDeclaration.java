@@ -28,4 +28,7 @@ import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethod;
 public interface BuilderShortCutDeclaration {
 	FieldDSLMethod withExplicitDeclarationJavadocAndImplementation(String declaration, String addToDescription,
 			String body);
+	
+	FieldDSLMethod withSuffixDeclarationJavadocAndDefault(String declaration, String addToDescription,
+			String innerMatcher);
 }

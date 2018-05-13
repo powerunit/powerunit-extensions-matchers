@@ -84,6 +84,12 @@ public class FieldDSLMethodBuilder {
 			return withJavaDoc(addToDescription).havingDefault(innerMatcher);
 		}
 
+		@Override
+		public FieldDSLMethod withSuffixDeclarationJavadocAndDefault(String declaration, String addToDescription,
+				String innerMatcher) {
+			return withSuffixDeclaration(declaration).withJavaDocAndDefault(addToDescription, innerMatcher);
+		}
+
 	}
 
 	public static String getJavaDocFor(AbstractFieldDescription fieldDescription, Optional<String> addToDescription,
