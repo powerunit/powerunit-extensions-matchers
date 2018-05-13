@@ -92,7 +92,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 			PrintWriter pw = new PrintWriter(out);
 			t.printStackTrace(pw);
 			processingEnv.getMessager().printMessage(Kind.ERROR,
-					"Unable to process, becase of " + t.getMessage() + ":\n" + out.toString());
+					"Unable to process, because of " + t.getMessage() + ":\n" + out.toString());
 		}
 		return true;
 	}
