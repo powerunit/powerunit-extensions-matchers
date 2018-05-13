@@ -24,7 +24,6 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -81,18 +80,10 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	 */
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-		try {
-			if (!roundEnv.processingOver()) {
-				processRound(roundEnv);
-			} else {
-				processFinalRound();
-			}
-		} catch (Throwable t) {
-			StringWriter out = new StringWriter();
-			PrintWriter pw = new PrintWriter(out);
-			t.printStackTrace(pw);
-			processingEnv.getMessager().printMessage(Kind.ERROR,
-					"Unable to process, because of " + t.getMessage() + ":\n" + out.toString());
+		if (!roundEnv.processingOver()) {
+			processRound(roundEnv);
+		} else {
+			processFinalRound();
 		}
 		return true;
 	}
