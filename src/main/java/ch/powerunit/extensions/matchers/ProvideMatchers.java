@@ -241,7 +241,8 @@ public @interface ProvideMatchers {
 
 	/**
 	 * This attribute may be used to set a comments that will be passed inside
-	 * the comments attribute of the &#64;Generated annotation.
+	 * the {@link javax.annotation.Generated#comments() comments} attribute of
+	 * the {@link javax.annotation.Generated @Generated} annotation.
 	 * 
 	 * @return the comments or an empty string if ignored.
 	 */
