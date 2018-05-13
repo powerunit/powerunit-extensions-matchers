@@ -4,10 +4,10 @@
 </head>
 <body>
 	This is an extension to Powerunit to generate matchers for POJO.
-	<p />
+	<p>
 	This library provides several annotation processors :
 	<ul>
-		<li><b>Processing of the ProvideMatchers annotation.</b><br />This
+		<li><b>Processing of the ProvideMatchers annotation.</b><br>This
 			processor create <code>Matcher</code> for each annotated class, in
 			the following way :
 			<ul>
@@ -36,16 +36,16 @@
 				<li>If some library are available, add special matchers.</li>
 			</ul></li>
 		<li><b>Generating class with all the matchers, directly
-				during annotation processing</b><br /> <i>This processor requires
+				during annotation processing</b><br> <i>This processor requires
 				to set the parameter <code>ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor.factory</code>
 				(<code>-A</code> parameter).
-		</i><br />This processor create <code>DSL</code> interface for each
+		</i><br>This processor create <code>DSL</code> interface for each
 			factory method of the matchers, in the interface defined by this
 			parameter.</li>
-		<li><b>Processing of the Factory annotation (from hamcrest).</b><br />
+		<li><b>Processing of the Factory annotation (from hamcrest).</b><br>
 			<i>This processor requires to set the parameter <code>ch.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets</code>
 				(<code>-A</code> parameter).
-		</i><br />This processor create <code>DSL</code> interface for each
+		</i><br>This processor create <code>DSL</code> interface for each
 			method annotated, in the following way :
 			<ul>
 				<li>Static method annotated with the <code>Factory</code>
