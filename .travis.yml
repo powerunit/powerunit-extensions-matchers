@@ -1,7 +1,7 @@
 language: java
 stages:
 - name: before_deploy
-  env: TRAVIS_JDK_VERSION=oraclejdk8
+  if: env(TRAVIS_JDK_VERSION)=oraclejdk8
 jdk:
 - oraclejdk8
 - oraclejdk9
@@ -41,4 +41,5 @@ deploy:
     file: target/*.jar
     skip_cleanup: true
     on:
+      all_branches: true
       condition: $TRAVIS_JDK_VERSION = oraclejdk8
