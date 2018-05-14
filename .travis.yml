@@ -41,7 +41,7 @@ deploy:
     file: target/*.jar
     skip_cleanup: true
     prerelease: true
-    draft: true
+    draft: false
     on:
       all_branches: true
       condition: $TRAVIS_JDK_VERSION = oraclejdk8
