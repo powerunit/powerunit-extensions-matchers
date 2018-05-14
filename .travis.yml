@@ -1,7 +1,7 @@
 language: java
 stages:
 - name: before_deploy
-  if: env(TRAVIS_JDK_VERSION)=oraclejdk8
+  if: env(TRAVIS_JDK_VERSION)=oraclejdk8 AND tag IS blank
 jdk:
 - oraclejdk8
 - oraclejdk9
@@ -25,7 +25,7 @@ after_success:
 before_deploy:
 - git config --local user.name "powerunitci"
 - git config --local user.email "powerunitci@powerunit.ch"
-- git tag "ci/$TRAVIS_BRANCH/$TRAVIS_JOB_NUMBER"
+- git tag "ci/$TRAVIS_BRANCH/$TRAVIS_BUILD_NUMBER"
 deploy:
   - provider: pages
     skip-cleanup: true
@@ -44,4 +44,5 @@ deploy:
     draft: false
     on:
       all_branches: true
+      tags: false
       condition: $TRAVIS_JDK_VERSION = oraclejdk8
