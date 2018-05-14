@@ -25,7 +25,7 @@ after_success:
 before_deploy:
 - git config --local user.name "powerunitci"
 - git config --local user.email "powerunitci@powerunit.ch"
-- git tag "ci/$TRAVIS_BRANCH/$TRAVIS_BUILD_NUMBER"
+- git tag -f "ci/$TRAVIS_BRANCH/$TRAVIS_BUILD_NUMBER"
 deploy:
   - provider: pages
     skip-cleanup: true
