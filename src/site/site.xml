@@ -41,6 +41,9 @@
           img="https://codebeat.co/badges/cdebf167-fee0-46b4-b33d-c613f1586a9d" />
     <logo name="Maven" href="https://maven-badges.herokuapp.com/maven-central/ch.powerunit.extensions/powerunit-extensions-matchers"
           img="https://maven-badges.herokuapp.com/maven-central/ch.powerunit.extensions/powerunit-extensions-matchers/badge.svg" />
+    <logo name="Javadoc" href="http://javadoc.io/doc/ch.powerunit.extensions/powerunit-extensions-matchers" 
+    	  img="http://javadoc.io/badge/ch.powerunit.extensions/powerunit-extensions-matchers.svg?color=yellow"/>
+          
   </poweredBy>
   
   <body>
