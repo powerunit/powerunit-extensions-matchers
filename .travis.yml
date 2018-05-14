@@ -6,6 +6,12 @@ jdk:
 - oraclejdk8
 - oraclejdk9
 - openjdk8
+matrix:
+  exclude:
+  - os: osx
+    jdk: oraclejdk9
+  - os: osx
+    jdk: openjdk8
 sudo: false
 install:
 - "mvn dependency:resolve dependency:resolve-plugins"
