@@ -8,8 +8,6 @@ matrix:
   - os: linux
     jdk: openjdk8
   - os: osx
- allow_failures:
-  - os: osx
 sudo: false
 install:
 - "mvn dependency:resolve dependency:resolve-plugins"
@@ -18,9 +16,9 @@ script:
 after_success:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then "jdk_switcher use oraclejdk8" ; fi
 - "mvn jacoco:report coveralls:report -DrepoToken=${repoToken}"
-- "bash <(curl -s https://codecov.io/bash) -c -Funit$TRAVIS_JDK_VERSION"
+- "bash <(curl -s https://codecov.io/bash) -c -Funit$TRAVIS_OS_NAME$TRAVIS_JDK_VERSION"
 - "mvn jacoco:report-integration"
-- "bash <(curl -s https://codecov.io/bash) -c -Fcompiler$TRAVIS_JDK_VERSION"
+- "bash <(curl -s https://codecov.io/bash) -c -Fcompiler$TRAVIS_OS_NAME$TRAVIS_JDK_VERSION"
 - "mvn org.apache.maven.plugins:maven-dependency-plugin:copy -Dartifact=com.codacy:codacy-coverage-reporter:4.0.0:jar:assembly -Dtransitive"
 - "mvn jacoco:merge -Djacoco.destFile=target/jacoco-aggregate.exe"
 - "mvn jacoco:report -Djacoco.dataFile=target/jacoco-aggregate.exe"
