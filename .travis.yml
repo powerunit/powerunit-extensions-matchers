@@ -1,7 +1,4 @@
 language: java
-stages:
-- name: before_deploy
-  if: env(TRAVIS_JDK_VERSION)=oraclejdk8 AND tag IS blank And branch=master
 jdk:
 - oraclejdk8
 - oraclejdk9
