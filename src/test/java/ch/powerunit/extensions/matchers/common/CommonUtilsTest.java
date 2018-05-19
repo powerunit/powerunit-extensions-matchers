@@ -1,9 +1,9 @@
 package ch.powerunit.extensions.matchers.common;
 
 import ch.powerunit.Test;
-import ch.powerunit.TestSuite;
+import ch.powerunit.extensions.matchers.TestSuiteSupport;
 
-public class CommonUtilsTest implements TestSuite {
+public class CommonUtilsTest implements TestSuiteSupport {
 
 	@Test
 	public void testToJavaSyntax() {

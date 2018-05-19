@@ -7,9 +7,9 @@ import java.util.stream.Stream;
 import javax.annotation.processing.AbstractProcessor;
 
 import ch.powerunit.Test;
-import ch.powerunit.TestSuite;
+import ch.powerunit.extensions.matchers.TestSuiteSupport;
 
-public class FactoryHelperTest implements TestSuite {
+public class FactoryHelperTest implements TestSuiteSupport {
 
 	@Test
 	public void testGenerateStaticDSL() {

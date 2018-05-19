@@ -17,14 +17,36 @@
  * You should have received a copy of the GNU General Public License
  * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
  */
-package ch.powerunit.extensions.matchers.provideprocessor;
+package ch.powerunit.extensions.matchers.common;
 
-import ch.powerunit.extensions.matchers.common.AbstractRoundMirrorSupport;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.util.TypeKindVisitor8;
 
-@FunctionalInterface
-public interface RoundMirrorSupport extends AbstractRoundMirrorSupport<RoundMirror>{
+/**
+ * @author borettim
+ *
+ */
+public class AbstractTypeKindVisitor<R, P, S extends AbstractRoundMirrorReferenceToProcessingEnv>
+		extends TypeKindVisitor8<R, P> implements AbstractRoundMirrorSupport<S> {
 
-	default ProvidesMatchersAnnotatedElementMirror getByName(String name) {
-		return getRoundMirror().getByName(name);
+	protected final S support;
+
+	public AbstractTypeKindVisitor(S support) {
+		this.support = support;
 	}
+
+	public ProcessingEnvironment getProcessingEnv() {
+		return support.getProcessingEnv();
+	}
+
+	public RoundEnvironment getRoundEnv() {
+		return support.getRoundEnv();
+	}
+
+	@Override
+	public S getRoundMirror() {
+		return support;
+	}
+
 }

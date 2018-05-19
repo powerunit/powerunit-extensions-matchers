@@ -22,14 +22,13 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 import java.util.Optional;
 import java.util.function.Function;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.util.SimpleElementVisitor8;
 import javax.tools.Diagnostic.Kind;
 
+import ch.powerunit.extensions.matchers.common.AbstractSimpleElementVisitor;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescriptionMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescriptionProvider;
@@ -39,16 +38,15 @@ import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescription
  *
  */
 public class ProvidesMatchersSubElementVisitor extends
-		SimpleElementVisitor8<Optional<AbstractFieldDescription>, ProvidesMatchersAnnotatedElementFieldMatcherMirror> {
+		AbstractSimpleElementVisitor<Optional<AbstractFieldDescription>, ProvidesMatchersAnnotatedElementFieldMatcherMirror, RoundMirror> {
 
 	private final Function<Element, Boolean> removeFromIgnoreList;
 	private final NameExtractorVisitor extractNameVisitor;
-	private final ProcessingEnvironment processingEnv;
 
 	public ProvidesMatchersSubElementVisitor(RoundMirror roundMirror) {
-		this.processingEnv = roundMirror.getProcessingEnv();
+		super(roundMirror);
 		this.removeFromIgnoreList = roundMirror::removeFromIgnoreList;
-		this.extractNameVisitor = new NameExtractorVisitor(processingEnv);
+		this.extractNameVisitor = new NameExtractorVisitor(roundMirror);
 	}
 
 	public Optional<AbstractFieldDescription> removeIfNeededAndThenReturn(
@@ -85,7 +83,7 @@ public class ProvidesMatchersSubElementVisitor extends
 
 	private void generateIfNeededWarningForNotSupportedElementAndRemoveIt(String description, Element e) {
 		if (removeFromIgnoreList.apply(e)) {
-			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
+			getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING,
 					"One of the annotation is not supported as this location ; " + description, e);
 		}
 	}

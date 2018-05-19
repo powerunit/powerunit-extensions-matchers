@@ -26,11 +26,12 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import javax.lang.model.util.TypeKindVisitor8;
 import javax.tools.Diagnostic.Kind;
 
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
+import ch.powerunit.extensions.matchers.common.AbstractTypeKindVisitor;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
 
 public final class FieldDescriptionProvider {
 
@@ -41,20 +42,25 @@ public final class FieldDescriptionProvider {
 		NA, ARRAY, COLLECTION, LIST, SET, OPTIONAL, COMPARABLE, STRING, SUPPLIER
 	}
 
-	public static final class ExtracTypeVisitor extends TypeKindVisitor8<Type, ProcessingEnvironment> {
+	public static final class ExtracTypeVisitor extends AbstractTypeKindVisitor<Type, Void, RoundMirror> {
+
+		public ExtracTypeVisitor(RoundMirror support) {
+			super(support);
+		}
 
 		@Override
-		protected Type defaultAction(TypeMirror t, ProcessingEnvironment processingEnv) {
+		protected Type defaultAction(TypeMirror t, Void ignore) {
 			return Type.NA;
 		}
 
 		@Override
-		public Type visitArray(ArrayType t, ProcessingEnvironment processingEnv) {
+		public Type visitArray(ArrayType t, Void ignore) {
 			return Type.ARRAY;
 		}
 
 		@Override
-		public Type visitDeclared(DeclaredType t, ProcessingEnvironment processingEnv) {
+		public Type visitDeclared(DeclaredType t, Void ignore) {
+			ProcessingEnvironment processingEnv = getProcessingEnv();
 			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
 					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Optional").asType()))) {
 				return Type.OPTIONAL;
@@ -81,13 +87,13 @@ public final class FieldDescriptionProvider {
 		}
 
 		@Override
-		public Type visitTypeVariable(TypeVariable t, ProcessingEnvironment processingEnv) {
+		public Type visitTypeVariable(TypeVariable t, Void ignore) {
 			return Type.NA;
 		}
 
 		@Override
-		public Type visitUnknown(TypeMirror t, ProcessingEnvironment processingEnv) {
-			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING, "Unsupported type element");
+		public Type visitUnknown(TypeMirror t, Void ignore) {
+			getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING, "Unsupported type element");
 			return Type.NA;
 		}
 	}
@@ -95,10 +101,8 @@ public final class FieldDescriptionProvider {
 	public static AbstractFieldDescription of(ProvidesMatchersAnnotatedElementData containingElementMirror,
 			FieldDescriptionMirror mirror) {
 		Element te = mirror.getFieldElement();
-		ProcessingEnvironment processingEnv = containingElementMirror.getRoundMirror().getProcessingEnv();
-		Type type = new ExtracTypeVisitor().visit(
-				(te instanceof ExecutableElement) ? ((ExecutableElement) te).getReturnType() : te.asType(),
-				processingEnv);
+		Type type = new ExtracTypeVisitor(containingElementMirror.getRoundMirror()).visit(
+				(te instanceof ExecutableElement) ? ((ExecutableElement) te).getReturnType() : te.asType(), null);
 		if (te.getAnnotation(IgnoreInMatcher.class) != null) {
 			return new IgoreFieldDescription(containingElementMirror, mirror);
 		}

@@ -26,13 +26,14 @@ import org.mockito.Mock;
 import ch.powerunit.Rule;
 import ch.powerunit.Test;
 import ch.powerunit.TestRule;
-import ch.powerunit.TestSuite;
+import ch.powerunit.extensions.matchers.TestSuiteSupport;
+
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public final class FileObjectHelperTest implements TestSuite {
+public final class FileObjectHelperTest implements TestSuiteSupport {
 
 	@Mock
 	private FileObject matcher;
