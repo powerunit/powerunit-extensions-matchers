@@ -19,8 +19,6 @@
  */
 package ch.powerunit.extensions.matchers.common;
 
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.util.TypeKindVisitor8;
 
 /**
@@ -34,14 +32,6 @@ public class AbstractTypeKindVisitor<R, P, S extends AbstractRoundMirrorReferenc
 
 	public AbstractTypeKindVisitor(S support) {
 		this.support = support;
-	}
-
-	public ProcessingEnvironment getProcessingEnv() {
-		return support.getProcessingEnv();
-	}
-
-	public RoundEnvironment getRoundEnv() {
-		return support.getRoundEnv();
 	}
 
 	@Override

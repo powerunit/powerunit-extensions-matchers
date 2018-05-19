@@ -20,6 +20,7 @@
 package ch.powerunit.extensions.matchers.common;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
@@ -29,6 +30,10 @@ public interface AbstractRoundMirrorSupport<R extends AbstractRoundMirrorReferen
 
 	default ProcessingEnvironment getProcessingEnv() {
 		return getRoundMirror().getProcessingEnv();
+	}
+	
+	default RoundEnvironment getRoundEnv() {
+		return getRoundMirror().getRoundEnv();
 	}
 
 	default TypeMirror getMirrorFor(String name) {

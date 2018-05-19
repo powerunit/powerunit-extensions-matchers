@@ -19,8 +19,6 @@
  */
 package ch.powerunit.extensions.matchers.common;
 
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.util.SimpleElementVisitor8;
 
 /**
@@ -33,14 +31,6 @@ public class AbstractSimpleElementVisitor<R, P, S extends AbstractRoundMirrorRef
 
 	public AbstractSimpleElementVisitor(S support) {
 		this.support = support;
-	}
-
-	public ProcessingEnvironment getProcessingEnv() {
-		return support.getProcessingEnv();
-	}
-
-	public RoundEnvironment getRoundEnv() {
-		return support.getRoundEnv();
 	}
 
 	@Override
