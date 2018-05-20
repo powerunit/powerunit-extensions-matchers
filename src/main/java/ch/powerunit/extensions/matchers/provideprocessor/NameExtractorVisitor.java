@@ -22,6 +22,7 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 
 import java.util.Optional;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
@@ -94,8 +95,9 @@ final class NameExtractorVisitor extends AbstractTypeKindVisitor<Optional<String
 
 	@Override
 	public Optional<String> visitUnknown(TypeMirror t, Boolean asPrimitif) {
-		getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING, "Unsupported type element",
-				getProcessingEnv().getTypeUtils().asElement(t));
+		ProcessingEnvironment processingEnv = getProcessingEnv();
+		processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING, "Unsupported type element",
+				processingEnv.getTypeUtils().asElement(t));
 		return Optional.empty();
 	}
 }

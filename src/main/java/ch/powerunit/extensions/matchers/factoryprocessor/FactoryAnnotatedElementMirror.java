@@ -25,6 +25,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
 import org.hamcrest.Factory;
 
@@ -66,12 +68,13 @@ class FactoryAnnotatedElementMirror extends AbstractElementMirror<ExecutableElem
 	}
 
 	private String convertParameterForSee(VariableElement ve) {
-		Element e = getProcessingEnv().getTypeUtils().asElement(ve.asType());
+		Types types = getProcessingEnv().getTypeUtils();
+		Elements elements = getProcessingEnv().getElementUtils();
+		Element e = types.asElement(ve.asType());
 		if (e == null || ve.asType().getKind() == TypeKind.TYPEVAR) {
-			return getProcessingEnv().getTypeUtils().erasure(ve.asType()).toString();
+			return types.erasure(ve.asType()).toString();
 		}
-		return getProcessingEnv().getElementUtils().getPackageOf(e).toString() + "."
-				+ getProcessingEnv().getTypeUtils().asElement(ve.asType()).getSimpleName();
+		return elements.getPackageOf(e).toString() + "." + types.asElement(ve.asType()).getSimpleName();
 	}
 
 	private String getJavadoc() {
