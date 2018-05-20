@@ -52,6 +52,8 @@ public class AbstractRoundMirrorReferenceToProcessingEnvTest implements TestSuit
 		};
 		assertThat(underTest.getProcessingEnv()).is(sameInstance(processingEnv));
 		assertThat(underTest.getRoundEnv()).is(sameInstance(roundEnv));
+		assertThat(underTest.getObject())
+				.is(sameInstance(processingEnv.getElementUtils().getTypeElement("java.lang.Object").asType()));
 	}
 
 }

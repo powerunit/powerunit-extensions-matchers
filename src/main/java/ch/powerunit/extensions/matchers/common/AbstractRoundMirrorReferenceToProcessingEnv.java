@@ -21,6 +21,7 @@ package ch.powerunit.extensions.matchers.common;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.type.TypeMirror;
 
 /**
  * This is an abstract class to contains all required element of a run.
@@ -34,10 +35,12 @@ public abstract class AbstractRoundMirrorReferenceToProcessingEnv {
 
 	protected final RoundEnvironment roundEnv;
 	protected final ProcessingEnvironment processingEnv;
+	protected final TypeMirror objectTypeMirror;
 
 	public AbstractRoundMirrorReferenceToProcessingEnv(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
 		this.roundEnv = roundEnv;
 		this.processingEnv = processingEnv;
+		this.objectTypeMirror = getProcessingEnv().getElementUtils().getTypeElement("java.lang.Object").asType();
 	}
 
 	public ProcessingEnvironment getProcessingEnv() {
@@ -46,6 +49,10 @@ public abstract class AbstractRoundMirrorReferenceToProcessingEnv {
 
 	public RoundEnvironment getRoundEnv() {
 		return roundEnv;
+	}
+
+	public TypeMirror getObject() {
+		return objectTypeMirror;
 	}
 
 }

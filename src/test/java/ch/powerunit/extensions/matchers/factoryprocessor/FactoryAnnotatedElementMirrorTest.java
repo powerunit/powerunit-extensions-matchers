@@ -60,10 +60,8 @@ public class FactoryAnnotatedElementMirrorTest implements TestSuiteSupport {
 	@Parameter(3)
 	public String expectingResult;
 
-	@Mock
 	private Elements elements;
 
-	@Mock
 	private Messager messageUtils;
 
 	@Mock
@@ -102,15 +100,17 @@ public class FactoryAnnotatedElementMirrorTest implements TestSuiteSupport {
 	@Mock
 	private Types types;
 
-	@Mock
 	private ProcessingEnvironment processingEnv;
 
-	@Mock
 	private RoundEnvironment roundEnv;
 
 	private RoundMirror roundMirror;
 
 	private void prepareMock() {
+		processingEnv = generateMockitoProcessingEnvironment();
+		roundEnv = generateMockitoRoundEnvironment();
+		elements = processingEnv.getElementUtils();
+		messageUtils = processingEnv.getMessager();
 		when(executableElement.getEnclosingElement()).thenReturn(classElement);
 		when(executableElement.getSimpleName()).thenReturn(elementName);
 		when(executableElement.getReturnType()).thenReturn(returnType);

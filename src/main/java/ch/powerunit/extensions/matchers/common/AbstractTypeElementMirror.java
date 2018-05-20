@@ -25,8 +25,8 @@ import static java.util.stream.Collectors.joining;
 import java.lang.annotation.Annotation;
 import java.util.Optional;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 
 /**
  * @author borettim
@@ -47,9 +47,9 @@ public abstract class AbstractTypeElementMirror<A extends Annotation, R extends 
 	}
 
 	private Optional<String> extractSuper(TypeElement element) {
-		if (!getProcessingEnv().getElementUtils().getTypeElement("java.lang.Object").asType()
-				.equals(element.getSuperclass())) {
-			return Optional.ofNullable(element.getSuperclass().toString());
+		TypeMirror superObject = element.getSuperclass();
+		if (!roundMirror.getObject().equals(superObject)) {
+			return Optional.ofNullable(superObject.toString());
 		} else {
 			return Optional.empty();
 		}

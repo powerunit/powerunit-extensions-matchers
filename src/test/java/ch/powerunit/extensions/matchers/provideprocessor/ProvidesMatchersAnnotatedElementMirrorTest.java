@@ -20,21 +20,15 @@ import org.mockito.Mockito;
 import ch.powerunit.Rule;
 import ch.powerunit.Test;
 import ch.powerunit.TestRule;
-import ch.powerunit.TestSuite;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.TestSuiteSupport;
 
-public class ProvidesMatchersAnnotatedElementMirrorTest implements TestSuite {
+public class ProvidesMatchersAnnotatedElementMirrorTest implements TestSuiteSupport {
 	@Rule
 	public final TestRule rules = mockitoRule().around(before(this::prepareMock));
 
 	@Mock
 	private TypeElement typeElement;
-
-	@Mock
-	private TypeElement object;
-
-	@Mock
-	private TypeMirror objectMirror;
 
 	@Mock
 	private Name fullyQualifiedName;
@@ -48,10 +42,8 @@ public class ProvidesMatchersAnnotatedElementMirrorTest implements TestSuite {
 	@Mock
 	private PackageElement packageElement;
 
-	@Mock
 	private ProcessingEnvironment processingEnv;
 
-	@Mock
 	private Elements elements;
 
 	@Mock
@@ -61,31 +53,34 @@ public class ProvidesMatchersAnnotatedElementMirrorTest implements TestSuite {
 	private ProvideMatchers provideMatcher;
 
 	@Mock
+	private TypeElement te1;
+
 	private RoundMirror roundMirror;
 
 	private void prepareMock() {
-		when(roundMirror.getProcessingEnv()).thenReturn(processingEnv);
+		processingEnv = generateMockitoProcessingEnvironment();
 		when(provideMatcher.matchersClassName()).thenReturn("");
 		when(provideMatcher.matchersPackageName()).thenReturn("");
 		when(provideMatcher.comments()).thenReturn("");
 
+		elements = processingEnv.getElementUtils();
+		when(elements.getTypeElement(Mockito.argThat(not("java.lang.Object")))).thenReturn(te1);
 		when(processingEnv.getElementUtils()).thenReturn(elements);
 		when(processingEnv.getTypeUtils()).thenReturn(types);
 
 		when(elements.getPackageOf(Mockito.any(Element.class))).thenReturn(packageElement);
-		when(elements.getTypeElement("java.lang.Object")).thenReturn(object);
-		when(types.asElement(objectMirror)).thenReturn(object);
 
 		when(typeElement.getQualifiedName()).thenReturn(fullyQualifiedName);
 		when(typeElement.getSimpleName()).thenReturn(simpleName);
 		when(typeElement.getAnnotation(ProvideMatchers.class)).thenReturn(provideMatcher);
-		when(typeElement.getSuperclass()).thenReturn(objectMirror);
+		TypeMirror object = elements.getTypeElement("java.lang.Object").asType();
+		when(typeElement.getSuperclass()).thenReturn(object);
 
 		when(fullyQualifiedName.toString()).thenReturn("fqn.Sn");
 		when(packageElement.getQualifiedName()).thenReturn(packageName);
 		when(packageName.toString()).thenReturn("fqn");
 		when(simpleName.toString()).thenReturn("Sn");
-		when(object.asType()).thenReturn(objectMirror);
+		roundMirror = new RoundMirror(generateMockitoRoundEnvironment(), processingEnv);
 	}
 
 	@Test
