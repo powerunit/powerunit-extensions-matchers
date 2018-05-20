@@ -19,7 +19,6 @@
  */
 package ch.powerunit.extensions.matchers.common;
 
-import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.joining;
 
 import java.lang.annotation.Annotation;
@@ -62,20 +61,20 @@ public abstract class AbstractTypeElementMirror<A extends Annotation, R extends 
 		return input.isEmpty() ? "" : ("<" + input + ">");
 	}
 
-	public static <E> String listToString(List<E> input, String delimiter) {
+	private static <E> String listToString(List<E> input, String delimiter) {
 		return listToString(input, Object::toString, delimiter);
 	}
 
-	public static <E> String listToString(List<E> input, Function<E, String> mapper, String delimiter) {
+	private static <E> String listToString(List<E> input, Function<E, String> mapper, String delimiter) {
 		return input.stream().map(mapper).collect(joining(delimiter));
 	}
 
-	public static <E> String listToStringWithPostProcessing(List<E> input, String delimiter,
+	private static <E> String listToStringWithPostProcessing(List<E> input, String delimiter,
 			UnaryOperator<String> postProcessing) {
 		return listToStringWithPostProcessing(input, Object::toString, delimiter, postProcessing);
 	}
 
-	public static <E> String listToStringWithPostProcessing(List<E> input, Function<E, String> mapper, String delimiter,
+	private static <E> String listToStringWithPostProcessing(List<E> input, Function<E, String> mapper, String delimiter,
 			UnaryOperator<String> postProcessing) {
 		return postProcessing.apply(listToString(input, mapper, delimiter));
 	}

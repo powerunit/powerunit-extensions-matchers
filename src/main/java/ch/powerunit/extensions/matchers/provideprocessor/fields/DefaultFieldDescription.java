@@ -46,12 +46,13 @@ public class DefaultFieldDescription extends AbstractFieldDescription {
 
 	@Override
 	protected final Collection<FieldDSLMethod> getFieldDslMethodFor() {
-		String ft = mirror.getFieldType();
-		String fn = mirror.getFieldName();
+		FieldDescriptionMirror fm = mirror;
+		String ft = fm.getFieldType();
+		String fn = fm.getFieldName();
 		List<FieldDSLMethod> tmp = new ArrayList<>();
 		tmp.add(FieldDSLMethodBuilder.of(this).withDeclaration("org.hamcrest.Matcher<? super " + ft + "> matcher")
 				.withJavaDoc("", "matcher a Matcher on the field", SEE_TEXT_FOR_HAMCREST_MATCHER)
-				.havingImplementation(fn + "= new " + mirror.getMethodFieldName() + "Matcher(matcher);\nreturn this;"));
+				.havingImplementation(fn + "= new " + fm.getMethodFieldName() + "Matcher(matcher);\nreturn this;"));
 		tmp.add(FieldDSLMethodBuilder.of(this).withDeclaration(ft + " value")
 				.withJavaDoc("", "value an expected value for the field, which will be compared using the is matcher",
 						SEE_TEXT_FOR_IS_MATCHER)
@@ -63,17 +64,15 @@ public class DefaultFieldDescription extends AbstractFieldDescription {
 				.withJavaDoc("by converting the received field before validat it",
 						"converter a function to convert the field\nmatcher a matcher on the resulting\n<_TARGETFIELD> The type which this field must be converter")
 				.havingDefault("asFeatureMatcher(\" <field is converted> \",converter,matcher)"));
-		TypeElement te = mirror.getFieldTypeAsTypeElement();
-		if (fullyQualifiedNameMatcherInSameRound != null && te.getTypeParameters().isEmpty()) {
+		TypeElement te = fm.getFieldTypeAsTypeElement();
+		String nameInSameRound = fullyQualifiedNameMatcherInSameRound;
+		if (nameInSameRound != null && te.getTypeParameters().isEmpty()) {
 			String name = te.getSimpleName().toString();
 			String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
 			tmp.add(FieldDSLMethodBuilder.of(this).withExplicitDeclarationJavadocAndImplementation(
-					fullyQualifiedNameMatcherInSameRound + "." + name + "Matcher" + "<" + defaultReturnMethod + "> "
-							+ fn + "With()",
-					"by starting a matcher for this field",
-					fullyQualifiedNameMatcherInSameRound + "." + name + "Matcher tmp = "
-							+ fullyQualifiedNameMatcherInSameRound + "." + lname + "WithParent(this);\n" + fn
-							+ "(tmp);\nreturn tmp;"));
+					nameInSameRound + "." + name + "Matcher" + "<" + defaultReturnMethod + "> " + fn + "With()",
+					"by starting a matcher for this field", nameInSameRound + "." + name + "Matcher tmp = "
+							+ nameInSameRound + "." + lname + "WithParent(this);\n" + fn + "(tmp);\nreturn tmp;"));
 		}
 		tmp.addAll(getSpecificFieldDslMethodFor());
 		return tmp;

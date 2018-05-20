@@ -28,8 +28,8 @@ public abstract class ProvidesMatchersAnnotatedElementGeneralMirror
 
 	public ProvidesMatchersAnnotatedElementGeneralMirror(TypeElement typeElement, RoundMirror roundMirror) {
 		super(typeElement, roundMirror);
-		this.methodShortClassName = getSimpleNameOfClassAnnotated().substring(0, 1).toLowerCase()
-				+ getSimpleNameOfClassAnnotated().substring(1);
+		String simplename = getSimpleNameOfClassAnnotated();
+		this.methodShortClassName = simplename.substring(0, 1).toLowerCase() + simplename.substring(1);
 	}
 
 	public String getDefaultReturnMethod() {
