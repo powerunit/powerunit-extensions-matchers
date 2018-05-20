@@ -42,12 +42,15 @@ public abstract class AbstractTypeElementMirror<A extends Annotation, R extends 
 		super(annotationType, roundMirror, element);
 		this.generic = parseGeneric(element);
 		this.fullGeneric = parseFullGeneric(element);
+		this.fullyQualifiedNameOfSuperClassOfClassAnnotated = extractSuper(roundMirror, element);
+	}
+
+	private Optional<String> extractSuper(R roundMirror, TypeElement element) {
 		if (!roundMirror.getProcessingEnv().getElementUtils().getTypeElement("java.lang.Object").asType()
 				.equals(element.getSuperclass())) {
-			this.fullyQualifiedNameOfSuperClassOfClassAnnotated = Optional
-					.ofNullable(element.getSuperclass().toString());
+			return Optional.ofNullable(element.getSuperclass().toString());
 		} else {
-			this.fullyQualifiedNameOfSuperClassOfClassAnnotated = Optional.empty();
+			return Optional.empty();
 		}
 	}
 
