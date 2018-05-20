@@ -30,6 +30,8 @@ import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
@@ -41,14 +43,18 @@ import ch.powerunit.TestSuite;
  */
 public interface TestSuiteSupport extends TestSuite {
 	default ProcessingEnvironment generateMockitoProcessingEnvironment() {
+		TypeElement object = mock(TypeElement.class);
+		Elements elements = mock(Elements.class);
 		ProcessingEnvironment processingEnv = mock(ProcessingEnvironment.class);
 		when(processingEnv.getMessager()).thenReturn(mock(Messager.class));
-		when(processingEnv.getElementUtils()).thenReturn(mock(Elements.class));
+		when(processingEnv.getElementUtils()).thenReturn(elements);
 		when(processingEnv.getFiler()).thenReturn(mock(Filer.class));
 		when(processingEnv.getLocale()).thenReturn(Locale.getDefault());
 		when(processingEnv.getOptions()).thenReturn(mock(Map.class));
 		when(processingEnv.getTypeUtils()).thenReturn(mock(Types.class));
 		when(processingEnv.getSourceVersion()).thenReturn(SourceVersion.RELEASE_8);
+		when(elements.getTypeElement("java.lang.Object")).thenReturn(object);
+		when(object.asType()).thenReturn(mock(TypeMirror.class));
 		return processingEnv;
 	}
 

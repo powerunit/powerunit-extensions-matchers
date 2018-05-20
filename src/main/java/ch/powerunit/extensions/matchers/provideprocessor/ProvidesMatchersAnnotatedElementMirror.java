@@ -51,7 +51,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 		boolean hasParentInSameRound = roundMirror.isInSameRound(typeElement);
 		List<Supplier<DSLMethod>> tmp = new ArrayList<>(
 				Arrays.asList(this::generateDefaultDSLStarter, this::generateDefaultForChainingDSLStarter));
-		if (fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()) {
+		if (fullyQualifiedNameOfSuperClassOfClassAnnotated.isPresent()) {
 			tmp.add(this::generateParentDSLStarter);
 			if (hasParentInSameRound) {
 				tmp.add(this::generateParentValueDSLStarter);
@@ -110,7 +110,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	public String getDefaultStarterBody(boolean withParentBuilder) {
 		String targetImpl = withParentBuilder ? getSimpleNameOfGeneratedImplementationMatcherWithGenericParent()
 				: getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent();
-		boolean withSuper = fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent();
+		boolean withSuper = fullyQualifiedNameOfSuperClassOfClassAnnotated.isPresent();
 		if (withParentBuilder) {
 			return withSuper ? ("return new " + targetImpl + "(org.hamcrest.Matchers.anything(),parentBuilder);")
 					: ("return new " + targetImpl + "(parentBuilder);");
@@ -153,8 +153,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 				fullGeneric + " " + fqngc + "." + getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " "
 						+ mscn + "With",
 				new String[] {
-						"org.hamcrest.Matcher<? super "
-								+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.get() + ">",
+						"org.hamcrest.Matcher<? super " + fullyQualifiedNameOfSuperClassOfClassAnnotated.get() + ">",
 						"matcherOnParent" },
 				"return " + fqngc + "." + mscn + "With(matcherOnParent);");
 	}
@@ -210,9 +209,9 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	public GeneratedMatcher asXml() {
 		GeneratedMatcher gm = new GeneratedMatcher();
 		gm.setFullyQualifiedNameGeneratedClass(getFullyQualifiedNameOfGeneratedClass());
-		gm.setFullyQualifiedNameInputClass(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher());
+		gm.setFullyQualifiedNameInputClass(getFullyQualifiedNameOfClassAnnotated());
 		gm.setSimpleNameGeneratedClass(getSimpleNameOfGeneratedClass());
-		gm.setSimpleNameInputClass(getSimpleNameOfClassAnnotatedWithProvideMatcher());
+		gm.setSimpleNameInputClass(getSimpleNameOfClassAnnotated());
 		gm.setDslMethodNameStart(methodShortClassName);
 		gm.setGeneratedMatcherField(
 				fields.stream().map(AbstractFieldDescription::asGeneratedMatcherField).collect(toList()));

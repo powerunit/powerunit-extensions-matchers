@@ -61,16 +61,15 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 
 	private String generateExposedPublicInterface() {
 		String simpleName = simpleNameOfGeneratedInterfaceMatcher;
-		return new StringBuilder(addPrefix("  ",
-				generateDefaultJavaDoc())).append("\n")
-						.append("  public static interface ").append(simpleName).append(getFullGenericParent())
-						.append(" extends org.hamcrest.Matcher<")
-						.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append(">,")
-						.append(simpleName).append("BuildSyntaxicSugar ").append(generic).append(",").append(simpleName)
-						.append("EndSyntaxicSugar ").append(getGenericParent()).append(" {\n")
-						.append(fields.stream().map(AbstractFieldDescription::getDslInterface)
-								.map(s -> addPrefix("    ", s)).collect(joining("\n")))
-						.append("\n\n").append(generateAsPublicInterface()).append("  }\n").toString();
+		return new StringBuilder(addPrefix("  ", generateDefaultJavaDoc())).append("\n")
+				.append("  public static interface ").append(simpleName).append(getFullGenericParent())
+				.append(" extends org.hamcrest.Matcher<")
+				.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append(">,")
+				.append(simpleName).append("BuildSyntaxicSugar ").append(generic).append(",").append(simpleName)
+				.append("EndSyntaxicSugar ").append(getGenericParent()).append(" {\n")
+				.append(fields.stream().map(AbstractFieldDescription::getDslInterface).map(s -> addPrefix("    ", s))
+						.collect(joining("\n")))
+				.append("\n\n").append(generateAsPublicInterface()).append("  }\n").toString();
 	}
 
 	private String generateAsPublicInterface() {
@@ -157,7 +156,7 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	}
 
 	private String generateParentEntry() {
-		return fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher
+		return fullyQualifiedNameOfSuperClassOfClassAnnotated
 				.map(p -> "    private SuperClassMatcher _parent;\n\n"
 						+ generatePrivateImplementationConstructor("org.hamcrest.Matcher<? super " + p + "> parent",
 								"this._parent=new SuperClassMatcher(parent);", "this._parentBuilder=null;")
@@ -175,8 +174,8 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	private String generatePrivateImplementationForMatchersSafely() {
 		StringBuilder sb = new StringBuilder(String.format(
 				"    @Override\n    protected boolean matchesSafely(%1$s actual, org.hamcrest.Description mismatchDescription) {\n      boolean result=true;\n",
-				getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher()));
-		if (fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()) {
+				getFullyQualifiedNameOfClassAnnotated()));
+		if (fullyQualifiedNameOfSuperClassOfClassAnnotated.isPresent()) {
 			sb.append(PARENT_VALIDATION);
 		}
 		fields.stream().map(f -> addPrefix("      ", f.asMatchesSafely() + "\n")).forEach(sb::append);
@@ -187,8 +186,8 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	private String generatedPrivateImplementationForDescribeTo() {
 		StringBuilder sb = new StringBuilder(String.format(
 				"    @Override\n    public void describeTo(org.hamcrest.Description description) {\n      description.appendText(\"an instance of %1$s with\\n\");\n",
-				getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher()));
-		if (fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()) {
+				getFullyQualifiedNameOfClassAnnotated()));
+		if (fullyQualifiedNameOfSuperClassOfClassAnnotated.isPresent()) {
 			sb.append(PARENT_DESCRIBETO);
 		}
 		fields.stream().map(f -> addPrefix("      ", f.asDescribeTo() + "\n")).forEach(sb::append);

@@ -19,32 +19,21 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
-import java.util.Optional;
-
 import javax.lang.model.element.TypeElement;
 
 public abstract class ProvidesMatchersAnnotatedElementGeneralMirror
 		extends ProvidesMatchersAnnotatedElementGenericMirror implements RoundMirrorSupport {
 
 	protected final String methodShortClassName;
-	protected final Optional<String> fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher;
 
 	public ProvidesMatchersAnnotatedElementGeneralMirror(TypeElement typeElement, RoundMirror roundMirror) {
 		super(typeElement, roundMirror);
-		this.methodShortClassName = getSimpleNameOfClassAnnotatedWithProvideMatcher().substring(0, 1).toLowerCase()
-				+ getSimpleNameOfClassAnnotatedWithProvideMatcher().substring(1);
-		if (!roundMirror.getProcessingEnv().getElementUtils().getTypeElement("java.lang.Object").asType()
-				.equals(typeElement.getSuperclass())) {
-			this.fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher = Optional
-					.ofNullable(typeElement.getSuperclass().toString());
-		} else {
-			this.fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher = Optional.empty();
-		}
-
+		this.methodShortClassName = getSimpleNameOfClassAnnotated().substring(0, 1).toLowerCase()
+				+ getSimpleNameOfClassAnnotated().substring(1);
 	}
 
 	public String getDefaultReturnMethod() {
-		return getSimpleNameOfClassAnnotatedWithProvideMatcher() + "Matcher" + getGenericParent();
+		return getSimpleNameOfClassAnnotated() + "Matcher" + getGenericParent();
 	}
 
 	public String getMethodShortClassName() {
@@ -52,7 +41,7 @@ public abstract class ProvidesMatchersAnnotatedElementGeneralMirror
 	}
 
 	public String getSimpleNameOfGeneratedImplementationMatcher() {
-		return getSimpleNameOfClassAnnotatedWithProvideMatcher() + "MatcherImpl";
+		return getSimpleNameOfClassAnnotated() + "MatcherImpl";
 	}
 
 	public String getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent() {

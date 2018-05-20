@@ -47,16 +47,16 @@ public abstract class ProvidesMatchersAnnotatedElementFieldMatcherMirror
 
 	private List<AbstractFieldDescription> generateFields(TypeElement typeElement,
 			ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor) {
-		return typeElement.getEnclosedElements().stream()
-				.map(ie -> ie.accept(providesMatchersSubElementVisitor, this)).filter(
-						Optional::isPresent)
-				.map(Optional::get).collect(
-						collectingAndThen(
-								groupingBy(FieldDescriptionMetaData::getFieldName,
-										reducing(null,
-												(v1, v2) -> v1 == null ? v2
-														: v1 instanceof IgoreFieldDescription ? v1 : v2)),
-								c -> c == null ? emptyList() : c.values().stream().collect(toList())));
+		return typeElement
+				.getEnclosedElements().stream().map(
+						ie -> ie.accept(providesMatchersSubElementVisitor, this))
+				.filter(Optional::isPresent).map(
+						Optional::get)
+				.collect(collectingAndThen(
+						groupingBy(FieldDescriptionMetaData::getFieldName,
+								reducing(null,
+										(v1, v2) -> v1 == null ? v2 : v1 instanceof IgoreFieldDescription ? v1 : v2)),
+						c -> c == null ? emptyList() : c.values().stream().collect(toList())));
 	}
 
 	public ProvidesMatchersAnnotatedElementFieldMatcherMirror(TypeElement typeElement, RoundMirror roundMirror) {
@@ -68,15 +68,14 @@ public abstract class ProvidesMatchersAnnotatedElementFieldMatcherMirror
 
 	public String generateMatchers() {
 		return new StringBuilder(DEFAULT_FEATUREMATCHER_FORCONVERTER).append(fieldsMatcher)
-				.append(fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher
-						.map(this::generateParentMatcher).orElse(""))
+				.append(fullyQualifiedNameOfSuperClassOfClassAnnotated.map(this::generateParentMatcher).orElse(""))
 				.toString();
 	}
 
 	public String generateParentMatcher(String parent) {
 		return String.format(
 				"  private static class SuperClassMatcher%1$s extends org.hamcrest.FeatureMatcher<%2$s,%3$s> {\n\n    public SuperClassMatcher(org.hamcrest.Matcher<? super %3$s> matcher) {\n      super(matcher,\"parent\",\"parent\");\n  }\n\n\n    protected %3$s featureValueOf(%2$s actual) {\n      return actual;\n    }\n\n  }\n\n\n",
-				fullGeneric, getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher(), parent);
+				fullGeneric, getFullyQualifiedNameOfClassAnnotated(), parent);
 	}
 
 }

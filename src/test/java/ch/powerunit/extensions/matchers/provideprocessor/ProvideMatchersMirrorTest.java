@@ -50,6 +50,8 @@ public class ProvideMatchersMirrorTest implements TestSuiteSupport {
 	private void prepare() {
 		processingEnv = generateMockitoProcessingEnvironment();
 		elements = processingEnv.getElementUtils();
+		TypeMirror objectTypeMirror = elements.getTypeElement("java.lang.Object").asType();
+		when(typeElement.getSuperclass()).thenReturn(objectTypeMirror);
 		when(elements.getTypeElement(Mockito.anyString())).thenReturn(typeElement);
 		when(typeElement.asType()).thenReturn(typeMirror);
 		when(typeElement.getQualifiedName()).thenReturn(qualifiedNameTypeElement);

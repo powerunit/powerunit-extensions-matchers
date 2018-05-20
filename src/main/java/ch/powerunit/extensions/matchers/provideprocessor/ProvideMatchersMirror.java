@@ -31,10 +31,10 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 
 import ch.powerunit.extensions.matchers.ProvideMatchers;
-import ch.powerunit.extensions.matchers.common.AbstractElementMirror;
+import ch.powerunit.extensions.matchers.common.AbstractTypeElementMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.DSLExtension;
 
-public class ProvideMatchersMirror extends AbstractElementMirror<TypeElement, ProvideMatchers, RoundMirror> {
+public class ProvideMatchersMirror extends AbstractTypeElementMirror<ProvideMatchers, RoundMirror> {
 
 	private static final String DEFAULT_PARAM_PARENT = " * @param <_PARENT> used to reference, if necessary, a parent for this builder. By default Void is used an indicate no parent builder.\n";
 
@@ -52,7 +52,7 @@ public class ProvideMatchersMirror extends AbstractElementMirror<TypeElement, Pr
 		this.simpleNameOfGeneratedClass = generateSimpleNameOfGeneratedClass(annotatedElement, pm);
 		this.packageNameOfGeneratedClass = generatePackageNameOfGeneratedClass(annotatedElement, pm,
 				getProcessingEnv().getElementUtils());
-		this.simpleNameOfGeneratedInterfaceMatcher = getSimpleNameOfClassAnnotatedWithProvideMatcher() + "Matcher";
+		this.simpleNameOfGeneratedInterfaceMatcher = getSimpleNameOfClassAnnotated() + "Matcher";
 	}
 
 	private static String generateSimpleNameOfGeneratedClass(TypeElement annotatedElement, ProvideMatchers pm) {
@@ -92,19 +92,6 @@ public class ProvideMatchersMirror extends AbstractElementMirror<TypeElement, Pr
 	public final Collection<DSLExtension> getDSLExtension() {
 		return DSLExtension.EXTENSION.stream().filter(e -> e.accept(annotation.get().moreMethod()))
 				.collect(collectingAndThen(toList(), Collections::unmodifiableList));
-	}
-
-	public String getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher() {
-		return element.getQualifiedName().toString();
-	}
-
-	public String getSimpleNameOfClassAnnotatedWithProvideMatcher() {
-		return element.getSimpleName().toString();
-	}
-
-	protected String getDefaultLinkForAnnotatedClass() {
-		return "{@link " + getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher() + " "
-				+ getSimpleNameOfClassAnnotatedWithProvideMatcher() + "}";
 	}
 
 	private Function<String, String> asJavadocFormat(String prefix) {
@@ -147,7 +134,7 @@ public class ProvideMatchersMirror extends AbstractElementMirror<TypeElement, Pr
 	public String generateMainJavaDoc() {
 		return String.format(
 				"/**\n* This class provides matchers for the class {@link %1$s}.\n * \n * @see %1$s The class for which matchers are provided.\n */\n",
-				getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher());
+				getFullyQualifiedNameOfClassAnnotated());
 	}
 
 	private String getDefaultDescriptionForDsl() {
