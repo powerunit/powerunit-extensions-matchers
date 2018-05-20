@@ -25,6 +25,7 @@ import static java.util.stream.Collectors.joining;
 import java.lang.annotation.Annotation;
 import java.util.Optional;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 
 /**
@@ -42,11 +43,11 @@ public abstract class AbstractTypeElementMirror<A extends Annotation, R extends 
 		super(annotationType, roundMirror, element);
 		this.generic = parseGeneric(element);
 		this.fullGeneric = parseFullGeneric(element);
-		this.fullyQualifiedNameOfSuperClassOfClassAnnotated = extractSuper(roundMirror, element);
+		this.fullyQualifiedNameOfSuperClassOfClassAnnotated = extractSuper(element);
 	}
 
-	private Optional<String> extractSuper(R roundMirror, TypeElement element) {
-		if (!roundMirror.getProcessingEnv().getElementUtils().getTypeElement("java.lang.Object").asType()
+	private Optional<String> extractSuper(TypeElement element) {
+		if (!getProcessingEnv().getElementUtils().getTypeElement("java.lang.Object").asType()
 				.equals(element.getSuperclass())) {
 			return Optional.ofNullable(element.getSuperclass().toString());
 		} else {
@@ -54,15 +55,19 @@ public abstract class AbstractTypeElementMirror<A extends Annotation, R extends 
 		}
 	}
 
+	private static String encapsulateString(String input) {
+		return input.isEmpty() ? "" : ("<" + input + ">");
+	}
+
 	private static String parseFullGeneric(TypeElement typeElement) {
 		return typeElement.getTypeParameters().stream().map(
-				t -> t.toString() + " extends " + t.getBounds().stream().map(b -> b.toString()).collect(joining("&")))
-				.collect(collectingAndThen(joining(","), r -> r.isEmpty() ? "" : ("<" + r + ">")));
+				t -> t.toString() + " extends " + t.getBounds().stream().map(Object::toString).collect(joining("&")))
+				.collect(collectingAndThen(joining(","), AbstractTypeElementMirror::encapsulateString));
 	}
 
 	private static String parseGeneric(TypeElement typeElement) {
-		return typeElement.getTypeParameters().stream().map(t -> t.toString())
-				.collect(collectingAndThen(joining(","), r -> r.isEmpty() ? "" : ("<" + r + ">")));
+		return typeElement.getTypeParameters().stream().map(Object::toString)
+				.collect(collectingAndThen(joining(","), AbstractTypeElementMirror::encapsulateString));
 	}
 
 	public String getFullyQualifiedNameOfClassAnnotated() {
