@@ -60,14 +60,14 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	}
 
 	private String generateExposedPublicInterface() {
+		String simpleName = simpleNameOfGeneratedInterfaceMatcher;
 		return new StringBuilder(addPrefix("  ",
 				generateDefaultJavaDoc(Optional.empty(), Optional.empty(), Optional.empty(), true, true))).append("\n")
-						.append("  public static interface ").append(simpleNameOfGeneratedInterfaceMatcher)
-						.append(getFullGenericParent()).append(" extends org.hamcrest.Matcher<")
+						.append("  public static interface ").append(simpleName).append(getFullGenericParent())
+						.append(" extends org.hamcrest.Matcher<")
 						.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append(">,")
-						.append(simpleNameOfGeneratedInterfaceMatcher).append("BuildSyntaxicSugar ").append(generic)
-						.append(",").append(simpleNameOfGeneratedInterfaceMatcher).append("EndSyntaxicSugar ")
-						.append(getGenericParent()).append(" {\n")
+						.append(simpleName).append("BuildSyntaxicSugar ").append(generic).append(",").append(simpleName)
+						.append("EndSyntaxicSugar ").append(getGenericParent()).append(" {\n")
 						.append(fields.stream().map(AbstractFieldDescription::getDslInterface)
 								.map(s -> addPrefix("    ", s)).collect(joining("\n")))
 						.append("\n\n").append(generateAsPublicInterface()).append("  }\n").toString();

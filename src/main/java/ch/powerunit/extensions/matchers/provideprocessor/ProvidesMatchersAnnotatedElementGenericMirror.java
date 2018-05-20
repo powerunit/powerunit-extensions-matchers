@@ -28,14 +28,12 @@ public abstract class ProvidesMatchersAnnotatedElementGenericMirror extends Prov
 
 	protected final String generic;
 	protected final String fullGeneric;
-	protected final String simpleNameOfGeneratedInterfaceMatcher;
 	protected final String genericForChaining;
 
 	public ProvidesMatchersAnnotatedElementGenericMirror(TypeElement typeElement, RoundMirror roundMirror) {
 		super(roundMirror, typeElement);
 		this.generic = parseGeneric(typeElement);
 		this.fullGeneric = parseFullGeneric(typeElement);
-		this.simpleNameOfGeneratedInterfaceMatcher = getSimpleNameOfClassAnnotatedWithProvideMatcher() + "Matcher";
 		this.genericForChaining = getGenericParent().replaceAll("^<_PARENT",
 				"<" + getFullyQualifiedNameOfGeneratedClass() + "." + simpleNameOfGeneratedInterfaceMatcher
 						+ getGenericNoParent());

@@ -73,6 +73,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	public Collection<DSLMethod> process() {
 		RoundMirror rm = roundMirror;
 		Element te = typeElementForClassAnnotatedWithProvideMatcher;
+		String simpleName = getSimpleNameOfGeneratedClass();
 		Collection<DSLMethod> results = new ArrayList<>();
 		FileObjectHelper.processFileWithIOException(
 				() -> rm.getProcessingEnv().getFiler().createSourceFile(getFullyQualifiedNameOfGeneratedClass(), te),
@@ -84,9 +85,9 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 							+ ProvidesMatchersAnnotationsProcessor.class.getName() + "\",date=\""
 							+ Instant.now().toString() + "\",comments=" + CommonUtils.toJavaSyntax(getComments())
 							+ ")");
-					wjfo.println("public final class " + getSimpleNameOfGeneratedClass() + " {");
+					wjfo.println("public final class " + simpleName + " {");
 					wjfo.println();
-					wjfo.println("  private " + getSimpleNameOfGeneratedClass() + "() {}");
+					wjfo.println("  private " + simpleName + "() {}");
 					wjfo.println();
 					wjfo.println(generateMatchers());
 					wjfo.println();
@@ -198,14 +199,15 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 		String implGenericNoParent = getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent();
 		ProvidesMatchersAnnotatedElementMirror parentMirror = getParentMirror();
 		String pmfqngc = parentMirror.getFullyQualifiedNameOfGeneratedClass();
+		String parentSimpleName = parentMirror.simpleNameOfGeneratedInterfaceMatcher;
 		return new DSLMethod(
 				generateDefaultJavaDoc(Optional.empty(), Optional.empty(), Optional.of("the DSL matcher"), true, false),
-				fullGeneric + " " + pmfqngc + "." + parentMirror.simpleNameOfGeneratedInterfaceMatcher
-						+ genericForChaining + " " + methodShortClassName + "WithParent",
+				fullGeneric + " " + pmfqngc + "." + parentSimpleName + genericForChaining + " " + methodShortClassName
+						+ "WithParent",
 				new String[] {
 						implGenericNoParent + " m=new " + implGenericNoParent + "(org.hamcrest.Matchers.anything());",
-						pmfqngc + "." + parentMirror.simpleNameOfGeneratedInterfaceMatcher + " tmp = " + pmfqngc + "."
-								+ parentMirror.methodShortClassName + "WithParent(m);",
+						pmfqngc + "." + parentSimpleName + " tmp = " + pmfqngc + "." + parentMirror.methodShortClassName
+								+ "WithParent(m);",
 						"m._parent = new SuperClassMatcher(tmp);", "return tmp;" });
 	}
 

@@ -54,6 +54,7 @@ public class ProvideMatchersMirror extends AbstractElementMirror<TypeElement, Pr
 
 	protected final String simpleNameOfGeneratedClass;
 	protected final String packageNameOfGeneratedClass;
+	protected final String simpleNameOfGeneratedInterfaceMatcher;
 	protected final String paramJavadoc;
 
 	public ProvideMatchersMirror(RoundMirror roundMirror, TypeElement annotatedElement) {
@@ -71,6 +72,7 @@ public class ProvideMatchersMirror extends AbstractElementMirror<TypeElement, Pr
 			packageNameOfGeneratedClass = pm.matchersPackageName();
 		}
 		this.paramJavadoc = doc.map(ProvideMatchersMirror::extractParamCommentFromJavadoc).orElse(" * \n");
+		this.simpleNameOfGeneratedInterfaceMatcher = getSimpleNameOfClassAnnotatedWithProvideMatcher() + "Matcher";
 	}
 
 	public final String getComments() {
