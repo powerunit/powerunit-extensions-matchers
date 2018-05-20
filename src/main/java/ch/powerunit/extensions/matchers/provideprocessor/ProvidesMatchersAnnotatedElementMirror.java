@@ -126,7 +126,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 				generateDefaultJavaDoc(Optional.of(
 						"The returned builder (which is also a Matcher), at this point accepts any object that is a "
 								+ getDefaultLinkForAnnotatedClass() + "."),
-						Optional.empty(), Optional.of("the DSL matcher"), true, false),
+						Optional.empty(), Optional.of("the DSL matcher"), false),
 				fullGeneric + " " + getFullyQualifiedNameOfGeneratedClass() + "."
 						+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " " + methodShortClassName
 						+ "With",
@@ -138,7 +138,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 				generateDefaultJavaDoc(Optional.of(
 						"The returned builder (which is also a Matcher), at this point accepts any object that is a "
 								+ getDefaultLinkForAnnotatedClass() + "."),
-						Optional.of("parentBuilder the parentBuilder."), Optional.of("the DSL matcher"), true, true),
+						Optional.of("parentBuilder the parentBuilder."), Optional.of("the DSL matcher"), true),
 				getFullGenericParent() + " " + getFullyQualifiedNameOfGeneratedClass() + "."
 						+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + " " + methodShortClassName
 						+ "WithParent",
@@ -150,7 +150,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 		String fqngc = getFullyQualifiedNameOfGeneratedClass();
 		return new DSLMethod(
 				generateDefaultJavaDoc(Optional.empty(), Optional.of("matcherOnParent the matcher on the parent data."),
-						Optional.of("the DSL matcher"), true, false),
+						Optional.of("the DSL matcher"), false),
 				fullGeneric + " " + fqngc + "." + getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " "
 						+ mscn + "With",
 				new String[] {
@@ -163,7 +163,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	public DSLMethod generatParentValueDSLStarter(String argumentForParentBuilder) {
 		String genericNoParent = getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent();
 		String javadoc = generateDefaultJavaDoc(Optional.empty(),
-				Optional.of("other the other object to be used as a reference."), Optional.of("the DSL matcher"), true,
+				Optional.of("other the other object to be used as a reference."), Optional.of("the DSL matcher"),
 				false);
 		List<String> lines = new ArrayList<>();
 		lines.add(genericNoParent + " m=new " + getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent() + "("
@@ -201,7 +201,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 		String pmfqngc = parentMirror.getFullyQualifiedNameOfGeneratedClass();
 		String parentSimpleName = parentMirror.simpleNameOfGeneratedInterfaceMatcher;
 		return new DSLMethod(
-				generateDefaultJavaDoc(Optional.empty(), Optional.empty(), Optional.of("the DSL matcher"), true, false),
+				generateDefaultJavaDoc(Optional.empty(), Optional.empty(), Optional.of("the DSL matcher"), false),
 				fullGeneric + " " + pmfqngc + "." + parentSimpleName + genericForChaining + " " + methodShortClassName
 						+ "WithParent",
 				new String[] {

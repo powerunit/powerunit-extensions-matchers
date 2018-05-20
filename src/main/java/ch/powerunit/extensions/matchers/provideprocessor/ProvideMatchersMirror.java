@@ -124,34 +124,38 @@ public class ProvideMatchersMirror extends AbstractElementMirror<TypeElement, Pr
 				+ getSimpleNameOfClassAnnotatedWithProvideMatcher() + "}";
 	}
 
-	protected String generateJavaDocWithoutParamNeitherParent(String description, String moreDetails,
-			Optional<String> param, Optional<String> returnDescription) {
-		return generateJavaDoc(description, Optional.of(moreDetails), param, returnDescription, false, false);
-	}
-
 	private Function<String, String> asJavadocFormat(String prefix) {
 		return t -> String.format("%1$s%2$s\n", prefix, t);
 	}
 
-	protected String generateDefaultJavaDoc(Optional<String> moreDetails, Optional<String> param,
-			Optional<String> returnDescription, boolean withParam, boolean withParent) {
-		return generateJavaDoc(getDefaultDescriptionForDsl(), moreDetails, param, returnDescription, withParam,
-				withParent);
+	protected String generateJavaDocWithoutParamNeitherParent(String description, String moreDetails,
+			Optional<String> param, Optional<String> returnDescription) {
+		StringBuilder sb = new StringBuilder("/**\n * ").append(description).append(".\n")
+				.append(String.format("%1$s%2$s\n", " * <p>\n * ", moreDetails))
+				.append(param.map(asJavadocFormat(" * @param ")).orElse(""))
+				.append(returnDescription.map(asJavadocFormat(" * @return ")).orElse("")).append(" */\n");
+		return sb.toString();
 	}
 
-	protected String generateJavaDoc(String description, Optional<String> moreDetails, Optional<String> param,
-			Optional<String> returnDescription, boolean withParam, boolean withParent) {
-		StringBuilder sb = new StringBuilder("/**\n * ").append(description).append(".\n")
+	protected String generateDefaultJavaDoc(Optional<String> moreDetails, Optional<String> param,
+			Optional<String> returnDescription, boolean withParent) {
+		StringBuilder sb = new StringBuilder("/**\n * ").append(getDefaultDescriptionForDsl()).append(".\n")
 				.append(moreDetails.map(asJavadocFormat(" * <p>\n * ")).orElse(""))
-				.append(param.map(asJavadocFormat(" * @param ")).orElse(""));
-		if (withParam) {
-			sb.append(paramJavadoc).append(" * \n");
-		}
+				.append(param.map(asJavadocFormat(" * @param ")).orElse("")).append(paramJavadoc).append(" * \n");
 		if (withParent) {
 			sb.append(DEFAULT_PARAM_PARENT);
 		}
 		sb.append(returnDescription.map(asJavadocFormat(" * @return ")).orElse("")).append(" */\n");
 		return sb.toString();
+	}
+
+	protected String generateJavaDoc(String description, boolean withParent) {
+		StringBuilder sb = new StringBuilder("/**\n * ").append(description).append(".\n").append(paramJavadoc)
+				.append(" * \n");
+		if (withParent) {
+			sb.append(DEFAULT_PARAM_PARENT);
+		}
+		return sb.append(" */\n").toString();
 	}
 
 	public String generateMainJavaDoc() {

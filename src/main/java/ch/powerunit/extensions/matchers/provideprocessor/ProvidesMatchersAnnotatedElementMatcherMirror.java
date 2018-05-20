@@ -62,7 +62,7 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	private String generateExposedPublicInterface() {
 		String simpleName = simpleNameOfGeneratedInterfaceMatcher;
 		return new StringBuilder(addPrefix("  ",
-				generateDefaultJavaDoc(Optional.empty(), Optional.empty(), Optional.empty(), true, true))).append("\n")
+				generateDefaultJavaDoc(Optional.empty(), Optional.empty(), Optional.empty(), true))).append("\n")
 						.append("  public static interface ").append(simpleName).append(getFullGenericParent())
 						.append(" extends org.hamcrest.Matcher<")
 						.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append(">,")
@@ -106,8 +106,9 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 
 	private String generateMainParentPublicInterface() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(addPrefix("  ", generateJavaDoc(dslInterfaceDescription + " to support the end syntaxic sugar",
-				Optional.empty(), Optional.empty(), Optional.empty(), true, true))).append("\n");
+		sb.append(
+				addPrefix("  ", generateJavaDoc(dslInterfaceDescription + " to support the end syntaxic sugar", true)))
+				.append("\n");
 		sb.append("  public static interface " + simpleNameOfGeneratedInterfaceMatcher + "EndSyntaxicSugar"
 				+ getFullGenericParent() + " extends org.hamcrest.Matcher<"
 				+ getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + "> {\n");
@@ -122,18 +123,16 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	private String generateMainBuildPublicInterface() {
 		String fullyWithGeneric = getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric();
 		return new StringBuilder(addPrefix("  ",
-				generateJavaDoc(dslInterfaceDescription + " to support the build syntaxic sugar", Optional.empty(),
-						Optional.empty(), Optional.empty(), true, false))).append("\n  public static interface ")
-								.append(simpleNameOfGeneratedInterfaceMatcher).append("BuildSyntaxicSugar")
-								.append(fullGeneric).append(" extends org.hamcrest.Matcher<").append(fullyWithGeneric)
-								.append("> {\n")
-								.append(addPrefix("  ",
-										generateJavaDocWithoutParamNeitherParent(
-												"Method that return the matcher itself.",
-												JAVADOC_WARNING_SYNTAXIC_SUGAR_NO_CHANGE_ANYMORE, Optional.empty(),
-												Optional.of("the matcher"))))
-								.append("\n    default org.hamcrest.Matcher<").append(fullyWithGeneric)
-								.append("> build() {\n      return this;\n    }\n  }\n").toString();
+				generateJavaDoc(dslInterfaceDescription + " to support the build syntaxic sugar", false)))
+						.append("\n  public static interface ").append(simpleNameOfGeneratedInterfaceMatcher)
+						.append("BuildSyntaxicSugar").append(fullGeneric).append(" extends org.hamcrest.Matcher<")
+						.append(fullyWithGeneric).append("> {\n")
+						.append(addPrefix("  ",
+								generateJavaDocWithoutParamNeitherParent("Method that return the matcher itself.",
+										JAVADOC_WARNING_SYNTAXIC_SUGAR_NO_CHANGE_ANYMORE, Optional.empty(),
+										Optional.of("the matcher"))))
+						.append("\n    default org.hamcrest.Matcher<").append(fullyWithGeneric)
+						.append("> build() {\n      return this;\n    }\n  }\n").toString();
 	}
 
 	public String generatePrivateImplementationConstructor(String argument, String... body) {
