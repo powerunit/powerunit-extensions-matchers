@@ -113,16 +113,14 @@ public class ProvideMatchersMirror extends AbstractElementMirror<TypeElement, Pr
 
 	protected String generateJavaDocWithoutParamNeitherParent(String description, String moreDetails,
 			Optional<String> param, Optional<String> returnDescription) {
-		return new StringBuilder("/**\n * ").append(description).append(".\n")
-				.append(String.format("%1$s%2$s\n", " * <p>\n * ", moreDetails))
-				.append(param.map(asJavadocFormat(" * @param ")).orElse(""))
+		return new StringBuilder("/**\n * ").append(description).append(".\n * <p>\n * ").append(moreDetails)
+				.append("\n").append(param.map(asJavadocFormat(" * @param ")).orElse(""))
 				.append(returnDescription.map(asJavadocFormat(" * @return ")).orElse("")).append(" */\n").toString();
 	}
 
 	protected String generateDefaultJavaDoc() {
 		return new StringBuilder("/**\n * ").append(getDefaultDescriptionForDsl()).append(".\n")
-				.append(getParamComment()).append(" * \n").append(DEFAULT_PARAM_PARENT).append(" * \n").append(" */\n")
-				.toString();
+				.append(getParamComment()).append(" * \n").append(DEFAULT_PARAM_PARENT).append(" * \n */\n").toString();
 	}
 
 	protected String generateDefaultJavaDoc(Optional<String> moreDetails, Optional<String> param,
@@ -133,7 +131,7 @@ public class ProvideMatchersMirror extends AbstractElementMirror<TypeElement, Pr
 		if (withParent) {
 			sb.append(DEFAULT_PARAM_PARENT);
 		}
-		sb.append(String.format("%1$s%2$s\n", " * @return ", returnDescription)).append(" */\n");
+		sb.append(" * @return ").append(returnDescription).append("\n */\n");
 		return sb.toString();
 	}
 
