@@ -72,19 +72,6 @@ public class ProvideMatchersMirrorTest implements TestSuiteSupport {
 		when(provideMatchers.matchersClassName()).thenReturn("");
 		when(provideMatchers.matchersPackageName()).thenReturn("");
 		ProvideMatchersMirror mirror = new ProvideMatchersMirror(roundMirror, typeElement);
-		assertThat(mirror.getComments()).is("");
-		assertThat(mirror.getFullyQualifiedNameOfGeneratedClass()).is("fqn.snMatchers");
-		assertThat(mirror.getPackageNameOfGeneratedClass()).is("fqn");
-		assertThat(mirror.getSimpleNameOfGeneratedClass()).is("snMatchers");
-	}
-
-	@Test
-	public void testAnnotationComments() {
-		when(provideMatchers.comments()).thenReturn("x");
-		when(provideMatchers.matchersClassName()).thenReturn("");
-		when(provideMatchers.matchersPackageName()).thenReturn("");
-		ProvideMatchersMirror mirror = new ProvideMatchersMirror(roundMirror, typeElement);
-		assertThat(mirror.getComments()).is("x");
 		assertThat(mirror.getFullyQualifiedNameOfGeneratedClass()).is("fqn.snMatchers");
 		assertThat(mirror.getPackageNameOfGeneratedClass()).is("fqn");
 		assertThat(mirror.getSimpleNameOfGeneratedClass()).is("snMatchers");
@@ -96,7 +83,6 @@ public class ProvideMatchersMirrorTest implements TestSuiteSupport {
 		when(provideMatchers.matchersClassName()).thenReturn("Name");
 		when(provideMatchers.matchersPackageName()).thenReturn("");
 		ProvideMatchersMirror mirror = new ProvideMatchersMirror(roundMirror, typeElement);
-		assertThat(mirror.getComments()).is("");
 		assertThat(mirror.getFullyQualifiedNameOfGeneratedClass()).is("fqn.Name");
 		assertThat(mirror.getPackageNameOfGeneratedClass()).is("fqn");
 		assertThat(mirror.getSimpleNameOfGeneratedClass()).is("Name");
@@ -108,7 +94,6 @@ public class ProvideMatchersMirrorTest implements TestSuiteSupport {
 		when(provideMatchers.matchersClassName()).thenReturn("");
 		when(provideMatchers.matchersPackageName()).thenReturn("package");
 		ProvideMatchersMirror mirror = new ProvideMatchersMirror(roundMirror, typeElement);
-		assertThat(mirror.getComments()).is("");
 		assertThat(mirror.getFullyQualifiedNameOfGeneratedClass()).is("package.snMatchers");
 		assertThat(mirror.getPackageNameOfGeneratedClass()).is("package");
 		assertThat(mirror.getSimpleNameOfGeneratedClass()).is("snMatchers");
@@ -120,7 +105,6 @@ public class ProvideMatchersMirrorTest implements TestSuiteSupport {
 		when(provideMatchers.matchersClassName()).thenReturn("name");
 		when(provideMatchers.matchersPackageName()).thenReturn("pck");
 		ProvideMatchersMirror mirror = new ProvideMatchersMirror(roundMirror, typeElement);
-		assertThat(mirror.getComments()).is("");
 		assertThat(mirror.getFullyQualifiedNameOfGeneratedClass()).is("pck.name");
 		assertThat(mirror.getPackageNameOfGeneratedClass()).is("pck");
 		assertThat(mirror.getSimpleNameOfGeneratedClass()).is("name");

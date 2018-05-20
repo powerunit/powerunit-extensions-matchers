@@ -62,7 +62,7 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	private String generateExposedPublicInterface() {
 		String simpleName = simpleNameOfGeneratedInterfaceMatcher;
 		return new StringBuilder(addPrefix("  ",
-				generateDefaultJavaDoc(Optional.empty(), Optional.empty(), Optional.empty(), true))).append("\n")
+				generateDefaultJavaDoc())).append("\n")
 						.append("  public static interface ").append(simpleName).append(getFullGenericParent())
 						.append(" extends org.hamcrest.Matcher<")
 						.append(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric()).append(">,")

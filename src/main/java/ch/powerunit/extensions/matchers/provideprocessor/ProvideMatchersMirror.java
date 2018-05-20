@@ -85,10 +85,6 @@ public class ProvideMatchersMirror extends AbstractElementMirror<TypeElement, Pr
 		}
 	}
 
-	public final String getComments() {
-		return annotation.get().comments();
-	}
-
 	public final String[] getExtension() {
 		return annotation.get().extensions();
 
@@ -137,15 +133,20 @@ public class ProvideMatchersMirror extends AbstractElementMirror<TypeElement, Pr
 		return sb.toString();
 	}
 
+	protected String generateDefaultJavaDoc() {
+		return new StringBuilder("/**\n * ").append(getDefaultDescriptionForDsl()).append(".\n").append(paramJavadoc)
+				.append(" * \n").append(DEFAULT_PARAM_PARENT).append(" * \n").append(" */\n").toString();
+	}
+
 	protected String generateDefaultJavaDoc(Optional<String> moreDetails, Optional<String> param,
-			Optional<String> returnDescription, boolean withParent) {
+			String returnDescription, boolean withParent) {
 		StringBuilder sb = new StringBuilder("/**\n * ").append(getDefaultDescriptionForDsl()).append(".\n")
 				.append(moreDetails.map(asJavadocFormat(" * <p>\n * ")).orElse(""))
 				.append(param.map(asJavadocFormat(" * @param ")).orElse("")).append(paramJavadoc).append(" * \n");
 		if (withParent) {
 			sb.append(DEFAULT_PARAM_PARENT);
 		}
-		sb.append(returnDescription.map(asJavadocFormat(" * @return ")).orElse("")).append(" */\n");
+		sb.append(String.format("%1$s%2$s\n", " * @return ", returnDescription)).append(" */\n");
 		return sb.toString();
 	}
 
