@@ -72,7 +72,7 @@ public class FieldDescriptionMirror {
 		ProcessingEnvironment processingEnv = roundMirror.getProcessingEnv();
 		if (roundMirror.isInSameRound(processingEnv.getTypeUtils().asElement(fieldElement.asType()))
 				&& fieldTypeAsTypeElement != null) {
-			return new ProvideMatchersMirror(processingEnv, fieldTypeAsTypeElement)
+			return new ProvideMatchersMirror(roundMirror, fieldTypeAsTypeElement)
 					.getFullyQualifiedNameOfGeneratedClass();
 		}
 		return null;

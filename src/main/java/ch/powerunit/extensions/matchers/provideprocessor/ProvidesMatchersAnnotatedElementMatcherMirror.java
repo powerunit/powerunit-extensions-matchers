@@ -81,10 +81,9 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 		StringBuilder sb = new StringBuilder(JAVADOC_ANDWITH).append("    ").append(interfaceWithGeneric)
 				.append(" andWith(").append(otherMatcher).append(");\n\n");
 
-		sb.append(JAVADOC_ANDWITHAS)
-				.append(String.format(
-						"    default <_TARGETOBJECT> %1$s andWithAs(java.util.function.Function<%2$s,_TARGETOBJECT> converter,org.hamcrest.Matcher<? super _TARGETOBJECT> otherMatcher) {\n      return andWith(asFeatureMatcher(\" <object is converted> \",converter,otherMatcher));\n    }\n\n",
-						interfaceWithGeneric, fully));
+		sb.append(JAVADOC_ANDWITHAS).append(String.format(
+				"    default <_TARGETOBJECT> %1$s andWithAs(java.util.function.Function<%2$s,_TARGETOBJECT> converter,org.hamcrest.Matcher<? super _TARGETOBJECT> otherMatcher) {\n      return andWith(asFeatureMatcher(\" <object is converted> \",converter,otherMatcher));\n    }\n\n",
+				interfaceWithGeneric, fully));
 
 		sb.append(addPrefix("  ",
 				generateJavaDocWithoutParamNeitherParent(
@@ -126,13 +125,13 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 				generateJavaDoc(dslInterfaceDescription + " to support the build syntaxic sugar", Optional.empty(),
 						Optional.empty(), Optional.empty(), true, false))).append("\n  public static interface ")
 								.append(simpleNameOfGeneratedInterfaceMatcher).append("BuildSyntaxicSugar")
-								.append(fullGeneric).append(" extends org.hamcrest.Matcher<")
-								.append(fullyWithGeneric).append(
-										"> {\n")
-						.append(addPrefix("  ",
-								generateJavaDocWithoutParamNeitherParent("Method that return the matcher itself.",
-										JAVADOC_WARNING_SYNTAXIC_SUGAR_NO_CHANGE_ANYMORE, Optional.empty(),
-										Optional.of("the matcher"))))
+								.append(fullGeneric).append(" extends org.hamcrest.Matcher<").append(fullyWithGeneric)
+								.append("> {\n")
+								.append(addPrefix("  ",
+										generateJavaDocWithoutParamNeitherParent(
+												"Method that return the matcher itself.",
+												JAVADOC_WARNING_SYNTAXIC_SUGAR_NO_CHANGE_ANYMORE, Optional.empty(),
+												Optional.of("the matcher"))))
 								.append("\n    default org.hamcrest.Matcher<").append(fullyWithGeneric)
 								.append("> build() {\n      return this;\n    }\n  }\n").toString();
 	}
@@ -177,7 +176,7 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	private String generatePrivateImplementationForMatchersSafely() {
 		StringBuilder sb = new StringBuilder(String.format(
 				"    @Override\n    protected boolean matchesSafely(%1$s actual, org.hamcrest.Description mismatchDescription) {\n      boolean result=true;\n",
-				fullyQualifiedNameOfClassAnnotatedWithProvideMatcher));
+				getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher()));
 		if (fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()) {
 			sb.append(PARENT_VALIDATION);
 		}
@@ -189,7 +188,7 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	private String generatedPrivateImplementationForDescribeTo() {
 		StringBuilder sb = new StringBuilder(String.format(
 				"    @Override\n    public void describeTo(org.hamcrest.Description description) {\n      description.appendText(\"an instance of %1$s with\\n\");\n",
-				fullyQualifiedNameOfClassAnnotatedWithProvideMatcher));
+				getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher()));
 		if (fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()) {
 			sb.append(PARENT_DESCRIBETO);
 		}

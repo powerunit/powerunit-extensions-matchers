@@ -29,14 +29,12 @@ public abstract class ProvidesMatchersAnnotatedElementGeneralMirror
 	protected final TypeElement typeElementForClassAnnotatedWithProvideMatcher;
 	protected final String methodShortClassName;
 	protected final Optional<String> fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher;
-	protected final RoundMirror roundMirror;
 
 	public ProvidesMatchersAnnotatedElementGeneralMirror(TypeElement typeElement, RoundMirror roundMirror) {
 		super(typeElement, roundMirror);
-		this.roundMirror = roundMirror;
 		this.typeElementForClassAnnotatedWithProvideMatcher = typeElement;
-		this.methodShortClassName = simpleNameOfClassAnnotatedWithProvideMatcher.substring(0, 1).toLowerCase()
-				+ simpleNameOfClassAnnotatedWithProvideMatcher.substring(1);
+		this.methodShortClassName = getSimpleNameOfClassAnnotatedWithProvideMatcher().substring(0, 1).toLowerCase()
+				+ getSimpleNameOfClassAnnotatedWithProvideMatcher().substring(1);
 		if (!roundMirror.getProcessingEnv().getElementUtils().getTypeElement("java.lang.Object").asType()
 				.equals(typeElement.getSuperclass())) {
 			this.fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher = Optional
@@ -48,7 +46,7 @@ public abstract class ProvidesMatchersAnnotatedElementGeneralMirror
 	}
 
 	public String getDefaultReturnMethod() {
-		return simpleNameOfClassAnnotatedWithProvideMatcher + "Matcher" + getGenericParent();
+		return getSimpleNameOfClassAnnotatedWithProvideMatcher() + "Matcher" + getGenericParent();
 	}
 
 	public TypeElement getTypeElementForClassAnnotatedWithProvideMatcher() {
@@ -60,7 +58,7 @@ public abstract class ProvidesMatchersAnnotatedElementGeneralMirror
 	}
 
 	public String getSimpleNameOfGeneratedImplementationMatcher() {
-		return simpleNameOfClassAnnotatedWithProvideMatcher + "MatcherImpl";
+		return getSimpleNameOfClassAnnotatedWithProvideMatcher() + "MatcherImpl";
 	}
 
 	public String getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent() {
@@ -69,10 +67,6 @@ public abstract class ProvidesMatchersAnnotatedElementGeneralMirror
 
 	public String getSimpleNameOfGeneratedImplementationMatcherWithGenericParent() {
 		return getSimpleNameOfGeneratedImplementationMatcher() + getGenericParent();
-	}
-
-	public RoundMirror getRoundMirror() {
-		return roundMirror;
 	}
 
 }

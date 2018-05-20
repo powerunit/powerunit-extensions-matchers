@@ -24,8 +24,7 @@ import static java.util.stream.Collectors.joining;
 
 import javax.lang.model.element.TypeElement;
 
-public abstract class ProvidesMatchersAnnotatedElementGenericMirror
-		extends ProvidesMatchersAnnotatedElementJavadocMirror {
+public abstract class ProvidesMatchersAnnotatedElementGenericMirror extends ProvideMatchersMirror {
 
 	protected final String generic;
 	protected final String fullGeneric;
@@ -33,19 +32,18 @@ public abstract class ProvidesMatchersAnnotatedElementGenericMirror
 	protected final String genericForChaining;
 
 	public ProvidesMatchersAnnotatedElementGenericMirror(TypeElement typeElement, RoundMirror roundMirror) {
-		super(typeElement, roundMirror);
+		super(roundMirror, typeElement);
 		this.generic = parseGeneric(typeElement);
 		this.fullGeneric = parseFullGeneric(typeElement);
-		this.simpleNameOfGeneratedInterfaceMatcher = simpleNameOfClassAnnotatedWithProvideMatcher + "Matcher";
+		this.simpleNameOfGeneratedInterfaceMatcher = getSimpleNameOfClassAnnotatedWithProvideMatcher() + "Matcher";
 		this.genericForChaining = getGenericParent().replaceAll("^<_PARENT",
 				"<" + getFullyQualifiedNameOfGeneratedClass() + "." + simpleNameOfGeneratedInterfaceMatcher
 						+ getGenericNoParent());
 	}
 
 	private static String parseFullGeneric(TypeElement typeElement) {
-		return typeElement.getTypeParameters().stream()
-				.map(t -> t.toString() + " extends "
-						+ t.getBounds().stream().map(b -> b.toString()).collect(joining("&")))
+		return typeElement.getTypeParameters().stream().map(
+				t -> t.toString() + " extends " + t.getBounds().stream().map(b -> b.toString()).collect(joining("&")))
 				.collect(collectingAndThen(joining(","), r -> r.isEmpty() ? "" : ("<" + r + ">")));
 	}
 
@@ -63,7 +61,7 @@ public abstract class ProvidesMatchersAnnotatedElementGenericMirror
 	}
 
 	public String getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() {
-		return fullyQualifiedNameOfClassAnnotatedWithProvideMatcher + " " + generic;
+		return getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher() + " " + generic;
 	}
 
 	public static String getAddParentToGeneric(String generic) {
