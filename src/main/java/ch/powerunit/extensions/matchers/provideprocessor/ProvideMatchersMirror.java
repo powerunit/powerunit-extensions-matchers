@@ -22,7 +22,6 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
@@ -33,13 +32,7 @@ import javax.lang.model.util.Elements;
 
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.common.AbstractElementMirror;
-import ch.powerunit.extensions.matchers.provideprocessor.extension.AnyOfExtension;
-import ch.powerunit.extensions.matchers.provideprocessor.extension.ArrayContainingDSLExtension;
-import ch.powerunit.extensions.matchers.provideprocessor.extension.ArrayContainingInAnyOrderDSLExtension;
-import ch.powerunit.extensions.matchers.provideprocessor.extension.ContainsDSLExtension;
-import ch.powerunit.extensions.matchers.provideprocessor.extension.ContainsInAnyOrderDSLExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.DSLExtension;
-import ch.powerunit.extensions.matchers.provideprocessor.extension.HasItemsExtension;
 
 public class ProvideMatchersMirror extends AbstractElementMirror<TypeElement, ProvideMatchers, RoundMirror> {
 
@@ -49,14 +42,9 @@ public class ProvideMatchersMirror extends AbstractElementMirror<TypeElement, Pr
 
 	public static final String JAVADOC_WARNING_PARENT_MAY_BE_VOID = "<b>This method only works in the context of a parent builder. If the real type is Void, then nothing will be returned.</b>";
 
-	private static final Collection<DSLExtension> EXTENSION = Collections.unmodifiableList(Arrays.asList(
-			new ContainsDSLExtension(), new ArrayContainingDSLExtension(), new HasItemsExtension(),
-			new ContainsInAnyOrderDSLExtension(), new ArrayContainingInAnyOrderDSLExtension(), new AnyOfExtension()));
-
 	protected final String simpleNameOfGeneratedClass;
 	protected final String packageNameOfGeneratedClass;
 	protected final String simpleNameOfGeneratedInterfaceMatcher;
-	protected final String paramJavadoc;
 
 	public ProvideMatchersMirror(RoundMirror roundMirror, TypeElement annotatedElement) {
 		super(ProvideMatchers.class, roundMirror, annotatedElement);
@@ -64,7 +52,6 @@ public class ProvideMatchersMirror extends AbstractElementMirror<TypeElement, Pr
 		this.simpleNameOfGeneratedClass = generateSimpleNameOfGeneratedClass(annotatedElement, pm);
 		this.packageNameOfGeneratedClass = generatePackageNameOfGeneratedClass(annotatedElement, pm,
 				getProcessingEnv().getElementUtils());
-		this.paramJavadoc = doc.map(ProvideMatchersMirror::extractParamCommentFromJavadoc).orElse(" * \n");
 		this.simpleNameOfGeneratedInterfaceMatcher = getSimpleNameOfClassAnnotatedWithProvideMatcher() + "Matcher";
 	}
 
@@ -103,7 +90,7 @@ public class ProvideMatchersMirror extends AbstractElementMirror<TypeElement, Pr
 	}
 
 	public final Collection<DSLExtension> getDSLExtension() {
-		return EXTENSION.stream().filter(e -> e.accept(annotation.get().moreMethod()))
+		return DSLExtension.EXTENSION.stream().filter(e -> e.accept(annotation.get().moreMethod()))
 				.collect(collectingAndThen(toList(), Collections::unmodifiableList));
 	}
 
@@ -126,23 +113,23 @@ public class ProvideMatchersMirror extends AbstractElementMirror<TypeElement, Pr
 
 	protected String generateJavaDocWithoutParamNeitherParent(String description, String moreDetails,
 			Optional<String> param, Optional<String> returnDescription) {
-		StringBuilder sb = new StringBuilder("/**\n * ").append(description).append(".\n")
+		return new StringBuilder("/**\n * ").append(description).append(".\n")
 				.append(String.format("%1$s%2$s\n", " * <p>\n * ", moreDetails))
 				.append(param.map(asJavadocFormat(" * @param ")).orElse(""))
-				.append(returnDescription.map(asJavadocFormat(" * @return ")).orElse("")).append(" */\n");
-		return sb.toString();
+				.append(returnDescription.map(asJavadocFormat(" * @return ")).orElse("")).append(" */\n").toString();
 	}
 
 	protected String generateDefaultJavaDoc() {
-		return new StringBuilder("/**\n * ").append(getDefaultDescriptionForDsl()).append(".\n").append(paramJavadoc)
-				.append(" * \n").append(DEFAULT_PARAM_PARENT).append(" * \n").append(" */\n").toString();
+		return new StringBuilder("/**\n * ").append(getDefaultDescriptionForDsl()).append(".\n")
+				.append(getParamComment()).append(" * \n").append(DEFAULT_PARAM_PARENT).append(" * \n").append(" */\n")
+				.toString();
 	}
 
 	protected String generateDefaultJavaDoc(Optional<String> moreDetails, Optional<String> param,
 			String returnDescription, boolean withParent) {
 		StringBuilder sb = new StringBuilder("/**\n * ").append(getDefaultDescriptionForDsl()).append(".\n")
 				.append(moreDetails.map(asJavadocFormat(" * <p>\n * ")).orElse(""))
-				.append(param.map(asJavadocFormat(" * @param ")).orElse("")).append(paramJavadoc).append(" * \n");
+				.append(param.map(asJavadocFormat(" * @param ")).orElse("")).append(getParamComment()).append(" * \n");
 		if (withParent) {
 			sb.append(DEFAULT_PARAM_PARENT);
 		}
@@ -151,7 +138,7 @@ public class ProvideMatchersMirror extends AbstractElementMirror<TypeElement, Pr
 	}
 
 	protected String generateJavaDoc(String description, boolean withParent) {
-		StringBuilder sb = new StringBuilder("/**\n * ").append(description).append(".\n").append(paramJavadoc)
+		StringBuilder sb = new StringBuilder("/**\n * ").append(description).append(".\n").append(getParamComment())
 				.append(" * \n");
 		if (withParent) {
 			sb.append(DEFAULT_PARAM_PARENT);
@@ -167,23 +154,6 @@ public class ProvideMatchersMirror extends AbstractElementMirror<TypeElement, Pr
 
 	private String getDefaultDescriptionForDsl() {
 		return "Start a DSL matcher for the " + getDefaultLinkForAnnotatedClass();
-	}
-
-	private static String extractParamCommentFromJavadoc(String docComment) {
-		boolean insideParam = false;
-		StringBuilder sb = new StringBuilder(" * \n");
-		for (String line : docComment.split("\\R")) {
-			if (insideParam && line.matches("^\\s*@.*$")) {
-				insideParam = false;
-			}
-			if (line.matches("^\\s*@param.*$")) {
-				insideParam = true;
-			}
-			if (insideParam) {
-				sb.append(" *").append(line).append("\n");
-			}
-		}
-		return sb.toString().replaceAll("\\R", "\n");
 	}
 
 }

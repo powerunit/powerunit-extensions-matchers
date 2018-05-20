@@ -55,9 +55,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 			tmp.add(this::generateParentDSLStarter);
 			if (hasParentInSameRound) {
 				tmp.add(this::generateParentValueDSLStarter);
-				if (((TypeElement) roundMirror.getProcessingEnv().getTypeUtils()
-						.asElement(typeElementForClassAnnotatedWithProvideMatcher.getSuperclass())).getTypeParameters()
-								.isEmpty()) {
+				if (((TypeElement) roundMirror.getProcessingEnv().getTypeUtils().asElement(element.getSuperclass()))
+						.getTypeParameters().isEmpty()) {
 					tmp.add(this::generateParentInSameRoundWithChaningDSLStarter);
 				}
 			}
@@ -72,7 +71,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 
 	public Collection<DSLMethod> process() {
 		RoundMirror rm = roundMirror;
-		Element te = typeElementForClassAnnotatedWithProvideMatcher;
+		Element te = element;
 		String simpleName = getSimpleNameOfGeneratedClass();
 		Collection<DSLMethod> results = new ArrayList<>();
 		FileObjectHelper.processFileWithIOException(
@@ -182,9 +181,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 
 	public ProvidesMatchersAnnotatedElementMirror getParentMirror() {
 		RoundMirror rm = roundMirror;
-		return rm.getByName(((TypeElement) rm.getProcessingEnv().getTypeUtils()
-				.asElement(typeElementForClassAnnotatedWithProvideMatcher.getSuperclass())).getQualifiedName()
-						.toString());
+		return rm.getByName(((TypeElement) rm.getProcessingEnv().getTypeUtils().asElement(element.getSuperclass()))
+				.getQualifiedName().toString());
 	}
 
 	public DSLMethod generateParentValueDSLStarter() {

@@ -60,4 +60,25 @@ public abstract class AbstractElementMirror<E extends Element, A extends Annotat
 		return annotation;
 	}
 
+	public String getParamComment() {
+		return doc.map(AbstractElementMirror::extractParamCommentFromJavadoc).orElse(" * \n");
+	}
+
+	private static String extractParamCommentFromJavadoc(String docComment) {
+		boolean insideParam = false;
+		StringBuilder sb = new StringBuilder(" * \n");
+		for (String line : docComment.split("\\R")) {
+			if (insideParam && line.matches("^\\s*@.*$")) {
+				insideParam = false;
+			}
+			if (line.matches("^\\s*@param.*$")) {
+				insideParam = true;
+			}
+			if (insideParam) {
+				sb.append(" *").append(line).append("\n");
+			}
+		}
+		return sb.toString().replaceAll("\\R", "\n");
+	}
+
 }

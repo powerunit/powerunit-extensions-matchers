@@ -45,8 +45,7 @@ public class GeneratedMatchers {
 	}
 
 	public Element[] listElements() {
-		return generatedMatcher.stream().map(g -> g.getMirror().getTypeElementForClassAnnotatedWithProvideMatcher())
-				.collect(toList()).toArray(new Element[0]);
+		return generatedMatcher.stream().map(g -> g.getMirror().getElement()).collect(toList()).toArray(new Element[0]);
 	}
 
 }

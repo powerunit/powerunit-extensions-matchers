@@ -26,13 +26,11 @@ import javax.lang.model.element.TypeElement;
 public abstract class ProvidesMatchersAnnotatedElementGeneralMirror
 		extends ProvidesMatchersAnnotatedElementGenericMirror implements RoundMirrorSupport {
 
-	protected final TypeElement typeElementForClassAnnotatedWithProvideMatcher;
 	protected final String methodShortClassName;
 	protected final Optional<String> fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher;
 
 	public ProvidesMatchersAnnotatedElementGeneralMirror(TypeElement typeElement, RoundMirror roundMirror) {
 		super(typeElement, roundMirror);
-		this.typeElementForClassAnnotatedWithProvideMatcher = typeElement;
 		this.methodShortClassName = getSimpleNameOfClassAnnotatedWithProvideMatcher().substring(0, 1).toLowerCase()
 				+ getSimpleNameOfClassAnnotatedWithProvideMatcher().substring(1);
 		if (!roundMirror.getProcessingEnv().getElementUtils().getTypeElement("java.lang.Object").asType()
@@ -47,10 +45,6 @@ public abstract class ProvidesMatchersAnnotatedElementGeneralMirror
 
 	public String getDefaultReturnMethod() {
 		return getSimpleNameOfClassAnnotatedWithProvideMatcher() + "Matcher" + getGenericParent();
-	}
-
-	public TypeElement getTypeElementForClassAnnotatedWithProvideMatcher() {
-		return typeElementForClassAnnotatedWithProvideMatcher;
 	}
 
 	public String getMethodShortClassName() {
