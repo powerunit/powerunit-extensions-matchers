@@ -26,6 +26,8 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
@@ -48,6 +50,13 @@ public final class FieldDescriptionProvider {
 			super(support);
 		}
 
+		private boolean isAssignable(DeclaredType t, String target) {
+			ProcessingEnvironment processingEnv = getProcessingEnv();
+			Types types = processingEnv.getTypeUtils();
+			Elements elements = processingEnv.getElementUtils();
+			return types.isAssignable(t, types.erasure(elements.getTypeElement(target).asType()));
+		}
+
 		@Override
 		protected Type defaultAction(TypeMirror t, Void ignore) {
 			return Type.NA;
@@ -61,26 +70,21 @@ public final class FieldDescriptionProvider {
 		@Override
 		public Type visitDeclared(DeclaredType t, Void ignore) {
 			ProcessingEnvironment processingEnv = getProcessingEnv();
-			if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Optional").asType()))) {
+			Types types = processingEnv.getTypeUtils();
+			Elements elements = processingEnv.getElementUtils();
+			if (isAssignable(t, "java.util.Optional")) {
 				return Type.OPTIONAL;
-			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Set").asType()))) {
+			} else if (isAssignable(t, "java.util.Set")) {
 				return Type.SET;
-			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.List").asType()))) {
+			} else if (isAssignable(t, "java.util.List")) {
 				return Type.LIST;
-			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Collection").asType()))) {
+			} else if (isAssignable(t, "java.util.Collection")) {
 				return Type.COLLECTION;
-			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.lang.String").asType()))) {
+			} else if (isAssignable(t, "java.lang.String")) {
 				return Type.STRING;
-			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.lang.Comparable").asType()))) {
+			} else if (isAssignable(t, "java.lang.Comparable")) {
 				return Type.COMPARABLE;
-			} else if (processingEnv.getTypeUtils().isAssignable(t, processingEnv.getTypeUtils()
-					.erasure(processingEnv.getElementUtils().getTypeElement("java.util.function.Supplier").asType()))) {
+			} else if (isAssignable(t, "java.util.function.Supplier")) {
 				return Type.SUPPLIER;
 			}
 			return Type.NA;
