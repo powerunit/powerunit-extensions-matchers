@@ -69,9 +69,6 @@ public final class FieldDescriptionProvider {
 
 		@Override
 		public Type visitDeclared(DeclaredType t, Void ignore) {
-			ProcessingEnvironment processingEnv = getProcessingEnv();
-			Types types = processingEnv.getTypeUtils();
-			Elements elements = processingEnv.getElementUtils();
 			if (isAssignable(t, "java.util.Optional")) {
 				return Type.OPTIONAL;
 			} else if (isAssignable(t, "java.util.Set")) {

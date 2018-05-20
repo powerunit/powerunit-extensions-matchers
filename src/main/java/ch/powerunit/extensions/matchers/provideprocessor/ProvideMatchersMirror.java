@@ -29,6 +29,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
 
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.common.AbstractElementMirror;
@@ -60,19 +61,28 @@ public class ProvideMatchersMirror extends AbstractElementMirror<TypeElement, Pr
 	public ProvideMatchersMirror(RoundMirror roundMirror, TypeElement annotatedElement) {
 		super(ProvideMatchers.class, roundMirror, annotatedElement);
 		ProvideMatchers pm = annotation.get();
-		if ("".equals(pm.matchersClassName())) {
-			simpleNameOfGeneratedClass = annotatedElement.getSimpleName().toString() + "Matchers";
-		} else {
-			simpleNameOfGeneratedClass = pm.matchersClassName();
-		}
-		if ("".equals(pm.matchersPackageName())) {
-			packageNameOfGeneratedClass = getProcessingEnv().getElementUtils().getPackageOf(annotatedElement)
-					.getQualifiedName().toString();
-		} else {
-			packageNameOfGeneratedClass = pm.matchersPackageName();
-		}
+		this.simpleNameOfGeneratedClass = generateSimpleNameOfGeneratedClass(annotatedElement, pm);
+		this.packageNameOfGeneratedClass = generatePackageNameOfGeneratedClass(annotatedElement, pm,
+				getProcessingEnv().getElementUtils());
 		this.paramJavadoc = doc.map(ProvideMatchersMirror::extractParamCommentFromJavadoc).orElse(" * \n");
 		this.simpleNameOfGeneratedInterfaceMatcher = getSimpleNameOfClassAnnotatedWithProvideMatcher() + "Matcher";
+	}
+
+	private static String generateSimpleNameOfGeneratedClass(TypeElement annotatedElement, ProvideMatchers pm) {
+		if ("".equals(pm.matchersClassName())) {
+			return annotatedElement.getSimpleName().toString() + "Matchers";
+		} else {
+			return pm.matchersClassName();
+		}
+	}
+
+	private static String generatePackageNameOfGeneratedClass(TypeElement annotatedElement, ProvideMatchers pm,
+			Elements elements) {
+		if ("".equals(pm.matchersPackageName())) {
+			return elements.getPackageOf(annotatedElement).getQualifiedName().toString();
+		} else {
+			return pm.matchersPackageName();
+		}
 	}
 
 	public final String getComments() {
