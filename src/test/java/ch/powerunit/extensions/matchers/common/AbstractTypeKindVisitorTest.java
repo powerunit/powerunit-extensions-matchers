@@ -19,26 +19,31 @@
  */
 package ch.powerunit.extensions.matchers.common;
 
-import javax.lang.model.util.SimpleElementVisitor8;
+import ch.powerunit.Rule;
+import ch.powerunit.Test;
+import ch.powerunit.TestRule;
+import ch.powerunit.extensions.matchers.TestSuiteSupport;
 
 /**
- * Element Visitor for this project, which support access to the round and
- * processing env.
- * 
  * @author borettim
  *
  */
-public abstract class AbstractSimpleElementVisitor<R, P, S extends AbstractRoundMirrorReferenceToProcessingEnv>
-		extends SimpleElementVisitor8<R, P> implements AbstractRoundMirrorSupport<S> {
-	protected final S support;
+public class AbstractTypeKindVisitorTest implements TestSuiteSupport {
 
-	public AbstractSimpleElementVisitor(S support) {
-		this.support = support;
+	private AbstractRoundMirrorReferenceToProcessingEnv roundMirror;
+
+	@Rule
+	public final TestRule rules = mockitoRule().around(before(this::prepare));
+
+	private void prepare() {
+		roundMirror = new AbstractRoundMirrorReferenceToProcessingEnv(generateMockitoRoundEnvironment(),
+				generateMockitoProcessingEnvironment()) {
+		};
 	}
 
-	@Override
-	public S getRoundMirror() {
-		return support;
+	@Test
+	public void testGetRoundMirror() {
+		assertThat(new AbstractTypeKindVisitor<Void, Void, AbstractRoundMirrorReferenceToProcessingEnv>(roundMirror) {
+		}.getRoundMirror()).is(sameInstance(roundMirror));
 	}
-
 }

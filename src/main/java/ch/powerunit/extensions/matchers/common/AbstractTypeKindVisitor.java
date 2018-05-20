@@ -22,10 +22,12 @@ package ch.powerunit.extensions.matchers.common;
 import javax.lang.model.util.TypeKindVisitor8;
 
 /**
+ * Type Kind Visitor, which support round and processing environement.
+ * 
  * @author borettim
  *
  */
-public class AbstractTypeKindVisitor<R, P, S extends AbstractRoundMirrorReferenceToProcessingEnv>
+public abstract class AbstractTypeKindVisitor<R, P, S extends AbstractRoundMirrorReferenceToProcessingEnv>
 		extends TypeKindVisitor8<R, P> implements AbstractRoundMirrorSupport<S> {
 
 	protected final S support;

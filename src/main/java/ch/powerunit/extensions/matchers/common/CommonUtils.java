@@ -23,6 +23,12 @@ import static java.util.stream.Collectors.joining;
 
 import java.util.Arrays;
 
+/**
+ * These are some method to manipulate java.
+ * 
+ * @author borettim
+ *
+ */
 public class CommonUtils {
 	private CommonUtils() {
 	}

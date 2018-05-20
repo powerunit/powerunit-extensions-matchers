@@ -24,6 +24,12 @@ import java.util.function.Consumer;
 
 import javax.tools.FileObject;
 
+/**
+ * These are method to write class.
+ * 
+ * @author borettim
+ *
+ */
 public final class FileObjectHelper {
 	private FileObjectHelper() {
 	}
