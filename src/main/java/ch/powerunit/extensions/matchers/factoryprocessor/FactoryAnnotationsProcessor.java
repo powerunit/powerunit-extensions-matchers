@@ -47,8 +47,6 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 
 	private List<FactoryGroup> build;
 
-	private TypeElement factoryAnnotationTE;
-
 	@Override
 	public synchronized void init(ProcessingEnvironment processingEnv) {
 		super.init(processingEnv);
@@ -61,7 +59,6 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor {
 			build = Arrays.stream(targets.split("\\s*;\\s*")).map(e -> new FactoryGroup(processingEnv, e))
 					.collect(collectingAndThen(toList(), Collections::unmodifiableList));
 		}
-		factoryAnnotationTE = processingEnv.getElementUtils().getTypeElement("org.hamcrest.Factory");
 	}
 
 	/*

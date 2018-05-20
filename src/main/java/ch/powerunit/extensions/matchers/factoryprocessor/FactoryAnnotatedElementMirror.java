@@ -21,39 +21,24 @@ package ch.powerunit.extensions.matchers.factoryprocessor;
 
 import static java.util.stream.Collectors.joining;
 
-import java.util.Optional;
-
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 
-class FactoryAnnotatedElementMirror {
+import org.hamcrest.Factory;
+
+import ch.powerunit.extensions.matchers.common.AbstractElementMirror;
+
+class FactoryAnnotatedElementMirror extends AbstractElementMirror<ExecutableElement, Factory, RoundMirror> {
 
 	private static final String VAR_ARG_REGEX = "\\[\\](\\s[0-9a-zA-Z_]*$)??";
 
-	private final ExecutableElement element;
-
-	private final Optional<String> doc;
-
 	private final String surroundingFullyQualifiedName;
 
-	private final RoundMirror roundMirror;
-
 	public FactoryAnnotatedElementMirror(RoundMirror roundMirror, ExecutableElement element) {
-		this.element = element;
-		this.roundMirror = roundMirror;
-		this.doc = Optional.ofNullable(roundMirror.getProcessingEnv().getElementUtils().getDocComment(element));
+		super(Factory.class, roundMirror, element);
 		this.surroundingFullyQualifiedName = element.getEnclosingElement().asType().toString();
-	}
-
-	public ProcessingEnvironment getProcessingEnv() {
-		return roundMirror.getProcessingEnv();
-	}
-
-	public ExecutableElement getElement() {
-		return element;
 	}
 
 	public String getSurroundingFullyQualifiedName() {
