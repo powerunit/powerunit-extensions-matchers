@@ -22,6 +22,14 @@ package ch.powerunit.extensions.matchers.common;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 
+/**
+ * This is an abstract class to contains all required element of a run.
+ * <p>
+ * It should be implemented by all elements which used these both elements.
+ * 
+ * @author borettim
+ *
+ */
 public abstract class AbstractRoundMirrorReferenceToProcessingEnv {
 
 	protected final RoundEnvironment roundEnv;

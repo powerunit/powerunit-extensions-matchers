@@ -24,6 +24,14 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
+/**
+ * This interface can be used by element with returns (supports)
+ * {@link AbstractRoundMirrorReferenceToProcessingEnv}.
+ * 
+ * @author borettim
+ *
+ * @param <R>
+ */
 @FunctionalInterface
 public interface AbstractRoundMirrorSupport<R extends AbstractRoundMirrorReferenceToProcessingEnv> {
 	R getRoundMirror();
@@ -31,7 +39,7 @@ public interface AbstractRoundMirrorSupport<R extends AbstractRoundMirrorReferen
 	default ProcessingEnvironment getProcessingEnv() {
 		return getRoundMirror().getProcessingEnv();
 	}
-	
+
 	default RoundEnvironment getRoundEnv() {
 		return getRoundMirror().getRoundEnv();
 	}
