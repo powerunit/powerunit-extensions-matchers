@@ -113,14 +113,14 @@ public class ProvideMatchersMirror extends AbstractElementMirror<TypeElement, Pr
 
 	protected String generateJavaDocWithoutParamNeitherParent(String description, String moreDetails,
 			Optional<String> param, Optional<String> returnDescription) {
-		return new StringBuilder("/**\n * ").append(description).append(".\n * <p>\n * ").append(moreDetails)
-				.append("\n").append(param.map(asJavadocFormat(" * @param ")).orElse(""))
-				.append(returnDescription.map(asJavadocFormat(" * @return ")).orElse("")).append(" */\n").toString();
+		return String.format("/**\n * %1$s.\n * <p>\n * %2$s\n%3$s%4$s */\n", description, moreDetails,
+				param.map(asJavadocFormat(" * @param ")).orElse(""),
+				returnDescription.map(asJavadocFormat(" * @return ")).orElse(""));
 	}
 
 	protected String generateDefaultJavaDoc() {
-		return new StringBuilder("/**\n * ").append(getDefaultDescriptionForDsl()).append(".\n")
-				.append(getParamComment()).append(" * \n").append(DEFAULT_PARAM_PARENT).append(" * \n */\n").toString();
+		return String.format("/**\n * %1$s.\n%2$s * \n%3$s * \n */\n", getDefaultDescriptionForDsl(), getParamComment(),
+				DEFAULT_PARAM_PARENT);
 	}
 
 	protected String generateDefaultJavaDoc(Optional<String> moreDetails, Optional<String> param,
