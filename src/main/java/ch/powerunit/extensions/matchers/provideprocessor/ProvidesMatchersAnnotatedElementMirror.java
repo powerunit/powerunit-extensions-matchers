@@ -125,11 +125,13 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	public DSLMethod generateDefaultDSLStarter() {
 		return of(fullGeneric + " " + getFullyQualifiedNameOfGeneratedClass() + "."
 				+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " " + methodShortClassName + "With")
-						.withImplementation(getDefaultStarterBody(false))
-						.withJavadoc(generateDefaultJavaDoc(Optional.of(
-								"The returned builder (which is also a Matcher), at this point accepts any object that is a "
-										+ getDefaultLinkForAnnotatedClass() + "."),
-								Optional.empty(), "the DSL matcher", false));
+						.withImplementation(getDefaultStarterBody(false)).withJavadoc(generateDefaultJavaDoc(
+								Optional.of(getJavadocForDSLStarter()), Optional.empty(), "the DSL matcher", false));
+	}
+
+	private String getJavadocForDSLStarter() {
+		return "The returned builder (which is also a Matcher), at this point accepts any object that is a "
+				+ getDefaultLinkForAnnotatedClass() + ".";
 	}
 
 	public DSLMethod generateDefaultForChainingDSLStarter() {
@@ -137,9 +139,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 				+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + " " + methodShortClassName
 				+ "WithParent").withOneArgument("_PARENT", "parentBuilder")
 						.withImplementation(getDefaultStarterBody(true))
-						.withJavadoc(generateDefaultJavaDoc(Optional.of(
-								"The returned builder (which is also a Matcher), at this point accepts any object that is a "
-										+ getDefaultLinkForAnnotatedClass() + "."),
+						.withJavadoc(generateDefaultJavaDoc(Optional.of(getJavadocForDSLStarter()),
 								Optional.of("parentBuilder the parentBuilder."), "the DSL matcher", true));
 	}
 
@@ -167,7 +167,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 		return of(fullGeneric + " " + getFullyQualifiedNameOfGeneratedClass() + "." + genericNoParent + " "
 				+ methodShortClassName + "WithSameValue")
 						.withOneArgument(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(), "other")
-						.withImplementation(lines.toArray(new String[0])).withJavadoc(javadoc);
+						.withImplementation(lines).withJavadoc(javadoc);
 	}
 
 	public DSLMethod generateNoParentValueDSLStarter() {

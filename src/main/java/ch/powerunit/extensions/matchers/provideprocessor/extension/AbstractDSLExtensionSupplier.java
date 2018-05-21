@@ -47,6 +47,14 @@ public abstract class AbstractDSLExtensionSupplier {
 		return targetMethodName + "(" + name + ")";
 	}
 
+	public String[] generateSeveralWithImplementation(String matcher, String... parameters) {
+		return new String[] { "java.util.List<org.hamcrest.Matcher<" + targetName
+				+ ">> tmp = new java.util.ArrayList<>(java.util.Arrays.asList(" + getSeveralWith(parameters) + "));",
+				"tmp.addAll(java.util.Arrays.stream(last).map(v->" + targetMethodName
+						+ "(v)).collect(java.util.stream.Collectors.toList()));",
+				"return " + matcher + "(tmp.toArray(new org.hamcrest.Matcher[0]));" };
+	}
+
 	public DSLMethod generateSimpleDSLMethodFor(String javadoc[], String containerMatcher, String... parameters) {
 		return of(returnType + " " + methodName).withArguments(getSeveralParameter(false, parameters))
 				.withImplementation("return " + containerMatcher + "(" + getSeveralWith(parameters) + ");")

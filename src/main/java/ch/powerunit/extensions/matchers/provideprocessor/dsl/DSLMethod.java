@@ -35,7 +35,7 @@ import ch.powerunit.extensions.matchers.provideprocessor.dsl.lang.DSLMethodJavad
 
 /**
  * @author borettim
- *
+ * 
  */
 public final class DSLMethod {
 	public static final Pattern DECLARATION_PARSER = Pattern.compile("^\\s*.*\\s+([0-9A-Za-z_]+)\\s*$");
@@ -45,6 +45,9 @@ public final class DSLMethod {
 
 	private static final ListJoining<String[]> ARGUMENTNAMES_JOIN = ListJoining.joinWithMapper((String a[]) -> a[1])
 			.withCommaDelimiter().withPrefixAndSuffix("(", ")");
+
+	private static final ListJoining<String> IMPLEMENTATION_JOIN = ListJoining.joinWithMapper((String s) -> "  " + s)
+			.withDelimiter("\n").withPrefixAndSuffix("", "\n");
 
 	private final String javadoc;
 	private final String fullDeclaration;
@@ -91,7 +94,7 @@ public final class DSLMethod {
 			throw new IllegalArgumentException("Unable to parse the received declaration");
 		}
 		this.javadoc = javadoc;
-		this.implementation = Arrays.stream(implementation).map(s -> "  " + s).collect(joining("\n")) + "\n";
+		this.implementation = IMPLEMENTATION_JOIN.asString(implementation);
 		this.fullDeclaration = declaration + ARGUMENTS_JOIN.asString(arguments);
 		this.fullMethodName = m.group(1) + ARGUMENTNAMES_JOIN.asString(arguments);
 	}

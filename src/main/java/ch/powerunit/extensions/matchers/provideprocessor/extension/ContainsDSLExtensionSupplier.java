@@ -81,13 +81,7 @@ public class ContainsDSLExtensionSupplier extends AbstractDSLExtensionSupplier {
 	public DSLMethod generateContainsN() {
 		return of(returnType + " " + methodName)
 				.withArguments(getSeveralParameter(true, "first", "second", "third", "last"))
-				.withImplementation(
-						"java.util.List<org.hamcrest.Matcher<" + targetName
-								+ ">> tmp = new java.util.ArrayList<>(java.util.Arrays.asList("
-								+ getSeveralWith("first", "second", "third") + "));",
-						"tmp.addAll(java.util.Arrays.stream(last).map(v->" + targetMethodName
-								+ "(v)).collect(java.util.stream.Collectors.toList()));",
-						"return " + getMatcher() + "(tmp.toArray(new org.hamcrest.Matcher[0]));")
+				.withImplementation(generateSeveralWithImplementation(getMatcher(), "first", "second", "third"))
 				.withJavadoc(getJavaDocDescription(),
 						"@param first the first element contained inside the target iterable",
 						"@param second the second element contained inside the target iterable",

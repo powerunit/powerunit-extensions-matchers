@@ -19,11 +19,17 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.dsl.lang;
 
+import java.util.List;
+
 public interface DSLMethodImplementation {
 
 	DSLMethodJavadoc withImplementation(String... implementation);
 
 	default DSLMethodJavadoc withImplementation(String implementation) {
 		return withImplementation(new String[] { implementation });
+	}
+
+	default DSLMethodJavadoc withImplementation(List<String> implementation) {
+		return withImplementation(implementation.toArray(new String[0]));
 	}
 }
