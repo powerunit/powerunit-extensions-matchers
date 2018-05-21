@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
 
+import ch.powerunit.extensions.matchers.common.ListJoining;
 import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
 
 public abstract class AbstractDSLExtensionSupplier {
