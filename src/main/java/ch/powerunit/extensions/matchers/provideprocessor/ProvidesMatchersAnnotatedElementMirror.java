@@ -61,7 +61,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 				}
 			}
 		} else {
-			tmp.add(this::generateNoParentValueDSLStarter);
+			tmp.add(() -> generatParentValueDSLStarter(""));
 		}
 		tmp.addAll(Optional.ofNullable(getDSLExtension()).orElseGet(Collections::emptyList).stream()
 				.map(t -> t.getDSLMethodFor(() -> this)).flatMap(Collection::stream).collect(toList()));
@@ -176,10 +176,6 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 				+ methodShortClassName + "WithSameValue")
 						.withOneArgument(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(), "other")
 						.withImplementation(lines).withJavadoc(javadoc);
-	}
-
-	public DSLMethod generateNoParentValueDSLStarter() {
-		return generatParentValueDSLStarter("");
 	}
 
 	public ProvidesMatchersAnnotatedElementMirror getParentMirror() {
