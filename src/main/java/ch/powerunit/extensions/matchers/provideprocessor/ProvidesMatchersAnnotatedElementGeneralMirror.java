@@ -21,15 +21,19 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 
 import javax.lang.model.element.TypeElement;
 
-public abstract class ProvidesMatchersAnnotatedElementGeneralMirror
-		extends ProvidesMatchersAnnotatedElementGenericMirror implements RoundMirrorSupport {
+public abstract class ProvidesMatchersAnnotatedElementGeneralMirror extends ProvideMatchersMirror
+		implements RoundMirrorSupport {
 
 	protected final String methodShortClassName;
+	protected final String genericForChaining;
 
 	public ProvidesMatchersAnnotatedElementGeneralMirror(TypeElement typeElement, RoundMirror roundMirror) {
-		super(typeElement, roundMirror);
+		super(roundMirror, typeElement);
 		String simplename = getSimpleNameOfClassAnnotated();
 		this.methodShortClassName = simplename.substring(0, 1).toLowerCase() + simplename.substring(1);
+		this.genericForChaining = getGenericParent().replaceAll("^<_PARENT",
+				"<" + getFullyQualifiedNameOfGeneratedClass() + "." + simpleNameOfGeneratedInterfaceMatcher
+						+ getGenericNoParent());
 	}
 
 	public String getDefaultReturnMethod() {
@@ -52,4 +56,43 @@ public abstract class ProvidesMatchersAnnotatedElementGeneralMirror
 		return getSimpleNameOfGeneratedImplementationMatcher() + getGenericParent();
 	}
 
+	public String getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() {
+		return simpleNameOfGeneratedInterfaceMatcher + " " + getGenericParent();
+	}
+
+	public String getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() {
+		return simpleNameOfGeneratedInterfaceMatcher + " " + getGenericNoParent();
+	}
+
+	public String getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() {
+		return getFullyQualifiedNameOfClassAnnotated() + " " + generic;
+	}
+
+	public static String getAddParentToGeneric(String generic) {
+		if ("".equals(generic)) {
+			return "<_PARENT>";
+		} else {
+			return generic.replaceFirst("<", "<_PARENT,");
+		}
+	}
+
+	public static String getAddNoParentToGeneric(String generic) {
+		if ("".equals(generic)) {
+			return "<Void>";
+		} else {
+			return generic.replaceFirst("<", "<Void,");
+		}
+	}
+
+	public String getGenericParent() {
+		return getAddParentToGeneric(generic);
+	}
+
+	public String getGenericNoParent() {
+		return getAddNoParentToGeneric(generic);
+	}
+
+	public String getFullGenericParent() {
+		return getAddParentToGeneric(fullGeneric);
+	}
 }

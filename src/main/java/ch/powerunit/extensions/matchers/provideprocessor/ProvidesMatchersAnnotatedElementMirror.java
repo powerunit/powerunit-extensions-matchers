@@ -41,8 +41,6 @@ import javax.tools.Diagnostic.Kind;
 import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.common.FileObjectHelper;
 import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
-import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
-import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 
 public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnnotatedElementMatcherMirror {
 
@@ -209,19 +207,6 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 								+ "WithParent(m);",
 						"m._parent = new SuperClassMatcher(tmp);", "return tmp;").withJavadoc(
 								generateDefaultJavaDoc(Optional.empty(), Optional.empty(), "the DSL matcher", false));
-	}
-
-	public GeneratedMatcher asXml() {
-		GeneratedMatcher gm = new GeneratedMatcher();
-		gm.setFullyQualifiedNameGeneratedClass(getFullyQualifiedNameOfGeneratedClass());
-		gm.setFullyQualifiedNameInputClass(getFullyQualifiedNameOfClassAnnotated());
-		gm.setSimpleNameGeneratedClass(getSimpleNameOfGeneratedClass());
-		gm.setSimpleNameInputClass(getSimpleNameOfClassAnnotated());
-		gm.setDslMethodNameStart(methodShortClassName);
-		gm.setGeneratedMatcherField(
-				fields.stream().map(AbstractFieldDescription::asGeneratedMatcherField).collect(toList()));
-		gm.setMirror(this);
-		return gm;
 	}
 
 }

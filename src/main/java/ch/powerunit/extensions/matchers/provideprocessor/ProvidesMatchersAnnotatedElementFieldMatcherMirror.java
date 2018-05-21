@@ -35,6 +35,7 @@ import javax.lang.model.element.TypeElement;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescriptionMetaData;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.IgoreFieldDescription;
+import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 
 public abstract class ProvidesMatchersAnnotatedElementFieldMatcherMirror
 		extends ProvidesMatchersAnnotatedElementGeneralMirror {
@@ -76,6 +77,19 @@ public abstract class ProvidesMatchersAnnotatedElementFieldMatcherMirror
 		return String.format(
 				"  private static class SuperClassMatcher%1$s extends org.hamcrest.FeatureMatcher<%2$s,%3$s> {\n\n    public SuperClassMatcher(org.hamcrest.Matcher<? super %3$s> matcher) {\n      super(matcher,\"parent\",\"parent\");\n  }\n\n\n    protected %3$s featureValueOf(%2$s actual) {\n      return actual;\n    }\n\n  }\n\n\n",
 				fullGeneric, getFullyQualifiedNameOfClassAnnotated(), parent);
+	}
+
+	public GeneratedMatcher asXml() {
+		GeneratedMatcher gm = new GeneratedMatcher();
+		gm.setFullyQualifiedNameGeneratedClass(getFullyQualifiedNameOfGeneratedClass());
+		gm.setFullyQualifiedNameInputClass(getFullyQualifiedNameOfClassAnnotated());
+		gm.setSimpleNameGeneratedClass(getSimpleNameOfGeneratedClass());
+		gm.setSimpleNameInputClass(getSimpleNameOfClassAnnotated());
+		gm.setDslMethodNameStart(methodShortClassName);
+		gm.setGeneratedMatcherField(
+				fields.stream().map(AbstractFieldDescription::asGeneratedMatcherField).collect(toList()));
+		gm.setElement(getElement());
+		return gm;
 	}
 
 }

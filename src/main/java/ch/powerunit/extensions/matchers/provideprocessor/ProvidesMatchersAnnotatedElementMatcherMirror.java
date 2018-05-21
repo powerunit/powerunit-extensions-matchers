@@ -201,5 +201,4 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 				getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent(),
 				getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric());
 	}
-
 }
