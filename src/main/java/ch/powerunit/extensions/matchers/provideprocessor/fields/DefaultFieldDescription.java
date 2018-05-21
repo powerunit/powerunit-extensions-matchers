@@ -56,7 +56,7 @@ public class DefaultFieldDescription extends PrimitiveFieldDescription implement
 					"by starting a matcher for this field", nameInSameRound + "." + name + "Matcher tmp = "
 							+ nameInSameRound + "." + lname + "WithParent(this);\n" + fn + "(tmp);\nreturn tmp;"));
 		}
-		tmp.add(FieldDSLMethodBuilder.of(this).withDeclaration("IsSameValue", ft + " value")
+		tmp.add(FieldDSLMethodBuilder.of(this).withDeclaration("IsSameInstance", ft + " value")
 				.withJavaDoc("",
 						"value an expected value for the field, which will be compared that it is the same instance.",
 						SEE_TEXT_FOR_IS_MATCHER)

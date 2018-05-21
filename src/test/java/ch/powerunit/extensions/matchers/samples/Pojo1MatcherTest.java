@@ -23,6 +23,7 @@ import static ch.powerunit.matchers.MatcherTester.matcher;
 import static ch.powerunit.matchers.MatcherTester.value;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -54,6 +55,13 @@ public class Pojo1MatcherTest implements TestSuite {
 	public void testOKMatcher() {
 		Pojo1 p = new Pojo1();
 		assertThat(p).is(Pojo1Matchers.pojo1With());
+	}
+
+	@Test
+	public void testSameInstanceMatcher() {
+		Pojo1 p = new Pojo1();
+		p.msg6 = new ArrayList<>();
+		assertThat(p).is(Pojo1Matchers.pojo1With().msg6IsSameInstance(p.msg6));
 	}
 
 	@Test
