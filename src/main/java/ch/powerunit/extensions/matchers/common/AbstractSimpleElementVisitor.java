@@ -29,7 +29,7 @@ import javax.lang.model.util.SimpleElementVisitor8;
  *
  */
 public abstract class AbstractSimpleElementVisitor<R, P, S extends AbstractRoundMirrorReferenceToProcessingEnv>
-		extends SimpleElementVisitor8<R, P> implements AbstractRoundMirrorSupport<S> {
+		extends SimpleElementVisitor8<R, P> implements AbstractRoundMirrorSupport<S>,ElementHelper {
 	protected final S support;
 
 	public AbstractSimpleElementVisitor(S support) {

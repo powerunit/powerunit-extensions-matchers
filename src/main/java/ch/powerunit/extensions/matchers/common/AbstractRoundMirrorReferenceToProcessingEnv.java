@@ -31,7 +31,7 @@ import javax.lang.model.type.TypeMirror;
  * @author borettim
  *
  */
-public abstract class AbstractRoundMirrorReferenceToProcessingEnv {
+public abstract class AbstractRoundMirrorReferenceToProcessingEnv implements ElementHelper {
 
 	protected final RoundEnvironment roundEnv;
 	protected final ProcessingEnvironment processingEnv;

@@ -33,7 +33,7 @@ import javax.lang.model.type.TypeMirror;
  * @param <R>
  */
 @FunctionalInterface
-public interface AbstractRoundMirrorSupport<R extends AbstractRoundMirrorReferenceToProcessingEnv> {
+public interface AbstractRoundMirrorSupport<R extends AbstractRoundMirrorReferenceToProcessingEnv> extends ElementHelper {
 	R getRoundMirror();
 
 	default ProcessingEnvironment getProcessingEnv() {

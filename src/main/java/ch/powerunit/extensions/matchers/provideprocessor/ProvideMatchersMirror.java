@@ -55,18 +55,18 @@ public class ProvideMatchersMirror extends AbstractTypeElementMirror<ProvideMatc
 		this.simpleNameOfGeneratedInterfaceMatcher = getSimpleNameOfClassAnnotated() + "Matcher";
 	}
 
-	private static String generateSimpleNameOfGeneratedClass(TypeElement annotatedElement, ProvideMatchers pm) {
+	private String generateSimpleNameOfGeneratedClass(TypeElement annotatedElement, ProvideMatchers pm) {
 		if ("".equals(pm.matchersClassName())) {
-			return annotatedElement.getSimpleName().toString() + "Matchers";
+			return getSimpleName(annotatedElement) + "Matchers";
 		} else {
 			return pm.matchersClassName();
 		}
 	}
 
-	private static String generatePackageNameOfGeneratedClass(TypeElement annotatedElement, ProvideMatchers pm,
+	private String generatePackageNameOfGeneratedClass(TypeElement annotatedElement, ProvideMatchers pm,
 			Elements elements) {
 		if ("".equals(pm.matchersPackageName())) {
-			return elements.getPackageOf(annotatedElement).getQualifiedName().toString();
+			return getQualifiedName(elements.getPackageOf(annotatedElement));
 		} else {
 			return pm.matchersPackageName();
 		}

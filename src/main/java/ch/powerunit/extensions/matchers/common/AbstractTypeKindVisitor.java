@@ -28,7 +28,7 @@ import javax.lang.model.util.TypeKindVisitor8;
  *
  */
 public abstract class AbstractTypeKindVisitor<R, P, S extends AbstractRoundMirrorReferenceToProcessingEnv>
-		extends TypeKindVisitor8<R, P> implements AbstractRoundMirrorSupport<S> {
+		extends TypeKindVisitor8<R, P> implements AbstractRoundMirrorSupport<S>,ElementHelper {
 
 	protected final S support;
 

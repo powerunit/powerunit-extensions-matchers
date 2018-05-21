@@ -49,9 +49,9 @@ class FactoryAnnotatedElementMirror extends AbstractElementMirror<ExecutableElem
 
 	public String getSeeValue() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(getProcessingEnv().getElementUtils().getPackageOf(element.getEnclosingElement()).getQualifiedName())
-				.append(".").append(element.getEnclosingElement().getSimpleName().toString()).append("#")
-				.append(element.getSimpleName().toString()).append("(");
+		sb.append(getQualifiedName(getProcessingEnv().getElementUtils().getPackageOf(element.getEnclosingElement())))
+				.append(".").append(getSimpleName(element.getEnclosingElement())).append("#")
+				.append(getSimpleName(element)).append("(");
 		sb.append(element.getParameters().stream().map(this::convertParameterForSee).collect(joining(",")));
 		sb.append(")");
 		String result = sb.toString();
@@ -62,8 +62,8 @@ class FactoryAnnotatedElementMirror extends AbstractElementMirror<ExecutableElem
 	}
 
 	public String getParam() {
-		String param = element.getParameters().stream()
-				.map(ve -> ve.asType().toString() + " " + ve.getSimpleName().toString()).collect(joining(","));
+		String param = element.getParameters().stream().map(ve -> ve.asType().toString() + " " + getSimpleName(ve))
+				.collect(joining(","));
 		return element.isVarArgs() ? param.replaceAll(VAR_ARG_REGEX, "...") : param;
 	}
 
@@ -86,7 +86,7 @@ class FactoryAnnotatedElementMirror extends AbstractElementMirror<ExecutableElem
 	private String getGeneric() {
 		if (!element.getTypeParameters().isEmpty()) {
 			return new StringBuilder("<").append(element.getTypeParameters().stream()
-					.map(ve -> ve.getSimpleName().toString() + (ve.getBounds().isEmpty() ? ""
+					.map(ve -> getSimpleName(ve) + (ve.getBounds().isEmpty() ? ""
 							: (" extends " + ve.getBounds().stream().map(Object::toString).collect(joining("&")))))
 					.collect(joining(","))).append("> ").toString();
 		}
@@ -101,11 +101,11 @@ class FactoryAnnotatedElementMirror extends AbstractElementMirror<ExecutableElem
 	public String generateFactory() {
 		return new StringBuilder(getJavadoc()).append("  default ").append(getDeclaration()).append(" {\n")
 				.append(TypeKind.VOID != element.getReturnType().getKind() ? "    return " : "    ")
-				.append(getProcessingEnv().getElementUtils().getPackageOf(element.getEnclosingElement())
-						.getQualifiedName().toString())
-				.append(".").append(element.getEnclosingElement().getSimpleName().toString()).append(".")
-				.append(element.getSimpleName().toString()).append("(").append(element.getParameters().stream()
-						.map((ve) -> ve.getSimpleName().toString()).collect(joining(",")))
+				.append(getQualifiedName(
+						getProcessingEnv().getElementUtils().getPackageOf(element.getEnclosingElement())))
+				.append(".").append(getSimpleName(element.getEnclosingElement())).append(".")
+				.append(getSimpleName(element)).append("(")
+				.append(element.getParameters().stream().map((ve) -> getSimpleName(ve)).collect(joining(",")))
 				.append(");\n  }\n\n").toString();
 	}
 

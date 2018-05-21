@@ -76,7 +76,7 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 	}
 
 	public String getSameValueMatcherFor(String target) {
-		String name = mirror.getFieldTypeAsTypeElement().getSimpleName().toString();
+		String name = getSimpleName(mirror.getFieldTypeAsTypeElement());
 		String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
 		return fullyQualifiedNameMatcherInSameRound + "." + lname + "WithSameValue(" + target + ")";
 	}

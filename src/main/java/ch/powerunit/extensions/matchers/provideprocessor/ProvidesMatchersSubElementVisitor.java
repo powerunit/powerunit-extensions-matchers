@@ -59,7 +59,7 @@ public class ProvidesMatchersSubElementVisitor extends
 	public Optional<AbstractFieldDescription> visitVariable(VariableElement e,
 			ProvidesMatchersAnnotatedElementFieldMatcherMirror p) {
 		if (e.getModifiers().contains(Modifier.PUBLIC) && !e.getModifiers().contains(Modifier.STATIC)) {
-			String fieldName = e.getSimpleName().toString();
+			String fieldName = getSimpleName(e);
 			return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, fieldName);
 		}
 		generateIfNeededWarningForNotSupportedElementAndRemoveIt("Check that this field is public and not static", e);
@@ -71,7 +71,7 @@ public class ProvidesMatchersSubElementVisitor extends
 			ProvidesMatchersAnnotatedElementFieldMatcherMirror p) {
 		if (e.getModifiers().contains(Modifier.PUBLIC) && e.getParameters().size() == 0
 				&& !e.getModifiers().contains(Modifier.STATIC)) {
-			String simpleName = e.getSimpleName().toString();
+			String simpleName = getSimpleName(e);
 			if (simpleName.matches("^((get)|(is)).*")) {
 				return visiteExecutableGet(e, "^(get)|(is)", p);
 			}
@@ -90,7 +90,7 @@ public class ProvidesMatchersSubElementVisitor extends
 
 	private Optional<AbstractFieldDescription> visiteExecutableGet(ExecutableElement e, String prefix,
 			ProvidesMatchersAnnotatedElementFieldMatcherMirror p) {
-		String methodName = e.getSimpleName().toString();
+		String methodName = getSimpleName(e);
 		String fieldNameDirect = methodName.replaceFirst(prefix, "");
 		String fieldName = fieldNameDirect.substring(0, 1).toLowerCase() + fieldNameDirect.substring(1);
 		return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, fieldName);

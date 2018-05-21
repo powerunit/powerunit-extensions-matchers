@@ -180,8 +180,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 
 	public ProvidesMatchersAnnotatedElementMirror getParentMirror() {
 		RoundMirror rm = roundMirror;
-		return rm.getByName(((TypeElement) rm.getProcessingEnv().getTypeUtils().asElement(element.getSuperclass()))
-				.getQualifiedName().toString());
+		return rm.getByName(getQualifiedName(
+				((TypeElement) rm.getProcessingEnv().getTypeUtils().asElement(element.getSuperclass()))));
 	}
 
 	public DSLMethod generateParentValueDSLStarter() {

@@ -17,28 +17,22 @@
  * You should have received a copy of the GNU General Public License
  * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
  */
-package ch.powerunit.extensions.matchers.common.lang;
+package ch.powerunit.extensions.matchers.common;
 
-import java.util.function.UnaryOperator;
-
-import ch.powerunit.extensions.matchers.common.ListJoining;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.QualifiedNameable;
 
 /**
  * @author borettim
  *
  */
-public interface ListJoiningAround<E> {
-	ListJoining<E> withFinalFunction(UnaryOperator<String> finalizer);
-
-	default ListJoining<E> withPrefixAndSuffix(String prefix, String suffix) {
-		return withFinalFunction(s -> prefix + s + suffix);
+public interface ElementHelper {
+	default String getSimpleName(Element e) {
+		return e.getSimpleName().toString();
 	}
 
-	default ListJoining<E> withoutSuffixAndPrefix() {
-		return withPrefixAndSuffix("", "");
+	default String getQualifiedName(QualifiedNameable e) {
+		return e.getQualifiedName().toString();
 	}
 
-	default ListJoining<E> withOptionalPrefixAndSuffix(String prefix, String suffix) {
-		return withFinalFunction(s -> s.isEmpty() ? "" : (prefix + s + suffix));
-	}
 }

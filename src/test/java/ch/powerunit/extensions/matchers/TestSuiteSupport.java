@@ -30,6 +30,7 @@ import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
@@ -44,6 +45,12 @@ import ch.powerunit.TestSuite;
 public interface TestSuiteSupport extends TestSuite {
 	default ProcessingEnvironment generateMockitoProcessingEnvironment() {
 		TypeElement object = mock(TypeElement.class);
+		Name objectName = mock(Name.class);
+		when(object.getSimpleName()).thenReturn(objectName);
+		when(objectName.toString()).thenReturn("Object");
+		Name fullObjectName = mock(Name.class);
+		when(object.getQualifiedName()).thenReturn(fullObjectName);
+		when(fullObjectName.toString()).thenReturn("java.lang.Object");
 		Elements elements = mock(Elements.class);
 		ProcessingEnvironment processingEnv = mock(ProcessingEnvironment.class);
 		when(processingEnv.getMessager()).thenReturn(mock(Messager.class));
@@ -54,6 +61,7 @@ public interface TestSuiteSupport extends TestSuite {
 		when(processingEnv.getTypeUtils()).thenReturn(mock(Types.class));
 		when(processingEnv.getSourceVersion()).thenReturn(SourceVersion.RELEASE_8);
 		when(elements.getTypeElement("java.lang.Object")).thenReturn(object);
+
 		when(object.asType()).thenReturn(mock(TypeMirror.class));
 		return processingEnv;
 	}

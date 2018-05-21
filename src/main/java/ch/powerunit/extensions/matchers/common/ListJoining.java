@@ -48,7 +48,7 @@ public final class ListJoining<E> {
 
 	private final String delimiter;
 
-	private final UnaryOperator<String> finalize;
+	private final UnaryOperator<String> finalizer;
 
 	public static class Builder<E> implements ListJoiningAround<E>, ListJoiningDelimiter<E>, ListJoiningMapper<E> {
 
@@ -74,13 +74,17 @@ public final class ListJoining<E> {
 		}
 
 	}
-	
+
 	public static <E> ListJoining<E> nlSeparated() {
 		return (ListJoining<E>) NL_SEPARATED;
 	}
-	
+
 	public static <E> ListJoining<E> commaSeparated() {
 		return (ListJoining<E>) COMMA_SEPARATED;
+	}
+
+	public static <E> ListJoining<E> commaSeparated(Function<E, String> mapper) {
+		return joinWithMapper(mapper).withCommaDelimiter().withoutSuffixAndPrefix();
 	}
 
 	public static <E> ListJoiningMapper<E> accepting(Class<E> clazz) {
@@ -95,15 +99,15 @@ public final class ListJoining<E> {
 		return new Builder<E>().withMapper(mapper).withDelimiter(delimiter).withoutSuffixAndPrefix();
 	}
 
-	public ListJoining(Function<E, String> mapper, String delimiter, UnaryOperator<String> finalize) {
+	public ListJoining(Function<E, String> mapper, String delimiter, UnaryOperator<String> finalizer) {
 		this.mapper = mapper;
 		this.delimiter = delimiter;
-		this.finalize = finalize;
+		this.finalizer = finalizer;
 	}
 
 	public String asString(List<E> input) {
 		return Objects.requireNonNull(input, "input can't be null").stream().map(mapper)
-				.collect(collectingAndThen(joining(delimiter), finalize));
+				.collect(collectingAndThen(joining(delimiter), finalizer));
 	}
 
 	public String asString(E... input) {

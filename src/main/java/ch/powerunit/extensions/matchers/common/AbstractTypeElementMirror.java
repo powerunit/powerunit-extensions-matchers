@@ -35,7 +35,7 @@ import javax.lang.model.type.TypeMirror;
  *
  */
 public abstract class AbstractTypeElementMirror<A extends Annotation, R extends AbstractRoundMirrorReferenceToProcessingEnv>
-		extends AbstractElementMirror<TypeElement, A, R> {
+		extends AbstractElementMirror<TypeElement, A, R> implements ElementHelper {
 
 	protected final String generic;
 	protected final String fullGeneric;
@@ -74,8 +74,8 @@ public abstract class AbstractTypeElementMirror<A extends Annotation, R extends 
 		return listToStringWithPostProcessing(input, Object::toString, delimiter, postProcessing);
 	}
 
-	private static <E> String listToStringWithPostProcessing(List<E> input, Function<E, String> mapper, String delimiter,
-			UnaryOperator<String> postProcessing) {
+	private static <E> String listToStringWithPostProcessing(List<E> input, Function<E, String> mapper,
+			String delimiter, UnaryOperator<String> postProcessing) {
 		return postProcessing.apply(listToString(input, mapper, delimiter));
 	}
 
@@ -91,11 +91,11 @@ public abstract class AbstractTypeElementMirror<A extends Annotation, R extends 
 	}
 
 	public String getFullyQualifiedNameOfClassAnnotated() {
-		return element.getQualifiedName().toString();
+		return getQualifiedName(element);
 	}
 
 	public String getSimpleNameOfClassAnnotated() {
-		return element.getSimpleName().toString();
+		return getSimpleName(element);
 	}
 
 	protected String getDefaultLinkForAnnotatedClass() {

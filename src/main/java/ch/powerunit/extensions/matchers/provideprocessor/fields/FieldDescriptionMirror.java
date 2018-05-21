@@ -24,11 +24,12 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 
+import ch.powerunit.extensions.matchers.common.ElementHelper;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvideMatchersMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
 
-public class FieldDescriptionMirror {
+public class FieldDescriptionMirror implements ElementHelper {
 
 	private final String fieldName;
 	private final String fieldType;
@@ -45,7 +46,7 @@ public class FieldDescriptionMirror {
 	}
 
 	public String getFieldAccessor() {
-		return fieldElement.getSimpleName().toString() + ((fieldElement instanceof ExecutableElement) ? "()" : "");
+		return getSimpleName(fieldElement) + ((fieldElement instanceof ExecutableElement) ? "()" : "");
 	}
 
 	public String getFieldName() {
