@@ -118,8 +118,7 @@ public class ProvideMatchersMirror extends AbstractTypeElementMirror<ProvideMatc
 		if (withParent) {
 			sb.append(DEFAULT_PARAM_PARENT);
 		}
-		sb.append(" * @return ").append(returnDescription).append("\n */\n");
-		return sb.toString();
+		return sb.append(" * @return ").append(returnDescription).append("\n */\n").toString();
 	}
 
 	protected String generateJavaDoc(String description, boolean withParent) {

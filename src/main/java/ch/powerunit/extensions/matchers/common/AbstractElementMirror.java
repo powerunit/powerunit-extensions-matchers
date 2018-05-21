@@ -29,7 +29,7 @@ import javax.lang.model.element.Element;
  *
  */
 public abstract class AbstractElementMirror<E extends Element, A extends Annotation, R extends AbstractRoundMirrorReferenceToProcessingEnv>
-		implements AbstractRoundMirrorSupport<R>,ElementHelper {
+		implements AbstractRoundMirrorSupport<R>, ElementHelper {
 
 	protected final R roundMirror;
 	protected final E element;
@@ -78,7 +78,7 @@ public abstract class AbstractElementMirror<E extends Element, A extends Annotat
 				sb.append(" *").append(line).append("\n");
 			}
 		}
-		return sb.toString().replaceAll("\\R", "\n");
+		return sb.toString();
 	}
 
 }
