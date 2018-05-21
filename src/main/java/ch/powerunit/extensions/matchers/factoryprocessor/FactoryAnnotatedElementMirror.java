@@ -84,13 +84,7 @@ class FactoryAnnotatedElementMirror extends AbstractElementMirror<ExecutableElem
 	}
 
 	private String getGeneric() {
-		if (!element.getTypeParameters().isEmpty()) {
-			return new StringBuilder("<").append(element.getTypeParameters().stream()
-					.map(ve -> getSimpleName(ve) + (ve.getBounds().isEmpty() ? ""
-							: (" extends " + ve.getBounds().stream().map(Object::toString).collect(joining("&")))))
-					.collect(joining(","))).append("> ").toString();
-		}
-		return "";
+		return getFullGeneric(element);
 	}
 
 	private String getDeclaration() {
@@ -105,7 +99,7 @@ class FactoryAnnotatedElementMirror extends AbstractElementMirror<ExecutableElem
 						getProcessingEnv().getElementUtils().getPackageOf(element.getEnclosingElement())))
 				.append(".").append(getSimpleName(element.getEnclosingElement())).append(".")
 				.append(getSimpleName(element)).append("(")
-				.append(element.getParameters().stream().map((ve) -> getSimpleName(ve)).collect(joining(",")))
+				.append(element.getParameters().stream().map(this::getSimpleName).collect(joining(",")))
 				.append(");\n  }\n\n").toString();
 	}
 

@@ -19,14 +19,37 @@
  */
 package ch.powerunit.extensions.matchers.common;
 
+import java.util.List;
+
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Parameterizable;
 import javax.lang.model.element.QualifiedNameable;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.TypeMirror;
 
 /**
  * @author borettim
  *
  */
 public interface ElementHelper {
+
+	static final ListJoining<TypeMirror> TYPE_PARAMETER_BOUND_AS_LIST = ListJoining.accepting(TypeMirror.class)
+			.withToStringMapper().withDelimiter("&").withoutSuffixAndPrefix();
+
+	static final ListJoining<TypeMirror> TYPE_PARAMETER_BOUND_AS_LIST_WITH_EXTENDS = ListJoining
+			.accepting(TypeMirror.class).withToStringMapper().withDelimiter("&")
+			.withOptionalPrefixAndSuffix(" extends ", "");
+
+	static final ListJoining<TypeParameterElement> TYPE_PARAMETER_SIMPLE_AS_LIST = ListJoining
+			.accepting(TypeParameterElement.class).withToStringMapper().withCommaDelimiter()
+			.withOptionalPrefixAndSuffix("<", ">");
+
+	static final ListJoining<TypeParameterElement> TYPE_PARAMETER_FULL_AS_LIST = ListJoining
+			.accepting(TypeParameterElement.class)
+			.withMapper(t -> t.toString()
+					+ TYPE_PARAMETER_BOUND_AS_LIST_WITH_EXTENDS.asString((List<TypeMirror>) t.getBounds()))
+			.withCommaDelimiter().withOptionalPrefixAndSuffix("<", ">");
+
 	default String getSimpleName(Element e) {
 		return e.getSimpleName().toString();
 	}
@@ -35,4 +58,15 @@ public interface ElementHelper {
 		return e.getQualifiedName().toString();
 	}
 
+	default String boundsAsString(TypeParameterElement e) {
+		return TYPE_PARAMETER_BOUND_AS_LIST.asString((List<TypeMirror>) e.getBounds());
+	}
+
+	default String getGeneric(Parameterizable typeElement) {
+		return TYPE_PARAMETER_SIMPLE_AS_LIST.asString((List<TypeParameterElement>) typeElement.getTypeParameters());
+	}
+
+	default String getFullGeneric(Parameterizable typeElement) {
+		return TYPE_PARAMETER_FULL_AS_LIST.asString((List<TypeParameterElement>) typeElement.getTypeParameters());
+	}
 }

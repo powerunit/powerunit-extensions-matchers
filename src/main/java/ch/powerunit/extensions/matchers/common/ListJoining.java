@@ -69,8 +69,8 @@ public final class ListJoining<E> {
 		}
 
 		@Override
-		public ListJoining<E> withFinalFunction(UnaryOperator<String> finalize) {
-			return new ListJoining<E>(mapper, delimiter, finalize);
+		public ListJoining<E> withFinalFunction(UnaryOperator<String> finalizer) {
+			return new ListJoining<E>(mapper, delimiter, finalizer);
 		}
 
 	}

@@ -43,8 +43,8 @@ public abstract class AbstractTypeElementMirror<A extends Annotation, R extends 
 
 	public AbstractTypeElementMirror(Class<A> annotationType, R roundMirror, TypeElement element) {
 		super(annotationType, roundMirror, element);
-		this.generic = parseGeneric(element);
-		this.fullGeneric = parseFullGeneric(element);
+		this.generic = getGeneric(element);
+		this.fullGeneric = getFullGeneric(element);
 		this.fullyQualifiedNameOfSuperClassOfClassAnnotated = extractSuper(element);
 	}
 
@@ -57,38 +57,8 @@ public abstract class AbstractTypeElementMirror<A extends Annotation, R extends 
 		}
 	}
 
-	private static String encapsulateString(String input) {
-		return input.isEmpty() ? "" : ("<" + input + ">");
-	}
 
-	private static <E> String listToString(List<E> input, String delimiter) {
-		return listToString(input, Object::toString, delimiter);
-	}
-
-	private static <E> String listToString(List<E> input, Function<E, String> mapper, String delimiter) {
-		return input.stream().map(mapper).collect(joining(delimiter));
-	}
-
-	private static <E> String listToStringWithPostProcessing(List<E> input, String delimiter,
-			UnaryOperator<String> postProcessing) {
-		return listToStringWithPostProcessing(input, Object::toString, delimiter, postProcessing);
-	}
-
-	private static <E> String listToStringWithPostProcessing(List<E> input, Function<E, String> mapper,
-			String delimiter, UnaryOperator<String> postProcessing) {
-		return postProcessing.apply(listToString(input, mapper, delimiter));
-	}
-
-	private static String parseFullGeneric(TypeElement typeElement) {
-		return listToStringWithPostProcessing(typeElement.getTypeParameters(),
-				t -> t.toString() + " extends " + listToString(t.getBounds(), "&"), ",",
-				AbstractTypeElementMirror::encapsulateString);
-	}
-
-	private static String parseGeneric(TypeElement typeElement) {
-		return listToStringWithPostProcessing(typeElement.getTypeParameters(), ",",
-				AbstractTypeElementMirror::encapsulateString);
-	}
+	
 
 	public String getFullyQualifiedNameOfClassAnnotated() {
 		return getQualifiedName(element);
