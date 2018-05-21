@@ -32,7 +32,7 @@ public interface DSLExtension {
 	
 	static final Collection<DSLExtension> EXTENSION = Collections.unmodifiableList(Arrays.asList(
 			new ContainsDSLExtension(), new ArrayContainingDSLExtension(), new HasItemsExtension(),
-			new ContainsInAnyOrderDSLExtension(), new ArrayContainingInAnyOrderDSLExtension(), new AnyOfExtension()));
+			new ContainsInAnyOrderDSLExtension(), new ArrayContainingInAnyOrderDSLExtension(), new AnyOfExtension(),new NoneOfExtension()));
 	
 	ComplementaryExpositionMethod supportedEnum();
 

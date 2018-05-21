@@ -29,46 +29,38 @@ import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
 
-public class AnyOfExtension implements DSLExtension {
+public class NoneOfExtension extends AnyOfExtension {
 
-	public static final String ANYOF_MATCHER = "org.hamcrest.Matchers.anyOf";
+	public static final String NOT_MATCHER = "org.hamcrest.Matchers.not";
 
-	private static final String JAVADOC_DESCRIPTION = "Generate a anyOf matcher for this Object, which provide a simple way to valid that something is one of the many supplied instance.";
+	private static final String JAVADOC_DESCRIPTION = "Generate a notOf matcher for this Object, which provide a simple way to valid that something is none of the many supplied instance.";
 
 	@Override
 	public ComplementaryExpositionMethod supportedEnum() {
-		return ComplementaryExpositionMethod.ANY_OF;
+		return ComplementaryExpositionMethod.NONE_OF;
 	}
 
 	@Override
 	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData element) {
-		String methodName = element.generateDSLMethodName("anyOf");
-		return new AnyOfSupplier(element, methodName).asSuppliers();
+		String methodName = element.generateDSLMethodName("noneOf");
+		return new NoneOfSupplier(element, methodName).asSuppliers();
 	}
 
-	public class AnyOfSupplier extends AbstractDSLExtensionSupplier {
+	public class NoneOfSupplier extends AnyOfSupplier {
 
-		public AnyOfSupplier(ProvidesMatchersAnnotatedElementData element, String methodName) {
-			super(element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(),
-					element.getFullGeneric() + " org.hamcrest.Matcher<"
-							+ element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + ">",
-					methodName, element.generateDSLWithSameValueMethodName());
+		public NoneOfSupplier(ProvidesMatchersAnnotatedElementData element, String methodName) {
+			super(element, methodName);
 		}
 
 		@Override
 		public Collection<Supplier<DSLMethod>> asSuppliers() {
-			return Arrays.asList(this::generateAnyOf);
+			return Arrays.asList(this::generateNoneOf);
 		}
 
-		public String innerMatcher() {
-			return ANYOF_MATCHER + "(java.util.Arrays.stream(items).map(v->" + targetMethodName
-					+ "(v)).collect(java.util.stream.Collectors.toList()).toArray(new org.hamcrest.Matcher[0]))";
-		}
-
-		public DSLMethod generateAnyOf() {
+		public DSLMethod generateNoneOf() {
 			return of(returnType + " " + methodName).withArguments(getSeveralParameter(true, "items"))
-					.withImplementation("return " + innerMatcher() + ";")
-					.withJavadoc(JAVADOC_DESCRIPTION, "@param items the items to be matched", "@return the Matcher.");
+					.withImplementation("return " + NOT_MATCHER + "(" + innerMatcher() + ");").withJavadoc(
+							JAVADOC_DESCRIPTION, "@param items the items to be not matched", "@return the Matcher.");
 		}
 	}
 
