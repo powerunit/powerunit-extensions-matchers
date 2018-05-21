@@ -42,17 +42,17 @@ public class AnyOfExtension implements DSLExtension {
 
 	@Override
 	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData element) {
-		String targetName = element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric();
-		String returnType = element.getFullGeneric() + " org.hamcrest.Matcher<" + targetName + ">";
 		String methodName = element.generateDSLMethodName("anyOf");
-		String targetMethodName = element.generateDSLWithSameValueMethodName();
-		return new AnyOfSupplier(targetName, returnType, methodName, targetMethodName).asSuppliers();
+		return new AnyOfSupplier(element, methodName).asSuppliers();
 	}
 
 	public class AnyOfSupplier extends AbstractDSLExtensionSupplier {
 
-		public AnyOfSupplier(String targetName, String returnType, String methodName, String targetMethodName) {
-			super(targetName, returnType, methodName, targetMethodName);
+		public AnyOfSupplier(ProvidesMatchersAnnotatedElementData element, String methodName) {
+			super(element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(),
+					element.getFullGeneric() + " org.hamcrest.Matcher<"
+							+ element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + ">",
+					methodName, element.generateDSLWithSameValueMethodName());
 		}
 
 		@Override

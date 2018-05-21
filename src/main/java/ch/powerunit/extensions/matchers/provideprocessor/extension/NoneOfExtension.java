@@ -42,17 +42,14 @@ public class NoneOfExtension extends AnyOfExtension {
 
 	@Override
 	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData element) {
-		String targetName = element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric();
-		String returnType = element.getFullGeneric() + " org.hamcrest.Matcher<" + targetName + ">";
 		String methodName = element.generateDSLMethodName("noneOf");
-		String targetMethodName = element.generateDSLWithSameValueMethodName();
-		return new NoneOfSupplier(targetName, returnType, methodName, targetMethodName).asSuppliers();
+		return new NoneOfSupplier(element, methodName).asSuppliers();
 	}
 
 	public class NoneOfSupplier extends AnyOfSupplier {
 
-		public NoneOfSupplier(String targetName, String returnType, String methodName, String targetMethodName) {
-			super(targetName, returnType, methodName, targetMethodName);
+		public NoneOfSupplier(ProvidesMatchersAnnotatedElementData element, String methodName) {
+			super(element, methodName);
 		}
 
 		@Override
