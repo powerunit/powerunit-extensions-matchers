@@ -24,6 +24,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
@@ -41,7 +42,7 @@ public final class FieldDescriptionProvider {
 	}
 
 	public static enum Type {
-		NA, ARRAY, COLLECTION, LIST, SET, OPTIONAL, COMPARABLE, STRING, SUPPLIER
+		NA, ARRAY, COLLECTION, LIST, SET, OPTIONAL, COMPARABLE, STRING, SUPPLIER, PRIMITIVE
 	}
 
 	public static final class ExtracTypeVisitor extends AbstractTypeKindVisitor<Type, Void, RoundMirror> {
@@ -60,6 +61,11 @@ public final class FieldDescriptionProvider {
 		@Override
 		protected Type defaultAction(TypeMirror t, Void ignore) {
 			return Type.NA;
+		}
+
+		@Override
+		public Type visitPrimitive(PrimitiveType t, Void ignore) {
+			return Type.PRIMITIVE;
 		}
 
 		@Override
@@ -123,6 +129,8 @@ public final class FieldDescriptionProvider {
 			return new StringFieldDescription(containingElementMirror, mirror);
 		case SUPPLIER:
 			return new SupplierFieldDescription(containingElementMirror, mirror);
+		case PRIMITIVE:
+			return new PrimitiveFieldDescription(containingElementMirror, mirror);
 		default:
 			return new DefaultFieldDescription(containingElementMirror, mirror);
 		}
