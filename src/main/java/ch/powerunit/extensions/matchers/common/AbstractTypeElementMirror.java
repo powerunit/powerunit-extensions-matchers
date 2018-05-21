@@ -19,13 +19,8 @@
  */
 package ch.powerunit.extensions.matchers.common;
 
-import static java.util.stream.Collectors.joining;
-
 import java.lang.annotation.Annotation;
-import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.UnaryOperator;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
@@ -56,9 +51,6 @@ public abstract class AbstractTypeElementMirror<A extends Annotation, R extends 
 			return Optional.empty();
 		}
 	}
-
-
-	
 
 	public String getFullyQualifiedNameOfClassAnnotated() {
 		return getQualifiedName(element);
