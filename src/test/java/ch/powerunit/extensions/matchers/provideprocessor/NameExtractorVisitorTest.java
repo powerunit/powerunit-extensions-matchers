@@ -4,8 +4,10 @@ import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 
-import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
@@ -13,7 +15,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.TypeKindVisitor8;
-import javax.lang.model.util.Types;
 
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -21,11 +22,13 @@ import org.mockito.Mockito;
 import ch.powerunit.Rule;
 import ch.powerunit.Test;
 import ch.powerunit.TestRule;
-import ch.powerunit.TestSuite;
+import ch.powerunit.extensions.matchers.TestSuiteSupport;
 
-public class NameExtractorVisitorTest implements TestSuite {
-	@Mock
+public class NameExtractorVisitorTest implements TestSuiteSupport {
+
 	private ProcessingEnvironment processingEnv;
+
+	private RoundEnvironment roundEnv;
 
 	@Mock
 	private PrimitiveType primitiveType;
@@ -37,16 +40,13 @@ public class NameExtractorVisitorTest implements TestSuite {
 	private TypeVariable typeVariable;
 
 	@Mock
-	private Types types;
-
-	@Mock
-	private Messager messager;
-
-	@Mock
 	private TypeMirror typeMirror;
 
 	@Mock
 	private ArrayType arrayType;
+
+	@Mock
+	private TypeElement typeElement;
 
 	@Rule
 	public final TestRule rules = mockitoRule().around(before(this::prepare));
@@ -54,9 +54,11 @@ public class NameExtractorVisitorTest implements TestSuite {
 	private NameExtractorVisitor underTest;
 
 	private void prepare() {
-		when(processingEnv.getTypeUtils()).thenReturn(types);
-		when(processingEnv.getMessager()).thenReturn(messager);
-		underTest = new NameExtractorVisitor(processingEnv);
+		processingEnv = generateMockitoProcessingEnvironment();
+		roundEnv = generateMockitoRoundEnvironment();
+		when(processingEnv.getElementUtils().getTypeElement(Mockito.anyString())).thenReturn(typeElement);
+		RoundMirror rm = new RoundMirror(roundEnv, processingEnv);
+		underTest = new NameExtractorVisitor(rm);
 	}
 
 	@Test(fastFail = false)

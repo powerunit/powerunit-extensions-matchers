@@ -22,14 +22,13 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 import java.util.Optional;
 import java.util.function.Function;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.util.SimpleElementVisitor8;
 import javax.tools.Diagnostic.Kind;
 
+import ch.powerunit.extensions.matchers.common.AbstractSimpleElementVisitor;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescriptionMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescriptionProvider;
@@ -39,16 +38,15 @@ import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescription
  *
  */
 public class ProvidesMatchersSubElementVisitor extends
-		SimpleElementVisitor8<Optional<AbstractFieldDescription>, ProvidesMatchersAnnotatedElementFieldMatcherMirror> {
+		AbstractSimpleElementVisitor<Optional<AbstractFieldDescription>, ProvidesMatchersAnnotatedElementFieldMatcherMirror, RoundMirror> {
 
 	private final Function<Element, Boolean> removeFromIgnoreList;
 	private final NameExtractorVisitor extractNameVisitor;
-	private final ProcessingEnvironment processingEnv;
 
 	public ProvidesMatchersSubElementVisitor(RoundMirror roundMirror) {
-		this.processingEnv = roundMirror.getProcessingEnv();
+		super(roundMirror);
 		this.removeFromIgnoreList = roundMirror::removeFromIgnoreList;
-		this.extractNameVisitor = new NameExtractorVisitor(processingEnv);
+		this.extractNameVisitor = new NameExtractorVisitor(roundMirror);
 	}
 
 	public Optional<AbstractFieldDescription> removeIfNeededAndThenReturn(
@@ -61,7 +59,7 @@ public class ProvidesMatchersSubElementVisitor extends
 	public Optional<AbstractFieldDescription> visitVariable(VariableElement e,
 			ProvidesMatchersAnnotatedElementFieldMatcherMirror p) {
 		if (e.getModifiers().contains(Modifier.PUBLIC) && !e.getModifiers().contains(Modifier.STATIC)) {
-			String fieldName = e.getSimpleName().toString();
+			String fieldName = getSimpleName(e);
 			return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, fieldName);
 		}
 		generateIfNeededWarningForNotSupportedElementAndRemoveIt("Check that this field is public and not static", e);
@@ -73,7 +71,7 @@ public class ProvidesMatchersSubElementVisitor extends
 			ProvidesMatchersAnnotatedElementFieldMatcherMirror p) {
 		if (e.getModifiers().contains(Modifier.PUBLIC) && e.getParameters().size() == 0
 				&& !e.getModifiers().contains(Modifier.STATIC)) {
-			String simpleName = e.getSimpleName().toString();
+			String simpleName = getSimpleName(e);
 			if (simpleName.matches("^((get)|(is)).*")) {
 				return visiteExecutableGet(e, "^(get)|(is)", p);
 			}
@@ -85,14 +83,14 @@ public class ProvidesMatchersSubElementVisitor extends
 
 	private void generateIfNeededWarningForNotSupportedElementAndRemoveIt(String description, Element e) {
 		if (removeFromIgnoreList.apply(e)) {
-			processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
+			getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING,
 					"One of the annotation is not supported as this location ; " + description, e);
 		}
 	}
 
 	private Optional<AbstractFieldDescription> visiteExecutableGet(ExecutableElement e, String prefix,
 			ProvidesMatchersAnnotatedElementFieldMatcherMirror p) {
-		String methodName = e.getSimpleName().toString();
+		String methodName = getSimpleName(e);
 		String fieldNameDirect = methodName.replaceFirst(prefix, "");
 		String fieldName = fieldNameDirect.substring(0, 1).toLowerCase() + fieldNameDirect.substring(1);
 		return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, fieldName);

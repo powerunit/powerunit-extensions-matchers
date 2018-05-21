@@ -1,0 +1,40 @@
+/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
+ */
+package ch.powerunit.extensions.matchers.provideprocessor.dsl.lang;
+
+public interface DSLMethodArgument extends DSLMethodImplementation {
+
+	DSLMethodArgument addOneArgument(String type, String name);
+
+	default DSLMethodImplementation withoutArgument() {
+		return this;
+	}
+
+	default DSLMethodImplementation withOneArgument(String type, String name) {
+		return addOneArgument(type, name);
+	}
+
+	default DSLMethodImplementation withArguments(String arguments[][]) {
+		for (String a[] : arguments) {
+			addOneArgument(a[0], a[1]);
+		}
+		return this;
+	}
+}

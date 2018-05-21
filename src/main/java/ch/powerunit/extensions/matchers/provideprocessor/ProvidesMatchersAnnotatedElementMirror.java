@@ -20,6 +20,7 @@
 package ch.powerunit.extensions.matchers.provideprocessor;
 
 import static ch.powerunit.extensions.matchers.common.CommonUtils.addPrefix;
+import static ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod.of;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
 
@@ -39,8 +40,7 @@ import javax.tools.Diagnostic.Kind;
 
 import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.common.FileObjectHelper;
-import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
-import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
 
 public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnnotatedElementMatcherMirror {
 
@@ -51,18 +51,17 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 		boolean hasParentInSameRound = roundMirror.isInSameRound(typeElement);
 		List<Supplier<DSLMethod>> tmp = new ArrayList<>(
 				Arrays.asList(this::generateDefaultDSLStarter, this::generateDefaultForChainingDSLStarter));
-		if (fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent()) {
+		if (fullyQualifiedNameOfSuperClassOfClassAnnotated.isPresent()) {
 			tmp.add(this::generateParentDSLStarter);
 			if (hasParentInSameRound) {
 				tmp.add(this::generateParentValueDSLStarter);
-				if (((TypeElement) roundMirror.getProcessingEnv().getTypeUtils()
-						.asElement(typeElementForClassAnnotatedWithProvideMatcher.getSuperclass())).getTypeParameters()
-								.isEmpty()) {
+				if (((TypeElement) roundMirror.getProcessingEnv().getTypeUtils().asElement(element.getSuperclass()))
+						.getTypeParameters().isEmpty()) {
 					tmp.add(this::generateParentInSameRoundWithChaningDSLStarter);
 				}
 			}
 		} else {
-			tmp.add(this::generateNoParentValueDSLStarter);
+			tmp.add(() -> generatParentValueDSLStarter(""));
 		}
 		tmp.addAll(Optional.ofNullable(getDSLExtension()).orElseGet(Collections::emptyList).stream()
 				.map(t -> t.getDSLMethodFor(() -> this)).flatMap(Collection::stream).collect(toList()));
@@ -72,7 +71,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 
 	public Collection<DSLMethod> process() {
 		RoundMirror rm = roundMirror;
-		Element te = typeElementForClassAnnotatedWithProvideMatcher;
+		Element te = element;
+		String simpleName = getSimpleNameOfGeneratedClass();
 		Collection<DSLMethod> results = new ArrayList<>();
 		FileObjectHelper.processFileWithIOException(
 				() -> rm.getProcessingEnv().getFiler().createSourceFile(getFullyQualifiedNameOfGeneratedClass(), te),
@@ -82,11 +82,11 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 					wjfo.println(generateMainJavaDoc());
 					wjfo.println("@javax.annotation.Generated(value=\""
 							+ ProvidesMatchersAnnotationsProcessor.class.getName() + "\",date=\""
-							+ Instant.now().toString() + "\",comments=" + CommonUtils.toJavaSyntax(getComments())
-							+ ")");
-					wjfo.println("public final class " + getSimpleNameOfGeneratedClass() + " {");
+							+ Instant.now().toString() + "\",comments="
+							+ CommonUtils.toJavaSyntax(annotation.get().comments()) + ")");
+					wjfo.println("public final class " + simpleName + " {");
 					wjfo.println();
-					wjfo.println("  private " + getSimpleNameOfGeneratedClass() + "() {}");
+					wjfo.println("  private " + simpleName + "() {}");
 					wjfo.println();
 					wjfo.println(generateMatchers());
 					wjfo.println();
@@ -98,15 +98,9 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 					tmp.stream().map(m -> addPrefix("  ", m.asStaticImplementation())).forEach(wjfo::println);
 					wjfo.println("}");
 					results.addAll(tmp);
-				} , e -> rm.getProcessingEnv().getMessager().printMessage(Kind.ERROR,
+				}, e -> rm.getProcessingEnv().getMessager().printMessage(Kind.ERROR,
 						"Unable to create the file containing the target class because of " + e, te));
 		return results;
-	}
-
-	public String generateMainJavaDoc() {
-		return String.format(
-				"/**\n* This class provides matchers for the class {@link %1$s}.\n * \n * @see %1$s The class for which matchers are provided.\n */\n",
-				fullyQualifiedNameOfClassAnnotatedWithProvideMatcher);
 	}
 
 	public Collection<DSLMethod> generateDSLStarter() {
@@ -116,7 +110,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	public String getDefaultStarterBody(boolean withParentBuilder) {
 		String targetImpl = withParentBuilder ? getSimpleNameOfGeneratedImplementationMatcherWithGenericParent()
 				: getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent();
-		boolean withSuper = fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.isPresent();
+		boolean withSuper = fullyQualifiedNameOfSuperClassOfClassAnnotated.isPresent();
 		if (withParentBuilder) {
 			return withSuper ? ("return new " + targetImpl + "(org.hamcrest.Matchers.anything(),parentBuilder);")
 					: ("return new " + targetImpl + "(parentBuilder);");
@@ -126,73 +120,68 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 		}
 	}
 
+	public String generateDefaultJavaDocWithDSLStarter(Optional<String> param, String returnDescription,
+			boolean withParent) {
+		return generateDefaultJavaDoc(Optional.of(getJavadocForDSLStarter()), param, returnDescription, withParent);
+	}
+
+	public String generateDefaultJavaDocWithoutDSLStarter(Optional<String> param, String returnDescription,
+			boolean withParent) {
+		return generateDefaultJavaDoc(Optional.empty(), param, returnDescription, withParent);
+	}
+
 	public DSLMethod generateDefaultDSLStarter() {
-		return new DSLMethod(
-				generateDefaultJavaDoc(
-						Optional.of(
-								"The returned builder (which is also a Matcher), at this point accepts any object that is a "
-										+ getDefaultLinkForAnnotatedClass() + "."),
-						Optional.empty(), Optional.of("the DSL matcher"), true, false),
-				fullGeneric + " " + getFullyQualifiedNameOfGeneratedClass() + "."
-						+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " " + methodShortClassName
-						+ "With",
-				getDefaultStarterBody(false));
+		return of(fullGeneric + " " + getFullyQualifiedNameOfGeneratedClass() + "."
+				+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " " + methodShortClassName + "With")
+						.withImplementation(getDefaultStarterBody(false))
+						.withJavadoc(generateDefaultJavaDocWithDSLStarter(Optional.empty(), "the DSL matcher", false));
+	}
+
+	private String getJavadocForDSLStarter() {
+		return "The returned builder (which is also a Matcher), at this point accepts any object that is a "
+				+ getDefaultLinkForAnnotatedClass() + ".";
 	}
 
 	public DSLMethod generateDefaultForChainingDSLStarter() {
-		return new DSLMethod(
-				generateDefaultJavaDoc(
-						Optional.of(
-								"The returned builder (which is also a Matcher), at this point accepts any object that is a "
-										+ getDefaultLinkForAnnotatedClass() + "."),
-						Optional.of("parentBuilder the parentBuilder."), Optional.of("the DSL matcher"), true, true),
-				getFullGenericParent() + " " + getFullyQualifiedNameOfGeneratedClass() + "."
-						+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + " " + methodShortClassName
-						+ "WithParent",
-				new String[] { "_PARENT", "parentBuilder" }, getDefaultStarterBody(true));
+		return of(getFullGenericParent() + " " + getFullyQualifiedNameOfGeneratedClass() + "."
+				+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + " " + methodShortClassName
+				+ "WithParent").withOneArgument("_PARENT", "parentBuilder")
+						.withImplementation(getDefaultStarterBody(true)).withJavadoc(
+								generateDefaultJavaDocWithDSLStarter(Optional.of("parentBuilder the parentBuilder."),
+										"the DSL matcher", true));
 	}
 
 	public DSLMethod generateParentDSLStarter() {
 		String mscn = methodShortClassName;
 		String fqngc = getFullyQualifiedNameOfGeneratedClass();
-		return new DSLMethod(
-				generateDefaultJavaDoc(Optional.empty(), Optional.of("matcherOnParent the matcher on the parent data."),
-						Optional.of("the DSL matcher"), true, false),
-				fullGeneric + " " + fqngc + "." + getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " "
-						+ mscn + "With",
-				new String[] {
-						"org.hamcrest.Matcher<? super "
-								+ fullyQualifiedNameOfSuperClassOfClassAnnotatedWithProvideMatcher.get() + ">",
-								"matcherOnParent" },
-				"return " + fqngc + "." + mscn + "With(matcherOnParent);");
+		return of(fullGeneric + " " + fqngc + "." + getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + " "
+				+ mscn + "With").withOneArgument(
+						"org.hamcrest.Matcher<? super " + fullyQualifiedNameOfSuperClassOfClassAnnotated.get() + ">",
+						"matcherOnParent").withImplementation("return " + fqngc + "." + mscn + "With(matcherOnParent);")
+						.withJavadoc(generateDefaultJavaDocWithoutDSLStarter(
+								Optional.of("matcherOnParent the matcher on the parent data."), "the DSL matcher",
+								false));
 	}
 
 	public DSLMethod generatParentValueDSLStarter(String argumentForParentBuilder) {
 		String genericNoParent = getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent();
-		String javadoc = generateDefaultJavaDoc(Optional.empty(),
-				Optional.of("other the other object to be used as a reference."), Optional.of("the DSL matcher"), true,
-				false);
+		String javadoc = generateDefaultJavaDocWithoutDSLStarter(
+				Optional.of("other the other object to be used as a reference."), "the DSL matcher", false);
 		List<String> lines = new ArrayList<>();
 		lines.add(genericNoParent + " m=new " + getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent() + "("
 				+ argumentForParentBuilder + ");");
 		lines.addAll(fields.stream().map(f -> "    " + f.getFieldCopy("m", "other") + ";").collect(toList()));
 		lines.add("return m;");
-		return new DSLMethod(javadoc,
-				fullGeneric + " " + getFullyQualifiedNameOfGeneratedClass() + "." + genericNoParent + " "
-						+ methodShortClassName + "WithSameValue",
-				new String[] { getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(), "other" },
-				lines.toArray(new String[0]));
-	}
-
-	public DSLMethod generateNoParentValueDSLStarter() {
-		return generatParentValueDSLStarter("");
+		return of(fullGeneric + " " + getFullyQualifiedNameOfGeneratedClass() + "." + genericNoParent + " "
+				+ methodShortClassName + "WithSameValue")
+						.withOneArgument(getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(), "other")
+						.withImplementation(lines).withJavadoc(javadoc);
 	}
 
 	public ProvidesMatchersAnnotatedElementMirror getParentMirror() {
 		RoundMirror rm = roundMirror;
-		return rm.getByName(((TypeElement) rm.getProcessingEnv().getTypeUtils()
-				.asElement(typeElementForClassAnnotatedWithProvideMatcher.getSuperclass())).getQualifiedName()
-						.toString());
+		return rm.getByName(getQualifiedName(
+				((TypeElement) rm.getProcessingEnv().getTypeUtils().asElement(element.getSuperclass()))));
 	}
 
 	public DSLMethod generateParentValueDSLStarter() {
@@ -206,28 +195,14 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 		String implGenericNoParent = getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent();
 		ProvidesMatchersAnnotatedElementMirror parentMirror = getParentMirror();
 		String pmfqngc = parentMirror.getFullyQualifiedNameOfGeneratedClass();
-		return new DSLMethod(
-				generateDefaultJavaDoc(Optional.empty(), Optional.empty(), Optional.of("the DSL matcher"), true, false),
-				fullGeneric + " " + pmfqngc + "." + parentMirror.simpleNameOfGeneratedInterfaceMatcher
-						+ genericForChaining + " " + methodShortClassName + "WithParent",
-				new String[] {
+		String parentSimpleName = parentMirror.simpleNameOfGeneratedInterfaceMatcher;
+		return of(fullGeneric + " " + pmfqngc + "." + parentSimpleName + genericForChaining + " " + methodShortClassName
+				+ "WithParent").withImplementation(
 						implGenericNoParent + " m=new " + implGenericNoParent + "(org.hamcrest.Matchers.anything());",
-						pmfqngc + "." + parentMirror.simpleNameOfGeneratedInterfaceMatcher + " tmp = " + pmfqngc + "."
-								+ parentMirror.methodShortClassName + "WithParent(m);",
-						"m._parent = new SuperClassMatcher(tmp);", "return tmp;" });
-	}
-
-	public GeneratedMatcher asXml() {
-		GeneratedMatcher gm = new GeneratedMatcher();
-		gm.setFullyQualifiedNameGeneratedClass(getFullyQualifiedNameOfGeneratedClass());
-		gm.setFullyQualifiedNameInputClass(fullyQualifiedNameOfClassAnnotatedWithProvideMatcher);
-		gm.setSimpleNameGeneratedClass(getSimpleNameOfGeneratedClass());
-		gm.setSimpleNameInputClass(simpleNameOfClassAnnotatedWithProvideMatcher);
-		gm.setDslMethodNameStart(methodShortClassName);
-		gm.setGeneratedMatcherField(
-				fields.stream().map(AbstractFieldDescription::asGeneratedMatcherField).collect(toList()));
-		gm.setMirror(this);
-		return gm;
+						pmfqngc + "." + parentSimpleName + " tmp = " + pmfqngc + "." + parentMirror.methodShortClassName
+								+ "WithParent(m);",
+						"m._parent = new SuperClassMatcher(tmp);", "return tmp;").withJavadoc(
+								generateDefaultJavaDoc(Optional.empty(), Optional.empty(), "the DSL matcher", false));
 	}
 
 }

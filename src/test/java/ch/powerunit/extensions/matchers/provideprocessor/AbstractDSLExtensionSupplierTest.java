@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 
 import ch.powerunit.Test;
 import ch.powerunit.TestSuite;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.AbstractDSLExtensionSupplier;
 
 public class AbstractDSLExtensionSupplierTest implements TestSuite {

@@ -79,8 +79,7 @@ public class DefaultFieldDescriptionTest implements TestSuite {
 		when(roundMirror.isInSameRound(Mockito.any())).thenReturn(false);
 		when(provideMatchersAnnotatedElementMirror.getFullGeneric()).thenReturn("");
 		when(provideMatchersAnnotatedElementMirror.getGeneric()).thenReturn("");
-		when(provideMatchersAnnotatedElementMirror.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher())
-				.thenReturn("fqn.sn");
+		when(provideMatchersAnnotatedElementMirror.getFullyQualifiedNameOfClassAnnotated()).thenReturn("fqn.sn");
 		when(processingEnv.getElementUtils()).thenReturn(elements);
 		when(processingEnv.getTypeUtils()).thenReturn(types);
 		when(primitiveType.getKind()).thenReturn(TypeKind.BOOLEAN);
@@ -139,7 +138,8 @@ public class DefaultFieldDescriptionTest implements TestSuite {
 		DefaultFieldDescription undertest = new DefaultFieldDescription(() -> provideMatchersAnnotatedElementMirror,
 				new FieldDescriptionMirror(() -> provideMatchersAnnotatedElementMirror, "field", "boolean",
 						executableElement));
-		assertThat(undertest.getFieldCopy("a", "b")).is("a.field((org.hamcrest.Matcher)org.hamcrest.Matchers.is((java.lang.Object)b.field()))");
+		assertThat(undertest.getFieldCopy("a", "b"))
+				.is("a.field((org.hamcrest.Matcher)org.hamcrest.Matchers.is((java.lang.Object)b.field()))");
 	}
 
 	@Test

@@ -25,9 +25,9 @@ import java.util.function.Supplier;
 
 import javax.lang.model.type.TypeMirror;
 
-import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.AutomatedExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.CollectionFieldDescription;

@@ -6,17 +6,19 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import ch.powerunit.Rule;
 import ch.powerunit.Test;
 import ch.powerunit.TestRule;
-import ch.powerunit.TestSuite;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.TestSuiteSupport;
 
-public class ProvideMatchersMirrorTest implements TestSuite {
+public class ProvideMatchersMirrorTest implements TestSuiteSupport {
 
 	@Mock
 	private ProvideMatchers provideMatchers;
@@ -28,6 +30,9 @@ public class ProvideMatchersMirrorTest implements TestSuite {
 	private Name qualifiedNameTypeElement;
 
 	@Mock
+	private TypeMirror typeMirror;
+
+	@Mock
 	private Name simpleNameTypeElement;
 
 	@Mock
@@ -36,14 +41,19 @@ public class ProvideMatchersMirrorTest implements TestSuite {
 	@Mock
 	private Name qualifiedNamePackageElement;
 
-	@Mock
 	private ProcessingEnvironment processingEnv;
 
-	@Mock
 	private Elements elements;
 
+	private RoundMirror roundMirror;
+
 	private void prepare() {
-		when(processingEnv.getElementUtils()).thenReturn(elements);
+		processingEnv = generateMockitoProcessingEnvironment();
+		elements = processingEnv.getElementUtils();
+		TypeMirror objectTypeMirror = elements.getTypeElement("java.lang.Object").asType();
+		when(typeElement.getSuperclass()).thenReturn(objectTypeMirror);
+		when(elements.getTypeElement(Mockito.anyString())).thenReturn(typeElement);
+		when(typeElement.asType()).thenReturn(typeMirror);
 		when(typeElement.getQualifiedName()).thenReturn(qualifiedNameTypeElement);
 		when(qualifiedNameTypeElement.toString()).thenReturn("fqn.sn");
 		when(typeElement.getSimpleName()).thenReturn(simpleNameTypeElement);
@@ -52,6 +62,7 @@ public class ProvideMatchersMirrorTest implements TestSuite {
 		when(packageElement.getQualifiedName()).thenReturn(qualifiedNamePackageElement);
 		when(qualifiedNamePackageElement.toString()).thenReturn("fqn");
 		when(typeElement.getAnnotation(ProvideMatchers.class)).thenReturn(provideMatchers);
+		roundMirror = new RoundMirror(generateMockitoRoundEnvironment(), processingEnv);
 	}
 
 	@Rule
@@ -62,20 +73,7 @@ public class ProvideMatchersMirrorTest implements TestSuite {
 		when(provideMatchers.comments()).thenReturn("");
 		when(provideMatchers.matchersClassName()).thenReturn("");
 		when(provideMatchers.matchersPackageName()).thenReturn("");
-		ProvideMatchersMirror mirror = new ProvideMatchersMirror(processingEnv, typeElement);
-		assertThat(mirror.getComments()).is("");
-		assertThat(mirror.getFullyQualifiedNameOfGeneratedClass()).is("fqn.snMatchers");
-		assertThat(mirror.getPackageNameOfGeneratedClass()).is("fqn");
-		assertThat(mirror.getSimpleNameOfGeneratedClass()).is("snMatchers");
-	}
-
-	@Test
-	public void testAnnotationComments() {
-		when(provideMatchers.comments()).thenReturn("x");
-		when(provideMatchers.matchersClassName()).thenReturn("");
-		when(provideMatchers.matchersPackageName()).thenReturn("");
-		ProvideMatchersMirror mirror = new ProvideMatchersMirror(processingEnv, typeElement);
-		assertThat(mirror.getComments()).is("x");
+		ProvideMatchersMirror mirror = new ProvideMatchersMirror(roundMirror, typeElement);
 		assertThat(mirror.getFullyQualifiedNameOfGeneratedClass()).is("fqn.snMatchers");
 		assertThat(mirror.getPackageNameOfGeneratedClass()).is("fqn");
 		assertThat(mirror.getSimpleNameOfGeneratedClass()).is("snMatchers");
@@ -86,8 +84,7 @@ public class ProvideMatchersMirrorTest implements TestSuite {
 		when(provideMatchers.comments()).thenReturn("");
 		when(provideMatchers.matchersClassName()).thenReturn("Name");
 		when(provideMatchers.matchersPackageName()).thenReturn("");
-		ProvideMatchersMirror mirror = new ProvideMatchersMirror(processingEnv, typeElement);
-		assertThat(mirror.getComments()).is("");
+		ProvideMatchersMirror mirror = new ProvideMatchersMirror(roundMirror, typeElement);
 		assertThat(mirror.getFullyQualifiedNameOfGeneratedClass()).is("fqn.Name");
 		assertThat(mirror.getPackageNameOfGeneratedClass()).is("fqn");
 		assertThat(mirror.getSimpleNameOfGeneratedClass()).is("Name");
@@ -98,8 +95,7 @@ public class ProvideMatchersMirrorTest implements TestSuite {
 		when(provideMatchers.comments()).thenReturn("");
 		when(provideMatchers.matchersClassName()).thenReturn("");
 		when(provideMatchers.matchersPackageName()).thenReturn("package");
-		ProvideMatchersMirror mirror = new ProvideMatchersMirror(processingEnv, typeElement);
-		assertThat(mirror.getComments()).is("");
+		ProvideMatchersMirror mirror = new ProvideMatchersMirror(roundMirror, typeElement);
 		assertThat(mirror.getFullyQualifiedNameOfGeneratedClass()).is("package.snMatchers");
 		assertThat(mirror.getPackageNameOfGeneratedClass()).is("package");
 		assertThat(mirror.getSimpleNameOfGeneratedClass()).is("snMatchers");
@@ -110,8 +106,7 @@ public class ProvideMatchersMirrorTest implements TestSuite {
 		when(provideMatchers.comments()).thenReturn("");
 		when(provideMatchers.matchersClassName()).thenReturn("name");
 		when(provideMatchers.matchersPackageName()).thenReturn("pck");
-		ProvideMatchersMirror mirror = new ProvideMatchersMirror(processingEnv, typeElement);
-		assertThat(mirror.getComments()).is("");
+		ProvideMatchersMirror mirror = new ProvideMatchersMirror(roundMirror, typeElement);
 		assertThat(mirror.getFullyQualifiedNameOfGeneratedClass()).is("pck.name");
 		assertThat(mirror.getPackageNameOfGeneratedClass()).is("pck");
 		assertThat(mirror.getSimpleNameOfGeneratedClass()).is("name");

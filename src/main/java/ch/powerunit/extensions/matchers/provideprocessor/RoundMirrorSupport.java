@@ -19,30 +19,10 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
+import ch.powerunit.extensions.matchers.common.AbstractRoundMirrorSupport;
 
 @FunctionalInterface
-public interface RoundMirrorSupport {
-	RoundMirror getRoundMirror();
-
-	default ProcessingEnvironment getProcessingEnv() {
-		return getRoundMirror().getProcessingEnv();
-	}
-
-	default TypeMirror getMirrorFor(String name) {
-		return getProcessingEnv().getElementUtils().getTypeElement(name).asType();
-	}
-
-	default boolean isSameType(TypeElement fromField, TypeMirror compareWith) {
-		return fromField != null && getProcessingEnv().getTypeUtils().isSameType(compareWith, fromField.asType());
-	}
-
-	default boolean isAssignableWithErasure(TypeElement fromField, TypeMirror compareWith) {
-		return fromField != null && getProcessingEnv().getTypeUtils().isAssignable(fromField.asType(),
-				getProcessingEnv().getTypeUtils().erasure(compareWith));
-	}
+public interface RoundMirrorSupport extends AbstractRoundMirrorSupport<RoundMirror>{
 
 	default ProvidesMatchersAnnotatedElementMirror getByName(String name) {
 		return getRoundMirror().getByName(name);

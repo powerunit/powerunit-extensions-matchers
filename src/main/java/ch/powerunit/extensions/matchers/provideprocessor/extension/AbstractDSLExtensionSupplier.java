@@ -1,6 +1,7 @@
 package ch.powerunit.extensions.matchers.provideprocessor.extension;
 
 import static java.util.stream.Collectors.toList;
+import static ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod.of;
 import static java.util.stream.Collectors.joining;
 
 import java.util.Arrays;
@@ -8,7 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
 
-import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
 
 public abstract class AbstractDSLExtensionSupplier {
 	protected final String targetName;
@@ -46,8 +47,17 @@ public abstract class AbstractDSLExtensionSupplier {
 		return targetMethodName + "(" + name + ")";
 	}
 
+	public String[] generateSeveralWithImplementation(String matcher, String... parameters) {
+		return new String[] { "java.util.List<org.hamcrest.Matcher<" + targetName
+				+ ">> tmp = new java.util.ArrayList<>(java.util.Arrays.asList(" + getSeveralWith(parameters) + "));",
+				"tmp.addAll(java.util.Arrays.stream(last).map(v->" + targetMethodName
+						+ "(v)).collect(java.util.stream.Collectors.toList()));",
+				"return " + matcher + "(tmp.toArray(new org.hamcrest.Matcher[0]));" };
+	}
+
 	public DSLMethod generateSimpleDSLMethodFor(String javadoc[], String containerMatcher, String... parameters) {
-		return new DSLMethod(javadoc, returnType + " " + methodName, getSeveralParameter(false, parameters),
-				"return " + containerMatcher + "(" + getSeveralWith(parameters) + ");");
+		return of(returnType + " " + methodName).withArguments(getSeveralParameter(false, parameters))
+				.withImplementation("return " + containerMatcher + "(" + getSeveralWith(parameters) + ");")
+				.withJavadoc(javadoc);
 	}
 }

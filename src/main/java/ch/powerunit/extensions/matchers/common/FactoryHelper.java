@@ -7,6 +7,11 @@ import java.util.stream.Stream;
 
 import javax.annotation.processing.AbstractProcessor;
 
+/**
+ * These are some method to generate factory methods.
+ * @author borettim
+ *
+ */
 public final class FactoryHelper {
 	private FactoryHelper() {
 	}

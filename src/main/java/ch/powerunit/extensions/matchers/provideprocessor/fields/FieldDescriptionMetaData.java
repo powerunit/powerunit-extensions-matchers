@@ -35,7 +35,7 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 	public static final String SEE_TEXT_FOR_IS_MATCHER = "org.hamcrest.Matchers#is(java.lang.Object)";
 	public static final String SEE_TEXT_FOR_HAMCREST_MATCHER = "org.hamcrest.Matchers The main class from hamcrest that provides default matchers.";
 	public static final String MATCHERS = "org.hamcrest.Matchers";
-
+	
 	protected final String generic;
 	protected final String defaultReturnMethod;
 	protected final String fullyQualifiedNameMatcherInSameRound;
@@ -55,7 +55,8 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 		this.mirror = mirror;
 		RoundMirror roundMirror = containingElementMirror.getRoundMirror();
 		TypeMirror fieldTypeMirror = (mirror.getFieldElement() instanceof ExecutableElement)
-				? ((ExecutableElement) mirror.getFieldElement()).getReturnType() : mirror.getFieldElement().asType();
+				? ((ExecutableElement) mirror.getFieldElement()).getReturnType()
+				: mirror.getFieldElement().asType();
 		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
 		this.generic = computeGenericInformation(fieldTypeMirror);
 		this.fullyQualifiedNameMatcherInSameRound = mirror.computeFullyQualifiedNameMatcherInSameRound(roundMirror);
@@ -70,11 +71,12 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 	}
 
 	public String getFieldCopyDefault(String lhs, String rhs) {
-		return lhs + "." + getFieldName() + "((org.hamcrest.Matcher)" + MATCHERS + ".is((java.lang.Object)" + rhs + "." + getFieldAccessor() + "))";
+		return lhs + "." + getFieldName() + "((org.hamcrest.Matcher)" + MATCHERS + ".is((java.lang.Object)" + rhs + "."
+				+ getFieldAccessor() + "))";
 	}
 
 	public String getSameValueMatcherFor(String target) {
-		String name = mirror.getFieldTypeAsTypeElement().getSimpleName().toString();
+		String name = getSimpleName(mirror.getFieldTypeAsTypeElement());
 		String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
 		return fullyQualifiedNameMatcherInSameRound + "." + lname + "WithSameValue(" + target + ")";
 	}
