@@ -19,7 +19,8 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
-import static java.util.stream.Collectors.joining;
+import static ch.powerunit.extensions.matchers.common.ListJoining.joinWithMapperAndDelimiter;
+import static ch.powerunit.extensions.matchers.common.ListJoining.nlSeparated;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,9 +30,18 @@ import java.util.List;
 import java.util.Objects;
 
 import ch.powerunit.extensions.matchers.AddToMatcher;
+import ch.powerunit.extensions.matchers.common.ListJoining;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 
 public abstract class AbstractFieldDescription extends FieldDescriptionMetaData {
+
+	private static final ListJoining<FieldDSLMethod> IMPLEMENTATION_JOINER = joinWithMapperAndDelimiter(
+			FieldDSLMethod::asImplementationMethod, "\n");
+
+	private static final ListJoining<FieldDSLMethod> INTERFACE_JOINER = joinWithMapperAndDelimiter(
+			FieldDSLMethod::asDSLMethod, "\n");
+
+	private static final ListJoining<String> STRING_JOINER = nlSeparated();
 
 	private final List<FieldDSLMethod> dsl;
 
@@ -50,7 +60,7 @@ public abstract class AbstractFieldDescription extends FieldDescriptionMetaData 
 		AddToMatcher addToMatchers[] = mirror.getFieldElement().getAnnotationsByType(AddToMatcher.class);
 		Arrays.stream(addToMatchers)
 				.map(a -> FieldDSLMethodBuilder.of(this).withDeclaration(a.suffix(), a.argument()).withDefaultJavaDoc()
-						.havingImplementation(Arrays.stream(a.body()).collect(joining("\n")) + "\nreturn this;"))
+						.havingImplementation(STRING_JOINER.asString(a.body()) + "\nreturn this;"))
 				.filter(Objects::nonNull).forEach(tmp::add);
 		return tmp;
 	}
@@ -58,11 +68,11 @@ public abstract class AbstractFieldDescription extends FieldDescriptionMetaData 
 	protected abstract Collection<FieldDSLMethod> getFieldDslMethodFor();
 
 	public String getImplementationInterface() {
-		return dsl.stream().map(FieldDSLMethod::asImplementationMethod).collect(joining("\n"));
+		return IMPLEMENTATION_JOINER.asString(dsl);
 	}
 
 	public String getDslInterface() {
-		return dsl.stream().map(FieldDSLMethod::asDSLMethod).collect(joining("\n"));
+		return INTERFACE_JOINER.asString(dsl);
 	}
 
 }

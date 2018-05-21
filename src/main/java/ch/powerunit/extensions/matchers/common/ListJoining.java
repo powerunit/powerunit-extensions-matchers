@@ -38,8 +38,11 @@ import ch.powerunit.extensions.matchers.common.lang.ListJoiningMapper;
  */
 public final class ListJoining<E> {
 
-	public static final ListJoining<Object> COMMA_SEPARATED_WITH_TOSTRING_NO_PREFIX_NO_SUFFIX = accepting(Object.class)
-			.withToStringMapper().withCommaDelimiter().withoutSuffixAndPrefix();
+	public static final ListJoining<Object> COMMA_SEPARATED = accepting(Object.class).withToStringMapper()
+			.withCommaDelimiter().withoutSuffixAndPrefix();
+
+	public static final ListJoining<Object> NL_SEPARATED = accepting(Object.class).withToStringMapper()
+			.withDelimiter("\n").withoutSuffixAndPrefix();
 
 	private final Function<E, String> mapper;
 
@@ -71,9 +74,25 @@ public final class ListJoining<E> {
 		}
 
 	}
+	
+	public static <E> ListJoining<E> nlSeparated() {
+		return (ListJoining<E>) NL_SEPARATED;
+	}
+	
+	public static <E> ListJoining<E> commaSeparated() {
+		return (ListJoining<E>) COMMA_SEPARATED;
+	}
 
 	public static <E> ListJoiningMapper<E> accepting(Class<E> clazz) {
 		return new Builder<E>();
+	}
+
+	public static <E> ListJoiningDelimiter<E> joinWithMapper(Function<E, String> mapper) {
+		return new Builder<E>().withMapper(mapper);
+	}
+
+	public static <E> ListJoining<E> joinWithMapperAndDelimiter(Function<E, String> mapper, String delimiter) {
+		return new Builder<E>().withMapper(mapper).withDelimiter(delimiter).withoutSuffixAndPrefix();
 	}
 
 	public ListJoining(Function<E, String> mapper, String delimiter, UnaryOperator<String> finalize) {
