@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ch.powerunit.extensions.matchers.common.ListJoining;
+
 /**
  * @author borettim
  *
@@ -32,13 +34,22 @@ import java.util.regex.Pattern;
 public class DSLMethod {
 	public static final Pattern DECLARATION_PARSER = Pattern.compile("^\\s*.*\\s+([0-9A-Za-z_]+)\\s*$");
 
+	private static final ListJoining<String> JAVADOC_JOIN = ListJoining.joinWithMapper((String s) -> " * " + s)
+			.withDelimiter("\n").withPrefixAndSuffix("/**\n", "\n */\n");
+
+	private static final ListJoining<String[]> ARGUMENTS_JOIN = ListJoining
+			.joinWithMapper((String a[]) -> a[0] + " " + a[1]).withCommaDelimiter().withoutSuffixAndPrefix();
+
+	private static final ListJoining<String[]> ARGUMENTNAMES_JOIN = ListJoining.joinWithMapper((String a[]) -> a[1])
+			.withCommaDelimiter().withoutSuffixAndPrefix();
+
 	private final String javadoc;
 	private final String fullDeclaration;
 	private final String implementation;
 	private final String fullMethodName;
 
 	private static String cleanJavadoc(String javadoc[]) {
-		return "/**\n" + Arrays.stream(javadoc).map(s -> " * " + s).collect(joining("\n")) + "\n */\n";
+		return JAVADOC_JOIN.asString(javadoc);
 	}
 
 	public DSLMethod(String javadoc[], String declaration, String arguments[], String implementation) {
@@ -70,8 +81,8 @@ public class DSLMethod {
 	}
 
 	public DSLMethod(String javadoc, String declaration, String arguments[][], String implementation[]) {
-		String realArguments = Arrays.stream(arguments).map(a -> a[0] + " " + a[1]).collect(joining(","));
-		String realArgumentsName = Arrays.stream(arguments).map(a -> a[1]).collect(joining(","));
+		String realArguments = ARGUMENTS_JOIN.asString(arguments);
+		String realArgumentsName = ARGUMENTNAMES_JOIN.asString(arguments);
 		Matcher m = DECLARATION_PARSER.matcher(declaration);
 		if (!m.matches()) {
 			throw new IllegalArgumentException("Unable to parse the received declaration");
