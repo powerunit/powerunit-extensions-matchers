@@ -22,6 +22,7 @@ import ch.powerunit.Test;
 import ch.powerunit.TestRule;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.TestSuiteSupport;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
 
 public class ProvidesMatchersAnnotatedElementMirrorTest implements TestSuiteSupport {
 	@Rule

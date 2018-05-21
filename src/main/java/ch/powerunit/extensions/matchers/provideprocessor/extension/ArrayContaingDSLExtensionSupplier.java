@@ -19,12 +19,14 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.extension;
 
+import static ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod.of;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Supplier;
 
-import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
 
 public class ArrayContaingDSLExtensionSupplier extends AbstractDSLExtensionSupplier {
 
@@ -77,20 +79,20 @@ public class ArrayContaingDSLExtensionSupplier extends AbstractDSLExtensionSuppl
 	}
 
 	public DSLMethod generateArrayContainsN() {
-		return new DSLMethod(
-				new String[] { getJavaDocDescription(),
-						"@param first the first element contained inside the target array",
-						"@param second the second element contained inside the target array",
-						"@param third the third element contained inside the target array",
-						"@param last the next element", "@return the Matcher." },
-				returnType + " " + methodName, getSeveralParameter(true, "first", "second", "third", "last"),
-				new String[] {
+		return of(returnType + " " + methodName)
+				.withArguments(getSeveralParameter(true, "first", "second", "third", "last"))
+				.withImplementation(
 						"java.util.List<org.hamcrest.Matcher<" + targetName
 								+ ">> tmp = new java.util.ArrayList<>(java.util.Arrays.asList("
 								+ getSeveralWith("first", "second", "third") + "));",
 						"tmp.addAll(java.util.Arrays.stream(last).map(v->" + targetMethodName
 								+ "(v)).collect(java.util.stream.Collectors.toList()));",
-						"return " + getMatcher() + "(tmp.toArray(new org.hamcrest.Matcher[0]));" });
+						"return " + getMatcher() + "(tmp.toArray(new org.hamcrest.Matcher[0]));")
+				.withJavadoc(getJavaDocDescription(),
+						"@param first the first element contained inside the target array",
+						"@param second the second element contained inside the target array",
+						"@param third the third element contained inside the target array",
+						"@param last the next element", "@return the Matcher.");
 	}
 
 }

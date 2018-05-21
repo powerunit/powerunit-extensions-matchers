@@ -17,80 +17,83 @@
  * You should have received a copy of the GNU General Public License
  * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
  */
-package ch.powerunit.extensions.matchers.provideprocessor;
+package ch.powerunit.extensions.matchers.provideprocessor.dsl;
 
 import static java.util.stream.Collectors.joining;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ch.powerunit.extensions.matchers.common.ListJoining;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.lang.DSLMethodArgument;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.lang.DSLMethodImplementation;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.lang.DSLMethodJavadoc;
 
 /**
  * @author borettim
  *
  */
-public class DSLMethod {
+public final class DSLMethod {
 	public static final Pattern DECLARATION_PARSER = Pattern.compile("^\\s*.*\\s+([0-9A-Za-z_]+)\\s*$");
 
-	private static final ListJoining<String> JAVADOC_JOIN = ListJoining.joinWithMapper((String s) -> " * " + s)
-			.withDelimiter("\n").withPrefixAndSuffix("/**\n", "\n */\n");
-
 	private static final ListJoining<String[]> ARGUMENTS_JOIN = ListJoining
-			.joinWithMapper((String a[]) -> a[0] + " " + a[1]).withCommaDelimiter().withoutSuffixAndPrefix();
+			.joinWithMapper((String a[]) -> a[0] + " " + a[1]).withCommaDelimiter().withPrefixAndSuffix("(", ")");
 
 	private static final ListJoining<String[]> ARGUMENTNAMES_JOIN = ListJoining.joinWithMapper((String a[]) -> a[1])
-			.withCommaDelimiter().withoutSuffixAndPrefix();
+			.withCommaDelimiter().withPrefixAndSuffix("(", ")");
 
 	private final String javadoc;
 	private final String fullDeclaration;
 	private final String implementation;
 	private final String fullMethodName;
 
-	private static String cleanJavadoc(String javadoc[]) {
-		return JAVADOC_JOIN.asString(javadoc);
+	private static class Builder implements DSLMethodArgument, DSLMethodImplementation, DSLMethodJavadoc {
+
+		private final String declaration;
+		private final List<String[]> arguments = new ArrayList<>();
+		private String implementation[];
+
+		public Builder(String declaration) {
+			this.declaration = declaration;
+		}
+
+		@Override
+		public DSLMethod withJavadoc(String javadoc) {
+			return new DSLMethod(javadoc, declaration, arguments.toArray(new String[][] {}), implementation);
+		}
+
+		@Override
+		public DSLMethodJavadoc withImplementation(String... implementation) {
+			this.implementation = implementation;
+			return this;
+		}
+
+		@Override
+		public DSLMethodArgument addOneArgument(String type, String name) {
+			arguments.add(new String[] { Objects.requireNonNull(type, "type can't be null"),
+					Objects.requireNonNull(name, "name can't be null") });
+			return this;
+		}
+
 	}
 
-	public DSLMethod(String javadoc[], String declaration, String arguments[], String implementation) {
-		this(cleanJavadoc(javadoc), declaration, new String[][] { arguments }, new String[] { implementation });
-	}
-
-	public DSLMethod(String javadoc[], String declaration, String arguments[][], String implementation) {
-		this(cleanJavadoc(javadoc), declaration, arguments, new String[] { implementation });
-	}
-
-	public DSLMethod(String javadoc[], String declaration, String arguments[][], String implementation[]) {
-		this(cleanJavadoc(javadoc), declaration, arguments, implementation);
-	}
-
-	public DSLMethod(String javadoc, String declaration, String implementation) {
-		this(javadoc, declaration, new String[][] {}, new String[] { implementation });
-	}
-
-	public DSLMethod(String javadoc, String declaration, String implementation[]) {
-		this(javadoc, declaration, new String[][] {}, implementation);
-	}
-
-	public DSLMethod(String javadoc, String declaration, String arguments[], String implementation) {
-		this(javadoc, declaration, new String[][] { arguments }, new String[] { implementation });
-	}
-
-	public DSLMethod(String javadoc, String declaration, String arguments[], String implementation[]) {
-		this(javadoc, declaration, new String[][] { arguments }, implementation);
+	public static DSLMethodArgument of(String declaration) {
+		return new Builder(declaration);
 	}
 
 	public DSLMethod(String javadoc, String declaration, String arguments[][], String implementation[]) {
-		String realArguments = ARGUMENTS_JOIN.asString(arguments);
-		String realArgumentsName = ARGUMENTNAMES_JOIN.asString(arguments);
 		Matcher m = DECLARATION_PARSER.matcher(declaration);
 		if (!m.matches()) {
 			throw new IllegalArgumentException("Unable to parse the received declaration");
 		}
 		this.javadoc = javadoc;
 		this.implementation = Arrays.stream(implementation).map(s -> "  " + s).collect(joining("\n")) + "\n";
-		this.fullDeclaration = declaration + "(" + realArguments + ")";
-		this.fullMethodName = m.group(1) + "(" + realArgumentsName + ")";
+		this.fullDeclaration = declaration + ARGUMENTS_JOIN.asString(arguments);
+		this.fullMethodName = m.group(1) + ARGUMENTNAMES_JOIN.asString(arguments);
 	}
 
 	public String asStaticImplementation() {

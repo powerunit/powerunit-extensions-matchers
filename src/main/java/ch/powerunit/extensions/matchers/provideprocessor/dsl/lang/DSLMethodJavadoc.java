@@ -17,27 +17,20 @@
  * You should have received a copy of the GNU General Public License
  * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
  */
-package ch.powerunit.extensions.matchers.provideprocessor.extension;
+package ch.powerunit.extensions.matchers.provideprocessor.dsl.lang;
 
-import java.util.Collection;
-import java.util.function.Supplier;
-
-import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
-import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.common.ListJoining;
 import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
 
-public class ArrayContainingDSLExtension implements DSLExtension {
+public interface DSLMethodJavadoc {
 
-	@Override
-	public ComplementaryExpositionMethod supportedEnum() {
-		return ComplementaryExpositionMethod.ARRAYCONTAINING;
-	}
+	static final ListJoining<String> JAVADOC_JOIN = ListJoining.joinWithMapper((String s) -> " * " + s)
+			.withDelimiter("\n").withPrefixAndSuffix("/**\n", "\n */\n");
 
-	@Override
-	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData element) {
-		return new ArrayContaingDSLExtensionSupplier(element, element.generateDSLMethodName("arrayContaining"),
-				"Generate an array contains matcher for this Object.", "org.hamcrest.Matchers.arrayContaining")
-						.asSuppliers();
+	DSLMethod withJavadoc(String javadoc);
+
+	default DSLMethod withJavadoc(String... javadoc) {
+		return withJavadoc(JAVADOC_JOIN.asString(javadoc));
 	}
 
 }
