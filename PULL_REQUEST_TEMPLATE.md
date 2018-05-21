@@ -19,3 +19,15 @@ Annotation                     | Descriotion
 Annotation                     | Attribute change    | Description
 ------------------------------ | ------------------- | ------------------
 `@XXX`                         | `attr`              | _description_
+
+#### New public enumeration
+
+Enumeration                    | Descriotion
+------------------------------ | -------------
+`XXX`                          | _description_
+
+### Modification to existing enumeration
+
+Enumeration                    | Value change        | Description
+------------------------------ | ------------------- | ------------------
+`XXX`                          | `VAL`               | _description_
