@@ -98,11 +98,14 @@ public class ProvideMatchersMirror extends AbstractTypeElementMirror<ProvideMatc
 		return t -> String.format("%1$s%2$s\n", prefix, t);
 	}
 
+	private String paramToJavadoc(Optional<String> param) {
+		return param.map(asJavadocFormat(" * @param ")).orElse("");
+	}
+
 	protected String generateJavaDocWithoutParamNeitherParent(String description, String moreDetails,
 			Optional<String> param, Optional<String> returnDescription) {
 		return String.format("/**\n * %1$s.\n * <p>\n * %2$s\n%3$s%4$s */\n", description, moreDetails,
-				param.map(asJavadocFormat(" * @param ")).orElse(""),
-				returnDescription.map(asJavadocFormat(" * @return ")).orElse(""));
+				paramToJavadoc(param), returnDescription.map(asJavadocFormat(" * @return ")).orElse(""));
 	}
 
 	protected String generateDefaultJavaDoc() {
@@ -113,8 +116,8 @@ public class ProvideMatchersMirror extends AbstractTypeElementMirror<ProvideMatc
 	protected String generateDefaultJavaDoc(Optional<String> moreDetails, Optional<String> param,
 			String returnDescription, boolean withParent) {
 		StringBuilder sb = new StringBuilder("/**\n * ").append(getDefaultDescriptionForDsl()).append(".\n")
-				.append(moreDetails.map(asJavadocFormat(" * <p>\n * ")).orElse(""))
-				.append(param.map(asJavadocFormat(" * @param ")).orElse("")).append(getParamComment()).append(" * \n");
+				.append(moreDetails.map(asJavadocFormat(" * <p>\n * ")).orElse("")).append(paramToJavadoc(param))
+				.append(getParamComment()).append(" * \n");
 		if (withParent) {
 			sb.append(DEFAULT_PARAM_PARENT);
 		}
