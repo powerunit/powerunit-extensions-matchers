@@ -89,6 +89,20 @@ public class FactoryGroupTest implements TestSuite {
 		assertThatFunction(underTest::isAccepted, factoryAnnotatedElementMiror).is(false);
 	}
 
+	@Test(fastFail = false)
+	public void testIsAccepted() throws IOException {
+		FactoryGroup underTest = new FactoryGroup(factoryAnnotationProcessor, "a.*,b.*:target");
+
+		when(factoryAnnotatedElementMiror.getSurroundingFullyQualifiedName()).thenReturn("aa");
+		assertThat(underTest.isAccepted(factoryAnnotatedElementMiror)).is(true);
+
+		when(factoryAnnotatedElementMiror.getSurroundingFullyQualifiedName()).thenReturn("bb");
+		assertThat(underTest.isAccepted(factoryAnnotatedElementMiror)).is(true);
+
+		when(factoryAnnotatedElementMiror.getSurroundingFullyQualifiedName()).thenReturn("cc");
+		assertThat(underTest.isAccepted(factoryAnnotatedElementMiror)).is(false);
+	}
+
 	@Test
 	public void testConstructorWithTwoEntryAndOneTargetMethod() throws IOException {
 		when(filer.createSourceFile(Mockito.eq("target"), Mockito.anyVararg())).thenReturn(javaFileObject);

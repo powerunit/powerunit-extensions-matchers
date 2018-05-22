@@ -60,8 +60,7 @@ class FactoryGroup {
 	}
 
 	public boolean isAccepted(FactoryAnnotatedElementMirror faem) {
-		return Arrays.stream(acceptingRegex).map(a -> faem.getSurroundingFullyQualifiedName().matches(a)).findAny()
-				.orElse(false);
+		return Arrays.stream(acceptingRegex).anyMatch(a -> faem.getSurroundingFullyQualifiedName().matches(a));
 	}
 
 	public void processGenerateOneFactoryInterface() {
@@ -73,7 +72,7 @@ class FactoryGroup {
 					String cName = fullyQualifiedTargetName.substring(fullyQualifiedTargetName.lastIndexOf('.') + 1);
 					FactoryHelper.generateFactoryClass(wjfo, FactoryAnnotationsProcessor.class, pName, cName,
 							() -> method.stream().map(FactoryAnnotatedElementMirror::generateFactory));
-				} ,
+				},
 				e -> parent.getMessager().printMessage(Kind.ERROR,
 						"Unable to create the file containing the target class `" + fullyQualifiedTargetName
 								+ "`, because of " + e.getMessage()));
