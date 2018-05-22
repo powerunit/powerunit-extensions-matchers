@@ -16,4 +16,14 @@ public class CommonUtilsTest implements TestSuiteSupport {
 		assertThatBiFunction(CommonUtils::addPrefix, " ", "x").is("\n x\n");
 		assertThatBiFunction(CommonUtils::addPrefix, " ", "x\ny").is("\n x\n y\n");
 	}
+
+	@Test(fastFail = false)
+	public void testGenerateGeneratedAnnotation() {
+		assertThatBiFunction(CommonUtils::generateGeneratedAnnotation, Object.class, null)
+				.is(both(containsString("@javax.annotation.Generated(value=\"java.lang.Object\",date"))
+						.and(not(containsString("comments"))));
+		assertThatBiFunction(CommonUtils::generateGeneratedAnnotation, Object.class, "x")
+				.is(both(containsString("@javax.annotation.Generated(value=\"java.lang.Object\",date"))
+						.and(containsString("comments=\"x\"")));
+	}
 }

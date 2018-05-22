@@ -20,14 +20,13 @@
 package ch.powerunit.extensions.matchers.provideprocessor;
 
 import static ch.powerunit.extensions.matchers.common.CommonUtils.addPrefix;
-import static ch.powerunit.extensions.matchers.common.CommonUtils.toJavaSyntax;
+import static ch.powerunit.extensions.matchers.common.CommonUtils.generateGeneratedAnnotation;
 import static ch.powerunit.extensions.matchers.common.FileObjectHelper.processFileWithIOException;
 import static ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod.of;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
 
 import java.io.PrintWriter;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -78,10 +77,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 					wjfo.println("package " + getPackageNameOfGeneratedClass() + ";");
 					wjfo.println();
 					wjfo.println(generateMainJavaDoc());
-					wjfo.println("@javax.annotation.Generated(value=\""
-							+ ProvidesMatchersAnnotationsProcessor.class.getName() + "\",date=\""
-							+ Instant.now().toString() + "\",comments=" + toJavaSyntax(annotation.get().comments())
-							+ ")");
+					wjfo.println(generateGeneratedAnnotation(ProvidesMatchersAnnotationsProcessor.class,
+							annotation.get().comments()));
 					wjfo.println("public final class " + simpleName + " {");
 					wjfo.println();
 					wjfo.println("  private " + simpleName + "() {}");
