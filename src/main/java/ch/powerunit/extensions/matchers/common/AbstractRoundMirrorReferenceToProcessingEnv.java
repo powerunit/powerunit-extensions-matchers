@@ -31,7 +31,8 @@ import javax.lang.model.type.TypeMirror;
  * @author borettim
  *
  */
-public abstract class AbstractRoundMirrorReferenceToProcessingEnv implements ElementHelper {
+public abstract class AbstractRoundMirrorReferenceToProcessingEnv
+		implements ElementHelper, ProcessingEnvironmentHelper {
 
 	protected final RoundEnvironment roundEnv;
 	protected final ProcessingEnvironment processingEnv;
@@ -40,9 +41,10 @@ public abstract class AbstractRoundMirrorReferenceToProcessingEnv implements Ele
 	public AbstractRoundMirrorReferenceToProcessingEnv(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
 		this.roundEnv = roundEnv;
 		this.processingEnv = processingEnv;
-		this.objectTypeMirror = getProcessingEnv().getElementUtils().getTypeElement("java.lang.Object").asType();
+		this.objectTypeMirror = getElementUtils().getTypeElement("java.lang.Object").asType();
 	}
 
+	@Override
 	public ProcessingEnvironment getProcessingEnv() {
 		return processingEnv;
 	}

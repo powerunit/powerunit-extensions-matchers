@@ -39,7 +39,7 @@ public abstract class AbstractElementMirror<E extends Element, A extends Annotat
 	public AbstractElementMirror(Class<A> annotationType, R roundMirror, E element) {
 		this.roundMirror = roundMirror;
 		this.element = element;
-		this.doc = Optional.ofNullable(roundMirror.getProcessingEnv().getElementUtils().getDocComment(element));
+		this.doc = Optional.ofNullable(roundMirror.getElementUtils().getDocComment(element));
 		this.annotation = Optional.ofNullable(element.getAnnotation(annotationType));
 	}
 
