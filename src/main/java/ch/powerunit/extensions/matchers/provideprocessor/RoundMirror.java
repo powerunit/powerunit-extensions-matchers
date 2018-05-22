@@ -133,8 +133,8 @@ public class RoundMirror extends AbstractRoundMirrorReferenceToProcessingEnv {
 	public AnnotationMirror getProvideMatchersAnnotation(Element e) {
 		TypeMirror pmtm = processingEnv.getElementUtils()
 				.getTypeElement("ch.powerunit.extensions.matchers.ProvideMatchers").asType();
-		return getProcessingEnv().getElementUtils().getAllAnnotationMirrors(e).stream()
-				.filter(a -> a.getAnnotationType().equals(pmtm)).findAny().orElse(null);
+		return getElementUtils().getAllAnnotationMirrors(e).stream().filter(a -> a.getAnnotationType().equals(pmtm))
+				.findAny().orElse(null);
 	}
 
 	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData target) {

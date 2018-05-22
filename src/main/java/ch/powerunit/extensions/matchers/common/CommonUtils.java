@@ -19,6 +19,8 @@
  */
 package ch.powerunit.extensions.matchers.common;
 
+import java.time.Instant;
+
 /**
  * These are some method to manipulate java.
  * 
@@ -57,6 +59,11 @@ public class CommonUtils {
 	public static String addPrefix(String prefix, String input) {
 		return ListJoining.accepting(String.class).withMapper(l -> prefix + l).withDelimiter("\n")
 				.withPrefixAndSuffix("\n", "\n").asString(input.split("\\R"));
+	}
+
+	public static String generateGeneratedAnnotation(Class<?> generatedBy, String comments) {
+		return "@javax.annotation.Generated(value=\"" + generatedBy.getName() + "\",date=\"" + Instant.now().toString()
+				+ "\"" + (comments == null ? "" : (",comments=" + toJavaSyntax(comments))) + ")";
 	}
 
 }

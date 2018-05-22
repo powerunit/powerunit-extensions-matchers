@@ -20,12 +20,13 @@
 package ch.powerunit.extensions.matchers.provideprocessor;
 
 import static ch.powerunit.extensions.matchers.common.CommonUtils.addPrefix;
+import static ch.powerunit.extensions.matchers.common.CommonUtils.generateGeneratedAnnotation;
+import static ch.powerunit.extensions.matchers.common.FileObjectHelper.processFileWithIOExceptionAndResult;
 import static ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod.of;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
 
 import java.io.PrintWriter;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,8 +39,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 
-import ch.powerunit.extensions.matchers.common.CommonUtils;
-import ch.powerunit.extensions.matchers.common.FileObjectHelper;
 import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
 
 public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnnotatedElementMatcherMirror {
@@ -55,8 +54,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 			tmp.add(this::generateParentDSLStarter);
 			if (hasParentInSameRound) {
 				tmp.add(this::generateParentValueDSLStarter);
-				if (((TypeElement) roundMirror.getProcessingEnv().getTypeUtils().asElement(element.getSuperclass()))
-						.getTypeParameters().isEmpty()) {
+				if (((TypeElement) roundMirror.getTypeUtils().asElement(element.getSuperclass())).getTypeParameters()
+						.isEmpty()) {
 					tmp.add(this::generateParentInSameRoundWithChaningDSLStarter);
 				}
 			}
@@ -70,20 +69,16 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	}
 
 	public Collection<DSLMethod> process() {
-		RoundMirror rm = roundMirror;
 		Element te = element;
 		String simpleName = getSimpleNameOfGeneratedClass();
-		Collection<DSLMethod> results = new ArrayList<>();
-		FileObjectHelper.processFileWithIOException(
-				() -> rm.getProcessingEnv().getFiler().createSourceFile(getFullyQualifiedNameOfGeneratedClass(), te),
+		return processFileWithIOExceptionAndResult(
+				() -> getFiler().createSourceFile(getFullyQualifiedNameOfGeneratedClass(), te),
 				jfo -> new PrintWriter(jfo.openWriter()), wjfo -> {
 					wjfo.println("package " + getPackageNameOfGeneratedClass() + ";");
 					wjfo.println();
 					wjfo.println(generateMainJavaDoc());
-					wjfo.println("@javax.annotation.Generated(value=\""
-							+ ProvidesMatchersAnnotationsProcessor.class.getName() + "\",date=\""
-							+ Instant.now().toString() + "\",comments="
-							+ CommonUtils.toJavaSyntax(annotation.get().comments()) + ")");
+					wjfo.println(generateGeneratedAnnotation(ProvidesMatchersAnnotationsProcessor.class,
+							annotation.get().comments()));
 					wjfo.println("public final class " + simpleName + " {");
 					wjfo.println();
 					wjfo.println("  private " + simpleName + "() {}");
@@ -97,10 +92,9 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 					Collection<DSLMethod> tmp = generateDSLStarter();
 					tmp.stream().map(m -> addPrefix("  ", m.asStaticImplementation())).forEach(wjfo::println);
 					wjfo.println("}");
-					results.addAll(tmp);
-				}, e -> rm.getProcessingEnv().getMessager().printMessage(Kind.ERROR,
+					return tmp;
+				}, e -> getMessager().printMessage(Kind.ERROR,
 						"Unable to create the file containing the target class because of " + e, te));
-		return results;
 	}
 
 	public Collection<DSLMethod> generateDSLStarter() {
@@ -180,8 +174,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 
 	public ProvidesMatchersAnnotatedElementMirror getParentMirror() {
 		RoundMirror rm = roundMirror;
-		return rm.getByName(getQualifiedName(
-				((TypeElement) rm.getProcessingEnv().getTypeUtils().asElement(element.getSuperclass()))));
+		return rm.getByName(getQualifiedName(((TypeElement) rm.getTypeUtils().asElement(element.getSuperclass()))));
 	}
 
 	public DSLMethod generateParentValueDSLStarter() {
