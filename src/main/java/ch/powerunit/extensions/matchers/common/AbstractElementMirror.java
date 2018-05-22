@@ -22,6 +22,7 @@ package ch.powerunit.extensions.matchers.common;
 import java.lang.annotation.Annotation;
 import java.util.Optional;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 
 /**
@@ -29,7 +30,7 @@ import javax.lang.model.element.Element;
  *
  */
 public abstract class AbstractElementMirror<E extends Element, A extends Annotation, R extends AbstractRoundMirrorReferenceToProcessingEnv>
-		implements AbstractRoundMirrorSupport<R>, ElementHelper {
+		implements AbstractRoundMirrorSupport<R>, ElementHelper, ProcessingEnvironmentHelper {
 
 	protected final R roundMirror;
 	protected final E element;
@@ -62,6 +63,11 @@ public abstract class AbstractElementMirror<E extends Element, A extends Annotat
 
 	public String getParamComment() {
 		return doc.map(AbstractElementMirror::extractParamCommentFromJavadoc).orElse(" * \n");
+	}
+
+	@Override
+	public ProcessingEnvironment getProcessingEnv() {
+		return getRoundMirror().getProcessingEnv();
 	}
 
 	private static String extractParamCommentFromJavadoc(String docComment) {

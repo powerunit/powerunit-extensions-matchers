@@ -21,6 +21,7 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 
 import static ch.powerunit.extensions.matchers.common.CommonUtils.addPrefix;
 import static ch.powerunit.extensions.matchers.common.CommonUtils.toJavaSyntax;
+import static ch.powerunit.extensions.matchers.common.FileObjectHelper.processFileWithIOException;
 import static ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod.of;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
@@ -39,7 +40,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 
-import ch.powerunit.extensions.matchers.common.FileObjectHelper;
 import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
 
 public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnnotatedElementMatcherMirror {
@@ -55,8 +55,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 			tmp.add(this::generateParentDSLStarter);
 			if (hasParentInSameRound) {
 				tmp.add(this::generateParentValueDSLStarter);
-				if (((TypeElement) roundMirror.getTypeUtils().asElement(element.getSuperclass()))
-						.getTypeParameters().isEmpty()) {
+				if (((TypeElement) roundMirror.getTypeUtils().asElement(element.getSuperclass())).getTypeParameters()
+						.isEmpty()) {
 					tmp.add(this::generateParentInSameRoundWithChaningDSLStarter);
 				}
 			}
@@ -70,12 +70,10 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	}
 
 	public Collection<DSLMethod> process() {
-		RoundMirror rm = roundMirror;
 		Element te = element;
 		String simpleName = getSimpleNameOfGeneratedClass();
 		Collection<DSLMethod> results = new ArrayList<>();
-		FileObjectHelper.processFileWithIOException(
-				() -> rm.getFiler().createSourceFile(getFullyQualifiedNameOfGeneratedClass(), te),
+		processFileWithIOException(() -> getFiler().createSourceFile(getFullyQualifiedNameOfGeneratedClass(), te),
 				jfo -> new PrintWriter(jfo.openWriter()), wjfo -> {
 					wjfo.println("package " + getPackageNameOfGeneratedClass() + ";");
 					wjfo.println();
@@ -98,7 +96,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 					tmp.stream().map(m -> addPrefix("  ", m.asStaticImplementation())).forEach(wjfo::println);
 					wjfo.println("}");
 					results.addAll(tmp);
-				}, e -> rm.getMessager().printMessage(Kind.ERROR,
+				}, e -> getMessager().printMessage(Kind.ERROR,
 						"Unable to create the file containing the target class because of " + e, te));
 		return results;
 	}
