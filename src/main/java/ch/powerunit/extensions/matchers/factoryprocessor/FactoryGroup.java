@@ -61,8 +61,7 @@ class FactoryGroup {
 	}
 
 	public boolean isAccepted(FactoryAnnotatedElementMirror faem) {
-		return Arrays.stream(acceptingRegex).map(a -> faem.getSurroundingFullyQualifiedName().matches(a)).findAny()
-				.orElse(false);
+		return Arrays.stream(acceptingRegex).anyMatch(a -> faem.getSurroundingFullyQualifiedName().matches(a));
 	}
 
 	public void processGenerateOneFactoryInterface() {
