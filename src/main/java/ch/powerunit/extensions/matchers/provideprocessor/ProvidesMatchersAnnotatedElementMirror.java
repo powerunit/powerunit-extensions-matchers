@@ -21,7 +21,7 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 
 import static ch.powerunit.extensions.matchers.common.CommonUtils.addPrefix;
 import static ch.powerunit.extensions.matchers.common.CommonUtils.generateGeneratedAnnotation;
-import static ch.powerunit.extensions.matchers.common.FileObjectHelper.processFileWithIOException;
+import static ch.powerunit.extensions.matchers.common.FileObjectHelper.processFileWithIOExceptionAndResult;
 import static ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod.of;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
@@ -71,8 +71,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	public Collection<DSLMethod> process() {
 		Element te = element;
 		String simpleName = getSimpleNameOfGeneratedClass();
-		Collection<DSLMethod> results = new ArrayList<>();
-		processFileWithIOException(() -> getFiler().createSourceFile(getFullyQualifiedNameOfGeneratedClass(), te),
+		return processFileWithIOExceptionAndResult(
+				() -> getFiler().createSourceFile(getFullyQualifiedNameOfGeneratedClass(), te),
 				jfo -> new PrintWriter(jfo.openWriter()), wjfo -> {
 					wjfo.println("package " + getPackageNameOfGeneratedClass() + ";");
 					wjfo.println();
@@ -92,10 +92,9 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 					Collection<DSLMethod> tmp = generateDSLStarter();
 					tmp.stream().map(m -> addPrefix("  ", m.asStaticImplementation())).forEach(wjfo::println);
 					wjfo.println("}");
-					results.addAll(tmp);
+					return tmp;
 				}, e -> getMessager().printMessage(Kind.ERROR,
 						"Unable to create the file containing the target class because of " + e, te));
-		return results;
 	}
 
 	public Collection<DSLMethod> generateDSLStarter() {
