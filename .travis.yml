@@ -23,6 +23,8 @@ after_success:
 - "mvn jacoco:report -Djacoco.dataFile=target/jacoco-aggregate.exe"
 - "(cd target/dependency && java -jar codacy-coverage-reporter-4.0.0-assembly.jar report -l Java -r ../site/jacoco/jacoco.xml)"
 - "mvn site"
+- "mvn org.apache.maven.plugins:maven-changes-plugin:announcement-generate"
+- export RELEASE_NOTES=`cat target/announcement.vm`
 before_deploy:
 - git config --local user.name "powerunitci"
 - git config --local user.email "powerunitci@powerunit.ch"
@@ -43,6 +45,7 @@ deploy:
     skip_cleanup: true
     prerelease: true
     draft: false
+    body: $RELEASE_NOTES
     on:
       branch: master
       tags: false
@@ -54,6 +57,7 @@ deploy:
     skip_cleanup: true
     prerelease: false
     draft: false
+    body: $RELEASE_NOTES
     on:
       tags: true
       condition: $TRAVIS_JDK_VERSION = oraclejdk8 && "$TRAVIS_TAG" =~ powerunit-extensions-matchers-[0-9].[0-9].[0-9]
