@@ -33,7 +33,7 @@ after_success:
 before_deploy:
 - git config --local user.name "powerunitci"
 - git config --local user.email "powerunitci@powerunit.ch"
-- if [[ "$TRAVIS_TAG" =~ powerunit-extensions-matchers-[0-9].[0-9].[0-9] ]]; then echo "No tag to be created" ; else git tag -f "ci/$TRAVIS_BRANCH/$TRAVIS_BUILD_NUMBER"; fi
+- if [[ "$TRAVIS_TAG" =~ powerunit-extensions-matchers-[0-9].[0-9].[0-9] ]]; then echo "No tag to be created" ; else git tag -m "Create ci tag [ci skip]" -f "ci/$TRAVIS_BRANCH/$TRAVIS_BUILD_NUMBER"; fi
 deploy:
   - provider: pages
     skip-cleanup: true
