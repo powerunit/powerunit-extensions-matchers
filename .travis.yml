@@ -24,7 +24,7 @@ after_success:
 - "(cd target/dependency && java -jar codacy-coverage-reporter-4.0.0-assembly.jar report -l Java -r ../site/jacoco/jacoco.xml)"
 - "mvn site"
 - "mvn org.apache.maven.plugins:maven-changes-plugin:announcement-generate"
-- export RELEASE_NOTES=`cat target/announcement.vm`
+- export RELEASE_NOTES=`cat target/announcement/announcement.vm`
 before_deploy:
 - git config --local user.name "powerunitci"
 - git config --local user.email "powerunitci@powerunit.ch"
