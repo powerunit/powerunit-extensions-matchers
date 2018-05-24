@@ -3,12 +3,7 @@ language: java
 matrix:
  include:
   - os: linux
-    jdk: oraclejdk8
-  - os: linux
     jdk: oraclejdk9
-  - os: linux
-    jdk: openjdk8
-  - os: osx
 sudo: false
 addons:
     apt:
@@ -43,7 +38,7 @@ deploy:
     local-dir: target/site
     on:
       branch: master
-      condition: $TRAVIS_JDK_VERSION = oraclejdk8
+      condition: $TRAVIS_JDK_VERSION = oraclejdk9
   - provider: releases
     api_key: $GITHUB_TOKEN
     file_glob: true
@@ -55,7 +50,7 @@ deploy:
     on:
       branch: master
       tags: false
-      condition: $TRAVIS_JDK_VERSION = oraclejdk8
+      condition: $TRAVIS_JDK_VERSION = oraclejdk9
   - provider: releases
     api_key: $GITHUB_TOKEN
     file_glob: true
@@ -66,5 +61,5 @@ deploy:
     body: "$RELEASE_NOTES"
     on:
       tags: true
-      condition: $TRAVIS_JDK_VERSION = oraclejdk8 && "$TRAVIS_TAG" =~ powerunit-extensions-matchers-[0-9].[0-9].[0-9]
+      condition: $TRAVIS_JDK_VERSION = oraclejdk9 && "$TRAVIS_TAG" =~ powerunit-extensions-matchers-[0-9].[0-9].[0-9]
       

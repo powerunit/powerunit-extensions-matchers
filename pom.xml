@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ch.powerunit.extensions</groupId>
 	<artifactId>powerunit-extensions-matchers</artifactId>
-	<version>0.2.0-SNAPSHOT</version>
+	<version>1.0.0-SNAPSHOT</version>
 
 	<name>Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</name>
 	<description>This is a test framework for the JDK 1.8 - Extension to provide matchers based on annotation.</description>
@@ -54,8 +54,8 @@
 		<developerConnection>scm:git:git@github.com:powerunit/powerunit-extensions-matchers.git</developerConnection>
 	</scm>
 	<properties>
-		<java.source.version>1.8</java.source.version>
-		<java.target.version>1.8</java.target.version>
+		<java.source.version>9</java.source.version>
+		<java.target.version>9</java.target.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<hamcrest.version>1.3</hamcrest.version>
 		<surefire.version>2.21.0</surefire.version>
