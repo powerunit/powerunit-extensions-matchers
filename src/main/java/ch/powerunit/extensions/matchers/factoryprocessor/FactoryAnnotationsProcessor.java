@@ -41,7 +41,7 @@ import javax.tools.Diagnostic.Kind;
 import org.hamcrest.Factory;
 
 @SupportedAnnotationTypes({ "org.hamcrest.Factory" })
-@SupportedSourceVersion(SourceVersion.RELEASE_8)
+@SupportedSourceVersion(SourceVersion.RELEASE_9)
 @SupportedOptions({ "ch.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets" })
 public class FactoryAnnotationsProcessor extends AbstractProcessor {
 
