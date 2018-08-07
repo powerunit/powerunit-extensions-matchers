@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -67,9 +68,11 @@ public class RoundMirror extends AbstractRoundMirrorReferenceToProcessingEnv {
 		this.elementsWithOtherAnnotations = new HashMap<>();
 		this.elementsWithPM = roundEnv.getElementsAnnotatedWith(ProvideMatchers.class);
 		elementsWithOtherAnnotations.put(IgnoreInMatcher.class,
-				roundEnv.getElementsAnnotatedWith(IgnoreInMatcher.class));
-		elementsWithOtherAnnotations.put(AddToMatcher.class, roundEnv.getElementsAnnotatedWith(AddToMatcher.class));
-		elementsWithOtherAnnotations.put(AddToMatchers.class, roundEnv.getElementsAnnotatedWith(AddToMatchers.class));
+				new HashSet<>(roundEnv.getElementsAnnotatedWith(IgnoreInMatcher.class)));
+		elementsWithOtherAnnotations.put(AddToMatcher.class,
+				new HashSet<>(roundEnv.getElementsAnnotatedWith(AddToMatcher.class)));
+		elementsWithOtherAnnotations.put(AddToMatchers.class,
+				new HashSet<>(roundEnv.getElementsAnnotatedWith(AddToMatchers.class)));
 		AUTOMATED_EXTENSIONS = getDefaultExtension().stream().filter(AutomatedExtension::isPresent)
 				.collect(collectingAndThen(toList(), Collections::unmodifiableList));
 	}
@@ -98,18 +101,16 @@ public class RoundMirror extends AbstractRoundMirrorReferenceToProcessingEnv {
 	}
 
 	private void doWarningForElement(Set<? extends Element> elements, Class<?> aa) {
-		elements.stream()
-				.forEach(e -> processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
-						"Annotation @" + aa.getName()
-								+ " not supported at this location ; The surrounding class is not annotated with @ProvideMatchers",
-						e, findAnnotationMirrorFor(e, aa)));
+		elements.stream().forEach(e -> processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING, "Annotation @"
+				+ aa.getName()
+				+ " not supported at this location ; The surrounding class is not annotated with @ProvideMatchers", e,
+				findAnnotationMirrorFor(e, aa)));
 	}
 
 	private AnnotationMirror findAnnotationMirrorFor(Element e, Class<?> aa) {
 		String aaName = aa.getName().toString();
-		return e.getAnnotationMirrors().stream()
-				.filter(a -> a.getAnnotationType()
-						.equals(processingEnv.getElementUtils().getTypeElement(aaName).asType()))
+		return e.getAnnotationMirrors().stream().filter(
+				a -> a.getAnnotationType().equals(processingEnv.getElementUtils().getTypeElement(aaName).asType()))
 				.findAny().orElse(null);
 	}
 
