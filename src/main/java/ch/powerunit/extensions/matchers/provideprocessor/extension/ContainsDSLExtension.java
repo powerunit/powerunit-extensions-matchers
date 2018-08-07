@@ -23,8 +23,8 @@ import java.util.Collection;
 import java.util.function.Supplier;
 
 import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
-import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
 
 public class ContainsDSLExtension implements DSLExtension {
 

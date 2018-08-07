@@ -19,13 +19,15 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.extension;
 
+import static ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod.of;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Supplier;
 
 import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
-import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
 
 public class HasItemsExtension implements DSLExtension {
 
@@ -59,11 +61,11 @@ public class HasItemsExtension implements DSLExtension {
 		}
 
 		public DSLMethod generateContainsN() {
-			return new DSLMethod(
-					new String[] { JAVADOC_DESCRIPTION, "@param item the item to be matched", "@return the Matcher." },
-					returnType + " " + methodName, getSeveralParameter(true, "item"),
-					"return " + CONTAINS_MATCHER + "(java.util.Arrays.stream(item).map(v->" + targetMethodName
-							+ "(v)).collect(java.util.stream.Collectors.toList()).toArray(new org.hamcrest.Matcher[0]));");
+			return of(returnType + " " + methodName).withArguments(getSeveralParameter(true, "item"))
+					.withImplementation("return " + CONTAINS_MATCHER + "(java.util.Arrays.stream(item).map(v->"
+							+ targetMethodName
+							+ "(v)).collect(java.util.stream.Collectors.toList()).toArray(new org.hamcrest.Matcher[0]));")
+					.withJavadoc(JAVADOC_DESCRIPTION, "@param item the item to be matched", "@return the Matcher.");
 		}
 	}
 

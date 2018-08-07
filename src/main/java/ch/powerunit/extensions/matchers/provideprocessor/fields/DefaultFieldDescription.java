@@ -26,10 +26,10 @@ import java.util.List;
 
 import javax.lang.model.element.TypeElement;
 
+import ch.powerunit.extensions.matchers.common.ElementHelper;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
-import ch.powerunit.extensions.matchers.provideprocessor.fields.lang.BuilderDeclaration;
 
-public class DefaultFieldDescription extends AbstractFieldDescription {
+public class DefaultFieldDescription extends PrimitiveFieldDescription implements ElementHelper {
 
 	public DefaultFieldDescription(ProvidesMatchersAnnotatedElementData containingElementMirror,
 			FieldDescriptionMirror mirror) {
@@ -40,41 +40,28 @@ public class DefaultFieldDescription extends AbstractFieldDescription {
 		return Collections.emptyList();
 	}
 
-	protected final BuilderDeclaration getDslMethodBuilder() {
-		return FieldDSLMethodBuilder.of(this);
-	}
-
 	@Override
-	protected final Collection<FieldDSLMethod> getFieldDslMethodFor() {
-		String ft = mirror.getFieldType();
-		String fn = mirror.getFieldName();
-		List<FieldDSLMethod> tmp = new ArrayList<>();
-		tmp.add(FieldDSLMethodBuilder.of(this).withDeclaration("org.hamcrest.Matcher<? super " + ft + "> matcher")
-				.withJavaDoc("", "matcher a Matcher on the field", SEE_TEXT_FOR_HAMCREST_MATCHER)
-				.havingImplementation(fn + "= new " + mirror.getMethodFieldName() + "Matcher(matcher);\nreturn this;"));
-		tmp.add(FieldDSLMethodBuilder.of(this).withDeclaration(ft + " value")
-				.withJavaDoc("", "value an expected value for the field, which will be compared using the is matcher",
-						SEE_TEXT_FOR_IS_MATCHER)
-				.havingDefault("(org.hamcrest.Matcher)" + MATCHERS + ".is((java.lang.Object)value)"));
-		tmp.add(FieldDSLMethodBuilder.of(this)
-				.withGenericDeclaration("<_TARGETFIELD>", "As",
-						"java.util.function.Function<" + ft
-								+ ",_TARGETFIELD> converter,org.hamcrest.Matcher<? super _TARGETFIELD> matcher")
-				.withJavaDoc("by converting the received field before validat it",
-						"converter a function to convert the field\nmatcher a matcher on the resulting\n<_TARGETFIELD> The type which this field must be converter")
-				.havingDefault("asFeatureMatcher(\" <field is converted> \",converter,matcher)"));
-		TypeElement te = mirror.getFieldTypeAsTypeElement();
-		if (fullyQualifiedNameMatcherInSameRound != null && te.getTypeParameters().isEmpty()) {
-			String name = te.getSimpleName().toString();
+	protected Collection<FieldDSLMethod> getFieldDslMethodFor() {
+		FieldDescriptionMirror fm = mirror;
+		String ft = fm.getFieldType();
+		String fn = fm.getFieldName();
+		List<FieldDSLMethod> tmp = new ArrayList<>(super.getFieldDslMethodFor());
+		TypeElement te = fm.getFieldTypeAsTypeElement();
+		String nameInSameRound = fullyQualifiedNameMatcherInSameRound;
+		if (nameInSameRound != null && te.getTypeParameters().isEmpty()) {
+			String name = getSimpleName(te);
 			String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
 			tmp.add(FieldDSLMethodBuilder.of(this).withExplicitDeclarationJavadocAndImplementation(
-					fullyQualifiedNameMatcherInSameRound + "." + name + "Matcher" + "<" + defaultReturnMethod + "> "
-							+ fn + "With()",
-					"by starting a matcher for this field",
-					fullyQualifiedNameMatcherInSameRound + "." + name + "Matcher tmp = "
-							+ fullyQualifiedNameMatcherInSameRound + "." + lname + "WithParent(this);\n" + fn
-							+ "(tmp);\nreturn tmp;"));
+					nameInSameRound + "." + name + "Matcher" + "<" + defaultReturnMethod + "> " + fn + "With()",
+					"by starting a matcher for this field", nameInSameRound + "." + name + "Matcher tmp = "
+							+ nameInSameRound + "." + lname + "WithParent(this);\n" + fn + "(tmp);\nreturn tmp;"));
 		}
+		tmp.add(FieldDSLMethodBuilder.of(this).withDeclaration("IsSameInstance", ft + " value")
+				.withJavaDoc("",
+						"value an expected value for the field, which will be compared that it is the same instance.",
+						SEE_TEXT_FOR_IS_MATCHER)
+				.havingDefault("(org.hamcrest.Matcher)" + MATCHERS + ".sameInstance((java.lang.Object)value)"));
+
 		tmp.addAll(getSpecificFieldDslMethodFor());
 		return tmp;
 	}

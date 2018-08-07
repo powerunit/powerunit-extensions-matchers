@@ -21,11 +21,10 @@ package ch.powerunit.extensions.matchers.provideprocessor.xml;
 
 import java.util.List;
 
+import javax.lang.model.element.Element;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-
-import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType
@@ -42,7 +41,7 @@ public class GeneratedMatcher {
 	
 	private List<GeneratedMatcherField> generatedMatcherField;
 
-	private transient ProvidesMatchersAnnotatedElementMirror mirror;
+	private transient Element element;
 
 	public String getFullyQualifiedNameInputClass() {
 		return fullyQualifiedNameInputClass;
@@ -92,12 +91,12 @@ public class GeneratedMatcher {
 		this.generatedMatcherField = generatedMatcherField;
 	}
 
-	public ProvidesMatchersAnnotatedElementMirror getMirror() {
-		return mirror;
+	public Element getElement() {
+		return element;
 	}
 
-	public void setMirror(ProvidesMatchersAnnotatedElementMirror mirror) {
-		this.mirror = mirror;
+	public void setElement(Element element) {
+		this.element = element;
 	}
 
 }

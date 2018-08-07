@@ -8,8 +8,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
-import javax.annotation.processing.Filer;
-import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
@@ -22,10 +20,8 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
-import javax.tools.JavaFileObject;
 import javax.tools.Diagnostic.Kind;
+import javax.tools.JavaFileObject;
 
 import org.hamcrest.Factory;
 import org.mockito.Mock;
@@ -35,26 +31,12 @@ import org.mockito.Spy;
 import ch.powerunit.Rule;
 import ch.powerunit.Test;
 import ch.powerunit.TestRule;
-import ch.powerunit.TestSuite;
+import ch.powerunit.extensions.matchers.TestSuiteSupport;
 
-public class FactoryAnnotationProcessorTest implements TestSuite {
+public class FactoryAnnotationProcessorTest implements TestSuiteSupport {
 
-	@Mock
-	private Elements elements;
-
-	@Mock
-	private Messager messageUtils;
-
-	@Mock
-	private Filer filer;
-
-	@Mock
-	private Types typeUtils;
-
-	@Mock
 	private ProcessingEnvironment processingEnv;
 
-	@Mock
 	private RoundEnvironment roundEnv;
 
 	@Mock
@@ -91,11 +73,9 @@ public class FactoryAnnotationProcessorTest implements TestSuite {
 	private StringWriter outputStream = new StringWriter();
 
 	private void prepareMock() {
-		when(processingEnv.getMessager()).thenReturn(messageUtils);
-		when(processingEnv.getFiler()).thenReturn(filer);
-		when(processingEnv.getTypeUtils()).thenReturn(typeUtils);
-		when(processingEnv.getElementUtils()).thenReturn(elements);
-		when(elements.getTypeElement("org.hamcrest.Factory")).thenReturn(factoryTE);
+		processingEnv = generateMockitoProcessingEnvironment();
+		roundEnv = generateMockitoRoundEnvironment();
+		when(processingEnv.getElementUtils().getTypeElement("org.hamcrest.Factory")).thenReturn(factoryTE);
 		when(executableElement.getModifiers()).thenReturn(EnumSet.of(Modifier.STATIC, Modifier.PUBLIC));
 		when(executableElement.getKind()).thenReturn(ElementKind.METHOD);
 		when(executableElement.getEnclosingElement()).thenReturn(classElement);
@@ -106,7 +86,7 @@ public class FactoryAnnotationProcessorTest implements TestSuite {
 						ip.getArgumentAt(1, Object.class)));
 		when(classElement.asType()).thenReturn(classTypeMirror);
 		when(classElement.getSimpleName()).thenReturn(className);
-		when(elements.getPackageOf(classElement)).thenReturn(packageElement);
+		when(processingEnv.getElementUtils().getPackageOf(classElement)).thenReturn(packageElement);
 		when(packageElement.getQualifiedName()).thenReturn(packageName);
 
 		when(classTypeMirror.toString()).thenReturn("fqn.sn");
@@ -126,22 +106,10 @@ public class FactoryAnnotationProcessorTest implements TestSuite {
 	private FactoryAnnotationsProcessor underTest;
 
 	@Test
-	public void testHelperMethod() {
-		when(processingEnv.getOptions()).thenReturn(Collections.emptyMap());
-		underTest.init(processingEnv);
-
-		assertThat(underTest.getElementUtils()).is(sameInstance(elements));
-		assertThat(underTest.getFiler()).is(sameInstance(filer));
-		assertThat(underTest.getTypeUtils()).is(sameInstance(typeUtils));
-		assertThat(underTest.getMessager()).is(sameInstance(messageUtils));
-		assertThat(underTest.getOptions().keySet()).is(empty());
-	}
-
-	@Test
 	public void testInitNoTarget() {
 		when(processingEnv.getOptions()).thenReturn(Collections.emptyMap());
 		underTest.init(processingEnv);
-		Mockito.verify(messageUtils).printMessage(Kind.MANDATORY_WARNING, "The parameter `"
+		Mockito.verify(processingEnv.getMessager()).printMessage(Kind.MANDATORY_WARNING, "The parameter `"
 				+ FactoryAnnotationsProcessor.class.getName() + ".targets` is missing, please use it.");
 	}
 
@@ -150,7 +118,7 @@ public class FactoryAnnotationProcessorTest implements TestSuite {
 		when(processingEnv.getOptions())
 				.thenReturn(Collections.singletonMap(FactoryAnnotationsProcessor.class.getName() + ".targets", ""));
 		underTest.init(processingEnv);
-		Mockito.verify(messageUtils).printMessage(Kind.MANDATORY_WARNING, "The parameter `"
+		Mockito.verify(processingEnv.getMessager()).printMessage(Kind.MANDATORY_WARNING, "The parameter `"
 				+ FactoryAnnotationsProcessor.class.getName() + ".targets` is missing, please use it.");
 	}
 
@@ -163,7 +131,8 @@ public class FactoryAnnotationProcessorTest implements TestSuite {
 
 	@Test
 	public void testProcessOneTargetNoAnnotatedElement() throws IOException {
-		when(filer.createSourceFile(Mockito.eq("target"), Mockito.anyVararg())).thenReturn(javaFileObject);
+		when(processingEnv.getFiler().createSourceFile(Mockito.eq("target"), Mockito.anyVararg()))
+				.thenReturn(javaFileObject);
 		when(javaFileObject.openWriter()).thenReturn(outputStream);
 		when(processingEnv.getOptions()).thenReturn(
 				Collections.singletonMap(FactoryAnnotationsProcessor.class.getName() + ".targets", ".*:target"));
@@ -185,7 +154,8 @@ public class FactoryAnnotationProcessorTest implements TestSuite {
 
 	@Test
 	public void testProcessOneTargetOneAnnotatedElement() throws IOException {
-		when(filer.createSourceFile(Mockito.eq("target"), Mockito.anyVararg())).thenReturn(javaFileObject);
+		when(processingEnv.getFiler().createSourceFile(Mockito.eq("target"), Mockito.anyVararg()))
+				.thenReturn(javaFileObject);
 		when(javaFileObject.openWriter()).thenReturn(outputStream);
 		when(processingEnv.getOptions()).thenReturn(
 				Collections.singletonMap(FactoryAnnotationsProcessor.class.getName() + ".targets", ".*:target"));

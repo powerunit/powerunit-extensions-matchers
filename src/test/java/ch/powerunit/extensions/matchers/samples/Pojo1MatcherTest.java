@@ -23,6 +23,7 @@ import static ch.powerunit.matchers.MatcherTester.matcher;
 import static ch.powerunit.matchers.MatcherTester.value;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -40,15 +41,13 @@ public class Pojo1MatcherTest implements TestSuite {
 
 	@TestDelegate
 	public final MatcherTester<?> tester = testerOfMatcher(Pojo1Matchers.Pojo1MatcherImpl.class).with(
-			matcher((Pojo1Matchers.Pojo1MatcherImpl) Pojo1Matchers.pojo1With().msg1ContainsString("12"))
-					.describedAs(
-							"an instance of ch.powerunit.extensions.matchers.samples.Pojo1 with\n[msg4 ANYTHING]\n[msg3 ANYTHING]\n[msg2 ANYTHING]\n[msg1 a string containing \"12\"]\n[msg8 ANYTHING]\n[msg7 ANYTHING]\n[msg6 ANYTHING]\n[msg12 ANYTHING]\n[msg5 ANYTHING]\n[oneBoolean ANYTHING]\n[myBoolean ANYTHING]\n[msg9 ANYTHING]\n")
+			matcher((Pojo1Matchers.Pojo1MatcherImpl) Pojo1Matchers.pojo1With().msg1ContainsString("12")).describedAs(
+					"an instance of ch.powerunit.extensions.matchers.samples.Pojo1 with\n[msg4 ANYTHING]\n[msg3 ANYTHING]\n[msg2 ANYTHING]\n[msg1 a string containing \"12\"]\n[msg8 ANYTHING]\n[msg7 ANYTHING]\n[msg6 ANYTHING]\n[msg12 ANYTHING]\n[msg5 ANYTHING]\n[oneBoolean ANYTHING]\n[myBoolean ANYTHING]\n[msg9 ANYTHING]\n")
 					.nullRejected("was null").accepting(new Pojo1("12"), new Pojo1("121"))
 					.rejecting(value("").withMessage("was \"\""), value(new Pojo1()).withMessage("[msg1 was null]\n"),
 							value(new Pojo1("11")).withMessage("[msg1 was \"11\"]\n")),
-			matcher((Pojo1Matchers.Pojo1MatcherImpl) Pojo1Matchers.pojo1With().msg6IsEmptyIterable())
-					.describedAs(
-							"an instance of ch.powerunit.extensions.matchers.samples.Pojo1 with\n[msg4 ANYTHING]\n[msg3 ANYTHING]\n[msg2 ANYTHING]\n[msg1 ANYTHING]\n[msg8 ANYTHING]\n[msg7 ANYTHING]\n[msg6 an empty iterable]\n[msg12 ANYTHING]\n[msg5 ANYTHING]\n[oneBoolean ANYTHING]\n[myBoolean ANYTHING]\n[msg9 ANYTHING]\n")
+			matcher((Pojo1Matchers.Pojo1MatcherImpl) Pojo1Matchers.pojo1With().msg6IsEmptyIterable()).describedAs(
+					"an instance of ch.powerunit.extensions.matchers.samples.Pojo1 with\n[msg4 ANYTHING]\n[msg3 ANYTHING]\n[msg2 ANYTHING]\n[msg1 ANYTHING]\n[msg8 ANYTHING]\n[msg7 ANYTHING]\n[msg6 an empty iterable]\n[msg12 ANYTHING]\n[msg5 ANYTHING]\n[oneBoolean ANYTHING]\n[myBoolean ANYTHING]\n[msg9 ANYTHING]\n")
 					.nullRejected("was null").accepting(new Pojo1(Collections.emptyList()))
 					.rejecting(value(new Pojo1(Collections.singletonList("x"))).withMessage("[msg6 [\"x\"]]\n")));
 
@@ -56,6 +55,13 @@ public class Pojo1MatcherTest implements TestSuite {
 	public void testOKMatcher() {
 		Pojo1 p = new Pojo1();
 		assertThat(p).is(Pojo1Matchers.pojo1With());
+	}
+
+	@Test
+	public void testSameInstanceMatcher() {
+		Pojo1 p = new Pojo1();
+		p.msg6 = new ArrayList<>();
+		assertThat(p).is(Pojo1Matchers.pojo1With().msg6IsSameInstance(p.msg6));
 	}
 
 	@Test
@@ -144,6 +150,28 @@ public class Pojo1MatcherTest implements TestSuite {
 		Pojo1 p1 = new Pojo1();
 		p1.msg6 = Arrays.asList("a", "b");
 		assertThat(p1).is(Pojo1Matchers.pojo1With().msg6HasFirstItem(is("a")));
+	}
+
+	@Test
+	public void testAnyOf() {
+		Pojo1 p1 = new Pojo1();
+		p1.msg2 = "x";
+		Pojo1 p2 = new Pojo1();
+		p2.msg2 = "y";
+		Pojo1 p3 = new Pojo1();
+		p3.msg2 = "z";
+		assertThat(p1).is(Pojo1Matchers.anyOfPojo1(p1, p2, p3));
+	}
+
+	@Test
+	public void testNoneOf() {
+		Pojo1 p1 = new Pojo1();
+		p1.msg2 = "x";
+		Pojo1 p2 = new Pojo1();
+		p2.msg2 = "y";
+		Pojo1 p3 = new Pojo1();
+		p3.msg2 = "z";
+		assertThat(p1).is(Pojo1Matchers.noneOfPojo1(p2, p3));
 	}
 
 	@Test

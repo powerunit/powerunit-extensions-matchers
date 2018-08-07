@@ -19,13 +19,15 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.extension;
 
+import static ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod.of;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Supplier;
 
 import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
-import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
 
 public class AnyOfExtension implements DSLExtension {
 
@@ -40,17 +42,17 @@ public class AnyOfExtension implements DSLExtension {
 
 	@Override
 	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData element) {
-		String targetName = element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric();
-		String returnType = element.getFullGeneric() + " org.hamcrest.Matcher<" + targetName + ">";
 		String methodName = element.generateDSLMethodName("anyOf");
-		String targetMethodName = element.generateDSLWithSameValueMethodName();
-		return new AnyOfSupplier(targetName, returnType, methodName, targetMethodName).asSuppliers();
+		return new AnyOfSupplier(element, methodName).asSuppliers();
 	}
 
 	public class AnyOfSupplier extends AbstractDSLExtensionSupplier {
 
-		public AnyOfSupplier(String targetName, String returnType, String methodName, String targetMethodName) {
-			super(targetName, returnType, methodName, targetMethodName);
+		public AnyOfSupplier(ProvidesMatchersAnnotatedElementData element, String methodName) {
+			super(element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(),
+					element.getFullGeneric() + " org.hamcrest.Matcher<"
+							+ element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + ">",
+					methodName, element.generateDSLWithSameValueMethodName());
 		}
 
 		@Override
@@ -58,13 +60,15 @@ public class AnyOfExtension implements DSLExtension {
 			return Arrays.asList(this::generateAnyOf);
 		}
 
+		public String innerMatcher() {
+			return ANYOF_MATCHER + "(java.util.Arrays.stream(items).map(v->" + targetMethodName
+					+ "(v)).collect(java.util.stream.Collectors.toList()).toArray(new org.hamcrest.Matcher[0]))";
+		}
+
 		public DSLMethod generateAnyOf() {
-			return new DSLMethod(
-					new String[] { JAVADOC_DESCRIPTION, "@param items the items to be matched",
-							"@return the Matcher." },
-					returnType + " " + methodName, getSeveralParameter(true, "items"),
-					"return " + ANYOF_MATCHER + "(java.util.Arrays.stream(items).map(v->" + targetMethodName
-							+ "(v)).collect(java.util.stream.Collectors.toList()).toArray(new org.hamcrest.Matcher[0]));");
+			return of(returnType + " " + methodName).withArguments(getSeveralParameter(true, "items"))
+					.withImplementation("return " + innerMatcher() + ";")
+					.withJavadoc(JAVADOC_DESCRIPTION, "@param items the items to be matched", "@return the Matcher.");
 		}
 	}
 

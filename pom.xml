@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ch.powerunit.extensions</groupId>
 	<artifactId>powerunit-extensions-matchers</artifactId>
-	<version>0.1.2-SNAPSHOT</version>
+	<version>0.2.0-SNAPSHOT</version>
 
 	<name>Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</name>
 	<description>This is a test framework for the JDK 1.8 - Extension to provide matchers based on annotation.</description>
@@ -58,7 +58,7 @@
 		<java.target.version>1.8</java.target.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<hamcrest.version>1.3</hamcrest.version>
-		<surefire.version>2.21.0</surefire.version>
+		<surefire.version>2.22.0</surefire.version>
 		<deploy.url>https://oss.sonatype.org/content/repositories/snapshots</deploy.url>
 		<deploy.id>oss-snapshots</deploy.id>
 		<powerunit.version>0.5.0</powerunit.version>
@@ -78,7 +78,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
-					<version>3.1.0</version>
+					<version>3.1.1</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -98,7 +98,7 @@
 						<dependency>
 							<groupId>org.apache.maven.scm</groupId>
 							<artifactId>maven-scm-provider-gitexe</artifactId>
-							<version>1.9.5</version>
+							<version>1.10.0</version>
 						</dependency>
 					</dependencies>
 				</plugin>
@@ -125,12 +125,12 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-pmd-plugin</artifactId>
-					<version>3.9.0</version>
+					<version>3.10.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.0.0</version>
+					<version>3.0.1</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -233,12 +233,17 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>jaxb2-maven-plugin</artifactId>
-					<version>2.3.1</version>
+					<version>2.4</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-changes-plugin</artifactId>
 					<version>2.12.1</version>
+					<configuration>
+						<issueManagementSystems>
+							<issueManagementSystem>GitHub</issueManagementSystem>
+						</issueManagementSystems>
+					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
@@ -666,7 +671,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.0.1</version>
 				<configuration>
 					<excludePackageNames>ch.powerunit.extensions.matchers.factoryprocessor*:ch.powerunit.extensions.matchers.provideprocessor*:ch.powerunit.extensions.matchers.common*</excludePackageNames>
 					<docfilessubdirs>true</docfilessubdirs>
@@ -694,7 +699,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-report-plugin</artifactId>
-				<version>2.21.0</version>
+				<version>2.22.0</version>
 				<reportSets>
 					<reportSet>
 						<id>default</id>
@@ -769,7 +774,7 @@
 		<dependency>
              <groupId>javax.annotation</groupId>
              <artifactId>javax.annotation-api</artifactId>
-             <version>1.3.1</version>
+             <version>1.3.2</version>
              <scope>provided</scope>
              <optional>true</optional>
         </dependency>

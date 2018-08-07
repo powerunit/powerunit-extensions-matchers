@@ -5,8 +5,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.io.StringWriter;
 
-import javax.annotation.processing.Filer;
-import javax.annotation.processing.Messager;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
@@ -17,21 +16,14 @@ import org.mockito.Spy;
 import ch.powerunit.Rule;
 import ch.powerunit.Test;
 import ch.powerunit.TestRule;
-import ch.powerunit.TestSuite;
+import ch.powerunit.extensions.matchers.TestSuiteSupport;
 
-public class FactoryGroupTest implements TestSuite {
+public class FactoryGroupTest implements TestSuiteSupport {
 
 	@Mock
 	private FactoryAnnotatedElementMirror factoryAnnotatedElementMiror;
 
-	@Mock
-	private FactoryAnnotationsProcessor factoryAnnotationProcessor;
-
-	@Mock
-	private Filer filer;
-
-	@Mock
-	private Messager messager;
+	private ProcessingEnvironment processingEnv;
 
 	@Mock
 	private JavaFileObject javaFileObject;
@@ -40,8 +32,7 @@ public class FactoryGroupTest implements TestSuite {
 	private StringWriter outputStream = new StringWriter();
 
 	private void prepareMock() {
-		when(factoryAnnotationProcessor.getFiler()).thenReturn(filer);
-		when(factoryAnnotationProcessor.getMessager()).thenReturn(messager);
+		processingEnv = generateMockitoProcessingEnvironment();
 	}
 
 	@Rule
@@ -49,23 +40,24 @@ public class FactoryGroupTest implements TestSuite {
 
 	@Test
 	public void testConstructorWithOneEntry() {
-		FactoryGroup underTest = new FactoryGroup(factoryAnnotationProcessor, ".*:target");
+		FactoryGroup underTest = new FactoryGroup(processingEnv, ".*:target");
 		assertThat(underTest.getFullyQualifiedTargetName()).is("target");
 		assertThat(underTest.getAcceptingRegex()).is(arrayContaining(".*"));
 	}
 
 	@Test
 	public void testConstructorWithTwoEntry() {
-		FactoryGroup underTest = new FactoryGroup(factoryAnnotationProcessor, "a.*,b.*:target");
+		FactoryGroup underTest = new FactoryGroup(processingEnv, "a.*,b.*:target");
 		assertThat(underTest.getFullyQualifiedTargetName()).is("target");
 		assertThat(underTest.getAcceptingRegex()).is(arrayContaining("a.*", "b.*"));
 	}
 
 	@Test
 	public void testConstructorWithTwoEntryAndNoTargetMethod() throws IOException {
-		when(filer.createSourceFile(Mockito.eq("target"), Mockito.anyVararg())).thenReturn(javaFileObject);
+		when(processingEnv.getFiler().createSourceFile(Mockito.eq("target"), Mockito.anyVararg()))
+				.thenReturn(javaFileObject);
 		when(javaFileObject.openWriter()).thenReturn(outputStream);
-		FactoryGroup underTest = new FactoryGroup(factoryAnnotationProcessor, "a.*,b.*:target");
+		FactoryGroup underTest = new FactoryGroup(processingEnv, "a.*,b.*:target");
 		underTest.processGenerateOneFactoryInterface();
 		String target = outputStream.toString().replace('\r', '\n');
 		assertThat(target).is(containsString("package target"));
@@ -78,37 +70,38 @@ public class FactoryGroupTest implements TestSuite {
 	@Test
 	public void testConstructorWithOneEntryAndIsAcceptedReturnTrue() {
 		when(factoryAnnotatedElementMiror.getSurroundingFullyQualifiedName()).thenReturn("ab");
-		FactoryGroup underTest = new FactoryGroup(factoryAnnotationProcessor, "a.*:target");
+		FactoryGroup underTest = new FactoryGroup(processingEnv, "a.*:target");
 		assertThatFunction(underTest::isAccepted, factoryAnnotatedElementMiror).is(true);
 	}
 
 	@Test
 	public void testConstructorWithOneEntryAndIsAcceptedReturnFalse() {
 		when(factoryAnnotatedElementMiror.getSurroundingFullyQualifiedName()).thenReturn("ba");
-		FactoryGroup underTest = new FactoryGroup(factoryAnnotationProcessor, "a.*:target");
+		FactoryGroup underTest = new FactoryGroup(processingEnv, "a.*:target");
 		assertThatFunction(underTest::isAccepted, factoryAnnotatedElementMiror).is(false);
 	}
 
 	@Test(fastFail = false)
 	public void testIsAccepted() throws IOException {
-		FactoryGroup underTest = new FactoryGroup(factoryAnnotationProcessor, "a.*,b.*:target");
+		FactoryGroup underTest = new FactoryGroup(processingEnv, "a.*,b.*:target");
 
 		when(factoryAnnotatedElementMiror.getSurroundingFullyQualifiedName()).thenReturn("aa");
 		assertThat(underTest.isAccepted(factoryAnnotatedElementMiror)).is(true);
-
+		
 		when(factoryAnnotatedElementMiror.getSurroundingFullyQualifiedName()).thenReturn("bb");
 		assertThat(underTest.isAccepted(factoryAnnotatedElementMiror)).is(true);
-
+		
 		when(factoryAnnotatedElementMiror.getSurroundingFullyQualifiedName()).thenReturn("cc");
 		assertThat(underTest.isAccepted(factoryAnnotatedElementMiror)).is(false);
 	}
 
 	@Test
 	public void testConstructorWithTwoEntryAndOneTargetMethod() throws IOException {
-		when(filer.createSourceFile(Mockito.eq("target"), Mockito.anyVararg())).thenReturn(javaFileObject);
+		when(processingEnv.getFiler().createSourceFile(Mockito.eq("target"), Mockito.anyVararg()))
+				.thenReturn(javaFileObject);
 		when(javaFileObject.openWriter()).thenReturn(outputStream);
 		when(factoryAnnotatedElementMiror.generateFactory()).thenReturn("<generated>");
-		FactoryGroup underTest = new FactoryGroup(factoryAnnotationProcessor, "a.*,b.*:target");
+		FactoryGroup underTest = new FactoryGroup(processingEnv, "a.*,b.*:target");
 		underTest.addMethod(factoryAnnotatedElementMiror);
 		underTest.processGenerateOneFactoryInterface();
 		String target = outputStream.toString().replace('\r', '\n');
@@ -123,14 +116,15 @@ public class FactoryGroupTest implements TestSuite {
 
 	@Test
 	public void testConstructorWithTwoEntryAndOneTargetMethodWithIOException() throws IOException {
-		when(filer.createSourceFile(Mockito.eq("target"), Mockito.anyVararg())).thenReturn(javaFileObject);
+		when(processingEnv.getFiler().createSourceFile(Mockito.eq("target"), Mockito.anyVararg()))
+				.thenReturn(javaFileObject);
 		when(javaFileObject.openWriter()).thenThrow(IOException.class);
 		when(factoryAnnotatedElementMiror.generateFactory()).thenReturn("<generated>");
-		FactoryGroup underTest = new FactoryGroup(factoryAnnotationProcessor, "a.*,b.*:target");
+		FactoryGroup underTest = new FactoryGroup(processingEnv, "a.*,b.*:target");
 		underTest.addMethod(factoryAnnotatedElementMiror);
 		underTest.processGenerateOneFactoryInterface();
-		Mockito.verify(factoryAnnotationProcessor).getMessager();
-		Mockito.verify(messager).printMessage(Mockito.eq(Kind.ERROR), Mockito.anyString());
+		Mockito.verify(processingEnv).getMessager();
+		Mockito.verify(processingEnv.getMessager()).printMessage(Mockito.eq(Kind.ERROR), Mockito.anyString());
 
 	}
 

@@ -19,9 +19,10 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
+import ch.powerunit.extensions.matchers.common.ElementHelper;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 
-public abstract class AbstractFieldDescriptionContainerMetaData {
+public abstract class AbstractFieldDescriptionContainerMetaData implements ElementHelper {
 
 	protected final ProvidesMatchersAnnotatedElementData containingElementMirror;
 

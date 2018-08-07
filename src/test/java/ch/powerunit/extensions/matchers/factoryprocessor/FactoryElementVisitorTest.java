@@ -7,12 +7,12 @@ import static org.mockito.Mockito.when;
 import java.util.EnumSet;
 import java.util.Optional;
 
-import javax.annotation.processing.Messager;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
 
 import org.mockito.Mock;
@@ -21,30 +21,28 @@ import org.mockito.Mockito;
 import ch.powerunit.Rule;
 import ch.powerunit.Test;
 import ch.powerunit.TestRule;
-import ch.powerunit.TestSuite;
+import ch.powerunit.extensions.matchers.TestSuiteSupport;
 
-public class FactoryElementVisitorTest implements TestSuite {
+public class FactoryElementVisitorTest implements TestSuiteSupport {
 
-	@Mock
-	private FactoryAnnotationsProcessor factoryAnnotationsProcessor;
+	private RoundEnvironment roundEnv;
 
-	@Mock
-	private Elements elements;
-
-	@Mock
-	private Messager messageUtils;
+	private ProcessingEnvironment processingEnv;
 
 	@Mock
 	private TypeElement factoryTE;
 
+	private RoundMirror roundMirror;
+
 	private void prepareMock() {
-		when(factoryAnnotationsProcessor.getElementUtils()).thenReturn(elements);
-		when(factoryAnnotationsProcessor.getMessager()).thenReturn(messageUtils);
+		processingEnv = generateMockitoProcessingEnvironment();
+		roundEnv = generateMockitoRoundEnvironment();
+		roundMirror = new RoundMirror(roundEnv, processingEnv);
 	}
 
 	@Rule
 	public final TestRule rules = mockitoRule().around(before(this::prepareMock))
-			.around(before(() -> underTest = new FactoryElementVisitor()));
+			.around(before(() -> underTest = new FactoryElementVisitor(roundMirror)));
 
 	private FactoryElementVisitor underTest;
 
@@ -53,7 +51,7 @@ public class FactoryElementVisitorTest implements TestSuite {
 		ExecutableElement ee = mock(ExecutableElement.class);
 		when(ee.getModifiers()).thenReturn(EnumSet.of(Modifier.STATIC, Modifier.PUBLIC));
 		when(ee.getKind()).thenReturn(ElementKind.METHOD);
-		Optional<ExecutableElement> visitResult = underTest.visitExecutable(ee, factoryAnnotationsProcessor);
+		Optional<ExecutableElement> visitResult = underTest.visitExecutable(ee, null);
 		assertThat(visitResult).isNotNull();
 		assertThat(visitResult.isPresent()).is(true);
 		assertThat(visitResult.get()).is(sameInstance(ee));
@@ -64,22 +62,22 @@ public class FactoryElementVisitorTest implements TestSuite {
 		ExecutableElement ee = mock(ExecutableElement.class);
 		when(ee.getModifiers()).thenReturn(EnumSet.of(Modifier.STATIC));
 		when(ee.getKind()).thenReturn(ElementKind.METHOD);
-		Optional<ExecutableElement> visitResult = underTest.visitExecutable(ee, factoryAnnotationsProcessor);
+		Optional<ExecutableElement> visitResult = underTest.visitExecutable(ee, null);
 		assertThat(visitResult).isNotNull();
 		assertThat(visitResult.isPresent()).is(false);
-		verify(messageUtils).printMessage(Mockito.eq(Kind.MANDATORY_WARNING), Mockito.anyString(), Mockito.same(ee),
-				Mockito.anyVararg());
+		verify(processingEnv.getMessager()).printMessage(Mockito.eq(Kind.MANDATORY_WARNING), Mockito.anyString(),
+				Mockito.same(ee), Mockito.anyVararg());
 	}
-	
+
 	@Test
 	public void testVisitExecutablePublicAndNotStaticThenResultIsNotPresent() {
 		ExecutableElement ee = mock(ExecutableElement.class);
 		when(ee.getModifiers()).thenReturn(EnumSet.of(Modifier.PUBLIC));
 		when(ee.getKind()).thenReturn(ElementKind.METHOD);
-		Optional<ExecutableElement> visitResult = underTest.visitExecutable(ee, factoryAnnotationsProcessor);
+		Optional<ExecutableElement> visitResult = underTest.visitExecutable(ee, null);
 		assertThat(visitResult).isNotNull();
 		assertThat(visitResult.isPresent()).is(false);
-		verify(messageUtils).printMessage(Mockito.eq(Kind.MANDATORY_WARNING), Mockito.anyString(), Mockito.same(ee),
-				Mockito.anyVararg());
+		verify(processingEnv.getMessager()).printMessage(Mockito.eq(Kind.MANDATORY_WARNING), Mockito.anyString(),
+				Mockito.same(ee), Mockito.anyVararg());
 	}
 }

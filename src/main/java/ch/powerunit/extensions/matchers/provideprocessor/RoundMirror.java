@@ -45,6 +45,7 @@ import ch.powerunit.extensions.matchers.AddToMatchers;
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.common.AbstractRoundMirrorReferenceToProcessingEnv;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.AutomatedExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.beanmatchers.DefaultBeanMatchersAutomatedExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.LocalDateMatchersAutomatedExtension;
@@ -90,7 +91,7 @@ public class RoundMirror extends AbstractRoundMirrorReferenceToProcessingEnv {
 		elementsWithPM.stream().filter(e -> roundEnv.getRootElements().contains(e))
 				.map(e -> e.accept(providesMatchersElementVisitor, null)).filter(Optional::isPresent)
 				.map(t -> new ProvidesMatchersAnnotatedElementMirror(t.get(), this))
-				.forEach(a -> alias.put(a.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher(), a));
+				.forEach(a -> alias.put(a.getFullyQualifiedNameOfClassAnnotated(), a));
 
 		doWarningforAllElements();
 		return alias.values();
@@ -135,8 +136,8 @@ public class RoundMirror extends AbstractRoundMirrorReferenceToProcessingEnv {
 	public AnnotationMirror getProvideMatchersAnnotation(Element e) {
 		TypeMirror pmtm = processingEnv.getElementUtils()
 				.getTypeElement("ch.powerunit.extensions.matchers.ProvideMatchers").asType();
-		return getProcessingEnv().getElementUtils().getAllAnnotationMirrors(e).stream()
-				.filter(a -> a.getAnnotationType().equals(pmtm)).findAny().orElse(null);
+		return getElementUtils().getAllAnnotationMirrors(e).stream().filter(a -> a.getAnnotationType().equals(pmtm))
+				.findAny().orElse(null);
 	}
 
 	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData target) {

@@ -22,57 +22,59 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
+import java.util.function.Function;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
 
-import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
-import ch.powerunit.extensions.matchers.provideprocessor.extension.AnyOfExtension;
-import ch.powerunit.extensions.matchers.provideprocessor.extension.ArrayContainingDSLExtension;
-import ch.powerunit.extensions.matchers.provideprocessor.extension.ArrayContainingInAnyOrderDSLExtension;
-import ch.powerunit.extensions.matchers.provideprocessor.extension.ContainsDSLExtension;
-import ch.powerunit.extensions.matchers.provideprocessor.extension.ContainsInAnyOrderDSLExtension;
+import ch.powerunit.extensions.matchers.common.AbstractTypeElementMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.DSLExtension;
-import ch.powerunit.extensions.matchers.provideprocessor.extension.HasItemsExtension;
 
-public class ProvideMatchersMirror {
+public class ProvideMatchersMirror extends AbstractTypeElementMirror<ProvideMatchers, RoundMirror> {
 
-	private static final Collection<DSLExtension> EXTENSION = Collections.unmodifiableList(Arrays.asList(
-			new ContainsDSLExtension(), new ArrayContainingDSLExtension(), new HasItemsExtension(),
-			new ContainsInAnyOrderDSLExtension(), new ArrayContainingInAnyOrderDSLExtension(), new AnyOfExtension()));
+	private static final String DEFAULT_PARAM_PARENT = " * @param <_PARENT> used to reference, if necessary, a parent for this builder. By default Void is used an indicate no parent builder.\n";
 
-	private final ProvideMatchers pm;
-	private final String simpleNameOfGeneratedClass;
-	private final String packageNameOfGeneratedClass;
-	private final ComplementaryExpositionMethod[] moreMethod;
+	public static final String JAVADOC_WARNING_SYNTAXIC_SUGAR_NO_CHANGE_ANYMORE = "<b>This method is a syntaxic sugar that end the DSL and make clear that the matcher can't be change anymore.</b>";
 
-	public ProvideMatchersMirror(ProcessingEnvironment processingEnv, TypeElement annotatedElement) {
-		pm = annotatedElement.getAnnotation(ProvideMatchers.class);
+	public static final String JAVADOC_WARNING_PARENT_MAY_BE_VOID = "<b>This method only works in the context of a parent builder. If the real type is Void, then nothing will be returned.</b>";
+
+	protected final String simpleNameOfGeneratedClass;
+	protected final String packageNameOfGeneratedClass;
+	protected final String simpleNameOfGeneratedInterfaceMatcher;
+
+	public ProvideMatchersMirror(RoundMirror roundMirror, TypeElement annotatedElement) {
+		super(ProvideMatchers.class, roundMirror, annotatedElement);
+		ProvideMatchers pm = annotation.get();
+		this.simpleNameOfGeneratedClass = generateSimpleNameOfGeneratedClass(annotatedElement, pm);
+		this.packageNameOfGeneratedClass = generatePackageNameOfGeneratedClass(annotatedElement, pm,
+				getProcessingEnv().getElementUtils());
+		this.simpleNameOfGeneratedInterfaceMatcher = getSimpleNameOfClassAnnotated() + "Matcher";
+	}
+
+	private String generateSimpleNameOfGeneratedClass(TypeElement annotatedElement, ProvideMatchers pm) {
 		if ("".equals(pm.matchersClassName())) {
-			simpleNameOfGeneratedClass = annotatedElement.getSimpleName().toString() + "Matchers";
+			return getSimpleName(annotatedElement) + "Matchers";
 		} else {
-			simpleNameOfGeneratedClass = pm.matchersClassName();
+			return pm.matchersClassName();
 		}
-		if ("".equals(pm.matchersPackageName())) {
-			packageNameOfGeneratedClass = processingEnv.getElementUtils().getPackageOf(annotatedElement)
-					.getQualifiedName().toString();
-		} else {
-			packageNameOfGeneratedClass = pm.matchersPackageName();
-		}
-		this.moreMethod = pm.moreMethod();
 	}
 
-	public final String getComments() {
-		return pm.comments();
+	private String generatePackageNameOfGeneratedClass(TypeElement annotatedElement, ProvideMatchers pm,
+			Elements elements) {
+		if ("".equals(pm.matchersPackageName())) {
+			return getQualifiedName(elements.getPackageOf(annotatedElement));
+		} else {
+			return pm.matchersPackageName();
+		}
 	}
-	
+
 	public final String[] getExtension() {
-		return pm.extensions();
-		
+		return annotation.get().extensions();
+
 	}
 
 	public final String getSimpleNameOfGeneratedClass() {
@@ -88,8 +90,57 @@ public class ProvideMatchersMirror {
 	}
 
 	public final Collection<DSLExtension> getDSLExtension() {
-		return EXTENSION.stream().filter(e -> e.accept(moreMethod))
+		return DSLExtension.EXTENSION.stream().filter(e -> e.accept(annotation.get().moreMethod()))
 				.collect(collectingAndThen(toList(), Collections::unmodifiableList));
+	}
+
+	private Function<String, String> asJavadocFormat(String prefix) {
+		return t -> String.format("%1$s%2$s\n", prefix, t);
+	}
+
+	private String paramToJavadoc(Optional<String> param) {
+		return param.map(asJavadocFormat(" * @param ")).orElse("");
+	}
+
+	protected String generateJavaDocWithoutParamNeitherParent(String description, String moreDetails,
+			Optional<String> param, Optional<String> returnDescription) {
+		return String.format("/**\n * %1$s.\n * <p>\n * %2$s\n%3$s%4$s */\n", description, moreDetails,
+				paramToJavadoc(param), returnDescription.map(asJavadocFormat(" * @return ")).orElse(""));
+	}
+
+	protected String generateDefaultJavaDoc() {
+		return String.format("/**\n * %1$s.\n%2$s * \n%3$s * \n */\n", getDefaultDescriptionForDsl(), getParamComment(),
+				DEFAULT_PARAM_PARENT);
+	}
+
+	protected String generateDefaultJavaDoc(Optional<String> moreDetails, Optional<String> param,
+			String returnDescription, boolean withParent) {
+		StringBuilder sb = new StringBuilder("/**\n * ").append(getDefaultDescriptionForDsl()).append(".\n")
+				.append(moreDetails.map(asJavadocFormat(" * <p>\n * ")).orElse("")).append(paramToJavadoc(param))
+				.append(getParamComment()).append(" * \n");
+		if (withParent) {
+			sb.append(DEFAULT_PARAM_PARENT);
+		}
+		return sb.append(" * @return ").append(returnDescription).append("\n */\n").toString();
+	}
+
+	protected String generateJavaDoc(String description, boolean withParent) {
+		StringBuilder sb = new StringBuilder("/**\n * ").append(description).append(".\n").append(getParamComment())
+				.append(" * \n");
+		if (withParent) {
+			sb.append(DEFAULT_PARAM_PARENT);
+		}
+		return sb.append(" */\n").toString();
+	}
+
+	public String generateMainJavaDoc() {
+		return String.format(
+				"/**\n* This class provides matchers for the class {@link %1$s}.\n * \n * @see %1$s The class for which matchers are provided.\n */\n",
+				getFullyQualifiedNameOfClassAnnotated());
+	}
+
+	private String getDefaultDescriptionForDsl() {
+		return "Start a DSL matcher for the " + getDefaultLinkForAnnotatedClass();
 	}
 
 }
