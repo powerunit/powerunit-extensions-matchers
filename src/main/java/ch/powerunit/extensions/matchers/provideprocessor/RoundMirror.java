@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -68,9 +69,11 @@ public class RoundMirror extends AbstractRoundMirrorReferenceToProcessingEnv {
 		this.elementsWithOtherAnnotations = new HashMap<>();
 		this.elementsWithPM = roundEnv.getElementsAnnotatedWith(ProvideMatchers.class);
 		elementsWithOtherAnnotations.put(IgnoreInMatcher.class,
-				roundEnv.getElementsAnnotatedWith(IgnoreInMatcher.class));
-		elementsWithOtherAnnotations.put(AddToMatcher.class, roundEnv.getElementsAnnotatedWith(AddToMatcher.class));
-		elementsWithOtherAnnotations.put(AddToMatchers.class, roundEnv.getElementsAnnotatedWith(AddToMatchers.class));
+				new HashSet<>(roundEnv.getElementsAnnotatedWith(IgnoreInMatcher.class)));
+		elementsWithOtherAnnotations.put(AddToMatcher.class,
+				new HashSet<>(roundEnv.getElementsAnnotatedWith(AddToMatcher.class)));
+		elementsWithOtherAnnotations.put(AddToMatchers.class,
+				new HashSet<>(roundEnv.getElementsAnnotatedWith(AddToMatchers.class)));
 		AUTOMATED_EXTENSIONS = getDefaultExtension().stream().filter(AutomatedExtension::isPresent)
 				.collect(collectingAndThen(toList(), Collections::unmodifiableList));
 	}
