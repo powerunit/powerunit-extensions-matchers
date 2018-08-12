@@ -9,8 +9,8 @@
 
 	<properties>
 		<!-- Java 8 at least is required -->
-		<java.source.version>1.8</java.source.version>
-		<java.target.version>1.8</java.target.version>
+		<java.source.version>9</java.source.version>
+		<java.target.version>9</java.target.version>
 		<powerunit.extension.matcher.version>${version}</powerunit.extension.matcher.version>
 		<!-- This part is optional and is linked with powerunit -->
 		<powerunit.version>${powerunit.version}</powerunit.version>

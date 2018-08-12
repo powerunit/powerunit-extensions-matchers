@@ -56,7 +56,7 @@ import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatchers;
 @SupportedAnnotationTypes({ "ch.powerunit.extensions.matchers.ProvideMatchers",
 		"ch.powerunit.extensions.matchers.IgnoreInMatcher", "ch.powerunit.extensions.matchers.AddToMatcher",
 		"ch.powerunit.extensions.matchers.AddToMatchers" })
-@SupportedSourceVersion(SourceVersion.RELEASE_8)
+@SupportedSourceVersion(SourceVersion.RELEASE_9)
 @SupportedOptions({ "ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor.factory" })
 public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
