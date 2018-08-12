@@ -4,6 +4,10 @@ matrix:
  include:
   - os: linux
     jdk: oraclejdk9
+  - os: linux
+    jdk: oraclejdk10
+  - os: linux
+    jdk: openjdk10
 sudo: false
 addons:
     apt:
@@ -24,12 +28,12 @@ after_success:
 - "mvn jacoco:report -Djacoco.dataFile=target/jacoco-aggregate.exe"
 - "(cd target/dependency && java -jar codacy-coverage-reporter-4.0.0-assembly.jar report -l Java -r ../site/jacoco/jacoco.xml)"
 - "mvn site"
-- "mvn org.apache.maven.plugins:maven-changes-plugin:announcement-generate"
-- export RELEASE_NOTES=$(jshon -s "$(cat target/announcement/announcement.vm)")
 before_deploy:
 - git config --local user.name "powerunitci"
 - git config --local user.email "powerunitci@powerunit.ch"
 - if [[ "$TRAVIS_TAG" =~ powerunit-extensions-matchers-[0-9].[0-9].[0-9] ]]; then echo "No tag to be created" ; else git tag -m "Create ci tag [ci skip]" -f "ci/$TRAVIS_BRANCH/$TRAVIS_BUILD_NUMBER"; fi
+- "mvn org.apache.maven.plugins:maven-changes-plugin:announcement-generate"
+- export RELEASE_NOTES=$(jshon -s "$(cat target/announcement/announcement.vm)")
 deploy:
   - provider: pages
     skip-cleanup: true
@@ -46,7 +50,7 @@ deploy:
     skip_cleanup: true
     prerelease: true
     draft: false
-    body: $RELEASE_NOTES
+    body: "$RELEASE_NOTES"
     on:
       branch: master
       tags: false
@@ -62,4 +66,3 @@ deploy:
     on:
       tags: true
       condition: $TRAVIS_JDK_VERSION = oraclejdk9 && "$TRAVIS_TAG" =~ powerunit-extensions-matchers-[0-9].[0-9].[0-9]
-      
