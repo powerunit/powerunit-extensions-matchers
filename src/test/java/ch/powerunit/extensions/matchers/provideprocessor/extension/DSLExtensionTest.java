@@ -28,8 +28,8 @@ import java.util.function.Supplier;
 import ch.powerunit.Test;
 import ch.powerunit.TestSuite;
 import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
-import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
 
 public class DSLExtensionTest implements TestSuite {
 	@Test(fastFail = false)

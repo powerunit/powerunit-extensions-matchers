@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.tools.Diagnostic.Kind;
 
@@ -38,10 +39,10 @@ class FactoryGroup {
 
 	private final List<FactoryAnnotatedElementMirror> method = new ArrayList<>();
 
-	private final FactoryAnnotationsProcessor parent;
+	private final ProcessingEnvironment processingEnv;
 
-	public FactoryGroup(FactoryAnnotationsProcessor parent, String definition) {
-		this.parent = parent;
+	public FactoryGroup(ProcessingEnvironment processingEnv, String definition) {
+		this.processingEnv = processingEnv;
 		String split[] = definition.split("\\s*:\\s*");
 		this.acceptingRegex = split[0].split("\\s*,\\s*");
 		this.fullyQualifiedTargetName = split[1];
@@ -60,21 +61,20 @@ class FactoryGroup {
 	}
 
 	public boolean isAccepted(FactoryAnnotatedElementMirror faem) {
-		return Arrays.stream(acceptingRegex).map(a -> faem.getSurroundingFullyQualifiedName().matches(a)).findAny()
-				.orElse(false);
+		return Arrays.stream(acceptingRegex).anyMatch(a -> faem.getSurroundingFullyQualifiedName().matches(a));
 	}
 
 	public void processGenerateOneFactoryInterface() {
 		FileObjectHelper.processFileWithIOException(
-				() -> parent.getFiler().createSourceFile(fullyQualifiedTargetName,
+				() -> processingEnv.getFiler().createSourceFile(fullyQualifiedTargetName,
 						method.stream().map((e) -> e.getElement()).toArray(ExecutableElement[]::new)),
 				jfo -> new PrintWriter(jfo.openWriter()), wjfo -> {
 					String pName = fullyQualifiedTargetName.replaceAll("\\.[^.]+$", "");
 					String cName = fullyQualifiedTargetName.substring(fullyQualifiedTargetName.lastIndexOf('.') + 1);
 					FactoryHelper.generateFactoryClass(wjfo, FactoryAnnotationsProcessor.class, pName, cName,
 							() -> method.stream().map(FactoryAnnotatedElementMirror::generateFactory));
-				} ,
-				e -> parent.getMessager().printMessage(Kind.ERROR,
+				},
+				e -> processingEnv.getMessager().printMessage(Kind.ERROR,
 						"Unable to create the file containing the target class `" + fullyQualifiedTargetName
 								+ "`, because of " + e.getMessage()));
 	}

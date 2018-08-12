@@ -25,24 +25,17 @@ import static java.util.stream.Collectors.toList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.Filer;
-import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 
 import org.hamcrest.Factory;
@@ -50,11 +43,9 @@ import org.hamcrest.Factory;
 @SupportedAnnotationTypes({ "org.hamcrest.Factory" })
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedOptions({ "ch.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets" })
-public class FactoryAnnotationsProcessor extends AbstractProcessor implements ProcessingEnvironment {
+public class FactoryAnnotationsProcessor extends AbstractProcessor {
 
 	private List<FactoryGroup> build;
-
-	private TypeElement factoryAnnotationTE;
 
 	@Override
 	public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -65,10 +56,9 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor implements Pr
 					+ FactoryAnnotationsProcessor.class.getName() + ".targets` is missing, please use it.");
 			build = Collections.emptyList();
 		} else {
-			build = Arrays.stream(targets.split("\\s*;\\s*")).map(e -> new FactoryGroup(this, e))
+			build = Arrays.stream(targets.split("\\s*;\\s*")).map(e -> new FactoryGroup(processingEnv, e))
 					.collect(collectingAndThen(toList(), Collections::unmodifiableList));
 		}
-		factoryAnnotationTE = processingEnv.getElementUtils().getTypeElement("org.hamcrest.Factory");
 	}
 
 	/*
@@ -96,52 +86,12 @@ public class FactoryAnnotationsProcessor extends AbstractProcessor implements Pr
 	}
 
 	public void processFactoryAnnotation(RoundEnvironment roundEnv) {
+		RoundMirror rm = new RoundMirror(roundEnv, processingEnv);
 		Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(Factory.class);
-		FactoryElementVisitor factoryElementVisitor = new FactoryElementVisitor();
-		elements.stream().filter(e -> roundEnv.getRootElements().contains(e.getEnclosingElement()))
-				.forEach(e -> e
-						.accept(factoryElementVisitor, this).map(
-								ee -> new FactoryAnnotatedElementMirror(this, ee))
+		FactoryElementVisitor factoryElementVisitor = new FactoryElementVisitor(rm);
+		elements.stream().filter(e -> roundEnv.getRootElements().contains(e.getEnclosingElement())).forEach(e -> e
+				.accept(factoryElementVisitor, null).map(ee -> new FactoryAnnotatedElementMirror(rm, ee))
 				.ifPresent(faem -> build.stream().filter(f -> f.isAccepted(faem)).forEach(f -> f.addMethod(faem))));
 	}
 
-	public AnnotationMirror getFactoryAnnotation(Element e) {
-		return getElementUtils().getAllAnnotationMirrors(e).stream()
-				.filter(a -> a.getAnnotationType().equals(factoryAnnotationTE.asType())).findAny().orElse(null);
-	}
-
-	@Override
-	public Elements getElementUtils() {
-		return processingEnv.getElementUtils();
-	}
-
-	@Override
-	public Filer getFiler() {
-		return processingEnv.getFiler();
-	}
-
-	@Override
-	public Locale getLocale() {
-		return processingEnv.getLocale();
-	}
-
-	@Override
-	public Messager getMessager() {
-		return processingEnv.getMessager();
-	}
-
-	@Override
-	public Map<String, String> getOptions() {
-		return processingEnv.getOptions();
-	}
-
-	@Override
-	public SourceVersion getSourceVersion() {
-		return processingEnv.getSourceVersion();
-	}
-
-	@Override
-	public Types getTypeUtils() {
-		return processingEnv.getTypeUtils();
-	}
 }

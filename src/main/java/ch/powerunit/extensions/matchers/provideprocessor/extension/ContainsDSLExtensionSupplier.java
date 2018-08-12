@@ -19,12 +19,14 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.extension;
 
+import static ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod.of;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Supplier;
 
-import ch.powerunit.extensions.matchers.provideprocessor.DSLMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
 
 public class ContainsDSLExtensionSupplier extends AbstractDSLExtensionSupplier {
 
@@ -77,20 +79,14 @@ public class ContainsDSLExtensionSupplier extends AbstractDSLExtensionSupplier {
 	}
 
 	public DSLMethod generateContainsN() {
-		return new DSLMethod(
-				new String[] { getJavaDocDescription(),
+		return of(returnType + " " + methodName)
+				.withArguments(getSeveralParameter(true, "first", "second", "third", "last"))
+				.withImplementation(generateSeveralWithImplementation(getMatcher(), "first", "second", "third"))
+				.withJavadoc(getJavaDocDescription(),
 						"@param first the first element contained inside the target iterable",
 						"@param second the second element contained inside the target iterable",
 						"@param third the third element contained inside the target iterable",
-						"@param last the next element", "@return the Matcher." },
-				returnType + " " + methodName, getSeveralParameter(true, "first", "second", "third", "last"),
-				new String[] {
-						"java.util.List<org.hamcrest.Matcher<" + targetName
-								+ ">> tmp = new java.util.ArrayList<>(java.util.Arrays.asList("
-								+ getSeveralWith("first", "second", "third") + "));",
-						"tmp.addAll(java.util.Arrays.stream(last).map(v->" + targetMethodName
-								+ "(v)).collect(java.util.stream.Collectors.toList()));",
-						"return " + getMatcher() + "(tmp.toArray(new org.hamcrest.Matcher[0]));" });
+						"@param last the next element", "@return the Matcher.");
 	}
 
 }

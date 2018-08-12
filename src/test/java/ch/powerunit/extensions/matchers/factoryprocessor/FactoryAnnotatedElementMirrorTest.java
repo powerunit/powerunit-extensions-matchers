@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import javax.annotation.processing.Messager;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -26,25 +28,24 @@ import ch.powerunit.Parameters;
 import ch.powerunit.Rule;
 import ch.powerunit.Test;
 import ch.powerunit.TestRule;
-import ch.powerunit.TestSuite;
+import ch.powerunit.extensions.matchers.TestSuiteSupport;
 
-public class FactoryAnnotatedElementMirrorTest implements TestSuite {
+public class FactoryAnnotatedElementMirrorTest implements TestSuiteSupport {
 
 	@Parameters("Test with return void = %0$s and with param = %1$s")
 	public static Stream<Object[]> getParameters() {
-		return Arrays.stream(new Object[][] {
-				{ true, false, false,
-						"  /**\n   * No javadoc found from the source method.\n   * @see .sn#method()\n   */\n  default void method() {\n    fqn.sn.method();\n  }\n\n" },
+		return Arrays.stream(new Object[][] { { true, false, false,
+				"  /**\n   * No javadoc found from the source method.\n   * @see fqn.sn#method()\n   */\n  default void method() {\n    fqn.sn.method();\n  }\n\n" },
 				{ false, false, false,
-						"  /**\n   * No javadoc found from the source method.\n   * @see .sn#method()\n   */\n  default returnType method() {\n    return fqn.sn.method();\n  }\n\n" },
+						"  /**\n   * No javadoc found from the source method.\n   * @see fqn.sn#method()\n   */\n  default returnType method() {\n    return fqn.sn.method();\n  }\n\n" },
 				{ false, true, false,
-						"  /**\n   * No javadoc found from the source method.\n   * @see .sn#method(type)\n   */\n  default returnType method(type param) {\n    return fqn.sn.method(param);\n  }\n\n" },
+						"  /**\n   * No javadoc found from the source method.\n   * @see fqn.sn#method(type)\n   */\n  default returnType method(type param) {\n    return fqn.sn.method(param);\n  }\n\n" },
 				{ true, true, false,
-						"  /**\n   * No javadoc found from the source method.\n   * @see .sn#method(type)\n   */\n  default void method(type param) {\n    fqn.sn.method(param);\n  }\n\n" },
+						"  /**\n   * No javadoc found from the source method.\n   * @see fqn.sn#method(type)\n   */\n  default void method(type param) {\n    fqn.sn.method(param);\n  }\n\n" },
 				{ false, true, true,
-						"  /**\n   * No javadoc found from the source method.\n   * @see .sn#method(type...)\n   */\n  default returnType method(type... param) {\n    return fqn.sn.method(param);\n  }\n\n" },
+						"  /**\n   * No javadoc found from the source method.\n   * @see fqn.sn#method(type...)\n   */\n  default returnType method(type... param) {\n    return fqn.sn.method(param);\n  }\n\n" },
 				{ true, true, true,
-						"  /**\n   * No javadoc found from the source method.\n   * @see .sn#method(type...)\n   */\n  default void method(type... param) {\n    fqn.sn.method(param);\n  }\n\n" } });
+						"  /**\n   * No javadoc found from the source method.\n   * @see fqn.sn#method(type...)\n   */\n  default void method(type... param) {\n    fqn.sn.method(param);\n  }\n\n" } });
 	}
 
 	@Parameter(0)
@@ -59,13 +60,8 @@ public class FactoryAnnotatedElementMirrorTest implements TestSuite {
 	@Parameter(3)
 	public String expectingResult;
 
-	@Mock
-	private FactoryAnnotationsProcessor factoryAnnotationsProcessor;
-
-	@Mock
 	private Elements elements;
 
-	@Mock
 	private Messager messageUtils;
 
 	@Mock
@@ -104,7 +100,17 @@ public class FactoryAnnotatedElementMirrorTest implements TestSuite {
 	@Mock
 	private Types types;
 
+	private ProcessingEnvironment processingEnv;
+
+	private RoundEnvironment roundEnv;
+
+	private RoundMirror roundMirror;
+
 	private void prepareMock() {
+		processingEnv = generateMockitoProcessingEnvironment();
+		roundEnv = generateMockitoRoundEnvironment();
+		elements = processingEnv.getElementUtils();
+		messageUtils = processingEnv.getMessager();
 		when(executableElement.getEnclosingElement()).thenReturn(classElement);
 		when(executableElement.getSimpleName()).thenReturn(elementName);
 		when(executableElement.getReturnType()).thenReturn(returnType);
@@ -114,9 +120,11 @@ public class FactoryAnnotatedElementMirrorTest implements TestSuite {
 
 		when(classTypeMirror.toString()).thenReturn("fqn.sn");
 
-		when(factoryAnnotationsProcessor.getElementUtils()).thenReturn(elements);
-		when(factoryAnnotationsProcessor.getTypeUtils()).thenReturn(types);
-		when(factoryAnnotationsProcessor.getMessager()).thenReturn(messageUtils);
+		when(processingEnv.getElementUtils()).thenReturn(elements);
+		when(processingEnv.getTypeUtils()).thenReturn(types);
+		when(processingEnv.getMessager()).thenReturn(messageUtils);
+
+		roundMirror = new RoundMirror(roundEnv, processingEnv);
 
 		when(elements.getPackageOf(classElement)).thenReturn(packageElement);
 
@@ -158,8 +166,7 @@ public class FactoryAnnotatedElementMirrorTest implements TestSuite {
 
 	@Rule
 	public final TestRule rules = mockitoRule().around(before(this::prepareMock)).around(before(this::useparam))
-			.around(before(() -> underTest = new FactoryAnnotatedElementMirror(factoryAnnotationsProcessor,
-					executableElement)));
+			.around(before(() -> underTest = new FactoryAnnotatedElementMirror(roundMirror, executableElement)));
 
 	private FactoryAnnotatedElementMirror underTest;
 

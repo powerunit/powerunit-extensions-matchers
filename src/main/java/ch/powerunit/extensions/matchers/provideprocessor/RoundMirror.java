@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,6 +45,7 @@ import ch.powerunit.extensions.matchers.AddToMatchers;
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.common.AbstractRoundMirrorReferenceToProcessingEnv;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.AutomatedExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.beanmatchers.DefaultBeanMatchersAutomatedExtension;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.LocalDateMatchersAutomatedExtension;
@@ -67,9 +69,11 @@ public class RoundMirror extends AbstractRoundMirrorReferenceToProcessingEnv {
 		this.elementsWithOtherAnnotations = new HashMap<>();
 		this.elementsWithPM = roundEnv.getElementsAnnotatedWith(ProvideMatchers.class);
 		elementsWithOtherAnnotations.put(IgnoreInMatcher.class,
-				roundEnv.getElementsAnnotatedWith(IgnoreInMatcher.class));
-		elementsWithOtherAnnotations.put(AddToMatcher.class, roundEnv.getElementsAnnotatedWith(AddToMatcher.class));
-		elementsWithOtherAnnotations.put(AddToMatchers.class, roundEnv.getElementsAnnotatedWith(AddToMatchers.class));
+				new HashSet<>(roundEnv.getElementsAnnotatedWith(IgnoreInMatcher.class)));
+		elementsWithOtherAnnotations.put(AddToMatcher.class,
+				new HashSet<>(roundEnv.getElementsAnnotatedWith(AddToMatcher.class)));
+		elementsWithOtherAnnotations.put(AddToMatchers.class,
+				new HashSet<>(roundEnv.getElementsAnnotatedWith(AddToMatchers.class)));
 		AUTOMATED_EXTENSIONS = getDefaultExtension().stream().filter(AutomatedExtension::isPresent)
 				.collect(collectingAndThen(toList(), Collections::unmodifiableList));
 	}
@@ -87,7 +91,7 @@ public class RoundMirror extends AbstractRoundMirrorReferenceToProcessingEnv {
 		elementsWithPM.stream().filter(e -> roundEnv.getRootElements().contains(e))
 				.map(e -> e.accept(providesMatchersElementVisitor, null)).filter(Optional::isPresent)
 				.map(t -> new ProvidesMatchersAnnotatedElementMirror(t.get(), this))
-				.forEach(a -> alias.put(a.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher(), a));
+				.forEach(a -> alias.put(a.getFullyQualifiedNameOfClassAnnotated(), a));
 
 		doWarningforAllElements();
 		return alias.values();
@@ -98,18 +102,16 @@ public class RoundMirror extends AbstractRoundMirrorReferenceToProcessingEnv {
 	}
 
 	private void doWarningForElement(Set<? extends Element> elements, Class<?> aa) {
-		elements.stream()
-				.forEach(e -> processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
-						"Annotation @" + aa.getName()
-								+ " not supported at this location ; The surrounding class is not annotated with @ProvideMatchers",
-						e, findAnnotationMirrorFor(e, aa)));
+		elements.stream().forEach(e -> processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING, "Annotation @"
+				+ aa.getName()
+				+ " not supported at this location ; The surrounding class is not annotated with @ProvideMatchers", e,
+				findAnnotationMirrorFor(e, aa)));
 	}
 
 	private AnnotationMirror findAnnotationMirrorFor(Element e, Class<?> aa) {
 		String aaName = aa.getName().toString();
-		return e.getAnnotationMirrors().stream()
-				.filter(a -> a.getAnnotationType()
-						.equals(processingEnv.getElementUtils().getTypeElement(aaName).asType()))
+		return e.getAnnotationMirrors().stream().filter(
+				a -> a.getAnnotationType().equals(processingEnv.getElementUtils().getTypeElement(aaName).asType()))
 				.findAny().orElse(null);
 	}
 
@@ -134,8 +136,8 @@ public class RoundMirror extends AbstractRoundMirrorReferenceToProcessingEnv {
 	public AnnotationMirror getProvideMatchersAnnotation(Element e) {
 		TypeMirror pmtm = processingEnv.getElementUtils()
 				.getTypeElement("ch.powerunit.extensions.matchers.ProvideMatchers").asType();
-		return getProcessingEnv().getElementUtils().getAllAnnotationMirrors(e).stream()
-				.filter(a -> a.getAnnotationType().equals(pmtm)).findAny().orElse(null);
+		return getElementUtils().getAllAnnotationMirrors(e).stream().filter(a -> a.getAnnotationType().equals(pmtm))
+				.findAny().orElse(null);
 	}
 
 	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData target) {

@@ -24,8 +24,19 @@ import java.util.function.Consumer;
 
 import javax.tools.FileObject;
 
+/**
+ * These are method to write class.
+ * 
+ * @author borettim
+ *
+ */
 public final class FileObjectHelper {
 	private FileObjectHelper() {
+	}
+
+	@FunctionalInterface
+	public static interface FunctionrWithException<S, R> {
+		R apply(S input) throws Exception;
 	}
 
 	@FunctionalInterface
@@ -43,17 +54,26 @@ public final class FileObjectHelper {
 		R apply(T input) throws Exception;
 	}
 
-	public static <T extends FileObject, S extends Closeable> boolean processFileWithIOException(
+	public static <T extends FileObject, S extends Closeable, R> R processFileWithIOExceptionAndResult(
 			SupplierWithException<T> generateFileObject, FunctionWithException<T, S> openStream,
-			ConsumerWithException<S> actions, Consumer<Exception> exceptionHandler) {
+			FunctionrWithException<S, R> actions, Consumer<Exception> exceptionHandler) {
 		try {
 			try (S wjfo = openStream.apply(generateFileObject.get())) {
-				actions.accept(wjfo);
+				return actions.apply(wjfo);
 			}
 		} catch (Exception e) {
 			exceptionHandler.accept(e);
-			return false;
+			return null;
 		}
-		return true;
+	}
+
+	public static <T extends FileObject, S extends Closeable> boolean processFileWithIOException(
+			SupplierWithException<T> generateFileObject, FunctionWithException<T, S> openStream,
+			ConsumerWithException<S> actions, Consumer<Exception> exceptionHandler) {
+		Boolean result = processFileWithIOExceptionAndResult(generateFileObject, openStream, s -> {
+			actions.accept(s);
+			return true;
+		}, exceptionHandler);
+		return Boolean.TRUE.equals(result);
 	}
 }

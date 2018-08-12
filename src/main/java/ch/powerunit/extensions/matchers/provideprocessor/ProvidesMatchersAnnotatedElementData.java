@@ -32,7 +32,7 @@ public interface ProvidesMatchersAnnotatedElementData extends RoundMirrorSupport
 	}
 
 	default String getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher() {
-		return getFullData().getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher();
+		return getFullData().getFullyQualifiedNameOfClassAnnotated();
 	}
 
 	default String getFullGeneric() {
@@ -44,7 +44,7 @@ public interface ProvidesMatchersAnnotatedElementData extends RoundMirrorSupport
 	}
 
 	default String getSimpleNameOfClassAnnotatedWithProvideMatcher() {
-		return getFullData().getSimpleNameOfClassAnnotatedWithProvideMatcher();
+		return getFullData().getSimpleNameOfClassAnnotated();
 	}
 
 	default String getMethodShortClassName() {

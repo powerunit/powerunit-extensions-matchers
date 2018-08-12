@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
  */
-package ch.powerunit.extensions.matchers.provideprocessor;
+package ch.powerunit.extensions.matchers.provideprocessor.dsl;
 
 import ch.powerunit.Test;
 import ch.powerunit.TestSuite;
@@ -30,8 +30,9 @@ public class DSLMethodTest implements TestSuite {
 
 	@Test(fastFail = false)
 	public void testDSLMethodTwoArgument() {
-		DSLMethod m = new DSLMethod(new String[] { "l1", "l2" }, "boolean isOK",
-				new String[][] { { "java.lang.String", "one" }, { "java.lang.String", "two" } }, "l1");
+		DSLMethod m = DSLMethod.of("boolean isOK").addOneArgument("java.lang.String", "one")
+				.addOneArgument("java.lang.String", "two").withImplementation("l1")
+				.withJavadoc(new String[] { "l1", "l2" });
 		assertThat(m.asStaticImplementation()).is(
 				"/**\n * l1\n * l2\n */\n@org.hamcrest.Factory\npublic static boolean isOK(java.lang.String one,java.lang.String two) {\n  l1\n}\n");
 		assertThat(m.asDefaultReference("target")).is(
