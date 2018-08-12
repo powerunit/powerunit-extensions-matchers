@@ -11,8 +11,6 @@ matrix:
     jdk: oraclejdk10
   - os: linux
     jdk: openjdk10
-  - os: linux
-    jdk: openjdk11
   - os: osx
 sudo: false
 install:
