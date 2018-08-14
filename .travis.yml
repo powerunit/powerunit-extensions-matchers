@@ -1,30 +1,69 @@
+if: NOT tag =~ ^ci/
 language: java
-jdk:
-- oraclejdk8
-- oraclejdk9
-- openjdk8
+matrix:
+ include:
+  - os: linux
+    jdk: oraclejdk8
+  - os: linux
+    jdk: oraclejdk9
+  - os: linux
+    jdk: openjdk8
 sudo: false
+addons:
+    apt:
+      update: true
+before_install:
+ - cp .travis.settings.xml $HOME/.m2/settings.xml
+ - if [[ "$TRAVIS_OS_NAME" = linux ]]; then sudo apt-get install jshon ; fi
 install:
 - "mvn dependency:resolve dependency:resolve-plugins"
 script:
 - "mvn -e clean install"
 after_success:
-- "jdk_switcher use oraclejdk8"
 - "mvn jacoco:report coveralls:report -DrepoToken=${repoToken}"
-- "bash <(curl -s https://codecov.io/bash) -c -Funit$TRAVIS_JDK_VERSION"
+- "bash <(curl -s https://codecov.io/bash) -c -Funit$TRAVIS_OS_NAME$TRAVIS_JDK_VERSION"
 - "mvn jacoco:report-integration"
-- "bash <(curl -s https://codecov.io/bash) -c -Fcompiler$TRAVIS_JDK_VERSION"
-- "mvn org.apache.maven.plugins:maven-dependency-plugin:copy -Dartifact=com.codacy:codacy-coverage-reporter:4.0.0:jar:assembly -Dtransitive"
+- "bash <(curl -s https://codecov.io/bash) -c -Fcompiler$TRAVIS_OS_NAME$TRAVIS_JDK_VERSION"
+- "mvn org.apache.maven.plugins:maven-dependency-plugin:copy -Dartifact=com.codacy:codacy-coverage-reporter:5.0.310:jar:assembly -Dtransitive"
 - "mvn jacoco:merge -Djacoco.destFile=target/jacoco-aggregate.exe"
 - "mvn jacoco:report -Djacoco.dataFile=target/jacoco-aggregate.exe"
-- "(cd target/dependency && java -jar codacy-coverage-reporter-4.0.0-assembly.jar report -l Java -r ../site/jacoco/jacoco.xml)"
+- "(cd target/dependency && java -jar codacy-coverage-reporter-5.0.310-assembly.jar report -l Java -r ../site/jacoco/jacoco.xml)"
 - "mvn site"
+before_deploy:
+- git config --local user.name "powerunitci"
+- git config --local user.email "powerunitci@powerunit.ch"
+- if [[ "$TRAVIS_TAG" =~ powerunit-extensions-matchers-[0-9].[0-9].[0-9] ]]; then echo "No tag to be created" ; else git tag -m "Create ci tag [ci skip]" -f "ci/$TRAVIS_BRANCH/$TRAVIS_BUILD_NUMBER"; fi
+- "mvn org.apache.maven.plugins:maven-changes-plugin:announcement-generate"
+- export RELEASE_NOTES=$(jshon -s "$(cat target/announcement/announcement.vm)")
 deploy:
-  provider: pages
-  skip-cleanup: true
-  keep-history: false
-  github-token: $GITHUB_TOKEN
-  local-dir: target/site
-  on:
-    branch: master
-    condition: $TRAVIS_JDK_VERSION = oraclejdk8
+  - provider: pages
+    skip-cleanup: true
+    keep-history: false
+    github-token: $GITHUB_TOKEN
+    local-dir: target/site
+    on:
+      branch: master
+      condition: $TRAVIS_JDK_VERSION = oraclejdk8
+  - provider: releases
+    api_key: $GITHUB_TOKEN
+    file_glob: true
+    file: target/*.jar
+    skip_cleanup: true
+    prerelease: true
+    draft: false
+    body: "$RELEASE_NOTES"
+    on:
+      branch: master
+      tags: false
+      condition: $TRAVIS_JDK_VERSION = oraclejdk8
+  - provider: releases
+    api_key: $GITHUB_TOKEN
+    file_glob: true
+    file: target/*.jar
+    skip_cleanup: true
+    prerelease: false
+    draft: false
+    body: "$RELEASE_NOTES"
+    on:
+      tags: true
+      condition: $TRAVIS_JDK_VERSION = oraclejdk8 && "$TRAVIS_TAG" =~ powerunit-extensions-matchers-[0-9].[0-9].[0-9]
