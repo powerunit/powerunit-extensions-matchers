@@ -28,10 +28,10 @@ after_success:
 - "bash <(curl -s https://codecov.io/bash) -c -Funit$TRAVIS_OS_NAME$TRAVIS_JDK_VERSION"
 - "mvn jacoco:report-integration"
 - "bash <(curl -s https://codecov.io/bash) -c -Fcompiler$TRAVIS_OS_NAME$TRAVIS_JDK_VERSION"
-- "mvn org.apache.maven.plugins:maven-dependency-plugin:copy -Dartifact=com.codacy:codacy-coverage-reporter:4.0.0:jar:assembly -Dtransitive"
+- "mvn org.apache.maven.plugins:maven-dependency-plugin:copy -Dartifact=com.codacy:codacy-coverage-reporter:5.0.310:jar:assembly -Dtransitive"
 - "mvn jacoco:merge -Djacoco.destFile=target/jacoco-aggregate.exe"
 - "mvn jacoco:report -Djacoco.dataFile=target/jacoco-aggregate.exe"
-- "(cd target/dependency && java -jar codacy-coverage-reporter-4.0.0-assembly.jar report -l Java -r ../site/jacoco/jacoco.xml)"
+- "(cd target/dependency && java -jar codacy-coverage-reporter-5.0.310-assembly.jar report -l Java -r ../site/jacoco/jacoco.xml)"
 - "mvn site"
 before_deploy:
 - git config --local user.name "powerunitci"
