@@ -62,7 +62,6 @@
 		<deploy.url>https://oss.sonatype.org/content/repositories/snapshots</deploy.url>
 		<deploy.id>oss-snapshots</deploy.id>
 		<powerunit.version>0.5.0</powerunit.version>
-		<jaxb-api.version>2.3.0</jaxb-api.version>
 	</properties>
 
 	<build>
@@ -781,17 +780,17 @@
 		<dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
-            <version>${jaxb-api.version}</version>
+            <version>2.3.1</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
-            <version>${jaxb-api.version}</version>
+            <version>2.3.2</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-core</artifactId>
-            <version>${jaxb-api.version}</version>
+            <version>2.3.0.1</version>
         </dependency>
 	</dependencies>
 </project>
