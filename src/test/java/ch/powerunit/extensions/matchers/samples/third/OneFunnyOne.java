@@ -33,4 +33,14 @@ public class OneFunnyOne {
 	public Pojo3 secondPojo3;
 	
 	public PojoRenameMatcher thirdPojo;
+	
+	private Pojo1 onePojo1b;
+	
+	public void setOnePojo1b(Pojo1 onePojo1b) {
+		this.onePojo1b=onePojo1b;
+	}
+	
+	public Pojo1 getOnePojo1b() {
+		return 	onePojo1b;
+	}
 }
