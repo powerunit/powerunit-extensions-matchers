@@ -23,6 +23,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 
 import ch.powerunit.extensions.matchers.provideprocessor.ProvideMatchersMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
@@ -70,7 +71,10 @@ public class FieldDescriptionMirror {
 
 	public String computeFullyQualifiedNameMatcherInSameRound(RoundMirror roundMirror) {
 		ProcessingEnvironment processingEnv = roundMirror.getProcessingEnv();
-		if (roundMirror.isInSameRound(processingEnv.getTypeUtils().asElement(fieldElement.asType()))
+		TypeMirror fieldTypeMirror = (fieldElement instanceof ExecutableElement)
+				? ((ExecutableElement) fieldElement).getReturnType()
+				: fieldElement.asType();
+		if (roundMirror.isInSameRound(processingEnv.getTypeUtils().asElement(fieldTypeMirror))
 				&& fieldTypeAsTypeElement != null) {
 			return new ProvideMatchersMirror(processingEnv, fieldTypeAsTypeElement)
 					.getFullyQualifiedNameOfGeneratedClass();
