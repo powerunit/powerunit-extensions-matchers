@@ -43,4 +43,13 @@ public class OneFunnyOneMatchersTest implements TestSuite {
 				OneFunnyOneMatchers.oneFunnyOneWith().onePojo1With().msg2("12").endWith(hasToString(notNullValue())));
 
 	}
+	
+	@Test
+	public void testMatcherWithSubMatcherDSL2() {
+		OneFunnyOne obj = new OneFunnyOne();
+		obj.setOnePojo1b(new Pojo1());
+		obj.getOnePojo1b().msg2 = "12";
+		assertThat(obj).is(OneFunnyOneMatchers.oneFunnyOneWith().onePojo1bWith().msg2("12").end());
+
+	}
 }
