@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -110,7 +111,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	}
 
 	public Collection<DSLMethod> generateDSLStarter() {
-		return dslProvider.stream().map(Supplier::get).collect(toList());
+		return dslProvider.stream().map(Supplier::get).filter(Objects::nonNull).collect(toList());
 	}
 
 	public String getDefaultStarterBody(boolean withParentBuilder) {
@@ -196,10 +197,10 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	}
 
 	public DSLMethod generateParentValueDSLStarter() {
-		ProvidesMatchersAnnotatedElementMirror parentMirror = getParentMirror();
-		String argumentForParentBuilder = parentMirror.getFullyQualifiedNameOfGeneratedClass() + "."
-				+ parentMirror.methodShortClassName + "WithSameValue(other)";
-		return generatParentValueDSLStarter(argumentForParentBuilder);
+		return Optional.ofNullable(getParentMirror())
+				.map(parentMirror -> generatParentValueDSLStarter(parentMirror.getFullyQualifiedNameOfGeneratedClass()
+						+ "." + parentMirror.methodShortClassName + "WithSameValue(other)"))
+				.orElse(null);
 	}
 
 	public DSLMethod generateParentInSameRoundWithChaningDSLStarter() {
