@@ -173,13 +173,14 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 						.withImplementation(lines).withJavadoc(javadoc);
 	}
 
-	public ProvidesMatchersAnnotatedElementMirror getParentMirror() {
+	public Optional<ProvidesMatchersAnnotatedElementMirror> getParentMirror() {
 		RoundMirror rm = roundMirror;
-		return rm.getByName(getQualifiedName(((TypeElement) rm.getTypeUtils().asElement(element.getSuperclass()))));
+		return Optional.ofNullable(
+				rm.getByName(getQualifiedName(((TypeElement) rm.getTypeUtils().asElement(element.getSuperclass())))));
 	}
 
 	public DSLMethod generateParentValueDSLStarter() {
-		return Optional.ofNullable(getParentMirror())
+		return getParentMirror()
 				.map(parentMirror -> generatParentValueDSLStarter(parentMirror.getFullyQualifiedNameOfGeneratedClass()
 						+ "." + parentMirror.methodShortClassName + "WithSameValue(other)"))
 				.orElse(null);
@@ -187,16 +188,20 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 
 	public DSLMethod generateParentInSameRoundWithChaningDSLStarter() {
 		String implGenericNoParent = getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent();
-		ProvidesMatchersAnnotatedElementMirror parentMirror = getParentMirror();
-		String pmfqngc = parentMirror.getFullyQualifiedNameOfGeneratedClass();
-		String parentSimpleName = parentMirror.simpleNameOfGeneratedInterfaceMatcher;
-		return of(fullGeneric + " " + pmfqngc + "." + parentSimpleName + genericForChaining + " " + methodShortClassName
-				+ "WithParent").withImplementation(
-						implGenericNoParent + " m=new " + implGenericNoParent + "(org.hamcrest.Matchers.anything());",
-						pmfqngc + "." + parentSimpleName + " tmp = " + pmfqngc + "." + parentMirror.methodShortClassName
-								+ "WithParent(m);",
-						"m._parent = new SuperClassMatcher(tmp);", "return tmp;").withJavadoc(
-								generateDefaultJavaDoc(Optional.empty(), Optional.empty(), "the DSL matcher", false));
+		return getParentMirror().map(parentMirror -> {
+			String pmfqngc = parentMirror.getFullyQualifiedNameOfGeneratedClass();
+			String parentSimpleName = parentMirror.simpleNameOfGeneratedInterfaceMatcher;
+			return of(fullGeneric + " " + pmfqngc + "." + parentSimpleName + genericForChaining + " "
+					+ methodShortClassName + "WithParent")
+							.withImplementation(
+									implGenericNoParent + " m=new " + implGenericNoParent
+											+ "(org.hamcrest.Matchers.anything());",
+									pmfqngc + "." + parentSimpleName + " tmp = " + pmfqngc + "."
+											+ parentMirror.methodShortClassName + "WithParent(m);",
+									"m._parent = new SuperClassMatcher(tmp);", "return tmp;")
+							.withJavadoc(generateDefaultJavaDoc(Optional.empty(), Optional.empty(), "the DSL matcher",
+									false));
+		}).orElse(null);
 	}
 
 }
