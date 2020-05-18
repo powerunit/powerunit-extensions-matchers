@@ -45,6 +45,7 @@ public class ProvideMatchersMirror extends AbstractTypeElementMirror<ProvideMatc
 	protected final String simpleNameOfGeneratedClass;
 	protected final String packageNameOfGeneratedClass;
 	protected final String simpleNameOfGeneratedInterfaceMatcher;
+	protected final boolean allowWeakWithSameValue;
 
 	public ProvideMatchersMirror(RoundMirror roundMirror, TypeElement annotatedElement) {
 		super(ProvideMatchers.class, roundMirror, annotatedElement);
@@ -53,6 +54,7 @@ public class ProvideMatchersMirror extends AbstractTypeElementMirror<ProvideMatc
 		this.packageNameOfGeneratedClass = generatePackageNameOfGeneratedClass(annotatedElement, pm,
 				getProcessingEnv().getElementUtils());
 		this.simpleNameOfGeneratedInterfaceMatcher = getSimpleNameOfClassAnnotated() + "Matcher";
+		this.allowWeakWithSameValue = pm.allowWeakWithSameValue();
 	}
 
 	private String generateSimpleNameOfGeneratedClass(TypeElement annotatedElement, ProvideMatchers pm) {

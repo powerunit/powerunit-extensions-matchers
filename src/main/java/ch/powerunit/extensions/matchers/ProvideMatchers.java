@@ -213,8 +213,8 @@ public @interface ProvideMatchers {
 	 * This attribute may be used to override the default class name that will
 	 * contains the generated matchers.
 	 * <p>
-	 * <i>By default, this attribute is an empty string, which indicate to use
-	 * the default construction pattern.</i>
+	 * <i>By default, this attribute is an empty string, which indicate to use the
+	 * default construction pattern.</i>
 	 * <p>
 	 * By default, the Matchers class name is the name of the annotated class,
 	 * followed by {@code Matchers}.
@@ -225,39 +225,38 @@ public @interface ProvideMatchers {
 	String matchersClassName() default "";
 
 	/**
-	 * This attribute may be used to override the default package name that will
-	 * be used for the generated matchers.
+	 * This attribute may be used to override the default package name that will be
+	 * used for the generated matchers.
 	 * <p>
-	 * <i>By default, this attribute is an empty string, which indicate to use
-	 * the default construction pattern.</i>
+	 * <i>By default, this attribute is an empty string, which indicate to use the
+	 * default construction pattern.</i>
 	 * <p>
-	 * By default, the Matchers package name is the same that the annotated
-	 * class.
+	 * By default, the Matchers package name is the same that the annotated class.
 	 * 
-	 * @return the name of the matchers package or an empty string if this is
-	 *         not overloaded.
+	 * @return the name of the matchers package or an empty string if this is not
+	 *         overloaded.
 	 */
 	String matchersPackageName() default "";
 
 	/**
-	 * This attribute may be used to set a comments that will be passed inside
-	 * the {@link javax.annotation.Generated#comments() comments} attribute of
-	 * the {@link javax.annotation.Generated @Generated} annotation.
+	 * This attribute may be used to set a comments that will be passed inside the
+	 * {@link javax.annotation.Generated#comments() comments} attribute of the
+	 * {@link javax.annotation.Generated @Generated} annotation.
 	 * 
 	 * @return the comments or an empty string if ignored.
 	 */
 	String comments() default "";
 
 	/**
-	 * This attribute may be used to generate additional exposition methods for
-	 * the object.
+	 * This attribute may be used to generate additional exposition methods for the
+	 * object.
 	 * <p>
 	 * By default, only the standard method are generated.
 	 * 
 	 * @return additional method to be generated or an empty array by default.
 	 * @since 0.1.0
 	 */
-	ComplementaryExpositionMethod[]moreMethod() default {};
+	ComplementaryExpositionMethod[] moreMethod() default {};
 
 	/**
 	 * This attribute may be used to enable some extensions for this objects.
@@ -267,11 +266,27 @@ public @interface ProvideMatchers {
 	 * @return the extension to be used or an empty array by default.
 	 * @since 0.1.0
 	 * @see #JSON_EXTENSION An extension to add a validation on String, as JSON,
-	 *      based on the
-	 *      <a href="https://github.com/spotify/java-hamcrest">Spotify
+	 *      based on the <a href="https://github.com/spotify/java-hamcrest">Spotify
 	 *      Matchers</a>.
 	 */
-	String[]extensions() default {};
+	String[] extensions() default {};
+
+	/**
+	 * This attribute may be used in case when it is not possible to create a
+	 * <i>sure</i> <code>WithSameValue</code> matcher. This may be the case when the
+	 * annotated class extends a not annotated class or when the parent class is
+	 * already compiled.
+	 * <p>
+	 * By default, this mode is set to false.
+	 * <p>
+	 * In case this option is set to true and the <code>WithSameValue</code> matcher
+	 * is considered as weak, a warning will be produced.
+	 * 
+	 * @return to create (or not) a <code>WithSameValue</code> matcher even if it is
+	 *         not possible to ensure the control of the field of the parent class.
+	 * @since 2.0.0
+	 */
+	boolean allowWeakWithSameValue() default false;
 
 	/**
 	 * May be use as part of {@link #extensions()} to enable, if available, an

@@ -23,7 +23,9 @@ import java.lang.annotation.Annotation;
 import java.util.Optional;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.tools.Diagnostic.Kind;
 
 /**
  * @author borettim
@@ -63,6 +65,13 @@ public abstract class AbstractElementMirror<E extends Element, A extends Annotat
 
 	public String getParamComment() {
 		return doc.map(AbstractElementMirror::extractParamCommentFromJavadoc).orElse(" * \n");
+	}
+
+	public Optional<AnnotationMirror> getAnnotationMirror() {
+		return annotation.map(
+				a -> getTypeUtils().getDeclaredType(getElementUtils().getTypeElement(a.annotationType().getName())))
+				.map(a -> element.getAnnotationMirrors().stream().filter(m -> a.equals(m.getAnnotationType())).findAny()
+						.orElse(null));
 	}
 
 	@Override
