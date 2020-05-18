@@ -21,7 +21,14 @@ package ch.powerunit.extensions.matchers.common;
 
 import static java.util.stream.Collectors.joining;
 
+import java.io.PrintStream;
 import java.util.Arrays;
+
+import javax.annotation.processing.Filer;
+import javax.annotation.processing.Messager;
+import javax.lang.model.element.Element;
+import javax.tools.Diagnostic.Kind;
+import javax.tools.StandardLocation;
 
 public class CommonUtils {
 	private CommonUtils() {
@@ -54,6 +61,18 @@ public class CommonUtils {
 
 	public static String addPrefix(String prefix, String input) {
 		return "\n" + Arrays.stream(input.split("\\R")).map(l -> prefix + l).collect(joining("\n")) + "\n";
+	}
+
+	public static void traceErrorAndDump(Messager messager, Filer filer, Exception e, Element te) {
+		FileObjectHelper.processFileWithIOException(
+				() -> filer.createResource(StandardLocation.SOURCE_OUTPUT, "",
+						"dump" + System.currentTimeMillis() + "txt", te),
+				s -> new PrintStream(s.openOutputStream()), s -> e.printStackTrace(s),
+				e2 -> messager.printMessage(Kind.ERROR,
+						"Unable to create the file containing the dump of the error because of " + e2
+								+ " during handling of " + e,
+						te));
+		messager.printMessage(Kind.ERROR, "Unable to create the file containing the target class because of " + e, te);
 	}
 
 }
