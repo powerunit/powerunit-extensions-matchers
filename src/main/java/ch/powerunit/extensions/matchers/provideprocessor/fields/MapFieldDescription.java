@@ -10,6 +10,10 @@ import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotat
 
 public class MapFieldDescription extends DefaultFieldDescription {
 
+	private static final String EMPTY_MATCHER = "new org.hamcrest.CustomTypeSafeMatcher<%1$s>(\"map is empty\"){ public boolean matchesSafely(%1$s o) {return o.isEmpty();}}";
+
+	private static final String SIZE_MATCHER = "new org.hamcrest.CustomTypeSafeMatcher<%1$s>(\"map size is \"+other.size()){ public boolean matchesSafely(%1$s o) {return o.size()==other.size();} protected void describeMismatchSafely(%1$s item, org.hamcrest.Description mismatchDescription) {mismatchDescription.appendText(\" was size=\").appendValue(item.size());}}";
+
 	public MapFieldDescription(ProvidesMatchersAnnotatedElementData containingElementMirror,
 			FieldDescriptionMirror mirror) {
 		super(containingElementMirror, mirror);
@@ -18,11 +22,9 @@ public class MapFieldDescription extends DefaultFieldDescription {
 	@Override
 	protected Collection<FieldDSLMethod> getSpecificFieldDslMethodFor() {
 		String fieldType = getFieldType();
-		final String emptyMatcher = "new org.hamcrest.CustomTypeSafeMatcher<" + fieldType
-				+ ">(\"map is empty\"){ public boolean matchesSafely(" + fieldType + " o) {return o.isEmpty();}}";
-		final String sizeMatcher = "new org.hamcrest.CustomTypeSafeMatcher<" + fieldType
-				+ ">(\"map size is \"+other.size()){ public boolean matchesSafely(" + fieldType
-				+ " o) {return o.size()==other.size();} protected void describeMismatchSafely("+fieldType+" item, org.hamcrest.Description mismatchDescription) {mismatchDescription.appendText(\" was size=\").appendValue(item.size());}}";
+		final String emptyMatcher = String.format(EMPTY_MATCHER, fieldType);
+		final String sizeMatcher = String.format(SIZE_MATCHER, fieldType);
+
 		Collection<FieldDSLMethod> tmp = new ArrayList<>();
 		tmp.add(getDslMethodBuilder().withSuffixDeclarationJavadocAndDefault("IsEmpty", "the map is empty",
 				emptyMatcher));

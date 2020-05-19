@@ -107,13 +107,22 @@ public final class FieldDescriptionProvider {
 		}
 	}
 
-	public static AbstractFieldDescription of(ProvidesMatchersAnnotatedElementData containingElementMirror,
+	public static boolean isIgnored(FieldDescriptionMirror mirror) {
+		return mirror.getFieldElement().getAnnotation(IgnoreInMatcher.class) != null;
+	}
+
+	public static Type getTypeMirror(ProvidesMatchersAnnotatedElementData containingElementMirror,
 			FieldDescriptionMirror mirror) {
 		Element te = mirror.getFieldElement();
-		Type type = new ExtracTypeVisitor(containingElementMirror.getRoundMirror()).visit(
+		return new ExtracTypeVisitor(containingElementMirror.getRoundMirror()).visit(
 				(te instanceof ExecutableElement) ? ((ExecutableElement) te).getReturnType() : te.asType(), null);
-		if (te.getAnnotation(IgnoreInMatcher.class) != null) {
-			return new IgoreFieldDescription(containingElementMirror, mirror);
+	}
+
+	public static AbstractFieldDescription of(ProvidesMatchersAnnotatedElementData containingElementMirror,
+			FieldDescriptionMirror mirror) {
+		Type type = getTypeMirror(containingElementMirror, mirror);
+		if (isIgnored(mirror)) {
+			return new IgnoreFieldDescription(containingElementMirror, mirror);
 		}
 
 		switch (type) {
