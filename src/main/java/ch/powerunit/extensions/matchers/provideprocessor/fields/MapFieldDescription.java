@@ -33,21 +33,18 @@ public class MapFieldDescription extends DefaultFieldDescription {
 		tmp.add(getDslMethodBuilder().withSuffixDeclarationJavadocAndDefault("IsEmpty", "the map is empty",
 				emptyMatcher));
 		if (!"".equals(generic)) {
-			TypeMirror tm = mirror.getFieldTypeMirror();
-			if (tm instanceof DeclaredType && ((DeclaredType) tm).getTypeArguments().size() == 2) {
-				DeclaredType dt = ((DeclaredType) tm);
-				Object matchers[] = dt
-						.getTypeArguments().stream().map(Object::toString).map(
-								o -> Optional.ofNullable(getByName(o))
-										.filter(ProvidesMatchersAnnotatedElementMirror::hasWithSameValue)
-										.map(t -> t.getFullyQualifiedNameOfGeneratedClass() + "."
-												+ t.getMethodShortClassName() + "WithSameValue")
-										.orElse(MATCHERS + ".is"))
-						.toArray();
-				tmp.add(generateHasSameValue(fieldType, matchers[0].toString(), matchers[1].toString()));
-			} else {
-				tmp.add(generateHasSameValue(fieldType, MATCHERS + ".is", MATCHERS + ".is"));
-			}
+			Object matchers[] = Optional.of(mirror.getFieldTypeMirror()).filter(m -> m instanceof DeclaredType)
+					.map(DeclaredType.class::cast).filter(m -> m.getTypeArguments().size() == 2)
+					.map(m -> m.getTypeArguments().stream().map(Object::toString)
+							.map(o -> Optional.ofNullable(getByName(o))
+									.filter(ProvidesMatchersAnnotatedElementMirror::hasWithSameValue)
+									.map(t -> t.getFullyQualifiedNameOfGeneratedClass() + "."
+											+ t.getMethodShortClassName() + "WithSameValue")
+									.orElse(MATCHERS + ".is"))
+							.toArray())
+					.orElse(new String[] { MATCHERS + ".is", MATCHERS + ".is" });
+
+			tmp.add(generateHasSameValue(fieldType, matchers[0].toString(), matchers[1].toString()));
 		}
 		return tmp;
 	}
