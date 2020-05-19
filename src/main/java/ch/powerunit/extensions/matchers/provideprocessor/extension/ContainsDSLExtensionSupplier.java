@@ -23,7 +23,6 @@ import static ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod.of
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.function.Supplier;
 
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
