@@ -103,16 +103,14 @@ public abstract class ProvidesMatchersAnnotatedElementFieldMatcherMirror
 		        + "   * Metadata regarding this matcher.\n"
 				+ "   */\n"
 				+ "  public static final Metadata METADATA = new Metadata();\n\n"
+				+"   public static final class FieldMetadata {\n    public final String NAME, TYPE, ACCESSOR;\n    public final boolean IGNORED;\n    private FieldMetadata(String name, String type, String accessor, boolean ignored) {\n      NAME=name; TYPE=type; ACCESSOR=accessor; IGNORED=ignored;\n    }\n  }\n\n"
 				+ "  public static final class Metadata {\n\n"
 				+ "    private Metadata() {}\n\n"
-				+ "    public static final String ANNOTATION_PROCESSOR_VERSION = \"" + getAnnotationProcessorVersion() + "\";\n\n"
-				+ "    public static final String SOURCE_CLASS_NAME = \"" + getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + "\";\n\n"
-				+ "    public static final Class<"+getFullyQualifiedNameOfClassAnnotated()+"> SOURCE_CLASS = " + getFullyQualifiedNameOfClassAnnotated() + ".class;\n\n"
-				+ "    public static final String SOURCE_PARENT_CLASS_NAME = " + fullyQualifiedNameOfSuperClassOfClassAnnotated.map(CommonUtils::toJavaSyntax).orElse("null") + ";\n\n"
-				+ "    public static final String[] FIELD_NAMES = new String[]{ " +ListJoining.<AbstractFieldDescription>joinWithMapperAndDelimiter(f->CommonUtils.toJavaSyntax(f.getFieldName()), ", ").asString(fields) + " };\n\n"
-				+ "    public static final String[] FIELD_TYPES = new String[]{ " +ListJoining.<AbstractFieldDescription>joinWithMapperAndDelimiter(f->CommonUtils.toJavaSyntax(f.getFieldType()), ", ").asString(fields) + " };\n\n"
-				+ "    public static final String[] FIELD_ACCESSORS = new String[]{ " +ListJoining.<AbstractFieldDescription>joinWithMapperAndDelimiter(f->CommonUtils.toJavaSyntax(f.getFieldAccessor()), ", ").asString(fields) + " };\n\n"
-				+ "    public static final boolean[] FIELD_IGNORED = new boolean[]{ " +ListJoining.<AbstractFieldDescription>joinWithMapperAndDelimiter(f->Boolean.toString(f instanceof IgoreFieldDescription), ", ").asString(fields) + " };\n\n"
+				+ "    public final String ANNOTATION_PROCESSOR_VERSION = \"" + getAnnotationProcessorVersion() + "\";\n\n"
+				+ "    public final String SOURCE_CLASS_NAME = \"" + getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + "\";\n\n"
+				+ "    public final Class<"+getFullyQualifiedNameOfClassAnnotated()+"> SOURCE_CLASS = " + getFullyQualifiedNameOfClassAnnotated() + ".class;\n\n"
+				+ "    public final String SOURCE_PARENT_CLASS_NAME = " + fullyQualifiedNameOfSuperClassOfClassAnnotated.map(CommonUtils::toJavaSyntax).orElse("null") + ";\n\n"
+				+ "    public final FieldMetadata[] FIELDS = new FieldMetadata[]{ " +ListJoining.<AbstractFieldDescription>joinWithMapperAndDelimiter(f->f.generateMetadata("FieldMetadata"), ", ").asString(fields) + " };\n\n"
 				+ "  }\n";
 		// @formatter:on
 	}
