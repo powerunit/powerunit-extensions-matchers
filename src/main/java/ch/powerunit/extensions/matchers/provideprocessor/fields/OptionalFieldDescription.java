@@ -26,17 +26,13 @@ import java.util.Optional;
 
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
-import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
-import ch.powerunit.extensions.matchers.provideprocessor.RoundMirrorSupport;
 
 public class OptionalFieldDescription extends DefaultFieldDescription {
 
-	private final RoundMirror roundMirror;
 
 	public OptionalFieldDescription(ProvidesMatchersAnnotatedElementData containingElementMirror,
 			FieldDescriptionMirror mirror) {
 		super(containingElementMirror, mirror);
-		roundMirror = containingElementMirror.getRoundMirror();
 	}
 
 	@Override
