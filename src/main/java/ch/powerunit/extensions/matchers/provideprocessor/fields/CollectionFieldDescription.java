@@ -27,19 +27,14 @@ import java.util.Optional;
 
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
-import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
-import ch.powerunit.extensions.matchers.provideprocessor.RoundMirrorSupport;
 
 public class CollectionFieldDescription extends DefaultFieldDescription {
 
 	private static final String DEFAULT_JAVADOC_MATCHER_ON_ELEMENTS = "matchersOnElements the matchers on the elements";
 
-	private final RoundMirror roundMirror;
-
 	public CollectionFieldDescription(ProvidesMatchersAnnotatedElementData containingElementMirror,
 			FieldDescriptionMirror mirror) {
 		super(containingElementMirror, mirror);
-		roundMirror = containingElementMirror.getRoundMirror();
 	}
 
 	@Override
@@ -66,7 +61,7 @@ public class CollectionFieldDescription extends DefaultFieldDescription {
 				getDslMethodBuilder().withDeclaration("Contains", tgeneric + "... elements")
 						.withJavaDoc("that the iterable contains the received elements", "elements the elements",
 								MATCHERS + "#contains(java.lang.Object[])")
-				.havingDefault(MATCHERS + ".contains(elements)"),
+						.havingDefault(MATCHERS + ".contains(elements)"),
 				getDslMethodBuilder().withDeclaration("Contains", genericmatcher + "... matchersOnElements")
 						.withJavaDoc("that the iterable contains the received elements, using matchers",
 								DEFAULT_JAVADOC_MATCHER_ON_ELEMENTS, MATCHERS + "#contains(org.hamcrest.Matcher[])")
@@ -107,8 +102,9 @@ public class CollectionFieldDescription extends DefaultFieldDescription {
 	}
 
 	public String generateMatcherBuilderReferenceFor(String generic) {
-		return Optional.ofNullable(getByName(generic)).filter(ProvidesMatchersAnnotatedElementMirror::hasWithSameValue).map(
-				t -> t.getFullyQualifiedNameOfGeneratedClass() + "::" + t.getMethodShortClassName() + "WithSameValue")
+		return Optional.ofNullable(getByName(generic)).filter(ProvidesMatchersAnnotatedElementMirror::hasWithSameValue)
+				.map(t -> t.getFullyQualifiedNameOfGeneratedClass() + "::" + t.getMethodShortClassName()
+						+ "WithSameValue")
 				.orElse(MATCHERS + "::is");
 	}
 
