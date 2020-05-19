@@ -26,9 +26,46 @@ import ch.powerunit.TestSuite;
 
 public class SampleOptionalTest implements TestSuite {
 	@Test
-	public void testOKMatcherForOptional() {
+	public void testOKMatcherForOptional1() {
 		SampleOptional p = new SampleOptional();
 		p.setOpt(Optional.empty());
 		assertThat(p).is(SampleOptionalMatchers.sampleOptionalWith().optIsNotPresent());
+	}
+
+	@Test
+	public void testOKMatcherForOptional2() {
+		SampleOptional p = new SampleOptional();
+		p.setOpt(Optional.of("x"));
+		assertThat(p).is(SampleOptionalMatchers.sampleOptionalWith().optIsPresent());
+	}
+	
+	@Test
+	public void testOKMatcherForOptional3() {
+		SampleOptional p = new SampleOptional();
+		p.setOpt(Optional.empty());
+		assertThat(p).is(SampleOptionalMatchers.sampleOptionalWith().optIsAbsent());
+	}
+	
+	@Test
+	public void testOKMatcherForOptional4() {
+		SampleOptional p = new SampleOptional();
+		p.setOpt(Optional.of("x"));
+		assertThat(p).is(SampleOptionalMatchers.sampleOptionalWith().optIsPresentAndIs("x"));
+	}
+	
+	@Test
+	public void testOKMatcherForOptional5() {
+		SampleOptional p = new SampleOptional();
+		p.setOpt(Optional.of("x"));
+		assertThat(p).is(SampleOptionalMatchers.sampleOptionalWith().optIsPresentAndIs(is("x")));
+	}
+	
+	@Test
+	public void testOKMatcherForOptional6() {
+		SampleOptional p = new SampleOptional();
+		p.setOpt(Optional.of("x"));
+		SampleOptional p2 = new SampleOptional();
+		p2.setOpt(Optional.of("x"));
+		assertThat(p).is(SampleOptionalMatchers.sampleOptionalWithSameValue(p2));
 	}
 }

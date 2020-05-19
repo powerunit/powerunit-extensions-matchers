@@ -21,8 +21,10 @@ package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
 import ch.powerunit.extensions.matchers.common.ElementHelper;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
+import ch.powerunit.extensions.matchers.provideprocessor.RoundMirrorSupport;
 
-public abstract class AbstractFieldDescriptionContainerMetaData implements ElementHelper {
+public abstract class AbstractFieldDescriptionContainerMetaData implements ElementHelper, RoundMirrorSupport {
 
 	protected final ProvidesMatchersAnnotatedElementData containingElementMirror;
 
@@ -32,6 +34,11 @@ public abstract class AbstractFieldDescriptionContainerMetaData implements Eleme
 
 	public ProvidesMatchersAnnotatedElementData getContainingElementMirror() {
 		return containingElementMirror;
+	}
+
+	@Override
+	public RoundMirror getRoundMirror() {
+		return containingElementMirror.getRoundMirror();
 	}
 
 }

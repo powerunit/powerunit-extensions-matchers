@@ -19,6 +19,8 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
+import javax.tools.Diagnostic.Kind;
+
 @FunctionalInterface
 public interface ProvidesMatchersAnnotatedElementData extends RoundMirrorSupport {
 	ProvidesMatchersAnnotatedElementFieldMatcherMirror getFullData();
@@ -61,6 +63,14 @@ public interface ProvidesMatchersAnnotatedElementData extends RoundMirrorSupport
 
 	default String generateDSLWithSameValueMethodName() {
 		return getMethodShortClassName() + "WithSameValue";
+	}
+
+	default boolean hasWithSameValue() {
+		return getFullData().hasWithSameValue();
+	}
+
+	default void printWarningMessage(String message) {
+		getFullData().getMessager().printMessage(Kind.MANDATORY_WARNING, message, getFullData().getElement());
 	}
 
 }

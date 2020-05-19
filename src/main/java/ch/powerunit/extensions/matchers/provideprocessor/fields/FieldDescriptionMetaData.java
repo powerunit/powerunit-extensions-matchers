@@ -21,6 +21,8 @@ package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
 import static java.util.stream.Collectors.joining;
 
+import java.util.Optional;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
@@ -28,6 +30,7 @@ import javax.lang.model.type.TypeMirror;
 
 import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcherField;
 
@@ -90,7 +93,11 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 
 	public String getFieldCopy(String lhs, String rhs) {
 		if (fullyQualifiedNameMatcherInSameRound != null
-				&& mirror.getFieldTypeAsTypeElement().getTypeParameters().isEmpty()) {
+				&& mirror.getFieldTypeAsTypeElement().getTypeParameters().isEmpty()
+				&& Optional
+						.ofNullable(containingElementMirror.getRoundMirror()
+								.getByName(getFieldType()))
+						.map(ProvidesMatchersAnnotatedElementMirror::hasWithSameValue).orElse(false)) {
 			return getFieldCopySameRound(lhs, rhs);
 		}
 		return getFieldCopyDefault(lhs, rhs);

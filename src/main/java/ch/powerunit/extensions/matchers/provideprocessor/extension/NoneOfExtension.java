@@ -58,9 +58,16 @@ public class NoneOfExtension extends AnyOfExtension {
 		}
 
 		public DSLMethod generateNoneOf() {
-			return of(returnType + " " + methodName).withArguments(getSeveralParameter(true, "items"))
-					.withImplementation("return " + NOT_MATCHER + "(" + innerMatcher() + ");").withJavadoc(
-							JAVADOC_DESCRIPTION, "@param items the items to be not matched", "@return the Matcher.");
+			if (element.hasWithSameValue()) {
+				return of(returnType + " " + methodName).withArguments(getSeveralParameter(true, "items"))
+						.withImplementation("return " + NOT_MATCHER + "(" + innerMatcher() + ");")
+						.withJavadoc(JAVADOC_DESCRIPTION, "@param items the items to be not matched",
+								"@return the Matcher.");
+			} else {
+				element.printWarningMessage("Unable to apply the " + supportedEnum().name()
+						+ " extension ; The target class doesn't support the WithSameValue() matcher");
+				return null;
+			}
 		}
 	}
 
