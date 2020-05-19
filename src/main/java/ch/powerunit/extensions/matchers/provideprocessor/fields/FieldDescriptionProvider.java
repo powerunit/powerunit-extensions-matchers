@@ -42,7 +42,7 @@ public final class FieldDescriptionProvider {
 	}
 
 	public static enum Type {
-		NA, ARRAY, COLLECTION, LIST, SET, OPTIONAL, COMPARABLE, STRING, SUPPLIER, PRIMITIVE
+		NA, MAP, ARRAY, COLLECTION, LIST, SET, OPTIONAL, COMPARABLE, STRING, SUPPLIER, PRIMITIVE
 	}
 
 	public static final class ExtracTypeVisitor extends AbstractTypeKindVisitor<Type, Void, RoundMirror> {
@@ -77,6 +77,8 @@ public final class FieldDescriptionProvider {
 		public Type visitDeclared(DeclaredType t, Void ignore) {
 			if (isAssignable(t, "java.util.Optional")) {
 				return Type.OPTIONAL;
+			} else if (isAssignable(t, "java.util.Map")) {
+				return Type.MAP;
 			} else if (isAssignable(t, "java.util.Set")) {
 				return Type.SET;
 			} else if (isAssignable(t, "java.util.List")) {
@@ -117,6 +119,8 @@ public final class FieldDescriptionProvider {
 		switch (type) {
 		case ARRAY:
 			return new ArrayFieldDescription(containingElementMirror, mirror);
+		case MAP:
+			return new MapFieldDescription(containingElementMirror, mirror);
 		case COLLECTION:
 		case SET:
 		case LIST:

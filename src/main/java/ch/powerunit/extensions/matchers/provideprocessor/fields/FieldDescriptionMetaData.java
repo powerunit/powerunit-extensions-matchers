@@ -94,9 +94,7 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 	public String getFieldCopy(String lhs, String rhs) {
 		if (fullyQualifiedNameMatcherInSameRound != null
 				&& mirror.getFieldTypeAsTypeElement().getTypeParameters().isEmpty()
-				&& Optional
-						.ofNullable(containingElementMirror.getRoundMirror()
-								.getByName(getFieldType()))
+				&& Optional.ofNullable(containingElementMirror.getRoundMirror().getByName(getFieldType()))
 						.map(ProvidesMatchersAnnotatedElementMirror::hasWithSameValue).orElse(false)) {
 			return getFieldCopySameRound(lhs, rhs);
 		}
@@ -162,6 +160,7 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 	public String generateMetadata(String className) {
 		return "new " + className + "(" + CommonUtils.toJavaSyntax(getFieldName()) + ","
 				+ CommonUtils.toJavaSyntax(getFieldType()) + "," + CommonUtils.toJavaSyntax(getFieldAccessor()) + ","
+				+ CommonUtils.toJavaSyntax(getClass().getSimpleName()) + ","
 				+ Boolean.toString(this instanceof IgoreFieldDescription) + ")";
 	}
 
