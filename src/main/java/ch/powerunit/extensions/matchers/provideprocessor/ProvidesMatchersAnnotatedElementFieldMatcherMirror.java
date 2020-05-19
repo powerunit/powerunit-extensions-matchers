@@ -111,6 +111,7 @@ public abstract class ProvidesMatchersAnnotatedElementFieldMatcherMirror
 				+ "    public static final String[] FIELD_NAMES = new String[]{ " +ListJoining.<AbstractFieldDescription>joinWithMapperAndDelimiter(f->"\""+f.getFieldName()+"\"", ", ").asString(fields) + " };\n\n"
 				+ "    public static final String[] FIELD_TYPES = new String[]{ " +ListJoining.<AbstractFieldDescription>joinWithMapperAndDelimiter(f->"\""+f.getFieldType()+"\"", ", ").asString(fields) + " };\n\n"
 				+ "    public static final String[] FIELD_ACCESSORS = new String[]{ " +ListJoining.<AbstractFieldDescription>joinWithMapperAndDelimiter(f->"\""+f.getFieldAccessor()+"\"", ", ").asString(fields) + " };\n\n"
+				+ "    public static final boolean[] FIELD_IGNORED = new boolean[]{ " +ListJoining.<AbstractFieldDescription>joinWithMapperAndDelimiter(f->Boolean.toString(f instanceof IgoreFieldDescription), ", ").asString(fields) + " };\n\n"
 				+ "  }\n";
 		// @formatter:on
 	}
