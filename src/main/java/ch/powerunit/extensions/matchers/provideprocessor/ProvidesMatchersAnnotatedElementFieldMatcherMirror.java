@@ -103,7 +103,7 @@ public abstract class ProvidesMatchersAnnotatedElementFieldMatcherMirror
 		        + "   * Metadata regarding this matcher.\n"
 				+ "   */\n"
 				+ "  public static final Metadata METADATA = new Metadata();\n\n"
-				+"   public static final class FieldMetadata {\n    public final String NAME, TYPE, ACCESSOR;\n    public final boolean IGNORED;\n    private FieldMetadata(String name, String type, String accessor, boolean ignored) {\n      NAME=name; TYPE=type; ACCESSOR=accessor; IGNORED=ignored;\n    }\n  }\n\n"
+				+"   public static final class FieldMetadata {\n    public final String NAME, TYPE, ACCESSOR, STEREOTYPE;\n    public final boolean IGNORED;\n    private FieldMetadata(String name, String type, String accessor,String stereotype, boolean ignored) {\n      NAME=name; TYPE=type; ACCESSOR=accessor; STEREOTYPE=stereotype; IGNORED=ignored;\n    }\n  }\n\n"
 				+ "  public static final class Metadata {\n\n"
 				+ "    private Metadata() {}\n\n"
 				+ "    public final String ANNOTATION_PROCESSOR_VERSION = \"" + getAnnotationProcessorVersion() + "\";\n\n"
