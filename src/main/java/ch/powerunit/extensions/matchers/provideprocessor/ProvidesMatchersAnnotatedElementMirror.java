@@ -79,15 +79,12 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 		return processFileWithIOExceptionAndResult(
 				() -> getFiler().createSourceFile(getFullyQualifiedNameOfGeneratedClass(), te),
 				jfo -> new PrintWriter(jfo.openWriter()), wjfo -> {
-					wjfo.println("package " + getPackageNameOfGeneratedClass() + ";");
-					wjfo.println();
+					wjfo.println("package " + getPackageNameOfGeneratedClass() + ";\n");
 					wjfo.println(generateMainJavaDoc());
 					wjfo.println(generateGeneratedAnnotation(ProvidesMatchersAnnotationsProcessor.class,
 							annotation.get().comments()));
-					wjfo.println("public final class " + simpleName + " {");
-					wjfo.println();
-					wjfo.println("  private " + simpleName + "() {}");
-					wjfo.println();
+					wjfo.println("public final class " + simpleName + " {\n");
+					wjfo.println("  private " + simpleName + "() {}\n");
 					wjfo.println(generateMatchers());
 					wjfo.println();
 					wjfo.println(generatePublicInterface());
@@ -96,7 +93,6 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 					wjfo.println();
 					Collection<DSLMethod> tmp = generateDSLStarter();
 					tmp.stream().map(m -> addPrefix("  ", m.asStaticImplementation())).forEach(wjfo::println);
-					wjfo.println();
 					wjfo.println();
 					wjfo.println(generateMetadata());
 					wjfo.println("}");

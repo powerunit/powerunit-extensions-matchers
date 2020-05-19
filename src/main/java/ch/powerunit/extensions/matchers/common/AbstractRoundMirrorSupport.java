@@ -56,5 +56,9 @@ public interface AbstractRoundMirrorSupport<R extends AbstractRoundMirrorReferen
 		return fromField != null && getProcessingEnv().getTypeUtils().isAssignable(fromField.asType(),
 				getProcessingEnv().getTypeUtils().erasure(compareWith));
 	}
+	
+	default String getAnnotationProcessorVersion() {
+		return getClass().getPackage().getImplementationVersion();
+	}
 
 }
