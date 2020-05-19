@@ -69,12 +69,16 @@ public class FieldDescriptionMirror implements ElementHelper {
 	public TypeElement getFieldTypeAsTypeElement() {
 		return fieldTypeAsTypeElement;
 	}
+	
+	public TypeMirror getFieldTypeMirror() {
+		return (fieldElement instanceof ExecutableElement)
+				? ((ExecutableElement) fieldElement).getReturnType()
+				: fieldElement.asType();
+	}
 
 	public String computeFullyQualifiedNameMatcherInSameRound(RoundMirror roundMirror) {
 		ProcessingEnvironment processingEnv = roundMirror.getProcessingEnv();
-		TypeMirror fieldTypeMirror = (fieldElement instanceof ExecutableElement)
-				? ((ExecutableElement) fieldElement).getReturnType()
-				: fieldElement.asType();
+		TypeMirror fieldTypeMirror = getFieldTypeMirror();
 		if (roundMirror.isInSameRound(processingEnv.getTypeUtils().asElement(fieldTypeMirror))
 				&& fieldTypeAsTypeElement != null) {
 			return new ProvideMatchersMirror(roundMirror, fieldTypeAsTypeElement)

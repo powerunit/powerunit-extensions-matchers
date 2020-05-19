@@ -4,6 +4,7 @@ import java.util.Collections;
 
 import ch.powerunit.Test;
 import ch.powerunit.TestSuite;
+import ch.powerunit.extensions.matchers.samples.extension.MyTestWithoutGeneric2;
 
 public class MapSampleTest implements TestSuite {
 	@Test
@@ -15,7 +16,9 @@ public class MapSampleTest implements TestSuite {
 		ms.map4 = Collections.singletonMap("a", "b");
 		assertThat(ms).is(MapSampleMatchers.<String, Long>mapSampleWith()
 				.map1HasSameValues(Collections.singletonMap("x", 12)).build());
+		assertThat(ms).isNot(
+				MapSampleMatchers.<String, Long>mapSampleWith().map1HasSameValues(Collections.emptyMap()).build());
 		assertThat(ms).isNot(MapSampleMatchers.<String, Long>mapSampleWith()
-				.map1HasSameValues(Collections.emptyMap()).build());
+				.map6HasSameValues(Collections.singletonMap("x", new MyTestWithoutGeneric2("z"))).build());
 	}
 }

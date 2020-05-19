@@ -58,9 +58,7 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 		super(containingElementMirror);
 		this.mirror = mirror;
 		RoundMirror roundMirror = containingElementMirror.getRoundMirror();
-		TypeMirror fieldTypeMirror = (mirror.getFieldElement() instanceof ExecutableElement)
-				? ((ExecutableElement) mirror.getFieldElement()).getReturnType()
-				: mirror.getFieldElement().asType();
+		TypeMirror fieldTypeMirror = mirror.getFieldTypeMirror();
 		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
 		this.generic = computeGenericInformation(fieldTypeMirror);
 		this.fullyQualifiedNameMatcherInSameRound = mirror.computeFullyQualifiedNameMatcherInSameRound(roundMirror);

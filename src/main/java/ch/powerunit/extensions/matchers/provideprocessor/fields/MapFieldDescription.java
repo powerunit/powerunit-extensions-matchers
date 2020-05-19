@@ -5,8 +5,13 @@ package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
+
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
 
 public class MapFieldDescription extends DefaultFieldDescription {
 
@@ -23,21 +28,45 @@ public class MapFieldDescription extends DefaultFieldDescription {
 	protected Collection<FieldDSLMethod> getSpecificFieldDslMethodFor() {
 		String fieldType = getFieldType();
 		final String emptyMatcher = String.format(EMPTY_MATCHER, fieldType);
-		final String sizeMatcher = String.format(SIZE_MATCHER, fieldType);
 
 		Collection<FieldDSLMethod> tmp = new ArrayList<>();
 		tmp.add(getDslMethodBuilder().withSuffixDeclarationJavadocAndDefault("IsEmpty", "the map is empty",
 				emptyMatcher));
 		if (!"".equals(generic)) {
-			tmp.add(getDslMethodBuilder().withDeclaration("HasSameValues", fieldType + " other")
-					.withJavaDoc("verify that the value from the other map are exactly the once inside this map",
-							"other the other map")
-					.havingDefault(MATCHERS + ".both(" + sizeMatcher + ").and(" + MATCHERS
-							+ ".allOf(other.entrySet().stream().map(kv->" + MATCHERS + ".hasEntry(" + MATCHERS
-							+ ".is(kv.getKey())," + MATCHERS
-							+ ".is(kv.getValue()))).collect(java.util.stream.Collectors.toList())))"));
+			TypeMirror tm = mirror.getFieldTypeMirror();
+			if (tm instanceof DeclaredType) {
+				DeclaredType dt = ((DeclaredType) tm);
+				if (dt.getTypeArguments().size() == 2) {
+					String key = Optional.ofNullable(getByName(dt.getTypeArguments().get(0).toString()))
+							.filter(ProvidesMatchersAnnotatedElementMirror::hasWithSameValue)
+							.map(t -> t.getFullyQualifiedNameOfGeneratedClass() + "." + t.getMethodShortClassName()
+									+ "WithSameValue")
+							.orElse(MATCHERS + ".is");
+					String value = Optional.ofNullable(getByName(dt.getTypeArguments().get(1).toString()))
+							.filter(ProvidesMatchersAnnotatedElementMirror::hasWithSameValue)
+							.map(t -> t.getFullyQualifiedNameOfGeneratedClass() + "." + t.getMethodShortClassName()
+									+ "WithSameValue")
+							.orElse(MATCHERS + ".is");
+					tmp.add(generateHasSameValue(fieldType, key, value));
+				} else {
+					tmp.add(generateHasSameValue(fieldType, MATCHERS + ".is", MATCHERS + ".is"));
+				}
+			} else {
+				tmp.add(generateHasSameValue(fieldType, MATCHERS + ".is", MATCHERS + ".is"));
+			}
 		}
 		return tmp;
+	}
+
+	private FieldDSLMethod generateHasSameValue(String fieldType, String keyMatcher, String keyValue) {
+		final String sizeMatcher = String.format(SIZE_MATCHER, fieldType);
+		return getDslMethodBuilder().withDeclaration("HasSameValues", fieldType + " other")
+				.withJavaDoc("verify that the value from the other map are exactly the once inside this map",
+						"other the other map")
+				.havingDefault(MATCHERS + ".both(" + sizeMatcher + ").and(" + MATCHERS
+						+ ".allOf(other.entrySet().stream().map(kv->" + MATCHERS + ".hasEntry(" + keyMatcher
+						+ "(kv.getKey())," + keyValue
+						+ "(kv.getValue()))).collect(java.util.stream.Collectors.toList())))");
 	}
 
 	@Override
