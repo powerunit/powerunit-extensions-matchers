@@ -26,6 +26,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
+import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcherField;
@@ -35,7 +36,7 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 	public static final String SEE_TEXT_FOR_IS_MATCHER = "org.hamcrest.Matchers#is(java.lang.Object)";
 	public static final String SEE_TEXT_FOR_HAMCREST_MATCHER = "org.hamcrest.Matchers The main class from hamcrest that provides default matchers.";
 	public static final String MATCHERS = "org.hamcrest.Matchers";
-	
+
 	protected final String generic;
 	protected final String defaultReturnMethod;
 	protected final String fullyQualifiedNameMatcherInSameRound;
@@ -149,6 +150,12 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 		gmf.setFieldAccessor(getFieldAccessor());
 		gmf.setGenericDetails(generic);
 		return gmf;
+	}
+
+	public String generateMetadata(String className) {
+		return "new " + className + "(" + CommonUtils.toJavaSyntax(getFieldName()) + ","
+				+ CommonUtils.toJavaSyntax(getFieldType()) + "," + CommonUtils.toJavaSyntax(getFieldAccessor()) + ","
+				+ Boolean.toString(this instanceof IgoreFieldDescription) + ")";
 	}
 
 }
