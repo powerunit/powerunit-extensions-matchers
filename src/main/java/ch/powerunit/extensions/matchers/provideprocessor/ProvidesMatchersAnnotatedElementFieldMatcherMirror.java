@@ -32,6 +32,7 @@ import java.util.Optional;
 
 import javax.lang.model.element.TypeElement;
 
+import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.common.ListJoining;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescriptionMetaData;
@@ -104,13 +105,13 @@ public abstract class ProvidesMatchersAnnotatedElementFieldMatcherMirror
 				+ "  public static final Metadata METADATA = new Metadata();\n\n"
 				+ "  public static final class Metadata {\n\n"
 				+ "    private Metadata() {}\n\n"
-				+ "    public static final String ANNOTATION_PROCESSOR_VERSION = \"" + getClass().getPackage().getImplementationVersion() + "\";\n\n"
+				+ "    public static final String ANNOTATION_PROCESSOR_VERSION = \"" + getAnnotationProcessorVersion() + "\";\n\n"
 				+ "    public static final String SOURCE_CLASS_NAME = \"" + getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + "\";\n\n"
 				+ "    public static final Class<"+getFullyQualifiedNameOfClassAnnotated()+"> SOURCE_CLASS = " + getFullyQualifiedNameOfClassAnnotated() + ".class;\n\n"
-				+ "    public static final String SOURCE_PARENT_CLASS_NAME = " + fullyQualifiedNameOfSuperClassOfClassAnnotated.map(n->"\""+n+"\"").orElse("null") + ";\n\n"
-				+ "    public static final String[] FIELD_NAMES = new String[]{ " +ListJoining.<AbstractFieldDescription>joinWithMapperAndDelimiter(f->"\""+f.getFieldName()+"\"", ", ").asString(fields) + " };\n\n"
-				+ "    public static final String[] FIELD_TYPES = new String[]{ " +ListJoining.<AbstractFieldDescription>joinWithMapperAndDelimiter(f->"\""+f.getFieldType()+"\"", ", ").asString(fields) + " };\n\n"
-				+ "    public static final String[] FIELD_ACCESSORS = new String[]{ " +ListJoining.<AbstractFieldDescription>joinWithMapperAndDelimiter(f->"\""+f.getFieldAccessor()+"\"", ", ").asString(fields) + " };\n\n"
+				+ "    public static final String SOURCE_PARENT_CLASS_NAME = " + fullyQualifiedNameOfSuperClassOfClassAnnotated.map(CommonUtils::toJavaSyntax).orElse("null") + ";\n\n"
+				+ "    public static final String[] FIELD_NAMES = new String[]{ " +ListJoining.<AbstractFieldDescription>joinWithMapperAndDelimiter(f->CommonUtils.toJavaSyntax(f.getFieldName()), ", ").asString(fields) + " };\n\n"
+				+ "    public static final String[] FIELD_TYPES = new String[]{ " +ListJoining.<AbstractFieldDescription>joinWithMapperAndDelimiter(f->CommonUtils.toJavaSyntax(f.getFieldType()), ", ").asString(fields) + " };\n\n"
+				+ "    public static final String[] FIELD_ACCESSORS = new String[]{ " +ListJoining.<AbstractFieldDescription>joinWithMapperAndDelimiter(f->CommonUtils.toJavaSyntax(f.getFieldAccessor()), ", ").asString(fields) + " };\n\n"
 				+ "    public static final boolean[] FIELD_IGNORED = new boolean[]{ " +ListJoining.<AbstractFieldDescription>joinWithMapperAndDelimiter(f->Boolean.toString(f instanceof IgoreFieldDescription), ", ").asString(fields) + " };\n\n"
 				+ "  }\n";
 		// @formatter:on
