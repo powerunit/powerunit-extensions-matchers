@@ -36,7 +36,7 @@ import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.common.ListJoining;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescriptionMetaData;
-import ch.powerunit.extensions.matchers.provideprocessor.fields.IgoreFieldDescription;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.IgnoreFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcher;
 
 public abstract class ProvidesMatchersAnnotatedElementFieldMatcherMirror
@@ -58,7 +58,7 @@ public abstract class ProvidesMatchersAnnotatedElementFieldMatcherMirror
 				.collect(collectingAndThen(
 						groupingBy(FieldDescriptionMetaData::getFieldName,
 								reducing(null,
-										(v1, v2) -> v1 == null ? v2 : v1 instanceof IgoreFieldDescription ? v1 : v2)),
+										(v1, v2) -> v1 == null ? v2 : v1 instanceof IgnoreFieldDescription ? v1 : v2)),
 						c -> c == null ? emptyList() : c.values().stream().collect(toList())));
 	}
 

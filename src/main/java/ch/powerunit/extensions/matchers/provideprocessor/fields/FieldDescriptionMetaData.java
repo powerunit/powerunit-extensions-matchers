@@ -19,6 +19,7 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
+import static ch.powerunit.extensions.matchers.common.CommonUtils.toJavaSyntax;
 import static java.util.stream.Collectors.joining;
 
 import java.util.Optional;
@@ -28,7 +29,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
-import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
@@ -158,10 +158,9 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 	}
 
 	public String generateMetadata(String className) {
-		return "new " + className + "(" + CommonUtils.toJavaSyntax(getFieldName()) + ","
-				+ CommonUtils.toJavaSyntax(getFieldType()) + "," + CommonUtils.toJavaSyntax(getFieldAccessor()) + ","
-				+ CommonUtils.toJavaSyntax(getClass().getSimpleName()) + ","
-				+ Boolean.toString(this instanceof IgoreFieldDescription) + ")";
+		return "new " + className + "(" + toJavaSyntax(getFieldName()) + "," + toJavaSyntax(getFieldType()) + ","
+				+ toJavaSyntax(getFieldAccessor()) + "," + toJavaSyntax(getClass().getSimpleName()) + ","
+				+ Boolean.toString(this instanceof IgnoreFieldDescription) + ")";
 	}
 
 }

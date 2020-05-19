@@ -28,9 +28,9 @@ import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcherField;
 
-public final class IgoreFieldDescription extends AbstractFieldDescription {
+public final class IgnoreFieldDescription extends AbstractFieldDescription {
 
-	public IgoreFieldDescription(ProvidesMatchersAnnotatedElementData containingElementMirror,
+	public IgnoreFieldDescription(ProvidesMatchersAnnotatedElementData containingElementMirror,
 			FieldDescriptionMirror mirror) {
 		super(containingElementMirror, mirror);
 	}
