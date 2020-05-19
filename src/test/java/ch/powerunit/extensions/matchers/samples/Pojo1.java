@@ -19,6 +19,7 @@
  */
 package ch.powerunit.extensions.matchers.samples;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -83,6 +84,14 @@ public class Pojo1 {
 
 	public Pojo1(List<String> msg6) {
 		this.msg6 = msg6;
+	}
+
+	@Override
+	public String toString() {
+		return "Pojo1 [msg1=" + msg1 + ", msg2=" + msg2 + ", msg3=" + msg3 + ", msg4=" + Arrays.toString(msg4)
+				+ ", msg5=" + Arrays.toString(msg5) + ", msg6=" + msg6 + ", msg7=" + msg7 + ", msg8="
+				+ Arrays.toString(msg8) + ", msg9=" + msg9 + ", msg12=" + msg12 + ", myBoolean=" + myBoolean
+				+ ", oneBoolean=" + oneBoolean + "]";
 	}
 
 }

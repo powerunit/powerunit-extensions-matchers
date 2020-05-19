@@ -48,11 +48,14 @@ public class AnyOfExtension implements DSLExtension {
 
 	public class AnyOfSupplier extends AbstractDSLExtensionSupplier {
 
+		protected final ProvidesMatchersAnnotatedElementData element;
+
 		public AnyOfSupplier(ProvidesMatchersAnnotatedElementData element, String methodName) {
 			super(element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(),
 					element.getFullGeneric() + " org.hamcrest.Matcher<"
 							+ element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + ">",
 					methodName, element.generateDSLWithSameValueMethodName());
+			this.element = element;
 		}
 
 		@Override
@@ -66,9 +69,15 @@ public class AnyOfExtension implements DSLExtension {
 		}
 
 		public DSLMethod generateAnyOf() {
-			return of(returnType + " " + methodName).withArguments(getSeveralParameter(true, "items"))
-					.withImplementation("return " + innerMatcher() + ";")
-					.withJavadoc(JAVADOC_DESCRIPTION, "@param items the items to be matched", "@return the Matcher.");
+			if (element.hasWithSameValue()) {
+				return of(returnType + " " + methodName).withArguments(getSeveralParameter(true, "items"))
+						.withImplementation("return " + innerMatcher() + ";").withJavadoc(JAVADOC_DESCRIPTION,
+								"@param items the items to be matched", "@return the Matcher.");
+			} else {
+				element.printWarningMessage("Unable to apply the " + supportedEnum().name()
+						+ " extension ; The target class doesn't support the WithSameValue() matcher");
+				return null;
+			}
 		}
 	}
 

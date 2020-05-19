@@ -23,6 +23,7 @@ import static ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod.of
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.function.Supplier;
 
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
@@ -32,6 +33,7 @@ public class ArrayContaingDSLExtensionSupplier extends AbstractDSLExtensionSuppl
 
 	private final String javadoc;
 	private final String matcher;
+	private final ProvidesMatchersAnnotatedElementData element;
 
 	public ArrayContaingDSLExtensionSupplier(ProvidesMatchersAnnotatedElementData element, String methodName,
 			String javadoc, String matcher) {
@@ -41,6 +43,7 @@ public class ArrayContaingDSLExtensionSupplier extends AbstractDSLExtensionSuppl
 				methodName, element.generateDSLWithSameValueMethodName());
 		this.javadoc = javadoc;
 		this.matcher = matcher;
+		this.element = element;
 	}
 
 	public String getJavaDocDescription() {
@@ -51,10 +54,23 @@ public class ArrayContaingDSLExtensionSupplier extends AbstractDSLExtensionSuppl
 		return matcher;
 	}
 
+	private Supplier<DSLMethod> onlyWithSameValue(Supplier<DSLMethod> input) {
+		return () -> {
+			if (element.hasWithSameValue()) {
+				return input.get();
+			} else {
+				element.printWarningMessage(
+						"Unable to generate ArrayContaining ; The target class doesn't support the WithSameValue() matcher");
+				return null;
+			}
+		};
+	}
+
 	@Override
 	public Collection<Supplier<DSLMethod>> asSuppliers() {
-		return Arrays.asList(this::generateArrayContains1, this::generateArrayContains2, this::generateArrayContains3,
-				this::generateArrayContainsN);
+		return Arrays.asList(onlyWithSameValue(this::generateArrayContains1),
+				onlyWithSameValue(this::generateArrayContains2), onlyWithSameValue(this::generateArrayContains3),
+				onlyWithSameValue(this::generateArrayContainsN));
 	}
 
 	public DSLMethod generateArrayContains1() {

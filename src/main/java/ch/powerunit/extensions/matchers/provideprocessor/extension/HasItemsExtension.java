@@ -42,17 +42,19 @@ public class HasItemsExtension implements DSLExtension {
 
 	@Override
 	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData element) {
-		String targetName = element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric();
-		String returnType = element.getFullGeneric() + " org.hamcrest.Matcher<java.lang.Iterable<" + targetName + ">>";
-		String methodName = element.generateDSLMethodName("hasItems");
-		String targetMethodName = element.generateDSLWithSameValueMethodName();
-		return new HasItemSupplier(targetName, returnType, methodName, targetMethodName).asSuppliers();
+		return new HasItemSupplier(element).asSuppliers();
 	}
 
 	public class HasItemSupplier extends AbstractDSLExtensionSupplier {
 
-		public HasItemSupplier(String targetName, String returnType, String methodName, String targetMethodName) {
-			super(targetName, returnType, methodName, targetMethodName);
+		private final ProvidesMatchersAnnotatedElementData element;
+
+		public HasItemSupplier(ProvidesMatchersAnnotatedElementData element) {
+			super(element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(),
+					element.getFullGeneric() + " org.hamcrest.Matcher<java.lang.Iterable<"
+							+ element.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + ">>",
+					element.generateDSLMethodName("hasItems"), element.generateDSLWithSameValueMethodName());
+			this.element = element;
 		}
 
 		@Override
@@ -61,11 +63,17 @@ public class HasItemsExtension implements DSLExtension {
 		}
 
 		public DSLMethod generateContainsN() {
-			return of(returnType + " " + methodName).withArguments(getSeveralParameter(true, "item"))
-					.withImplementation("return " + CONTAINS_MATCHER + "(java.util.Arrays.stream(item).map(v->"
-							+ targetMethodName
-							+ "(v)).collect(java.util.stream.Collectors.toList()).toArray(new org.hamcrest.Matcher[0]));")
-					.withJavadoc(JAVADOC_DESCRIPTION, "@param item the item to be matched", "@return the Matcher.");
+			if (element.hasWithSameValue()) {
+				return of(returnType + " " + methodName).withArguments(getSeveralParameter(true, "item"))
+						.withImplementation("return " + CONTAINS_MATCHER + "(java.util.Arrays.stream(item).map(v->"
+								+ targetMethodName
+								+ "(v)).collect(java.util.stream.Collectors.toList()).toArray(new org.hamcrest.Matcher[0]));")
+						.withJavadoc(JAVADOC_DESCRIPTION, "@param item the item to be matched", "@return the Matcher.");
+			} else {
+				element.printWarningMessage("Unable to apply the " + supportedEnum().name()
+						+ " extension ; The target class doesn't support the WithSameValue() matcher");
+				return null;
+			}
 		}
 	}
 

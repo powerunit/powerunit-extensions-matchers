@@ -145,4 +145,14 @@ public class ProvideMatchersMirror extends AbstractTypeElementMirror<ProvideMatc
 		return "Start a DSL matcher for the " + getDefaultLinkForAnnotatedClass();
 	}
 
+	public Optional<ProvidesMatchersAnnotatedElementMirror> getParentMirror() {
+		RoundMirror rm = getRoundMirror();
+		return Optional.ofNullable(
+				rm.getByName(getQualifiedName(((TypeElement) rm.getTypeUtils().asElement(element.getSuperclass())))));
+	}
+	
+	public boolean hasWithSameValue() {
+		return !fullyQualifiedNameOfSuperClassOfClassAnnotated.isPresent() || getParentMirror().isPresent() || allowWeakWithSameValue;
+	}
+
 }

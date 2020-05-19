@@ -26,10 +26,11 @@ import java.util.List;
 import java.util.Optional;
 
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirrorSupport;
 
-public class CollectionFieldDescription extends DefaultFieldDescription implements RoundMirrorSupport {
+public class CollectionFieldDescription extends DefaultFieldDescription {
 
 	private static final String DEFAULT_JAVADOC_MATCHER_ON_ELEMENTS = "matchersOnElements the matchers on the elements";
 
@@ -106,14 +107,9 @@ public class CollectionFieldDescription extends DefaultFieldDescription implemen
 	}
 
 	public String generateMatcherBuilderReferenceFor(String generic) {
-		return Optional.ofNullable(getByName(generic)).map(
+		return Optional.ofNullable(getByName(generic)).filter(ProvidesMatchersAnnotatedElementMirror::hasWithSameValue).map(
 				t -> t.getFullyQualifiedNameOfGeneratedClass() + "::" + t.getMethodShortClassName() + "WithSameValue")
 				.orElse(MATCHERS + "::is");
-	}
-
-	@Override
-	public RoundMirror getRoundMirror() {
-		return roundMirror;
 	}
 
 }

@@ -175,12 +175,6 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 						.withImplementation(lines).withJavadoc(javadoc);
 	}
 
-	public Optional<ProvidesMatchersAnnotatedElementMirror> getParentMirror() {
-		RoundMirror rm = roundMirror;
-		return Optional.ofNullable(
-				rm.getByName(getQualifiedName(((TypeElement) rm.getTypeUtils().asElement(element.getSuperclass())))));
-	}
-
 	public DSLMethod generateParentValueDSLStarterWeak() {
 		if (allowWeakWithSameValue) {
 			Optional<AnnotationMirror> am = getAnnotationMirror();

@@ -69,8 +69,8 @@ public abstract class AbstractElementMirror<E extends Element, A extends Annotat
 	public Optional<AnnotationMirror> getAnnotationMirror() {
 		return annotation.map(
 				a -> getTypeUtils().getDeclaredType(getElementUtils().getTypeElement(a.annotationType().getName())))
-				.map(a -> element.getAnnotationMirrors().stream().filter(m -> a.equals(m.getAnnotationType())).findAny()
-						.orElse(null));
+				.map(a -> element.getAnnotationMirrors().stream()
+						.filter(m -> getTypeUtils().isSameType(a, m.getAnnotationType())).findAny().orElse(null));
 	}
 
 	@Override
