@@ -34,7 +34,7 @@ public class DSLMethodTest implements TestSuite {
 				.addOneArgument("java.lang.String", "two").withImplementation("l1")
 				.withJavadoc(new String[] { "l1", "l2" });
 		assertThat(m.asStaticImplementation()).is(
-				"/**\n * l1\n * l2\n */\n@org.hamcrest.Factory\npublic static boolean isOK(java.lang.String one,java.lang.String two) {\n  l1\n}\n");
+				"/**\n * l1\n * l2\n */\npublic static boolean isOK(java.lang.String one,java.lang.String two) {\n  l1\n}\n");
 		assertThat(m.asDefaultReference("target")).is(
 				"/**\n * l1\n * l2\n */\ndefault boolean isOK(java.lang.String one,java.lang.String two) {\n  return target.isOK(one,two);\n}\n");
 	}

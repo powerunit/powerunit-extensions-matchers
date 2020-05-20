@@ -109,7 +109,6 @@ public final class SampleMatchers {
    * 
    * @return the DSL matcher.
    */
-  @org.hamcrest.Factory
   public static SampleMatcher sampleWith() {
     return new SampleMatcherImpl();
   }
@@ -125,54 +124,6 @@ public final class SampleMatchers {
  
 * DSL Generation
 
- The static method annotated with <<<@Factory>>> (annotation from hamcrest) can also be processed
- by another processor. This require to pass the parameter <<<ch.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets>>>
- with a valid value (see below for the exact syntax). It will create interface, with default method
- using the various annotated method. Assuming, we have only the previous method annotated with 
- <<<@Factory>>> and the parameter is <<<.*:ch.powerunit.extensions.matchers.samples.AllMatchers>>>
- then a class <<<AllMatchers>>> will be created in the following way :
- 
-+-----
-/**
- * Factories ...
- */
-@javax.annotation.Generated("ch.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor")
-public interface AllMatchers {
-
-  public static AllMatchers DSL = new AllMatchers() {};
-
-  // sampleWith
-  default ch.powerunit.extensions.matchers.samples.SampleMatchers.SampleMatcher sampleWith() {
-    return ch.powerunit.extensions.matchers.samples.SampleMatchers.sampleWith();
-  }
-
-}
-+-----
-
- This DSL can be used in two ways :
- 
- * First, by implementing the interface ; In this case all the method of the DSL are available to
- the implementing class. This method can be used for instance from another library that use the 
- generated class, but may not be used from the same library (due to the order of the annotation
- processing at compile time).
- 
- * Second, by using the DSL static field, which provide access to the DSL.
- 
- []
- 
- The parameter <<<ch.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets>>>
- define the mapping between the classes containing the method annotated with <<<@Factory>>> and the
- expected DSL classes. The syntax of this parameter is the following :
- 
- * Split the parameter on the <<<;>>> ; Each block is a mapping to one single DSL class.
- 
- * Each block is then splitted on the <<<:>>> ; The left side is a list (comma separated) of regular
- expression  and the right side is the target DSL class.
- 
- []
- 
- Two dedicated artifacts (<<<powerunit-extensions-matchers-factory>>> and 
- <<<powerunit-extensions-matchers-providematchers>>>) are provided to only support the generation of matchers or
- the generation of the factory.
- 
- []
+ The <<<ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor.factory>>>
+ may be used to indicate a target interface which will contains all the DSL methods for all the generated
+ matchers

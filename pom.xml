@@ -57,7 +57,6 @@
 		<java.source.version>1.8</java.source.version>
 		<java.target.version>1.8</java.target.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<hamcrest.version>1.3</hamcrest.version>
 		<surefire.version>2.22.2</surefire.version>
 		<deploy.url>https://oss.sonatype.org/content/repositories/snapshots</deploy.url>
 		<deploy.id>oss-snapshots</deploy.id>
@@ -294,6 +293,7 @@
 							<directory>${project.build.directory}</directory>
 							<includes>
 								<include>*.exec</include>
+								<include>it/**/*.exec</include>
 							</includes>
 						</fileSet>
 					</fileSets>
@@ -319,6 +319,43 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<artifactId>maven-invoker-plugin</artifactId>
+				<configuration>
+					<cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+					<localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+					<preBuildHookScript>prepare.bsh</preBuildHookScript>
+					<postBuildHookScript>verify.bsh</postBuildHookScript>
+					<settingsFile>src/it/settings.xml</settingsFile>
+					<invokerPropertiesFile>params.properties</invokerPropertiesFile>
+					<streamLogs>true</streamLogs>
+					<parallelThreads>3</parallelThreads>
+					<extraArtifacts>
+						<extraArtifact>org.hamcrest:hamcrest:2.2:jar</extraArtifact>
+						<extraArtifact>org.hamcrest:hamcrest:2.1:jar</extraArtifact>
+					</extraArtifacts>
+				</configuration>
+				<executions>
+					<execution>
+						<id>integration-test</id>
+						<goals>
+							<goal>install</goal>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-archetype-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>install</phase>
+						<goals>
+							<goal>update-local-catalog</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<executions>
@@ -333,9 +370,6 @@
 					<excludePackageNames>ch.powerunit.extensions.matchers.factoryprocessor*:ch.powerunit.extensions.matchers.provideprocessor*:ch.powerunit.extensions.matchers.common*</excludePackageNames>
 					<docfilessubdirs>true</docfilessubdirs>
 					<linksource>false</linksource>
-					<links>
-						<link>http://hamcrest.org/JavaHamcrest/javadoc/1.3/</link>
-					</links>
 					<detectLinks />
 					<footer><![CDATA[<img src="http://www.powerunit.ch/powerunit/logo.png" width="80%" height="80%"/>]]></footer>
 				</configuration>
@@ -379,7 +413,6 @@
 							<fork>true</fork>
 							<compilerArgs>
 								<compilerArg>-J${testcompileargs}</compilerArg>
-								<compilerArg>-Ach.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets=.*:ch.powerunit.extensions.matchers.samples.AllMatchers</compilerArg>
 								<compilerArg>-Ach.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor.factory=ch.powerunit.extensions.matchers.samples.AllMatchersAlternate</compilerArg>
 							</compilerArgs>
 						</configuration>
@@ -432,36 +465,6 @@
 									<includes>
 										<include>pom.xml</include>
 									</includes>
-									<stylesheet>src/main/xslt/only-providematchers.xsl</stylesheet>
-									<fileMappers>
-										<fileMapper
-											implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
-											<pattern>.xml$</pattern>
-											<replacement>-only-providematchers.xml</replacement>
-										</fileMapper>
-									</fileMappers>
-								</transformationSet>
-								<transformationSet>
-									<dir>${basedir}</dir>
-									<outputDir>${project.build.directory}</outputDir>
-									<includes>
-										<include>pom.xml</include>
-									</includes>
-									<stylesheet>src/main/xslt/only-factory.xsl</stylesheet>
-									<fileMappers>
-										<fileMapper
-											implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
-											<pattern>.xml$</pattern>
-											<replacement>-only-factory.xml</replacement>
-										</fileMapper>
-									</fileMappers>
-								</transformationSet>
-								<transformationSet>
-									<dir>${basedir}</dir>
-									<outputDir>${project.build.directory}</outputDir>
-									<includes>
-										<include>pom.xml</include>
-									</includes>
 									<stylesheet>src/main/xslt/archetype.xsl</stylesheet>
 									<fileMappers>
 										<fileMapper
@@ -474,38 +477,11 @@
 							</transformationSets>
 						</configuration>
 					</execution>
-
 				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
-					<execution>
-						<id>only-providematchers</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<descriptors>
-								<descriptor>src/assemble/only-providematchers.xml</descriptor>
-							</descriptors>
-							<attach>false</attach>
-						</configuration>
-					</execution>
-					<execution>
-						<id>only-factory</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<descriptors>
-								<descriptor>src/assemble/only-factory.xml</descriptor>
-							</descriptors>
-							<attach>false</attach>
-						</configuration>
-					</execution>
 					<execution>
 						<id>archetype</id>
 						<phase>package</phase>
@@ -538,16 +514,19 @@
 							<pomFile>${project.build.directory}/pom-archetype.xml</pomFile>
 						</configuration>
 					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<artifactId>maven-archetype-plugin</artifactId>
-				<executions>
 					<execution>
-						<phase>install</phase>
+						<id>install archetype for test</id>
+						<phase>pre-integration-test</phase>
 						<goals>
-							<goal>update-local-catalog</goal>
+							<goal>install-file</goal>
 						</goals>
+						<configuration>
+							<file>${project.build.directory}/${project.artifactId}-${project.version}-archetype.jar</file>
+							<artifactId>${project.artifactId}-archetype</artifactId>
+							<groupId>${project.groupId}</groupId>
+							<pomFile>${project.build.directory}/pom-archetype.xml</pomFile>
+							<localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -557,6 +536,13 @@
 				<version>4.3.0</version>
 				<configuration>
 				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>javax.xml.bind</groupId>
+						<artifactId>jaxb-api</artifactId>
+						<version>2.3.1</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 
 		</plugins>
@@ -620,40 +606,6 @@
 								</goals>
 							</execution>
 							<execution>
-								<id>sign-and-deploy-provide</id>
-								<phase>deploy</phase>
-								<goals>
-									<goal>sign-and-deploy-file</goal>
-								</goals>
-								<configuration>
-									<url>${deploy.url}</url>
-									<file>${project.build.directory}/${project.artifactId}-${project.version}-only-providematchers.jar</file>
-									<artifactId>${project.artifactId}-providematchers</artifactId>
-									<groupId>${project.groupId}</groupId>
-									<pomFile>${project.build.directory}/pom-only-providematchers.xml</pomFile>
-									<repositoryId>${deploy.id}</repositoryId>
-									<javadoc>${project.build.directory}/${project.artifactId}-${project.version}-javadoc.jar</javadoc>
-									<sources>${project.build.directory}/${project.artifactId}-${project.version}-sources.jar</sources>
-								</configuration>
-							</execution>
-							<execution>
-								<id>sign-and-deploy-factory</id>
-								<phase>deploy</phase>
-								<goals>
-									<goal>sign-and-deploy-file</goal>
-								</goals>
-								<configuration>
-									<url>${deploy.url}</url>
-									<file>${project.build.directory}/${project.artifactId}-${project.version}-only-factory.jar</file>
-									<artifactId>${project.artifactId}-factory</artifactId>
-									<groupId>${project.groupId}</groupId>
-									<pomFile>${project.build.directory}/pom-only-factory.xml</pomFile>
-									<repositoryId>${deploy.id}</repositoryId>
-									<javadoc>${project.build.directory}/${project.artifactId}-${project.version}-javadoc.jar</javadoc>
-									<sources>${project.build.directory}/${project.artifactId}-${project.version}-sources.jar</sources>
-								</configuration>
-							</execution>
-							<execution>
 								<id>sign-and-deploy-archetype</id>
 								<phase>deploy</phase>
 								<goals>
@@ -687,9 +639,6 @@
 					<excludePackageNames>ch.powerunit.extensions.matchers.factoryprocessor*:ch.powerunit.extensions.matchers.provideprocessor*:ch.powerunit.extensions.matchers.common*</excludePackageNames>
 					<docfilessubdirs>true</docfilessubdirs>
 					<linksource>true</linksource>
-					<links>
-						<link>http://hamcrest.org/JavaHamcrest/javadoc/1.3/</link>
-					</links>
 					<detectLinks />
 					<footer><![CDATA[<img src="http://www.powerunit.ch/powerunit/logo.png" width="80%" height="80%"/>]]></footer>
 				</configuration>
@@ -743,11 +692,6 @@
 	</reporting>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.hamcrest</groupId>
-			<artifactId>hamcrest-all</artifactId>
-			<version>${hamcrest.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>ch.powerunit</groupId>
 			<artifactId>powerunit</artifactId>

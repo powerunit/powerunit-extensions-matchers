@@ -56,49 +56,38 @@ public class AbstractElementMirrorTest implements TestSuiteSupport {
 
 	@Test
 	public void testGetRoundMirror() {
-		assertThat(new AbstractElementMirror<Element, Annotation, AbstractRoundMirrorReferenceToProcessingEnv>(
-				Annotation.class, roundMirror, element) {
+		assertThat(new AbstractElementMirror<Element, AbstractRoundMirrorReferenceToProcessingEnv>(
+				"java.lang.annotation.Annotation", roundMirror, element) {
 		}.getRoundMirror()).is(sameInstance(roundMirror));
 	}
 
 	@Test
 	public void testGetElement() {
-		assertThat(new AbstractElementMirror<Element, Annotation, AbstractRoundMirrorReferenceToProcessingEnv>(
-				Annotation.class, roundMirror, element) {
+		assertThat(new AbstractElementMirror<Element, AbstractRoundMirrorReferenceToProcessingEnv>(
+				"java.lang.annotation.Annotation", roundMirror, element) {
 		}.getElement()).is(sameInstance(element));
 	}
 
 	@Test(fastFail = false)
 	public void testGetDoc() {
-		assertThat(new AbstractElementMirror<Element, Annotation, AbstractRoundMirrorReferenceToProcessingEnv>(
-				Annotation.class, roundMirror, element) {
+		assertThat(new AbstractElementMirror<Element, AbstractRoundMirrorReferenceToProcessingEnv>(
+				"java.lang.annotation.Annotation", roundMirror, element) {
 		}.getDoc()).is(optionalIsNotPresent());
 		Mockito.when(roundMirror.getProcessingEnv().getElementUtils().getDocComment(element)).thenReturn("x");
-		assertThat(new AbstractElementMirror<Element, Annotation, AbstractRoundMirrorReferenceToProcessingEnv>(
-				Annotation.class, roundMirror, element) {
+		assertThat(new AbstractElementMirror<Element, AbstractRoundMirrorReferenceToProcessingEnv>(
+				"java.lang.annotation.Annotation", roundMirror, element) {
 		}.getDoc()).is(optionalIs("x"));
 	}
 
 	@Test(fastFail = false)
-	public void testGetAnnotation() {
-		assertThat(new AbstractElementMirror<Element, Annotation, AbstractRoundMirrorReferenceToProcessingEnv>(
-				Annotation.class, roundMirror, element) {
-		}.getAnnotation()).is(optionalIsNotPresent());
-		Mockito.when(element.getAnnotation(Annotation.class)).thenReturn(annotation);
-		assertThat(new AbstractElementMirror<Element, Annotation, AbstractRoundMirrorReferenceToProcessingEnv>(
-				Annotation.class, roundMirror, element) {
-		}.getAnnotation()).is(optionalIs(annotation));
-	}
-
-	@Test(fastFail = false)
 	public void testGetParamComment() {
-		assertThat(new AbstractElementMirror<Element, Annotation, AbstractRoundMirrorReferenceToProcessingEnv>(
-				Annotation.class, roundMirror, element) {
+		assertThat(new AbstractElementMirror<Element, AbstractRoundMirrorReferenceToProcessingEnv>(
+				"java.lang.annotation.Annotation", roundMirror, element) {
 		}.getParamComment()).is(" * \n");
 		Mockito.when(roundMirror.getProcessingEnv().getElementUtils().getDocComment(element))
 				.thenReturn("\n  @param test\n");
-		assertThat(new AbstractElementMirror<Element, Annotation, AbstractRoundMirrorReferenceToProcessingEnv>(
-				Annotation.class, roundMirror, element) {
+		assertThat(new AbstractElementMirror<Element, AbstractRoundMirrorReferenceToProcessingEnv>(
+				"java.lang.annotation.Annotation", roundMirror, element) {
 		}.getParamComment()).is(" * \n *  @param test\n");
 	}
 }

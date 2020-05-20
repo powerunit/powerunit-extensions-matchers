@@ -42,20 +42,6 @@
 		</i><br>This processor create <code>DSL</code> interface for each
 			factory method of the matchers, in the interface defined by this
 			parameter.</li>
-		<li><b>Processing of the Factory annotation (from hamcrest).</b><br>
-			<i>This processor requires to set the parameter <code>ch.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets</code>
-				(<code>-A</code> parameter).
-		</i><br>This processor create <code>DSL</code> interface for each
-			method annotated, in the following way :
-			<ul>
-				<li>Static method annotated with the <code>Factory</code>
-					annotation are exposed in an interface, based on the mapping
-					defined by the parameter.
-				</li>
-				<li>The parameter is a list (; separated) on target block,
-					which defines a mapping between regular expression (, separated)
-					and a target class (separated with a :)</li>
-			</ul></li>
 	</ul>
 </body>
 </html>

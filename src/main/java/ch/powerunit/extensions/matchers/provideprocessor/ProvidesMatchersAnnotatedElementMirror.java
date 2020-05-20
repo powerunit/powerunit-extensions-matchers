@@ -82,7 +82,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 					wjfo.println("package " + getPackageNameOfGeneratedClass() + ";\n");
 					wjfo.println(generateMainJavaDoc());
 					wjfo.println(generateGeneratedAnnotation(ProvidesMatchersAnnotationsProcessor.class,
-							annotation.get().comments()));
+							annotationPM.comments()));
 					wjfo.println("public final class " + simpleName + " {\n");
 					wjfo.println("  private " + simpleName + "() {}\n");
 					wjfo.println(generateMatchers());
@@ -176,7 +176,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	}
 
 	public DSLMethod generateParentValueDSLStarterWeak() {
-		if (allowWeakWithSameValue) {
+		if (annotationPM.allowWeakWithSameValue()) {
 			Optional<AnnotationMirror> am = getAnnotationMirror();
 			Optional<? extends AnnotationValue> av = am.map(a -> a.getElementValues().entrySet().stream()
 					.filter(kv -> kv.getKey().getSimpleName().toString().equals("allowWeakWithSameValue"))

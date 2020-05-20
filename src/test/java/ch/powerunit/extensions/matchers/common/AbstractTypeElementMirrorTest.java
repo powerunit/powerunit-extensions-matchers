@@ -74,24 +74,24 @@ public class AbstractTypeElementMirrorTest implements TestSuiteSupport {
 	@Test
 	public void testGetFullyQualifiedNameOfClassAnnotated() {
 		when(typeElement.getSuperclass()).thenReturn(objectTypeMirror);
-		assertThat(new AbstractTypeElementMirror<Annotation, AbstractRoundMirrorReferenceToProcessingEnv>(
-				Annotation.class, roundMirror, typeElement) {
+		assertThat(new AbstractTypeElementMirror<AbstractRoundMirrorReferenceToProcessingEnv>(
+				"java.lang.annotation.Annotation", roundMirror, typeElement) {
 		}.getFullyQualifiedNameOfClassAnnotated()).is("fn.sn");
 	}
 
 	@Test
 	public void testGetSimpleNameOfClassAnnotated() {
 		when(typeElement.getSuperclass()).thenReturn(objectTypeMirror);
-		assertThat(new AbstractTypeElementMirror<Annotation, AbstractRoundMirrorReferenceToProcessingEnv>(
-				Annotation.class, roundMirror, typeElement) {
+		assertThat(new AbstractTypeElementMirror<AbstractRoundMirrorReferenceToProcessingEnv>(
+				"java.lang.annotation.Annotation", roundMirror, typeElement) {
 		}.getSimpleNameOfClassAnnotated()).is("sn");
 	}
 
 	@Test
 	public void testGetDefaultLinkForAnnotatedClass() {
 		when(typeElement.getSuperclass()).thenReturn(objectTypeMirror);
-		assertThat(new AbstractTypeElementMirror<Annotation, AbstractRoundMirrorReferenceToProcessingEnv>(
-				Annotation.class, roundMirror, typeElement) {
+		assertThat(new AbstractTypeElementMirror<AbstractRoundMirrorReferenceToProcessingEnv>(
+				"java.lang.annotation.Annotation", roundMirror, typeElement) {
 		}.getDefaultLinkForAnnotatedClass()).is("{@link fn.sn sn}");
 	}
 

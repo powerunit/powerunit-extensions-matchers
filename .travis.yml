@@ -15,19 +15,32 @@ addons:
 before_install:
  - cp .travis.settings.xml $HOME/.m2/settings.xml
  - if [[ "$TRAVIS_OS_NAME" = linux ]]; then sudo apt-get install jshon ; fi
+ - mkdir -p $HOME/.script
+ - curl -s https://report.ci/annotate.py > $HOME/.script/annotate.py
+ - curl -s https://report.ci/upload.py > $HOME/.script/upload.py
+ - curl -s https://codecov.io/bash > $HOME/.script/codecov.bash
+ - chmod +x $HOME/.script/codecov.bash
+ - chmod +x .travisci/*.sh
 install:
 - "mvn dependency:resolve dependency:resolve-plugins"
+- .travisci/getcodacy.sh
 script:
-- "mvn -e clean install"
+- set -o pipefail
+- "mvn  -e clean install 2>&1 | tee maven.log"
+after_failure:
+- set +o pipefail
+- rm -rf target/local-repo
+- .travisci/reportci.sh
 after_success:
+- set +o pipefail
+- rm -rf target/local-repo
+- .travisci/reportci.sh
 - "mvn jacoco:report coveralls:report -DrepoToken=${repoToken}"
-- "bash <(curl -s https://codecov.io/bash) -c -Funit$TRAVIS_OS_NAME$TRAVIS_JDK_VERSION"
-- "mvn jacoco:report-integration"
-- "bash <(curl -s https://codecov.io/bash) -c -Fcompiler$TRAVIS_OS_NAME$TRAVIS_JDK_VERSION"
-- "mvn org.apache.maven.plugins:maven-dependency-plugin:copy -Dartifact=com.codacy:codacy-coverage-reporter:5.0.310:jar:assembly -Dtransitive"
+- .travisci/codecov.sh
 - "mvn jacoco:merge -Djacoco.destFile=target/jacoco-aggregate.exe"
 - "mvn jacoco:report -Djacoco.dataFile=target/jacoco-aggregate.exe"
-- "(cd target/dependency && java -jar codacy-coverage-reporter-5.0.310-assembly.jar report -l Java -r ../site/jacoco/jacoco.xml)"
+- "(java -jar $HOME/.script/codacy-coverage-reporter.jar report -l Java -r target/site/jacoco/jacoco.xml)"
+- "$HOME/.script/codecov.bash -Ffull$TRAVIS_OS_NAME$TRAVIS_JDK_VERSION"
 - "mvn site"
 before_deploy:
 - git config --local user.name "powerunitci"

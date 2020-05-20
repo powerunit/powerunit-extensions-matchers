@@ -97,7 +97,7 @@ public final class DSLMethod {
 	}
 
 	public String asStaticImplementation() {
-		return javadoc + "@org.hamcrest.Factory\npublic static " + fullDeclaration + " {\n" + implementation + "}\n";
+		return javadoc + "public static " + fullDeclaration + " {\n" + implementation + "}\n";
 	}
 
 	public String asDefaultReference(String target) {

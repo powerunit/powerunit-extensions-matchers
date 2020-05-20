@@ -34,7 +34,7 @@ import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.common.AbstractTypeElementMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.DSLExtension;
 
-public class ProvideMatchersMirror extends AbstractTypeElementMirror<ProvideMatchers, RoundMirror> {
+public class ProvideMatchersMirror extends AbstractTypeElementMirror<RoundMirror> {
 
 	private static final String DEFAULT_PARAM_PARENT = " * @param <_PARENT> used to reference, if necessary, a parent for this builder. By default Void is used an indicate no parent builder.\n";
 
@@ -45,16 +45,16 @@ public class ProvideMatchersMirror extends AbstractTypeElementMirror<ProvideMatc
 	protected final String simpleNameOfGeneratedClass;
 	protected final String packageNameOfGeneratedClass;
 	protected final String simpleNameOfGeneratedInterfaceMatcher;
-	protected final boolean allowWeakWithSameValue;
+	protected final ProvideMatchers annotationPM;
 
 	public ProvideMatchersMirror(RoundMirror roundMirror, TypeElement annotatedElement) {
-		super(ProvideMatchers.class, roundMirror, annotatedElement);
-		ProvideMatchers pm = annotation.get();
+		super("ch.powerunit.extensions.matchers.ProvideMatchers", roundMirror, annotatedElement);
+		ProvideMatchers pm = annotatedElement.getAnnotation(ProvideMatchers.class);
 		this.simpleNameOfGeneratedClass = generateSimpleNameOfGeneratedClass(annotatedElement, pm);
 		this.packageNameOfGeneratedClass = generatePackageNameOfGeneratedClass(annotatedElement, pm,
 				getProcessingEnv().getElementUtils());
 		this.simpleNameOfGeneratedInterfaceMatcher = getSimpleNameOfClassAnnotated() + "Matcher";
-		this.allowWeakWithSameValue = pm.allowWeakWithSameValue();
+		this.annotationPM = pm;
 	}
 
 	private String generateSimpleNameOfGeneratedClass(TypeElement annotatedElement, ProvideMatchers pm) {
@@ -75,7 +75,7 @@ public class ProvideMatchersMirror extends AbstractTypeElementMirror<ProvideMatc
 	}
 
 	public final String[] getExtension() {
-		return annotation.get().extensions();
+		return annotationPM.extensions();
 
 	}
 
@@ -92,7 +92,7 @@ public class ProvideMatchersMirror extends AbstractTypeElementMirror<ProvideMatc
 	}
 
 	public final Collection<DSLExtension> getDSLExtension() {
-		return DSLExtension.EXTENSION.stream().filter(e -> e.accept(annotation.get().moreMethod()))
+		return DSLExtension.EXTENSION.stream().filter(e -> e.accept(annotationPM.moreMethod()))
 				.collect(collectingAndThen(toList(), Collections::unmodifiableList));
 	}
 
@@ -150,9 +150,10 @@ public class ProvideMatchersMirror extends AbstractTypeElementMirror<ProvideMatc
 		return Optional.ofNullable(
 				rm.getByName(getQualifiedName(((TypeElement) rm.getTypeUtils().asElement(element.getSuperclass())))));
 	}
-	
+
 	public boolean hasWithSameValue() {
-		return !fullyQualifiedNameOfSuperClassOfClassAnnotated.isPresent() || getParentMirror().isPresent() || allowWeakWithSameValue;
+		return !fullyQualifiedNameOfSuperClassOfClassAnnotated.isPresent() || getParentMirror().isPresent()
+				|| annotationPM.allowWeakWithSameValue();
 	}
 
 }

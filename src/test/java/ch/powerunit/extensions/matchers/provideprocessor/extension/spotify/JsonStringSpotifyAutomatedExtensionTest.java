@@ -22,7 +22,6 @@ package ch.powerunit.extensions.matchers.provideprocessor.extension.spotify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
-import java.util.Collections;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
