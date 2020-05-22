@@ -26,7 +26,6 @@ import java.util.Optional;
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
-import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcherField;
 
 public final class IgnoreFieldDescription extends AbstractFieldDescription {
 
@@ -55,13 +54,6 @@ public final class IgnoreFieldDescription extends AbstractFieldDescription {
 		return String.format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));",
 				getMirror().getMethodFieldName(), getFieldName(), MATCHERS,
 				"\"This field is ignored \"+" + CommonUtils.toJavaSyntax(getDescriptionForIgnoreIfApplicable()));
-	}
-
-	@Override
-	public GeneratedMatcherField asGeneratedMatcherField() {
-		GeneratedMatcherField gm = super.asGeneratedMatcherField();
-		gm.setFieldIsIgnored(true);
-		return gm;
 	}
 
 	@Override

@@ -37,17 +37,13 @@ import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
-import javax.tools.FileObject;
-import javax.tools.StandardLocation;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
 
 import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.common.FactoryHelper;
 import ch.powerunit.extensions.matchers.common.FileObjectHelper;
-import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatchers;
 
 /**
  * @author borettim
@@ -64,7 +60,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
 	private List<String> factories = new ArrayList<>();
 
-	private GeneratedMatchers allGeneratedMatchers = new GeneratedMatchers();
+	private List<Element> allSourceElements = new ArrayList<>();
 
 	@Override
 	public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -93,38 +89,21 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		factories.addAll(alias.stream()
 				.collect(toMap(ProvidesMatchersAnnotatedElementMirror::getFullyQualifiedNameOfGeneratedClass,
 						ProvidesMatchersAnnotatedElementMirror::process))
-				.entrySet()
-				.stream().map(e -> e.getValue().stream()
+				.entrySet().stream().map(e -> e.getValue().stream()
 						.map(m -> CommonUtils.addPrefix("  ", m.asDefaultReference(e.getKey()))).collect(joining("\n")))
 				.collect(toList()));
-		allGeneratedMatchers.getGeneratedMatcher()
-				.addAll(alias.stream().map(ProvidesMatchersAnnotatedElementMirror::asXml).collect(toList()));
+		alias.stream().map(ProvidesMatchersAnnotatedElementMirror::getElement).forEach(allSourceElements::add);
 	}
 
 	private void processFinalRound() {
-		processReport();
 		if (factory != null) {
 			processFactory();
 		}
 	}
 
-	private void processReport() {
-		FileObjectHelper.processFileWithIOException(
-				() -> processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "",
-						"META-INF/" + getClass().getName() + "/matchers.xml", allGeneratedMatchers.listElements()),
-				FileObject::openOutputStream, os -> {
-					Marshaller m = JAXBContext.newInstance(GeneratedMatchers.class).createMarshaller();
-					m.setProperty("jaxb.formatted.output", true);
-					m.marshal(allGeneratedMatchers, os);
-				} ,
-				e -> processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING,
-						"Unable to create the file containing meta data about this generation, because of "
-								+ e.getMessage()));
-	}
-
 	private void processFactory() {
 		FileObjectHelper.processFileWithIOException(
-				() -> processingEnv.getFiler().createSourceFile(factory, allGeneratedMatchers.listElements()),
+				() -> processingEnv.getFiler().createSourceFile(factory, allSourceElements.toArray(new Element[0])),
 				jfo -> new PrintWriter(jfo.openWriter()),
 				wjfo -> FactoryHelper.generateFactoryClass(wjfo, ProvidesMatchersAnnotationsProcessor.class,
 						factory.replaceAll("\\.[^.]+$", ""), factory.replaceAll("^([^.]+\\.)*", ""),

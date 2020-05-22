@@ -31,7 +31,6 @@ import javax.lang.model.type.TypeMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
-import ch.powerunit.extensions.matchers.provideprocessor.xml.GeneratedMatcherField;
 
 public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionContainerMetaData {
 
@@ -143,15 +142,6 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 
 	public String getGeneric() {
 		return generic;
-	}
-
-	public GeneratedMatcherField asGeneratedMatcherField() {
-		GeneratedMatcherField gmf = new GeneratedMatcherField();
-		gmf.setFieldIsIgnored(true);
-		gmf.setFieldName(getFieldName());
-		gmf.setFieldAccessor(getFieldAccessor());
-		gmf.setGenericDetails(generic);
-		return gmf;
 	}
 
 	public String generateMetadata(String className) {
