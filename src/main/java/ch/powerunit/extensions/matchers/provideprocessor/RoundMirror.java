@@ -94,19 +94,19 @@ public class RoundMirror extends AbstractRoundMirrorReferenceToProcessingEnv {
 				.map(t -> new ProvidesMatchersAnnotatedElementMirror(t.get(), this))
 				.forEach(a -> alias.put(a.getFullyQualifiedNameOfClassAnnotated(), a));
 
-		doWarningforAllElements();
+		doErrorforAllElements();
 		return alias.values();
 	}
 
-	private void doWarningforAllElements() {
-		elementsWithOtherAnnotations.entrySet().stream().forEach(e -> doWarningForElement(e.getValue(), e.getKey()));
+	private void doErrorforAllElements() {
+		elementsWithOtherAnnotations.entrySet().stream().forEach(e -> doErrorForElement(e.getValue(), e.getKey()));
 	}
 
-	private void doWarningForElement(Set<? extends Element> elements, Class<?> aa) {
-		elements.stream().forEach(e -> processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING, "Annotation @"
+	private void doErrorForElement(Set<? extends Element> elements, Class<?> aa) {
+		elements.stream().forEach(e -> processingEnv.getMessager().printMessage(Kind.ERROR, "Annotation @"
 				+ aa.getName()
-				+ " not supported at this location ; The surrounding class is not annotated with @ProvideMatchers", e,
-				findAnnotationMirrorFor(e, aa)));
+				+ " not supported at this location ; The surrounding class is not annotated with @ProvideMatchers. Since version 0.2.0 of powerunit-extension-matchers this is considered as an error.",
+				e, findAnnotationMirrorFor(e, aa)));
 	}
 
 	private AnnotationMirror findAnnotationMirrorFor(Element e, Class<?> aa) {
