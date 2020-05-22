@@ -62,7 +62,7 @@ public class ProvidesMatchersSubElementVisitor extends
 			String fieldName = getSimpleName(e);
 			return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, fieldName);
 		}
-		generateIfNeededWarningForNotSupportedElementAndRemoveIt("Check that this field is public and not static", e);
+		generateIfNeededErrorForNotSupportedElementAndRemoveIt("Check that this field is public and not static", e);
 		return Optional.empty();
 	}
 
@@ -76,15 +76,17 @@ public class ProvidesMatchersSubElementVisitor extends
 				return visiteExecutableGet(e, "^(get)|(is)", p);
 			}
 		}
-		generateIfNeededWarningForNotSupportedElementAndRemoveIt(
+		generateIfNeededErrorForNotSupportedElementAndRemoveIt(
 				"Check that this method is public, doesn't have any parameter and is named isXXX or getXXX", e);
 		return Optional.empty();
 	}
 
-	private void generateIfNeededWarningForNotSupportedElementAndRemoveIt(String description, Element e) {
+	private void generateIfNeededErrorForNotSupportedElementAndRemoveIt(String description, Element e) {
 		if (removeFromIgnoreList.apply(e)) {
-			getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING,
-					"One of the annotation is not supported as this location ; " + description, e);
+			getProcessingEnv().getMessager().printMessage(Kind.ERROR,
+					"One of the annotation is not supported as this location ; " + description
+							+ ". Since version 0.2.0 of powerunit-extension-matchers this is considered as an error.",
+					e);
 		}
 	}
 

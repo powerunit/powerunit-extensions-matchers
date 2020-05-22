@@ -36,9 +36,10 @@ class ProvidesMatchersElementVisitor extends AbstractSimpleElementVisitor<Option
 	}
 
 	private void warningForType(Element e, String type) {
-		super.getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING,
-				"The annotation `ProvideMatchers` is used on an " + type + ", which is not supported", e,
-				support.getProvideMatchersAnnotation(e));
+		super.getProcessingEnv().getMessager().printMessage(Kind.ERROR,
+				"The annotation `ProvideMatchers` is used on an " + type
+						+ ", which is not supported. Since version 0.2.0 of powerunit-extension-matchers this is considered as an error.",
+				e, support.getProvideMatchersAnnotation(e));
 	}
 
 }
