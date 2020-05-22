@@ -19,7 +19,10 @@
  */
 package ch.powerunit.extensions.matchers.common;
 
+import static java.util.Optional.ofNullable;
+
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
@@ -39,16 +42,8 @@ public abstract class AbstractTypeElementMirror<R extends AbstractRoundMirrorRef
 		super(annotationType, roundMirror, element);
 		this.generic = getGeneric(element);
 		this.fullGeneric = getFullGeneric(element);
-		this.fullyQualifiedNameOfSuperClassOfClassAnnotated = extractSuper(element);
-	}
-
-	private Optional<String> extractSuper(TypeElement element) {
-		TypeMirror superObject = element.getSuperclass();
-		if (!roundMirror.getObject().equals(superObject)) {
-			return Optional.ofNullable(superObject.toString());
-		} else {
-			return Optional.empty();
-		}
+		this.fullyQualifiedNameOfSuperClassOfClassAnnotated = ofNullable(element.getSuperclass())
+				.filter(((Predicate<TypeMirror>) roundMirror.getObject()::equals).negate()).map(Object::toString);
 	}
 
 	public String getFullyQualifiedNameOfClassAnnotated() {
@@ -69,6 +64,10 @@ public abstract class AbstractTypeElementMirror<R extends AbstractRoundMirrorRef
 
 	public String getGeneric() {
 		return generic;
+	}
+
+	public boolean hasSuperClass() {
+		return fullyQualifiedNameOfSuperClassOfClassAnnotated.isPresent();
 	}
 
 }

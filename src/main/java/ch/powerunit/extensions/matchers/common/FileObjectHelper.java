@@ -35,11 +35,6 @@ public final class FileObjectHelper {
 	}
 
 	@FunctionalInterface
-	public static interface FunctionrWithException<S, R> {
-		R apply(S input) throws Exception;
-	}
-
-	@FunctionalInterface
 	public static interface ConsumerWithException<S> {
 		void accept(S input) throws Exception;
 	}
@@ -56,7 +51,7 @@ public final class FileObjectHelper {
 
 	public static <T extends FileObject, S extends Closeable, R> R processFileWithIOExceptionAndResult(
 			SupplierWithException<T> generateFileObject, FunctionWithException<T, S> openStream,
-			FunctionrWithException<S, R> actions, Consumer<Exception> exceptionHandler) {
+			FunctionWithException<S, R> actions, Consumer<Exception> exceptionHandler) {
 		try {
 			try (S wjfo = openStream.apply(generateFileObject.get())) {
 				return actions.apply(wjfo);

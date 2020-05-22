@@ -31,8 +31,6 @@ import ch.powerunit.TestSuite;
 import ch.powerunit.extensions.matchers.AddToMatcher;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.DefaultFieldDescription;
-import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescriptionProvider;
-import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDescriptionProvider.Type;
 
 public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 
@@ -88,6 +86,7 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 		when(providesMatchersAnnotatedElementMirror.getRoundMirror()).thenReturn(roundMirror);
 		when(roundMirror.getProcessingEnv()).thenReturn(processingEnv);
 		when(fieldDescription.getFieldElement()).thenReturn(targetElement);
+		when(fieldDescription.getFieldName()).thenReturn("fn");
 		when(processingEnv.getElementUtils()).thenReturn(elements);
 		when(processingEnv.getMessager()).thenReturn(messager);
 		when(processingEnv.getTypeUtils()).thenReturn(types);
@@ -101,8 +100,6 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 		when(typeMirror.getKind()).thenReturn(TypeKind.BOOLEAN);
 		when(typeMirror.accept(Mockito.argThat(instanceOf(NameExtractorVisitor.class)), Mockito.any()))
 				.thenReturn(Optional.of("x"));
-		when(typeMirror.accept(Mockito.argThat(instanceOf(FieldDescriptionProvider.ExtracTypeVisitor.class)),
-				Mockito.any())).thenReturn(Type.NA);
 		when(executableElement.getReturnType()).thenReturn(typeMirror);
 		when(executableElement.getAnnotationsByType(AddToMatcher.class)).thenReturn(new AddToMatcher[] {});
 		underTest = new ProvidesMatchersSubElementVisitor(roundMirror);
@@ -250,40 +247,6 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 		assertThat(ofd.isPresent()).is(false);
 		Mockito.verify(messager).printMessage(Mockito.any(), Mockito.anyString(), Mockito.any());
 		Mockito.verify(roundMirror).removeFromIgnoreList(Mockito.any());
-	}
-
-	@Test
-	public void testVisitVariablePublicAndNotStaticThenReturnFieldDescription() {
-		when(variableElement.getModifiers()).thenReturn(Collections.singleton(Modifier.PUBLIC));
-		Optional<AbstractFieldDescription> ofd = underTest.visitVariable(variableElement,
-				providesMatchersAnnotatedElementMirror);
-		assertThat(ofd).isNotNull();
-		assertThat(ofd.isPresent()).is(true);
-		assertThat(ofd.get().getFieldName()).is("fn");
-	}
-
-	@Test
-	public void testVisitExecutablePublicAndNotStaticAndZize0AndNamedGetThenReturnFieldDescription() {
-		when(executableName.toString()).thenReturn("getXXX");
-		when(executableElement.getModifiers()).thenReturn(Collections.singleton(Modifier.PUBLIC));
-		when(executableElement.getParameters()).thenReturn(Collections.emptyList());
-		Optional<AbstractFieldDescription> ofd = underTest.visitExecutable(executableElement,
-				providesMatchersAnnotatedElementMirror);
-		assertThat(ofd).isNotNull();
-		assertThat(ofd.isPresent()).is(true);
-		assertThat(ofd.get().getFieldName()).is("xXX");
-	}
-
-	@Test
-	public void testVisitExecutablePublicAndNotStaticAndZize0AndNamedIsThenReturnFieldDescription() {
-		when(executableName.toString()).thenReturn("isXy");
-		when(executableElement.getModifiers()).thenReturn(Collections.singleton(Modifier.PUBLIC));
-		when(executableElement.getParameters()).thenReturn(Collections.emptyList());
-		Optional<AbstractFieldDescription> ofd = underTest.visitExecutable(executableElement,
-				providesMatchersAnnotatedElementMirror);
-		assertThat(ofd).isNotNull();
-		assertThat(ofd.isPresent()).is(true);
-		assertThat(ofd.get().getFieldName()).is("xy");
 	}
 
 }

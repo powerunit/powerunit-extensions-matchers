@@ -19,14 +19,15 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
+import static java.util.Optional.ofNullable;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
+import ch.powerunit.extensions.matchers.provideprocessor.Matchable;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
-import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
 
 public class CollectionFieldDescription extends DefaultFieldDescription {
 
@@ -102,9 +103,7 @@ public class CollectionFieldDescription extends DefaultFieldDescription {
 	}
 
 	public String generateMatcherBuilderReferenceFor(String generic) {
-		return Optional.ofNullable(getByName(generic)).filter(ProvidesMatchersAnnotatedElementMirror::hasWithSameValue)
-				.map(t -> t.getFullyQualifiedNameOfGeneratedClass() + "::" + t.getMethodShortClassName()
-						+ "WithSameValue")
+		return ofNullable(getByName(generic)).filter(Matchable::hasWithSameValue).map(t -> t.getWithSameValue(true))
 				.orElse(MATCHERS + "::is");
 	}
 

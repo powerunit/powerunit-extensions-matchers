@@ -99,13 +99,15 @@ public class AbstractRoundMirrorSupportTest
 	public void testIsSameType() {
 		assertThat(isSameType(typeElement, typeMirror)).is(true);
 		assertThat(isSameType(typeElement, typeMirror2)).is(false);
+		assertThat(isSameType(null, typeMirror2)).is(false);
 	}
-	
-	@Test(fastFail = false) 
+
+	@Test(fastFail = false)
 	public void testIsAssignableWithErasure() {
-		assertThat(isAssignableWithErasure(typeElement,typeMirror)).is(true);
-		assertThat(isAssignableWithErasure(typeElement,typeMirror2)).is(true);
-		assertThat(isAssignableWithErasure(typeElement,typeMirror3)).is(false);
+		assertThat(isAssignableWithErasure(typeElement, typeMirror)).is(true);
+		assertThat(isAssignableWithErasure(typeElement, typeMirror2)).is(true);
+		assertThat(isAssignableWithErasure(typeElement, typeMirror3)).is(false);
+		assertThat(isAssignableWithErasure(null, typeMirror)).is(false);
 	}
 
 }

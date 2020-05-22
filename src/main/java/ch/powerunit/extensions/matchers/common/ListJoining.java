@@ -75,10 +75,12 @@ public final class ListJoining<E> {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	public static <E> ListJoining<E> nlSeparated() {
 		return (ListJoining<E>) NL_SEPARATED;
 	}
 
+	@SuppressWarnings("unchecked")
 	public static <E> ListJoining<E> commaSeparated() {
 		return (ListJoining<E>) COMMA_SEPARATED;
 	}
@@ -110,7 +112,7 @@ public final class ListJoining<E> {
 				.collect(collectingAndThen(joining(delimiter), finalizer));
 	}
 
-	public String asString(E... input) {
+	public String asString(@SuppressWarnings("unchecked") E... input) {
 		return asString(Arrays.asList(input));
 	}
 }

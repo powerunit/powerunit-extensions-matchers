@@ -41,14 +41,14 @@ public final class FieldDescriptionProvider {
 	private FieldDescriptionProvider() {
 	}
 
-	public static enum Type {
-		NA, MAP, ARRAY, COLLECTION, LIST, SET, OPTIONAL, COMPARABLE, STRING, SUPPLIER, PRIMITIVE
-	}
+	public static final class ExtractTypeVisitor
+			extends AbstractTypeKindVisitor<AbstractFieldDescription, FieldDescriptionMirror, RoundMirror> {
 
-	public static final class ExtracTypeVisitor extends AbstractTypeKindVisitor<Type, Void, RoundMirror> {
+		private final ProvidesMatchersAnnotatedElementData containingElementMirror;
 
-		public ExtracTypeVisitor(RoundMirror support) {
-			super(support);
+		public ExtractTypeVisitor(ProvidesMatchersAnnotatedElementData containingElementMirror) {
+			super(containingElementMirror.getRoundMirror());
+			this.containingElementMirror = containingElementMirror;
 		}
 
 		private boolean isAssignable(DeclaredType t, String target) {
@@ -59,51 +59,48 @@ public final class FieldDescriptionProvider {
 		}
 
 		@Override
-		protected Type defaultAction(TypeMirror t, Void ignore) {
-			return Type.NA;
+		protected AbstractFieldDescription defaultAction(TypeMirror t, FieldDescriptionMirror mirror) {
+			return new DefaultFieldDescription(containingElementMirror, mirror);
 		}
 
 		@Override
-		public Type visitPrimitive(PrimitiveType t, Void ignore) {
-			return Type.PRIMITIVE;
+		public AbstractFieldDescription visitPrimitive(PrimitiveType t, FieldDescriptionMirror mirror) {
+			return new PrimitiveFieldDescription(containingElementMirror, mirror);
 		}
 
 		@Override
-		public Type visitArray(ArrayType t, Void ignore) {
-			return Type.ARRAY;
+		public AbstractFieldDescription visitArray(ArrayType t, FieldDescriptionMirror mirror) {
+			return new ArrayFieldDescription(containingElementMirror, mirror);
 		}
 
 		@Override
-		public Type visitDeclared(DeclaredType t, Void ignore) {
+		public AbstractFieldDescription visitDeclared(DeclaredType t, FieldDescriptionMirror mirror) {
 			if (isAssignable(t, "java.util.Optional")) {
-				return Type.OPTIONAL;
+				return new OptionalFieldDescription(containingElementMirror, mirror);
 			} else if (isAssignable(t, "java.util.Map")) {
-				return Type.MAP;
-			} else if (isAssignable(t, "java.util.Set")) {
-				return Type.SET;
-			} else if (isAssignable(t, "java.util.List")) {
-				return Type.LIST;
-			} else if (isAssignable(t, "java.util.Collection")) {
-				return Type.COLLECTION;
+				return new MapFieldDescription(containingElementMirror, mirror);
+			} else if (isAssignable(t, "java.util.Set") || isAssignable(t, "java.util.List")
+					|| isAssignable(t, "java.util.Collection")) {
+				return new CollectionFieldDescription(containingElementMirror, mirror);
 			} else if (isAssignable(t, "java.lang.String")) {
-				return Type.STRING;
+				return new StringFieldDescription(containingElementMirror, mirror);
 			} else if (isAssignable(t, "java.lang.Comparable")) {
-				return Type.COMPARABLE;
+				return new ComparableFieldDescription(containingElementMirror, mirror);
 			} else if (isAssignable(t, "java.util.function.Supplier")) {
-				return Type.SUPPLIER;
+				return new SupplierFieldDescription(containingElementMirror, mirror);
 			}
-			return Type.NA;
+			return new DefaultFieldDescription(containingElementMirror, mirror);
 		}
 
 		@Override
-		public Type visitTypeVariable(TypeVariable t, Void ignore) {
-			return Type.NA;
+		public AbstractFieldDescription visitTypeVariable(TypeVariable t, FieldDescriptionMirror mirror) {
+			return new DefaultFieldDescription(containingElementMirror, mirror);
 		}
 
 		@Override
-		public Type visitUnknown(TypeMirror t, Void ignore) {
+		public AbstractFieldDescription visitUnknown(TypeMirror t, FieldDescriptionMirror mirror) {
 			getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING, "Unsupported type element");
-			return Type.NA;
+			return new DefaultFieldDescription(containingElementMirror, mirror);
 		}
 	}
 
@@ -111,42 +108,14 @@ public final class FieldDescriptionProvider {
 		return mirror.getFieldElement().getAnnotation(IgnoreInMatcher.class) != null;
 	}
 
-	public static Type getTypeMirror(ProvidesMatchersAnnotatedElementData containingElementMirror,
-			FieldDescriptionMirror mirror) {
-		Element te = mirror.getFieldElement();
-		return new ExtracTypeVisitor(containingElementMirror.getRoundMirror()).visit(
-				(te instanceof ExecutableElement) ? ((ExecutableElement) te).getReturnType() : te.asType(), null);
-	}
-
 	public static AbstractFieldDescription of(ProvidesMatchersAnnotatedElementData containingElementMirror,
 			FieldDescriptionMirror mirror) {
-		Type type = getTypeMirror(containingElementMirror, mirror);
 		if (isIgnored(mirror)) {
 			return new IgnoreFieldDescription(containingElementMirror, mirror);
 		}
-
-		switch (type) {
-		case ARRAY:
-			return new ArrayFieldDescription(containingElementMirror, mirror);
-		case MAP:
-			return new MapFieldDescription(containingElementMirror, mirror);
-		case COLLECTION:
-		case SET:
-		case LIST:
-			return new CollectionFieldDescription(containingElementMirror, mirror);
-		case COMPARABLE:
-			return new ComparableFieldDescription(containingElementMirror, mirror);
-		case OPTIONAL:
-			return new OptionalFieldDescription(containingElementMirror, mirror);
-		case STRING:
-			return new StringFieldDescription(containingElementMirror, mirror);
-		case SUPPLIER:
-			return new SupplierFieldDescription(containingElementMirror, mirror);
-		case PRIMITIVE:
-			return new PrimitiveFieldDescription(containingElementMirror, mirror);
-		default:
-			return new DefaultFieldDescription(containingElementMirror, mirror);
-		}
+		Element te = mirror.getFieldElement();
+		return new ExtractTypeVisitor(containingElementMirror).visit(
+				(te instanceof ExecutableElement) ? ((ExecutableElement) te).getReturnType() : te.asType(), mirror);
 	}
 
 }

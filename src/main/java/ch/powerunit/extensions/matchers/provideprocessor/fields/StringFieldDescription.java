@@ -36,11 +36,9 @@ public class StringFieldDescription extends ComparableFieldDescription {
 	@Override
 	protected Collection<FieldDSLMethod> getSpecificFieldDslMethodFor() {
 		List<FieldDSLMethod> tmp = new ArrayList<>(super.getSpecificFieldDslMethodFor());
-		tmp.addAll(Arrays.asList(
-				getDslMethodBuilder().withDeclaration("ContainsString", "String other")
-						.withJavaDoc("that the string contains another one",
-								"other the string is contains in the other one",
-								MATCHERS + "#containsString(java.lang.String)")
+		tmp.addAll(Arrays.asList(getDslMethodBuilder().withDeclaration("ContainsString", "String other")
+				.withJavaDoc("that the string contains another one", "other the string is contains in the other one",
+						MATCHERS + "#containsString(java.lang.String)")
 				.havingDefault(MATCHERS + ".containsString(other)"),
 				getDslMethodBuilder().withDeclaration("StartsWith", "String other")
 						.withJavaDoc("that the string starts with another one", "other the string to use to compare",

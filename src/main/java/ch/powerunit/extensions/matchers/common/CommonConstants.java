@@ -19,7 +19,7 @@
  */
 package ch.powerunit.extensions.matchers.common;
 
-public class CommonConstants {
+public final class CommonConstants {
 
 	public static String DEFAULT_JAVADOC_FOR_FACTORY = "/**\n * Factories generated.\n * <p> \n * This DSL can be use in several way : \n"
 			+ " * <ul> \n * <li>By implementing this interface. In this case, all the methods of this interface will be available inside the implementing class.</li>\n"

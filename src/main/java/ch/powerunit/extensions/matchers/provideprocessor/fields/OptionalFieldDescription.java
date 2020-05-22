@@ -19,16 +19,16 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
+import static java.util.Optional.ofNullable;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Optional;
 
+import ch.powerunit.extensions.matchers.provideprocessor.Matchable;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
-import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
 
 public class OptionalFieldDescription extends DefaultFieldDescription {
-
 
 	public OptionalFieldDescription(ProvidesMatchersAnnotatedElementData containingElementMirror,
 			FieldDescriptionMirror mirror) {
@@ -96,10 +96,8 @@ public class OptionalFieldDescription extends DefaultFieldDescription {
 	}
 
 	public String generateMatcherBuilderReferenceFor(String generic, String accessor) {
-		return Optional.ofNullable(getByName(generic)).filter(ProvidesMatchersAnnotatedElementMirror::hasWithSameValue)
-				.map(t -> t.getFullyQualifiedNameOfGeneratedClass() + "." + t.getMethodShortClassName()
-						+ "WithSameValue(" + accessor + ")")
-				.orElse(MATCHERS + ".is(" + accessor + ")");
+		return ofNullable(getByName(generic)).filter(Matchable::hasWithSameValue)
+				.map(t -> t.getWithSameValue(false) + "(" + accessor + ")").orElse(MATCHERS + ".is(" + accessor + ")");
 	}
 
 }

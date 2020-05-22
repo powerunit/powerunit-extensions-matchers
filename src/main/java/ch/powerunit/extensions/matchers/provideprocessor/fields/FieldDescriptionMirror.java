@@ -19,6 +19,10 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
+import static java.util.Optional.ofNullable;
+
+import java.util.Optional;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -26,7 +30,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
 import ch.powerunit.extensions.matchers.common.ElementHelper;
-import ch.powerunit.extensions.matchers.provideprocessor.ProvideMatchersMirror;
+import ch.powerunit.extensions.matchers.provideprocessor.Matchable;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
 
@@ -69,22 +73,14 @@ public class FieldDescriptionMirror implements ElementHelper {
 	public TypeElement getFieldTypeAsTypeElement() {
 		return fieldTypeAsTypeElement;
 	}
-	
+
 	public TypeMirror getFieldTypeMirror() {
-		return (fieldElement instanceof ExecutableElement)
-				? ((ExecutableElement) fieldElement).getReturnType()
+		return (fieldElement instanceof ExecutableElement) ? ((ExecutableElement) fieldElement).getReturnType()
 				: fieldElement.asType();
 	}
 
-	public String computeFullyQualifiedNameMatcherInSameRound(RoundMirror roundMirror) {
-		ProcessingEnvironment processingEnv = roundMirror.getProcessingEnv();
-		TypeMirror fieldTypeMirror = getFieldTypeMirror();
-		if (roundMirror.isInSameRound(processingEnv.getTypeUtils().asElement(fieldTypeMirror))
-				&& fieldTypeAsTypeElement != null) {
-			return new ProvideMatchersMirror(roundMirror, fieldTypeAsTypeElement)
-					.getFullyQualifiedNameOfGeneratedClass();
-		}
-		return null;
+	public Optional<Matchable> getMatchable(RoundMirror roundMirror) {
+		return ofNullable(roundMirror.getByName(getFieldType()));
 	}
 
 }

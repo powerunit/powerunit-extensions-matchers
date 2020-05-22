@@ -69,17 +69,6 @@ public class AbstractElementMirrorTest implements TestSuiteSupport {
 	}
 
 	@Test(fastFail = false)
-	public void testGetDoc() {
-		assertThat(new AbstractElementMirror<Element, AbstractRoundMirrorReferenceToProcessingEnv>(
-				"java.lang.annotation.Annotation", roundMirror, element) {
-		}.getDoc()).is(optionalIsNotPresent());
-		Mockito.when(roundMirror.getProcessingEnv().getElementUtils().getDocComment(element)).thenReturn("x");
-		assertThat(new AbstractElementMirror<Element, AbstractRoundMirrorReferenceToProcessingEnv>(
-				"java.lang.annotation.Annotation", roundMirror, element) {
-		}.getDoc()).is(optionalIs("x"));
-	}
-
-	@Test(fastFail = false)
 	public void testGetParamComment() {
 		assertThat(new AbstractElementMirror<Element, AbstractRoundMirrorReferenceToProcessingEnv>(
 				"java.lang.annotation.Annotation", roundMirror, element) {

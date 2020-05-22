@@ -65,7 +65,7 @@ public abstract class AbstractJacksonAutomatedExtension extends AutomatedExtensi
 	@Override
 	public final Collection<FieldDSLMethod> accept(AbstractFieldDescription field) {
 		return Optional.of(field)
-				.filter(f -> asList(f.getContainingElementMirror().getFullData().getExtension())
+				.filter(f -> asList(f.getContainingElementMirror().getFullData().extensions())
 						.contains(ProvideMatchers.JSON_EXTENSION))
 				.filter(f -> f instanceof DefaultFieldDescription).map(DefaultFieldDescription.class::cast)
 				.filter(f -> isAssignableWithErasure(f.getMirror().getFieldTypeAsTypeElement(),

@@ -54,7 +54,7 @@ public abstract class AbstractSpotifyAutomatedExtension extends AutomatedExtensi
 	 */
 	@Override
 	public final Collection<FieldDSLMethod> accept(AbstractFieldDescription field) {
-		if (!Arrays.asList(field.getContainingElementMirror().getFullData().getExtension())
+		if (!Arrays.asList(field.getContainingElementMirror().getFullData().extensions())
 				.contains(ProvideMatchers.JSON_EXTENSION)) {
 			return Collections.emptyList();
 		}

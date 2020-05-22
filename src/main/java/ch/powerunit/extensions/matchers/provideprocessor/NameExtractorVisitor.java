@@ -20,6 +20,9 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+
 import java.util.Optional;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -40,42 +43,42 @@ final class NameExtractorVisitor extends AbstractTypeKindVisitor<Optional<String
 
 	@Override
 	public Optional<String> visitPrimitiveAsBoolean(PrimitiveType t, Boolean asPrimitif) {
-		return Optional.of((asPrimitif) ? "boolean" : "Boolean");
+		return of((asPrimitif) ? "boolean" : "Boolean");
 	}
 
 	@Override
 	public Optional<String> visitPrimitiveAsByte(PrimitiveType t, Boolean asPrimitif) {
-		return Optional.of((asPrimitif) ? "byte" : "Byte");
+		return of((asPrimitif) ? "byte" : "Byte");
 	}
 
 	@Override
 	public Optional<String> visitPrimitiveAsShort(PrimitiveType t, Boolean asPrimitif) {
-		return Optional.of((asPrimitif) ? "short" : "Short");
+		return of((asPrimitif) ? "short" : "Short");
 	}
 
 	@Override
 	public Optional<String> visitPrimitiveAsInt(PrimitiveType t, Boolean asPrimitif) {
-		return Optional.of((asPrimitif) ? "int" : "Integer");
+		return of((asPrimitif) ? "int" : "Integer");
 	}
 
 	@Override
 	public Optional<String> visitPrimitiveAsLong(PrimitiveType t, Boolean asPrimitif) {
-		return Optional.of((asPrimitif) ? "long" : "Long");
+		return of((asPrimitif) ? "long" : "Long");
 	}
 
 	@Override
 	public Optional<String> visitPrimitiveAsChar(PrimitiveType t, Boolean asPrimitif) {
-		return Optional.of((asPrimitif) ? "char" : "Character");
+		return of((asPrimitif) ? "char" : "Character");
 	}
 
 	@Override
 	public Optional<String> visitPrimitiveAsFloat(PrimitiveType t, Boolean asPrimitif) {
-		return Optional.of((asPrimitif) ? "float" : "Float");
+		return of((asPrimitif) ? "float" : "Float");
 	}
 
 	@Override
 	public Optional<String> visitPrimitiveAsDouble(PrimitiveType t, Boolean asPrimitif) {
-		return Optional.of((asPrimitif) ? "double" : "Double");
+		return of((asPrimitif) ? "double" : "Double");
 	}
 
 	@Override
@@ -85,12 +88,12 @@ final class NameExtractorVisitor extends AbstractTypeKindVisitor<Optional<String
 
 	@Override
 	public Optional<String> visitDeclared(DeclaredType t, Boolean asPrimitif) {
-		return Optional.of(t.toString());
+		return of(t.toString());
 	}
 
 	@Override
 	public Optional<String> visitTypeVariable(TypeVariable t, Boolean asPrimitif) {
-		return Optional.of(t.toString());
+		return of(t.toString());
 	}
 
 	@Override
@@ -98,6 +101,6 @@ final class NameExtractorVisitor extends AbstractTypeKindVisitor<Optional<String
 		ProcessingEnvironment processingEnv = getProcessingEnv();
 		processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING, "Unsupported type element",
 				processingEnv.getTypeUtils().asElement(t));
-		return Optional.empty();
+		return empty();
 	}
 }

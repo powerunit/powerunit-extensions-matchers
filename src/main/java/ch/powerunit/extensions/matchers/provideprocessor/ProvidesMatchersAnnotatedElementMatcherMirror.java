@@ -175,7 +175,7 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 		StringBuilder sb = new StringBuilder(String.format(
 				"    @Override\n    protected boolean matchesSafely(%1$s actual, org.hamcrest.Description mismatchDescription) {\n      boolean result=true;\n",
 				getFullyQualifiedNameOfClassAnnotated()));
-		if (fullyQualifiedNameOfSuperClassOfClassAnnotated.isPresent()) {
+		if (hasSuperClass()) {
 			sb.append(PARENT_VALIDATION);
 		}
 		fields.stream().map(f -> addPrefix("      ", f.asMatchesSafely() + "\n")).forEach(sb::append);
@@ -187,7 +187,7 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 		StringBuilder sb = new StringBuilder(String.format(
 				"    @Override\n    public void describeTo(org.hamcrest.Description description) {\n      description.appendText(\"an instance of %1$s with\\n\");\n",
 				getFullyQualifiedNameOfClassAnnotated()));
-		if (fullyQualifiedNameOfSuperClassOfClassAnnotated.isPresent()) {
+		if (hasSuperClass()) {
 			sb.append(PARENT_DESCRIBETO);
 		}
 		fields.stream().map(f -> addPrefix("      ", f.asDescribeTo() + "\n")).forEach(sb::append);

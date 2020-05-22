@@ -22,6 +22,7 @@ package ch.powerunit.extensions.matchers.common;
 import java.util.List;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Parameterizable;
 import javax.lang.model.element.QualifiedNameable;
 import javax.lang.model.element.TypeParameterElement;
@@ -44,6 +45,7 @@ public interface ElementHelper {
 			.accepting(TypeParameterElement.class).withToStringMapper().withCommaDelimiter()
 			.withOptionalPrefixAndSuffix("<", ">");
 
+	@SuppressWarnings("unchecked")
 	static final ListJoining<TypeParameterElement> TYPE_PARAMETER_FULL_AS_LIST = ListJoining
 			.accepting(TypeParameterElement.class)
 			.withMapper(t -> t.toString()
@@ -54,18 +56,33 @@ public interface ElementHelper {
 		return e.getSimpleName().toString();
 	}
 
+	default boolean isSimpleName(Element e, String name) {
+		return name.equals(getSimpleName(e));
+	}
+
 	default String getQualifiedName(QualifiedNameable e) {
 		return e.getQualifiedName().toString();
 	}
 
+	default boolean isStatic(Element e) {
+		return e.getModifiers().contains(Modifier.STATIC);
+	}
+
+	default boolean isPublic(Element e) {
+		return e.getModifiers().contains(Modifier.PUBLIC);
+	}
+
+	@SuppressWarnings("unchecked")
 	default String boundsAsString(TypeParameterElement e) {
 		return TYPE_PARAMETER_BOUND_AS_LIST.asString((List<TypeMirror>) e.getBounds());
 	}
 
+	@SuppressWarnings("unchecked")
 	default String getGeneric(Parameterizable typeElement) {
 		return TYPE_PARAMETER_SIMPLE_AS_LIST.asString((List<TypeParameterElement>) typeElement.getTypeParameters());
 	}
 
+	@SuppressWarnings("unchecked")
 	default String getFullGeneric(Parameterizable typeElement) {
 		return TYPE_PARAMETER_FULL_AS_LIST.asString((List<TypeParameterElement>) typeElement.getTypeParameters());
 	}
