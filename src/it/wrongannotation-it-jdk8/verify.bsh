@@ -17,6 +17,6 @@ while (scanner.hasNextLine()) {
    }
 }
 
-if (countError!=10) {
+if (countError!=20) {
 	throw new RuntimeException("Must contains 20 ERROR related to powerunit, but it is not the case ; "+countError);
 }
