@@ -47,19 +47,19 @@ public class FieldDSLMethodBuilderTest implements TestSuite {
 	public void testGetJavaDocFor() {
 		assertThat(FieldDSLMethodBuilder.getJavaDocFor(fieldDescription, Optional.empty(), Optional.empty(),
 				Optional.empty())).is(
-						"/**\n * Add a validation on the field `fn`.\n * <p>\n *\n * <i>{@link fqnecof#fa This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @return the DSL to continue the construction of the matcher.\n */");
+						"/**\n * Add a validation on the field `fn`.\n * <p>\n *\n * <i>{@link fqnecof#fa This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers.\n * (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @return the DSL to continue the construction of the matcher.\n */");
 
 		assertThat(FieldDSLMethodBuilder.getJavaDocFor(fieldDescription, Optional.of("add"), Optional.empty(),
 				Optional.empty())).is(
-						"/**\n * Add a validation on the field `fn` add.\n * <p>\n *\n * <i>{@link fqnecof#fa This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @return the DSL to continue the construction of the matcher.\n */");
+						"/**\n * Add a validation on the field `fn` add.\n * <p>\n *\n * <i>{@link fqnecof#fa This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers.\n * (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @return the DSL to continue the construction of the matcher.\n */");
 
 		assertThat(FieldDSLMethodBuilder.getJavaDocFor(fieldDescription, Optional.empty(), Optional.of("p is p"),
 				Optional.empty())).is(
-						"/**\n * Add a validation on the field `fn`.\n * <p>\n *\n * <i>{@link fqnecof#fa This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @param p is p.\n * @return the DSL to continue the construction of the matcher.\n */");
+						"/**\n * Add a validation on the field `fn`.\n * <p>\n *\n * <i>{@link fqnecof#fa This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers.\n * (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @param p is p.\n * @return the DSL to continue the construction of the matcher.\n */");
 
 		assertThat(FieldDSLMethodBuilder.getJavaDocFor(fieldDescription, Optional.empty(), Optional.empty(),
 				Optional.of("other"))).is(
-						"/**\n * Add a validation on the field `fn`.\n * <p>\n *\n * <i>{@link fqnecof#fa This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @return the DSL to continue the construction of the matcher.\n * @see other\n */");
+						"/**\n * Add a validation on the field `fn`.\n * <p>\n *\n * <i>{@link fqnecof#fa This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers.\n * (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @return the DSL to continue the construction of the matcher.\n * @see other\n */");
 	}
 
 	@Test(fastFail = false)
@@ -67,7 +67,7 @@ public class FieldDSLMethodBuilderTest implements TestSuite {
 		FieldDSLMethod fieldDSLMethod = FieldDSLMethodBuilder.of(fieldDescription).withDeclaration("a a")
 				.withDefaultJavaDoc().havingImplementation("b");
 		assertThat(fieldDSLMethod.asDSLMethod()).is(
-				"/**\n * Add a validation on the field `fn`.\n * <p>\n *\n * <i>{@link fqnecof#fa This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @return the DSL to continue the construction of the matcher.\n */\n drm fn(a a);\n");
+				"/**\n * Add a validation on the field `fn`.\n * <p>\n *\n * <i>{@link fqnecof#fa This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers.\n * (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @return the DSL to continue the construction of the matcher.\n */\n drm fn(a a);\n");
 		assertThat(fieldDSLMethod.asImplementationMethod()).is("@Override\npublic  drm fn(a a) {\n  b\n}\n");
 	}
 
@@ -76,7 +76,7 @@ public class FieldDSLMethodBuilderTest implements TestSuite {
 		FieldDSLMethod fieldDSLMethod = FieldDSLMethodBuilder.of(fieldDescription).withDeclaration("a a")
 				.withDefaultJavaDoc().havingDefault("m(a)");
 		assertThat(fieldDSLMethod.asDSLMethod()).is(
-				"/**\n * Add a validation on the field `fn`.\n * <p>\n *\n * <i>{@link fqnecof#fa This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @return the DSL to continue the construction of the matcher.\n */\ndefault  drm fn(a a){\n  return fn(m(a));\n}");
+				"/**\n * Add a validation on the field `fn`.\n * <p>\n *\n * <i>{@link fqnecof#fa This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers.\n * (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @return the DSL to continue the construction of the matcher.\n */\ndefault  drm fn(a a){\n  return fn(m(a));\n}");
 		assertThat(fieldDSLMethod.asImplementationMethod()).is("");
 	}
 

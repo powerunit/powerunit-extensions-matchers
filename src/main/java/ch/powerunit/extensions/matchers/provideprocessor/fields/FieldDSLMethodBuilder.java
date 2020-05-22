@@ -19,7 +19,9 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
-import java.util.Arrays;
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.joining;
+
 import java.util.Optional;
 
 import ch.powerunit.extensions.matchers.provideprocessor.fields.lang.BuilderDeclaration;
@@ -29,6 +31,13 @@ import ch.powerunit.extensions.matchers.provideprocessor.fields.lang.BuilderJava
 public class FieldDSLMethodBuilder {
 
 	private static final String MATCHERS = "org.hamcrest.Matchers";
+
+	private static final String DEFAULT_JAVADOCFORMAT = "/**\n" + " * %1$s\n" + " * <p>\n" + " *\n" + " * <i>%2$s</i>\n"
+			+ " * <p>\n"
+			+ " * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n"
+			+ " * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers.\n"
+			+ " * (See for instance {@link " + MATCHERS + "#both(org.hamcrest.Matcher)}.\n" + " *\n" + "%3$s"
+			+ " * @return the DSL to continue the construction of the matcher.\n" + "%4$s */";
 
 	public static BuilderDeclaration of(AbstractFieldDescription fieldDescription) {
 		return new Builder(fieldDescription);
@@ -94,24 +103,15 @@ public class FieldDSLMethodBuilder {
 
 	public static String getJavaDocFor(AbstractFieldDescription fieldDescription, Optional<String> addToDescription,
 			Optional<String> param, Optional<String> see) {
-		String linkToAccessor = "{@link " + fieldDescription.getFullyQualifiedNameEnclosingClassOfField() + "#"
-				+ fieldDescription.getFieldAccessor() + " This field is accessed by using this approach}.";
-		StringBuilder sb = new StringBuilder();
-		sb.append("/**\n * Add a validation on the field `").append(fieldDescription.getFieldName()).append("`");
-		addToDescription.ifPresent(t -> sb.append(" ").append(t));
-		sb.append(".\n * <p>").append("\n *\n * <i>").append(linkToAccessor).append("</i>\n * <p>\n");
-		sb.append(
-				" * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n");
-		sb.append(
-				" * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers (See for instance {@link "
-						+ MATCHERS + "#both(org.hamcrest.Matcher)}.\n");
-		sb.append(" *\n");
-		param.ifPresent(
-				t -> Arrays.stream(t.split("\n")).forEach(l -> sb.append(" * @param ").append(l).append(".\n")));
-		sb.append(" * @return the DSL to continue the construction of the matcher.\n");
-		see.ifPresent(t -> sb.append(" * @see ").append(t).append("\n"));
-		sb.append(" */");
-		return sb.toString();
+		String linkToAccessor = String.format("{@link %1$s#%2$s This field is accessed by using this approach}.",
+				fieldDescription.getFullyQualifiedNameEnclosingClassOfField(), fieldDescription.getFieldAccessor());
+		String title = String.format("Add a validation on the field `%1$s`%2$s.", fieldDescription.getFieldName(),
+				addToDescription.map(s -> " " + s).orElse(""));
+		String paramString = param
+				.map(t -> stream(t.split("\n")).map(l -> " * @param " + l + ".\n").collect(joining()))
+				.orElse("");
+		String seeString = see.map(s -> " * @see " + s + "\n").orElse("");
+		return String.format(DEFAULT_JAVADOCFORMAT, title, linkToAccessor, paramString, seeString);
 	}
 
 	public static String buildImplementation(String declaration, String body) {
