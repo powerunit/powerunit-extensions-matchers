@@ -20,14 +20,15 @@
 package ch.powerunit.extensions.matchers.provideprocessor;
 
 import static ch.powerunit.extensions.matchers.common.CommonUtils.addPrefix;
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.reducing;
 import static java.util.stream.Collectors.toList;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.lang.model.element.TypeElement;
@@ -41,24 +42,32 @@ import ch.powerunit.extensions.matchers.provideprocessor.fields.IgnoreFieldDescr
 public abstract class ProvidesMatchersAnnotatedElementFieldMatcherMirror
 		extends ProvidesMatchersAnnotatedElementGeneralMirror {
 
+	private static final Comparator<AbstractFieldDescription> COMPARING_FIELD_BY_NAME = Comparator
+			.comparing(FieldDescriptionMetaData::getFieldName);
+
 	private static final String DEFAULT_FEATUREMATCHER_FORCONVERTER = "\n  private static <_TARGET,_SOURCE> org.hamcrest.Matcher<_SOURCE> asFeatureMatcher(\n      String msg,\n      java.util.function.Function<_SOURCE,_TARGET> converter,\n      org.hamcrest.Matcher<? super _TARGET> matcher) {\n   return new org.hamcrest.FeatureMatcher<_SOURCE,_TARGET>(matcher, msg, msg) {\n     protected _TARGET featureValueOf(_SOURCE actual) {\n      return converter.apply(actual);\n    }};\n  }\n\n";
 
 	protected final List<AbstractFieldDescription> fields;
 
 	private final String fieldsMatcher;
 
+	private static AbstractFieldDescription reduceByOrderingOnIgnoreFieldDescription(AbstractFieldDescription l,
+			AbstractFieldDescription r) {
+		if (l == null) {
+			return r;
+		}
+		return l instanceof IgnoreFieldDescription ? l : r;
+	}
+
 	private List<AbstractFieldDescription> generateFields(TypeElement typeElement,
 			ProvidesMatchersSubElementVisitor providesMatchersSubElementVisitor) {
-		return typeElement
-				.getEnclosedElements().stream().map(
-						ie -> ie.accept(providesMatchersSubElementVisitor, this))
-				.filter(Optional::isPresent).map(
-						Optional::get)
-				.collect(collectingAndThen(
-						groupingBy(FieldDescriptionMetaData::getFieldName,
-								reducing(null,
-										(v1, v2) -> v1 == null ? v2 : v1 instanceof IgnoreFieldDescription ? v1 : v2)),
-						c -> c == null ? emptyList() : c.values().stream().collect(toList())));
+		return typeElement.getEnclosedElements().stream().map(ie -> ie.accept(providesMatchersSubElementVisitor, this))
+				.filter(Optional::isPresent).map(Optional::get)
+				.collect(collectingAndThen(groupingBy(FieldDescriptionMetaData::getFieldName, reducing(
+						ProvidesMatchersAnnotatedElementFieldMatcherMirror::reduceByOrderingOnIgnoreFieldDescription)),
+						Map::values))
+				.stream().filter(Optional::isPresent).map(Optional::get).sorted(COMPARING_FIELD_BY_NAME)
+				.collect(toList());
 	}
 
 	public ProvidesMatchersAnnotatedElementFieldMatcherMirror(TypeElement typeElement, RoundMirror roundMirror) {
