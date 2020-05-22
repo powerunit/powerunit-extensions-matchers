@@ -27,7 +27,7 @@ public class FactoryHelperTest implements TestSuiteSupport {
 		String clean = output.toString().replaceAll("\r", "");
 		assertThat(clean).containsString("package pckName;");
 		assertThat(clean)
-				.containsString("@javax.annotation.Generated(value=\"javax.annotation.processing.AbstractProcessor");
+				.containsString("@javax.annotation.Generated(\n   value=\"javax.annotation.processing.AbstractProcessor");
 		assertThat(clean).containsString("public static final clazzName DSL = new clazzName() {};");
 		assertThat(clean).containsString("yxx");
 	}
