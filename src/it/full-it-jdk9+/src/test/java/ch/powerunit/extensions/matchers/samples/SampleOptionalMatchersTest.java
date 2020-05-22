@@ -62,7 +62,7 @@ public class SampleOptionalMatchersTest implements TestSuite {
 									(SampleOptionalMatchers.SampleOptionalMatcher) SampleOptionalMatchers
 											.sampleOptionalWithSameValue(ALL_EMPTY)).//
 													describedAs(
-															"an instance of ch.powerunit.extensions.matchers.samples.SampleOptional with\n[opt optional is not present]\n[opt3 optional is not present]\n[opt4 optional is not present]\n[ignoreMe This field is ignored Why not?]\n[opt2 optional is not present]\n")
+															"an instance of ch.powerunit.extensions.matchers.samples.SampleOptional with\n[ignoreMe This field is ignored Why not?]\n[opt optional is not present]\n[opt2 optional is not present]\n[opt3 optional is not present]\n[opt4 optional is not present]\n")
 													.//
 													nullRejected("was null").//
 													accepting(ALL_EMPTY).//
@@ -72,15 +72,15 @@ public class SampleOptionalMatchersTest implements TestSuite {
 																	withMessage("was \"\""), //
 															value(ALL_NOT_EMPTY).//
 																	withMessage(
-																			"[opt was <Optional[1]>]\n[opt3 was <Optional[]>]\n[opt4 was <Optional[]>]\n[opt2 was <Optional[Pojo1 [msg1=null, msg2=null, msg3=0, msg4=null, msg5=null, msg6=null, msg7=null, msg8=null, msg9=null, msg12=null, myBoolean=false, oneBoolean=false]]>]\n"), //
+																			"[opt was <Optional[1]>]\n[opt2 was <Optional[Pojo1 [msg1=null, msg2=null, msg3=0, msg4=null, msg5=null, msg6=null, msg7=null, msg8=null, msg9=null, msg12=null, myBoolean=false, oneBoolean=false]]>]\n[opt3 was <Optional[]>]\n[opt4 was <Optional[]>]\n"), //
 															value(ALL_NULL).//
 																	withMessage(
-																			"[opt was null]\n[opt3 was null]\n[opt4 was null]\n[opt2 was null]\n")), //
+																			"[opt was null]\n[opt2 was null]\n[opt3 was null]\n[opt4 was null]\n")), //
 							matcher(//
 									(SampleOptionalMatchers.SampleOptionalMatcher) SampleOptionalMatchers
 											.sampleOptionalWithSameValue(ALL_NULL)).//
 													describedAs(
-															"an instance of ch.powerunit.extensions.matchers.samples.SampleOptional with\n[opt null]\n[opt3 null]\n[opt4 null]\n[ignoreMe This field is ignored Why not?]\n[opt2 null]\n")
+															"an instance of ch.powerunit.extensions.matchers.samples.SampleOptional with\n[ignoreMe This field is ignored Why not?]\n[opt null]\n[opt2 null]\n[opt3 null]\n[opt4 null]\n")
 													.//
 													nullRejected("was null").//
 													accepting(ALL_NULL).//
@@ -89,29 +89,15 @@ public class SampleOptionalMatchersTest implements TestSuite {
 																	withMessage("was \"\""), //
 															value(ALL_NOT_EMPTY).//
 																	withMessage(
-																			"[opt was <Optional[1]>]\n[opt3 was <Optional[]>]\n[opt4 was <Optional[]>]\n[opt2 was <Optional[Pojo1 [msg1=null, msg2=null, msg3=0, msg4=null, msg5=null, msg6=null, msg7=null, msg8=null, msg9=null, msg12=null, myBoolean=false, oneBoolean=false]]>]\n"), //
+																			"[opt was <Optional[1]>]\n[opt2 was <Optional[Pojo1 [msg1=null, msg2=null, msg3=0, msg4=null, msg5=null, msg6=null, msg7=null, msg8=null, msg9=null, msg12=null, myBoolean=false, oneBoolean=false]]>]\n[opt3 was <Optional[]>]\n[opt4 was <Optional[]>]\n"), //
 															value(ALL_EMPTY_BUT_IGNORE).//
 																	withMessage(
-																			"[opt was <Optional.empty>]\n[opt3 was <Optional.empty>]\n[opt4 was <Optional.empty>]\n[opt2 was <Optional.empty>]\n")), //
+																			"[opt was <Optional.empty>]\n[opt2 was <Optional.empty>]\n[opt3 was <Optional.empty>]\n[opt4 was <Optional.empty>]\n")), //
 							matcher(//
 									(SampleOptionalMatchers.SampleOptionalMatcher) SampleOptionalMatchers
 											.sampleOptionalWithSameValue(ALL_NOT_EMPTY)).//
 													describedAs(
-															"an instance of ch.powerunit.extensions.matchers.samples.SampleOptional with\n"
-																	+ "[opt optional is present and [is \"1\"]]\n"
-																	+ "[opt3 optional is present and [is <>]]\n"
-																	+ "[opt4 optional is present and [an instance of ch.powerunit.extensions.matchers.samples.extension.MyTestWithoutGeneric2 with\n"
-																	+ "[parent ANYTHING]\n" + "[test is null]\n"
-																	+ "]]\n"
-																	+ "[ignoreMe This field is ignored Why not?]\n"
-																	+ "[opt2 optional is present and [an instance of ch.powerunit.extensions.matchers.samples.Pojo1 with\n"
-																	+ "[msg4 is null]\n" + "[msg3 is <0>]\n"
-																	+ "[msg2 is null]\n" + "[msg1 is null]\n"
-																	+ "[msg8 is null]\n" + "[msg7 null]\n"
-																	+ "[msg6 null]\n" + "[msg12 null]\n"
-																	+ "[msg5 is null]\n" + "[oneBoolean is <false>]\n"
-																	+ "[myBoolean is <false>]\n" + "[msg9 null]\n"
-																	+ "]]\n")
+															"an instance of ch.powerunit.extensions.matchers.samples.SampleOptional with\n[ignoreMe This field is ignored Why not?]\n[opt optional is present and [is \"1\"]]\n[opt2 optional is present and [an instance of ch.powerunit.extensions.matchers.samples.Pojo1 with\n[msg1 is null]\n[msg12 null]\n[msg2 is null]\n[msg3 is <0>]\n[msg4 is null]\n[msg5 is null]\n[msg6 null]\n[msg7 null]\n[msg8 is null]\n[msg9 null]\n[myBoolean is <false>]\n[oneBoolean is <false>]\n]]\n[opt3 optional is present and [is <>]]\n[opt4 optional is present and [an instance of ch.powerunit.extensions.matchers.samples.extension.MyTestWithoutGeneric2 with\n[parent ANYTHING]\n[test is null]\n]]\n")
 													.//
 													nullRejected("was null").//
 													accepting(ALL_NOT_EMPTY).//
@@ -120,10 +106,10 @@ public class SampleOptionalMatchersTest implements TestSuite {
 																	withMessage("was \"\""), //
 															value(ALL_NULL).//
 																	withMessage(
-																			"[opt was null]\n[opt3 was null]\n[opt4 was null]\n[opt2 was null]\n"), //
+																			"[opt was null]\n[opt2 was null]\n[opt3 was null]\n[opt4 was null]\n"), //
 															value(ALL_EMPTY_BUT_IGNORE).//
 																	withMessage(
-																			"[opt was <Optional.empty>]\n[opt3 was <Optional.empty>]\n[opt4 was <Optional.empty>]\n[opt2 was <Optional.empty>]\n"), //
+																			"[opt was <Optional.empty>]\n[opt2 was <Optional.empty>]\n[opt3 was <Optional.empty>]\n[opt4 was <Optional.empty>]\n"), //
 															value(ALL_NOT_EMPTY_V2).//
 																	withMessage(
 																			"[opt was <Optional[2]>]\n[opt4 was <Optional[]>]\n")) //
