@@ -135,7 +135,7 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	}
 
 	public String generatePrivateImplementationConstructor(String argument, String... body) {
-		return String.format("    public %1$s(%2$s) {\n%3$s    }", getSimpleNameOfGeneratedImplementationMatcher(),
+		return String.format("    public %1$s(%2$s) {\n%3$s\n    }", getSimpleNameOfGeneratedImplementationMatcher(),
 				argument, Arrays.stream(body).map(l -> "      " + l).collect(joining("\n")));
 	}
 
