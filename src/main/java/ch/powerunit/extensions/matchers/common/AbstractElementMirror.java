@@ -19,30 +19,30 @@
  */
 package ch.powerunit.extensions.matchers.common;
 
-import java.lang.annotation.Annotation;
 import java.util.Optional;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 
 /**
  * @author borettim
  *
  */
-public abstract class AbstractElementMirror<E extends Element, A extends Annotation, R extends AbstractRoundMirrorReferenceToProcessingEnv>
+public abstract class AbstractElementMirror<E extends Element, R extends AbstractRoundMirrorReferenceToProcessingEnv>
 		implements AbstractRoundMirrorSupport<R>, ElementHelper, ProcessingEnvironmentHelper {
 
 	protected final R roundMirror;
 	protected final E element;
 	protected final Optional<String> doc;
-	protected final Optional<A> annotation;
+	protected final Optional<TypeElement> annotation;
 
-	public AbstractElementMirror(Class<A> annotationType, R roundMirror, E element) {
+	public AbstractElementMirror(String annotationType, R roundMirror, E element) {
 		this.roundMirror = roundMirror;
 		this.element = element;
 		this.doc = Optional.ofNullable(roundMirror.getElementUtils().getDocComment(element));
-		this.annotation = Optional.ofNullable(element.getAnnotation(annotationType));
+		this.annotation = Optional.ofNullable(roundMirror.getElementUtils().getTypeElement(annotationType));
 	}
 
 	@Override
@@ -58,19 +58,13 @@ public abstract class AbstractElementMirror<E extends Element, A extends Annotat
 		return doc;
 	}
 
-	public Optional<A> getAnnotation() {
-		return annotation;
-	}
-
 	public String getParamComment() {
 		return doc.map(AbstractElementMirror::extractParamCommentFromJavadoc).orElse(" * \n");
 	}
 
 	public Optional<AnnotationMirror> getAnnotationMirror() {
-		return annotation.map(
-				a -> getTypeUtils().getDeclaredType(getElementUtils().getTypeElement(a.annotationType().getName())))
-				.map(a -> element.getAnnotationMirrors().stream()
-						.filter(m -> getTypeUtils().isSameType(a, m.getAnnotationType())).findAny().orElse(null));
+		return annotation.map(a -> getTypeUtils().getDeclaredType(a)).map(a -> element.getAnnotationMirrors().stream()
+				.filter(m -> getTypeUtils().isSameType(a, m.getAnnotationType())).findAny().orElse(null));
 	}
 
 	@Override

@@ -1,0 +1,26 @@
+import java.io.*;
+
+File file = new File( basedir, "build.log" );
+if ( !file.isFile() )
+{
+    throw new FileNotFoundException( "Could not build log: " + file );
+}
+
+
+file = new File( basedir, "target/generated-sources/annotations/ch/powerunit/extensions/matchers/samples/extensions/hamcrestdate/SampleLocalDateMatchers.java" );
+if ( !file.isFile() )
+{
+    throw new FileNotFoundException( "Could not find generated Matcher: " + file );
+}
+
+file = new File( basedir, "target/classes/ch/powerunit/extensions/matchers/samples/extensions/hamcrestdate/SampleLocalDateMatchers.class" );
+if ( !file.isFile() )
+{
+    throw new FileNotFoundException( "Could not find compiled Matcher: " + file );
+}
+
+file = new File( basedir, "target/test-classes/ch/powerunit/extensions/matchers/samples/extensions/hamcrestdate/SampleLocalDateMatchersTest.class" );
+if ( !file.isFile() )
+{
+    throw new FileNotFoundException( "Could not find compiled Test of the matcher: " + file );
+}

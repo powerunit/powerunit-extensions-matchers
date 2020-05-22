@@ -170,7 +170,6 @@ mvn -e clean install
 					<target>1.8</target>
 					<compilerArgs>
 						<!-- configuration that generate one single class with all the factory -->
-						<compilerArg>-Ach.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets=.*:mygroupid.AllMatchers</compilerArg>
 					</compilerArgs>
 				</configuration>
 			</plugin>

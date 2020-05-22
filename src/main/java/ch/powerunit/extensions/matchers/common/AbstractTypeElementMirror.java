@@ -19,7 +19,6 @@
  */
 package ch.powerunit.extensions.matchers.common;
 
-import java.lang.annotation.Annotation;
 import java.util.Optional;
 
 import javax.lang.model.element.TypeElement;
@@ -29,14 +28,14 @@ import javax.lang.model.type.TypeMirror;
  * @author borettim
  *
  */
-public abstract class AbstractTypeElementMirror<A extends Annotation, R extends AbstractRoundMirrorReferenceToProcessingEnv>
-		extends AbstractElementMirror<TypeElement, A, R> implements ElementHelper {
+public abstract class AbstractTypeElementMirror<R extends AbstractRoundMirrorReferenceToProcessingEnv>
+		extends AbstractElementMirror<TypeElement, R> implements ElementHelper {
 
 	protected final String generic;
 	protected final String fullGeneric;
 	protected final Optional<String> fullyQualifiedNameOfSuperClassOfClassAnnotated;
 
-	public AbstractTypeElementMirror(Class<A> annotationType, R roundMirror, TypeElement element) {
+	public AbstractTypeElementMirror(String annotationType, R roundMirror, TypeElement element) {
 		super(annotationType, roundMirror, element);
 		this.generic = getGeneric(element);
 		this.fullGeneric = getFullGeneric(element);

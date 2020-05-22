@@ -65,7 +65,7 @@ import java.lang.annotation.Target;
  * <ul>
  * <li>For each public field or public method starting with {@code get} or
  * {@code is} without any argument, generated a private matcher based on the
- * {@link org.hamcrest.FeatureMatcher} for this field ; this will provide a way
+ * {@code org.hamcrest.FeatureMatcher} for this field ; this will provide a way
  * to validate the value of one specific <i>property</i>.</li>
  * <li>Generate an interface and the related implementation of a matcher (which
  * is also a builder) on the annotated classes itself, which will validate all
