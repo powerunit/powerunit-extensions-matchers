@@ -19,8 +19,11 @@
  */
 package ch.powerunit.extensions.matchers.common;
 
+import static java.util.Optional.ofNullable;
+
 import java.io.PrintStream;
 import java.time.Instant;
+import java.util.stream.Collectors;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
@@ -39,16 +42,10 @@ public class CommonUtils {
 	}
 
 	public static String toJavaSyntax(String unformatted) {
-		StringBuilder sb = new StringBuilder();
-		sb.append('"');
-		for (char c : unformatted.toCharArray()) {
-			sb.append(toJavaSyntax(c));
-		}
-		sb.append('"');
-		return sb.toString();
+		return unformatted.chars().mapToObj(CommonUtils::toJavaSyntax).collect(Collectors.joining("", "\"", "\""));
 	}
 
-	private static String toJavaSyntax(char ch) {
+	private static String toJavaSyntax(int ch) {
 		switch (ch) {
 		case '"':
 			return "\\\"";
@@ -59,7 +56,7 @@ public class CommonUtils {
 		case '\t':
 			return "\\t";
 		default:
-			return "" + ch;
+			return String.valueOf(Character.toChars(ch));
 		}
 	}
 
@@ -69,15 +66,15 @@ public class CommonUtils {
 	}
 
 	public static String generateGeneratedAnnotation(Class<?> generatedBy, String comments) {
-		return "@javax.annotation.Generated(value=\"" + generatedBy.getName() + "\",date=\"" + Instant.now().toString()
-				+ "\"" + (comments == null ? "" : (",comments=" + toJavaSyntax(comments))) + ")";
+		return "@javax.annotation.Generated(\n   value=\"" + generatedBy.getName() + "\",\n   date=\"" + Instant.now().toString()
+				+ "\"" + ofNullable(comments).map(c->",\n   comments=" + toJavaSyntax(c)).orElse("") + ")";
 	}
 
 	public static void traceErrorAndDump(Messager messager, Filer filer, Exception e, Element te) {
 		FileObjectHelper.processFileWithIOException(
 				() -> filer.createResource(StandardLocation.SOURCE_OUTPUT, "",
 						"dump" + System.currentTimeMillis() + "txt", te),
-				s -> new PrintStream(s.openOutputStream()), s -> e.printStackTrace(s),
+				s -> new PrintStream(s.openOutputStream()), e::printStackTrace,
 				e2 -> messager.printMessage(Kind.ERROR,
 						"Unable to create the file containing the dump of the error because of " + e2
 								+ " during handling of " + e,

@@ -20,10 +20,10 @@ public class CommonUtilsTest implements TestSuiteSupport {
 	@Test(fastFail = false)
 	public void testGenerateGeneratedAnnotation() {
 		assertThatBiFunction(CommonUtils::generateGeneratedAnnotation, Object.class, null)
-				.is(both(containsString("@javax.annotation.Generated(value=\"java.lang.Object\",date"))
+				.is(both(containsString("@javax.annotation.Generated(\n   value=\"java.lang.Object\",\n   date"))
 						.and(not(containsString("comments"))));
 		assertThatBiFunction(CommonUtils::generateGeneratedAnnotation, Object.class, "x")
-				.is(both(containsString("@javax.annotation.Generated(value=\"java.lang.Object\",date"))
+				.is(both(containsString("@javax.annotation.Generated(\n   value=\"java.lang.Object\",\n   date"))
 						.and(containsString("comments=\"x\"")));
 	}
 }
