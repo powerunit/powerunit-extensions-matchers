@@ -19,9 +19,11 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.extension.jackson;
 
-import java.util.Arrays;
+import static java.util.Arrays.asList;
+
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import ch.powerunit.extensions.matchers.ProvideMatchers;
@@ -44,8 +46,9 @@ public abstract class AbstractJacksonAutomatedExtension extends AutomatedExtensi
 	}
 
 	protected abstract Collection<FieldDSLMethod> acceptJsonMatcher(DefaultFieldDescription field);
-	
-	protected final FieldDSLMethod buildBasic(DefaultFieldDescription field, String suffix, String description, String method) {
+
+	protected final FieldDSLMethod buildBasic(DefaultFieldDescription field, String suffix, String description,
+			String method) {
 		String fieldType = field.getFieldType();
 		return builderFor(field).withSuffixDeclarationJavadocAndDefault(suffix, description,
 				"new org.hamcrest.CustomTypeSafeMatcher<" + fieldType + ">(\"" + description
@@ -61,17 +64,13 @@ public abstract class AbstractJacksonAutomatedExtension extends AutomatedExtensi
 	 */
 	@Override
 	public final Collection<FieldDSLMethod> accept(AbstractFieldDescription field) {
-		if (!Arrays.asList(field.getContainingElementMirror().getFullData().getExtension())
-				.contains(ProvideMatchers.JSON_EXTENSION)) {
-			return Collections.emptyList();
-		}
-		if (!(field instanceof DefaultFieldDescription)) {
-			return Collections.emptyList();
-		}
-		if (!isAssignableWithErasure(field.getMirror().getFieldTypeAsTypeElement(), getTargetElement().asType())) {
-			return Collections.emptyList();
-		}
-		return acceptJsonMatcher((DefaultFieldDescription) field);
+		return Optional.of(field)
+				.filter(f -> asList(f.getContainingElementMirror().getFullData().getExtension())
+						.contains(ProvideMatchers.JSON_EXTENSION))
+				.filter(f -> f instanceof DefaultFieldDescription).map(DefaultFieldDescription.class::cast)
+				.filter(f -> isAssignableWithErasure(f.getMirror().getFieldTypeAsTypeElement(),
+						getTargetElement().asType()))
+				.map(this::acceptJsonMatcher).orElse(Collections.emptyList());
 	}
 
 	/*
