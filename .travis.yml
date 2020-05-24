@@ -22,7 +22,7 @@ before_install:
  - chmod +x $HOME/.script/codecov.bash
  - chmod +x .travisci/*.sh
 install:
-- "mvn dependency:resolve dependency:resolve-plugins"
+- "mvn dependency:resolve dependency:resolve-plugins project-info-reports:plugin-management project-info-reports:dependencies"
 - .travisci/getcodacy.sh
 script:
 - set -o pipefail
