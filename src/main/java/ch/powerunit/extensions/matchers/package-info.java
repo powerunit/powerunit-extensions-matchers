@@ -19,6 +19,9 @@
  */
 
 /**
+ * Annotations to be used to generate <i>hamcrest</i> Matchers based on this
+ * annotation provider.
+ * 
  * @author borettim
  *
  */

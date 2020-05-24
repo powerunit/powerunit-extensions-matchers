@@ -30,8 +30,8 @@ import java.lang.annotation.Target;
  * This annotation can be used on a java class, to mark this class as supporting
  * generation of hamcrest matcher.
  * <p>
- * <b>This annotation is not supported on interface and enum. A warning will be
- * displayed in this case.</b>
+ * <b>This annotation is not supported on interface and enum. A error will be
+ * generated in this case.</b>
  * <p>
  * This annotation is processed by an annotation processor, in order to generate
  * :
@@ -199,6 +199,27 @@ import java.lang.annotation.Target;
  * {@link #extensions()}, then method to validate String as json are added.</li>
  * <li>If <a href="https://github.com/orien/bean-matchers">Bean Matchers</a> is
  * available additional method to validate Class field.</li>
+ * </ul>
+ * <hr>
+ * <p>
+ * <b>Linking between matchers</b>
+ * <p>
+ * The annotation processor try to link the generated matchers. The goal is that
+ * when a field or the super class also have a matchers, this one is used. It is
+ * not always possible to link everything but the concept is the following :
+ * <ul>
+ * <li>If the super class is compiled at the same time and is annotated with
+ * this annotation, the annotation processor may add a control on the parent and
+ * generated chaining method.</li>
+ * <li>If a field class is compiled at the same time and is annotated with this
+ * annotation, the annotation processor may add chaining and dedicated control
+ * that use this matcher.</li>
+ * <li>If a matcher, following the convention of this framework is detected for
+ * the super class or a field (already compiled for example), the annotation
+ * processor may also apply the previous rules by using this detected
+ * matcher.</li>
+ * <li>The annotation processor may also try to find matcher for element of Map,
+ * List, Array.</li>
  * </ul>
  * 
  * @author borettim
