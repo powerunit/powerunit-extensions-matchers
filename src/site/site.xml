@@ -57,6 +57,10 @@
       <item name="Samples" collapse="true" href="simple.html">
         <item name="Simple usage" href="simple.html"/>
         <item name="Archetype usage" href="archetype.html"/>
+        <item name="Map" href="map.html"/>
+      </item>
+      <item name="Migration" collapse="true" href="migrate-0.2.0.html">
+      	<item name="Version 0.2.X" href="migrate-0.2.0.html"/>
       </item>
     </menu>
     <menu name="Linked projects">

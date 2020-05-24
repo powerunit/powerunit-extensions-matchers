@@ -1,0 +1,69 @@
+Map Matching
+
+ Here are some output example based on this class
+ 
++----
+@ProvideMatchers
+public class AMapPojo {
+	public Map<String, String> myMap;
+
+	@Override
+	public String toString() {
+		return "AMapPojo [myMap=" + myMap + "]";
+	}
+}
++----
+
+ * With myMap = null
+ 
+   * <<<AMapPojoMatchers.aMapPojoWith().myMapHasSameValues(emptyMap())>>>
+
++----
+expecting an instance of ch.powerunit.extensions.matchers.samples.AMapPojo with
+[myMap (map size is 0 and ())]
+ but [myMap was null]
++----
+
+ * With myMap is single entry map
+ 
+   * <<<AMapPojoMatchers.aMapPojoWith().myMapHasSameValues(emptyMap())>>>
+   
++----
+expecting an instance of ch.powerunit.extensions.matchers.samples.AMapPojo with
+AMapPojoMatchers.aMapPojoWith().myMapHasSameValues(emptyMap())
+ but [myMap map size is 0  was size=<1>]
++----
+
+ * With myMap is two entry map (k1->v2 and k2->v2)
+ 
+   * <<<AMapPojoMatchers.aMapPojoWith().myMapHasSameValues(emptyMap())>>>
+   
++----
+expecting an instance of ch.powerunit.extensions.matchers.samples.AMapPojo with
+[myMap (map size is 0 and ())]
+ but [myMap map size is 0  was size=<2>]
++----
+
+   * <<<AMapPojoMatchers.aMapPojoWith().myMapHasSameValues(singletonMap("k", "v"))>>>
+   
++----
+expecting an instance of ch.powerunit.extensions.matchers.samples.AMapPojo with
+[myMap (map size is 1 and (map containing [is "k"->is "v"]))]
+ but [myMap map size is 1  was size=<2>]
++----
+
+   * <<<AMapPojoMatchers.aMapPojoWith().myMapHasSameValues(k1->v1 and k3->v3)>>>
+   
++----
+expecting an instance of ch.powerunit.extensions.matchers.samples.AMapPojo with
+[myMap (map size is 2 and (map containing [is "k1"->is "v1"] and map containing [is "k3"->is "v3"]))]
+ but [myMap (map containing [is "k1"->is "v1"] and map containing [is "k3"->is "v3"]) map containing [is "k3"->is "v3"] map was [<k1=v1>, <k2=v2>]]
++----
+
+   * <<<AMapPojoMatchers.aMapPojoWith().myMapHasSameValues(k1->v1 and k2->v3)>>>
+   
++----
+expecting an instance of ch.powerunit.extensions.matchers.samples.AMapPojo with
+[myMap (map size is 2 and (map containing [is "k1"->is "v1"] and map containing [is "k2"->is "v3"]))]
+ but [myMap (map containing [is "k1"->is "v1"] and map containing [is "k2"->is "v3"]) map containing [is "k2"->is "v3"] map was [<k1=v1>, <k2=v2>]]
++---
