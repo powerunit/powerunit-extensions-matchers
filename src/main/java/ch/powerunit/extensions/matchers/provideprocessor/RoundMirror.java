@@ -19,6 +19,7 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
+import static ch.powerunit.extensions.matchers.common.CommonUtils.asStandardMethodName;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 
@@ -29,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -37,7 +39,12 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.type.TypeMirror;
+
+import static javax.lang.model.util.ElementFilter.typesIn;
+import static javax.lang.model.util.ElementFilter.fieldsIn;
+import static javax.lang.model.util.ElementFilter.methodsIn;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.tools.Diagnostic.Kind;
 
 import ch.powerunit.extensions.matchers.AddToMatcher;
@@ -103,17 +110,16 @@ public class RoundMirror extends AbstractRoundMirrorReferenceToProcessingEnv {
 	}
 
 	private void doErrorForElement(Set<? extends Element> elements, Class<?> aa) {
-		elements.stream().forEach(e -> processingEnv.getMessager().printMessage(Kind.ERROR, "Annotation @"
-				+ aa.getName()
+		elements.stream().forEach(e -> getMessager().printMessage(Kind.ERROR, "Annotation @" + aa.getName()
 				+ " not supported at this location ; The surrounding class is not annotated with @ProvideMatchers. Since version 0.2.0 of powerunit-extension-matchers this is considered as an error.",
 				e, findAnnotationMirrorFor(e, aa)));
 	}
 
 	private AnnotationMirror findAnnotationMirrorFor(Element e, Class<?> aa) {
 		String aaName = aa.getName().toString();
-		return e.getAnnotationMirrors().stream().filter(
-				a -> a.getAnnotationType().equals(processingEnv.getElementUtils().getTypeElement(aaName).asType()))
-				.findAny().orElse(null);
+		return e.getAnnotationMirrors().stream()
+				.filter(a -> a.getAnnotationType().equals(getElementUtils().getTypeElement(aaName).asType())).findAny()
+				.orElse(null);
 	}
 
 	public boolean removeFromIgnoreList(Element e) {
@@ -121,24 +127,42 @@ public class RoundMirror extends AbstractRoundMirrorReferenceToProcessingEnv {
 				.orElse(false);
 	}
 
-	public ProvidesMatchersAnnotatedElementMirror getByName(String name) {
-		return alias.get(name);
+	public Matchable getByName(String name) {
+		return Optional.ofNullable((Matchable) alias.get(name)).orElseGet(() -> Optional
+				.ofNullable(getElementUtils().getTypeElement(name)).map(this::lookupMatchableByType).orElse(null));
+
 	}
 
-	public boolean isInSameRound(Element t) {
-		if (t == null) {
-			return false;
+	public Matchable lookupMatchableByType(TypeElement type) {
+		return Optional.ofNullable(getElementUtils().getTypeElement(getQualifiedName(type) + "Matchers"))
+				.map(m -> lookupMatchableByTypeAndMatchers(type, m)).orElse(null);
+	}
+
+	private Matchable lookupMatchableByTypeAndMatchers(TypeElement type, TypeElement guestMatcher) {
+		List<? extends Element> guestMatcherEnclosed = guestMatcher.getEnclosedElements();
+		List<TypeElement> types = typesIn(guestMatcherEnclosed);
+		Optional<Long> compatibilityField = types.stream().filter(t -> isSimpleName(t, "Metadata"))
+				.flatMap(t -> fieldsIn(t.getEnclosedElements()).stream()).filter(t -> isSimpleName(t, "COMPATIBILITY"))
+				.map(VariableElement::getConstantValue).filter(Objects::nonNull).filter(Long.class::isInstance)
+				.map(Long.class::cast).findAny();
+		if (!compatibilityField.isPresent()) {
+			return null;// NOT FOUND
 		}
-		TypeMirror tm = t.asType();
-		return elementsWithPM.stream().filter(e -> processingEnv.getTypeUtils().isSameType(e.asType(), tm)).findAny()
-				.isPresent();
+		// In future, verify compatiblity
+		String guestMatcherName = getSimpleName(type) + "Matcher";
+		if (!types.stream().anyMatch(t -> isSimpleName(t, guestMatcherName))) {
+			return null;// NOT FOUND
+		}
+		String shortMethodClassName = asStandardMethodName(getSimpleName(type));
+		String withSameValue = shortMethodClassName + "WithSameValue";
+		boolean hasSameValue = methodsIn(guestMatcherEnclosed).stream().filter(t -> isSimpleName(t, withSameValue))
+				.anyMatch(this::isStatic);
+		return Matchable.of(getQualifiedName(guestMatcher), shortMethodClassName, guestMatcherName, hasSameValue);
 	}
 
 	public AnnotationMirror getProvideMatchersAnnotation(Element e) {
-		TypeMirror pmtm = processingEnv.getElementUtils()
-				.getTypeElement("ch.powerunit.extensions.matchers.ProvideMatchers").asType();
-		return getElementUtils().getAllAnnotationMirrors(e).stream().filter(a -> a.getAnnotationType().equals(pmtm))
-				.findAny().orElse(null);
+		return getElementUtils().getAllAnnotationMirrors(e).stream()
+				.filter(a -> a.getAnnotationType().equals(provideMatchersMirror)).findAny().orElse(null);
 	}
 
 	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData target) {

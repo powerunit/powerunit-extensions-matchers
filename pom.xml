@@ -322,12 +322,17 @@
 					<postBuildHookScript>verify.bsh</postBuildHookScript>
 					<settingsFile>src/it/settings.xml</settingsFile>
 					<invokerPropertiesFile>params.properties</invokerPropertiesFile>
-					<streamLogs>true</streamLogs>
+					<streamLogs>false</streamLogs>
 					<parallelThreads>3</parallelThreads>
 					<extraArtifacts>
 						<extraArtifact>org.hamcrest:hamcrest:2.2:jar</extraArtifact>
 						<extraArtifact>org.hamcrest:hamcrest:2.1:jar</extraArtifact>
 					</extraArtifacts>
+					<writeJunitReport>true</writeJunitReport>
+					<junitPackageName>ch.powerunit.extensions.matchers</junitPackageName>
+					<filterProperties>
+						<testcompileargs>${testcompileargs}</testcompileargs>
+					</filterProperties>
 				</configuration>
 				<executions>
 					<execution>
@@ -357,12 +362,11 @@
 					<execution>
 						<goals>
 							<goal>jar</goal>
-							<goal>test-jar</goal>
 						</goals>
 					</execution>
 				</executions>
 				<configuration>
-					<excludePackageNames>ch.powerunit.extensions.matchers.factoryprocessor*:ch.powerunit.extensions.matchers.provideprocessor*:ch.powerunit.extensions.matchers.common*</excludePackageNames>
+					<excludePackageNames>ch.powerunit.extensions.matchers.provideprocessor:ch.powerunit.extensions.matchers.common:ch.powerunit.extensions.matchers.provideprocessor*:ch.powerunit.extensions.matchers.common*</excludePackageNames>
 					<docfilessubdirs>true</docfilessubdirs>
 					<linksource>false</linksource>
 					<detectLinks />
@@ -631,7 +635,7 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.2.0</version>
 				<configuration>
-					<excludePackageNames>ch.powerunit.extensions.matchers.factoryprocessor*:ch.powerunit.extensions.matchers.provideprocessor*:ch.powerunit.extensions.matchers.common*</excludePackageNames>
+					<excludePackageNames>ch.powerunit.extensions.matchers.provideprocessor:ch.powerunit.extensions.matchers.common:ch.powerunit.extensions.matchers.provideprocessor*:ch.powerunit.extensions.matchers.common*</excludePackageNames>
 					<docfilessubdirs>true</docfilessubdirs>
 					<linksource>true</linksource>
 					<detectLinks />

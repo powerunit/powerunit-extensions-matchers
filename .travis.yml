@@ -16,9 +16,9 @@ before_install:
  - cp .travis.settings.xml $HOME/.m2/settings.xml
  - if [[ "$TRAVIS_OS_NAME" = linux ]]; then sudo apt-get install jshon ; fi
  - mkdir -p $HOME/.script
- - curl -s https://report.ci/annotate.py > $HOME/.script/annotate.py
- - curl -s https://report.ci/upload.py > $HOME/.script/upload.py
- - curl -s https://codecov.io/bash > $HOME/.script/codecov.bash
+ - curl https://report.ci/annotate.py -o $HOME/.script/annotate.py --retry 5
+ - curl https://report.ci/upload.py -o $HOME/.script/upload.py  --retry 5
+ - curl https://codecov.io/bash -o $HOME/.script/codecov.bash --retry 5
  - chmod +x $HOME/.script/codecov.bash
  - chmod +x .travisci/*.sh
 install:
@@ -35,12 +35,7 @@ after_success:
 - set +o pipefail
 - rm -rf target/local-repo
 - .travisci/reportci.sh
-- "mvn jacoco:report coveralls:report -DrepoToken=${repoToken}"
-- .travisci/codecov.sh
-- "mvn jacoco:merge -Djacoco.destFile=target/jacoco-aggregate.exe"
-- "mvn jacoco:report -Djacoco.dataFile=target/jacoco-aggregate.exe"
-- "(java -jar $HOME/.script/codacy-coverage-reporter.jar report -l Java -r target/site/jacoco/jacoco.xml)"
-- "$HOME/.script/codecov.bash -Ffull$TRAVIS_OS_NAME$TRAVIS_JDK_VERSION"
+- .travisci/coverage.sh
 - "mvn site"
 before_deploy:
 - git config --local user.name "powerunitci"

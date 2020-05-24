@@ -1,5 +1,21 @@
 /**
- * 
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
  */
 package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
@@ -9,8 +25,8 @@ import java.util.Optional;
 
 import javax.lang.model.type.DeclaredType;
 
+import ch.powerunit.extensions.matchers.provideprocessor.Matchable;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
-import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
 
 public class MapFieldDescription extends DefaultFieldDescription {
 
@@ -35,11 +51,8 @@ public class MapFieldDescription extends DefaultFieldDescription {
 			Object matchers[] = Optional.of(mirror.getFieldTypeMirror()).filter(m -> m instanceof DeclaredType)
 					.map(DeclaredType.class::cast).filter(m -> m.getTypeArguments().size() == 2)
 					.map(m -> m.getTypeArguments().stream().map(Object::toString)
-							.map(o -> Optional.ofNullable(getByName(o))
-									.filter(ProvidesMatchersAnnotatedElementMirror::hasWithSameValue)
-									.map(t -> t.getFullyQualifiedNameOfGeneratedClass() + "."
-											+ t.getMethodShortClassName() + "WithSameValue")
-									.orElse(MATCHERS + ".is"))
+							.map(o -> Optional.ofNullable(getByName(o)).filter(Matchable::hasWithSameValue)
+									.map(t -> t.getWithSameValue(false)).orElse(MATCHERS + ".is"))
 							.toArray())
 					.orElse(new String[] { MATCHERS + ".is", MATCHERS + ".is" });
 

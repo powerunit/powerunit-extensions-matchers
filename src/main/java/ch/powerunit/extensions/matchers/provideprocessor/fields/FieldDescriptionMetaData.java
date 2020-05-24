@@ -22,25 +22,23 @@ package ch.powerunit.extensions.matchers.provideprocessor.fields;
 import static ch.powerunit.extensions.matchers.common.CommonUtils.toJavaSyntax;
 import static java.util.stream.Collectors.joining;
 
-import java.util.Optional;
-
 import javax.lang.model.element.Element;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
+import ch.powerunit.extensions.matchers.provideprocessor.Matchable;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
-import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
-import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
 
 public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionContainerMetaData {
 
 	public static final String SEE_TEXT_FOR_IS_MATCHER = "org.hamcrest.Matchers#is(java.lang.Object)";
 	public static final String SEE_TEXT_FOR_HAMCREST_MATCHER = "org.hamcrest.Matchers The main class from hamcrest that provides default matchers.";
 	public static final String MATCHERS = "org.hamcrest.Matchers";
+	public static final String MAIN_FIELD_COPY = "%1$s.%2$s(%3$s)";
+	public static final String IS_MATCHER = "(org.hamcrest.Matcher)" + MATCHERS + ".is((java.lang.Object)%1$s.%2$s)";
 
 	protected final String generic;
 	protected final String defaultReturnMethod;
-	protected final String fullyQualifiedNameMatcherInSameRound;
 	protected final FieldDescriptionMirror mirror;
 
 	public static final String computeGenericInformation(TypeMirror fieldTypeMirror) {
@@ -55,11 +53,9 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 			FieldDescriptionMirror mirror) {
 		super(containingElementMirror);
 		this.mirror = mirror;
-		RoundMirror roundMirror = containingElementMirror.getRoundMirror();
 		TypeMirror fieldTypeMirror = mirror.getFieldTypeMirror();
 		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();
 		this.generic = computeGenericInformation(fieldTypeMirror);
-		this.fullyQualifiedNameMatcherInSameRound = mirror.computeFullyQualifiedNameMatcherInSameRound(roundMirror);
 	}
 
 	public String getMatcherForField() {
@@ -70,31 +66,25 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 				getFieldName(), getFieldAccessor());
 	}
 
+	public String generateBaseFieldCopy(String lhs, String innerMatcher) {
+		return String.format(MAIN_FIELD_COPY, lhs, getFieldName(), innerMatcher);
+	}
+
 	public String getFieldCopyDefault(String lhs, String rhs) {
-		return lhs + "." + getFieldName() + "((org.hamcrest.Matcher)" + MATCHERS + ".is((java.lang.Object)" + rhs + "."
-				+ getFieldAccessor() + "))";
+		return generateBaseFieldCopy(lhs, String.format(IS_MATCHER, rhs, getFieldAccessor()));
 	}
 
-	public String getSameValueMatcherFor(String target) {
-		String name = getSimpleName(mirror.getFieldTypeAsTypeElement());
-		String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
-		return fullyQualifiedNameMatcherInSameRound + "." + lname + "WithSameValue(" + target + ")";
-	}
-
-	public String getFieldCopySameRound(String lhs, String rhs) {
+	public String getFieldCopySameRound(String lhs, String rhs, Matchable target) {
 		String fieldAccessor = getFieldAccessor();
-		return lhs + "." + getFieldName() + "(" + rhs + "." + fieldAccessor + "==null?" + MATCHERS + ".nullValue():"
-				+ getSameValueMatcherFor(rhs + "." + fieldAccessor) + ")";
+		return generateBaseFieldCopy(lhs, rhs + "." + fieldAccessor + "==null?" + MATCHERS + ".nullValue():"
+				+ target.getWithSameValue(false) + "(" + rhs + "." + fieldAccessor + ")");
 	}
 
 	public String getFieldCopy(String lhs, String rhs) {
-		if (fullyQualifiedNameMatcherInSameRound != null
-				&& mirror.getFieldTypeAsTypeElement().getTypeParameters().isEmpty()
-				&& Optional.ofNullable(containingElementMirror.getRoundMirror().getByName(getFieldType()))
-						.map(ProvidesMatchersAnnotatedElementMirror::hasWithSameValue).orElse(false)) {
-			return getFieldCopySameRound(lhs, rhs);
-		}
-		return getFieldCopyDefault(lhs, rhs);
+		return mirror.getMatchable(containingElementMirror.getRoundMirror())
+				.filter(a -> mirror.getFieldTypeAsTypeElement().getTypeParameters().isEmpty())
+				.filter(Matchable::hasWithSameValue).map(p -> getFieldCopySameRound(lhs, rhs, p))
+				.orElse(getFieldCopyDefault(lhs, rhs));
 	}
 
 	public String asMatchesSafely() {

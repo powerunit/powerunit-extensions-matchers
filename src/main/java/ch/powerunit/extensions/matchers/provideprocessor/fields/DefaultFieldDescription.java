@@ -27,6 +27,7 @@ import java.util.List;
 import javax.lang.model.element.TypeElement;
 
 import ch.powerunit.extensions.matchers.common.ElementHelper;
+import ch.powerunit.extensions.matchers.provideprocessor.Matchable;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 
 public class DefaultFieldDescription extends PrimitiveFieldDescription implements ElementHelper {
@@ -42,28 +43,29 @@ public class DefaultFieldDescription extends PrimitiveFieldDescription implement
 
 	@Override
 	protected Collection<FieldDSLMethod> getFieldDslMethodFor() {
-		FieldDescriptionMirror fm = mirror;
-		String ft = fm.getFieldType();
-		String fn = fm.getFieldName();
 		List<FieldDSLMethod> tmp = new ArrayList<>(super.getFieldDslMethodFor());
-		TypeElement te = fm.getFieldTypeAsTypeElement();
-		String nameInSameRound = fullyQualifiedNameMatcherInSameRound;
-		if (nameInSameRound != null && te.getTypeParameters().isEmpty()) {
-			String name = getSimpleName(te);
-			String lname = name.substring(0, 1).toLowerCase() + name.substring(1);
-			tmp.add(FieldDSLMethodBuilder.of(this).withExplicitDeclarationJavadocAndImplementation(
-					nameInSameRound + "." + name + "Matcher" + "<" + defaultReturnMethod + "> " + fn + "With()",
-					"by starting a matcher for this field", nameInSameRound + "." + name + "Matcher tmp = "
-							+ nameInSameRound + "." + lname + "WithParent(this);\n" + fn + "(tmp);\nreturn tmp;"));
-		}
-		tmp.add(FieldDSLMethodBuilder.of(this).withDeclaration("IsSameInstance", ft + " value")
+		mirror.getMatchable(containingElementMirror.getRoundMirror())
+				.filter(a -> mirror.getFieldTypeAsTypeElement().getTypeParameters().isEmpty())
+				.map(this::createWithParent).ifPresent(tmp::add);
+		tmp.add(FieldDSLMethodBuilder.of(this).withDeclaration("IsSameInstance", mirror.getFieldType() + " value")
 				.withJavaDoc("",
 						"value an expected value for the field, which will be compared that it is the same instance.",
 						SEE_TEXT_FOR_IS_MATCHER)
 				.havingDefault("(org.hamcrest.Matcher)" + MATCHERS + ".sameInstance((java.lang.Object)value)"));
-
 		tmp.addAll(getSpecificFieldDslMethodFor());
 		return tmp;
+	}
+
+	private FieldDSLMethod createWithParent(Matchable target) {
+		FieldDescriptionMirror fm = mirror;
+		String fn = fm.getFieldName();
+		TypeElement te = fm.getFieldTypeAsTypeElement();
+		String name = getSimpleName(te);
+		String targetMatcher = target.getFullyQualifiedNameOfGeneratedClass();
+		return FieldDSLMethodBuilder.of(this).withExplicitDeclarationJavadocAndImplementation(
+				targetMatcher + "." + name + "Matcher" + "<" + defaultReturnMethod + "> " + fn + "With()",
+				"by starting a matcher for this field", targetMatcher + "." + name + "Matcher tmp = " + targetMatcher
+						+ "." + target.getMethodNameDSLWithParent() + "(this);\n" + fn + "(tmp);\nreturn tmp;");
 	}
 
 }

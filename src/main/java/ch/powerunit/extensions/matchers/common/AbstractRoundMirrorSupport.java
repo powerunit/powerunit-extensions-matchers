@@ -33,7 +33,8 @@ import javax.lang.model.type.TypeMirror;
  * @param <R>
  */
 @FunctionalInterface
-public interface AbstractRoundMirrorSupport<R extends AbstractRoundMirrorReferenceToProcessingEnv> extends ElementHelper {
+public interface AbstractRoundMirrorSupport<R extends AbstractRoundMirrorReferenceToProcessingEnv>
+		extends ElementHelper {
 	R getRoundMirror();
 
 	default ProcessingEnvironment getProcessingEnv() {
@@ -56,9 +57,14 @@ public interface AbstractRoundMirrorSupport<R extends AbstractRoundMirrorReferen
 		return fromField != null && getProcessingEnv().getTypeUtils().isAssignable(fromField.asType(),
 				getProcessingEnv().getTypeUtils().erasure(compareWith));
 	}
-	
+
 	default String getAnnotationProcessorVersion() {
 		return getClass().getPackage().getImplementationVersion();
+	}
+
+	default long getCompatibility() {
+		// No specify bit for the moment
+		return 0L;
 	}
 
 }

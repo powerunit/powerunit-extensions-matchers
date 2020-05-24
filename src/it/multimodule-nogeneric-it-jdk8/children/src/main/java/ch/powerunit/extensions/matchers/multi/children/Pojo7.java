@@ -17,9 +17,30 @@
  * You should have received a copy of the GNU General Public License
  * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
  */
+package ch.powerunit.extensions.matchers.multi.children;
+
+import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.multi.parent.Pojo2;
 
 /**
  * @author borettim
  *
  */
-package ch.powerunit.extensions.matchers.provideprocessor;
+@ProvideMatchers
+public class Pojo7 {
+
+	public Pojo2 field2;
+
+	public Pojo7() {
+	}
+
+	public Pojo7(Pojo2 field2) {
+		this.field2 = field2;
+	}
+
+	@Override
+	public String toString() {
+		return "Pojo7 [field2=" + field2 + "]";
+	}
+
+}

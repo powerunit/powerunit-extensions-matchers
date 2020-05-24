@@ -46,10 +46,8 @@ public final class DSLMethod {
 	private static final ListJoining<String> IMPLEMENTATION_JOIN = ListJoining.joinWithMapper((String s) -> "  " + s)
 			.withDelimiter("\n").withPrefixAndSuffix("", "\n");
 
-	private final String javadoc;
-	private final String fullDeclaration;
 	private final String implementation;
-	private final String fullMethodName;
+	private final String defaultReference;
 
 	private static class Builder implements DSLMethodArgument, DSLMethodImplementation, DSLMethodJavadoc {
 
@@ -90,18 +88,20 @@ public final class DSLMethod {
 		if (!m.matches()) {
 			throw new IllegalArgumentException("Unable to parse the received declaration");
 		}
-		this.javadoc = javadoc;
-		this.implementation = IMPLEMENTATION_JOIN.asString(implementation);
-		this.fullDeclaration = declaration + ARGUMENTS_JOIN.asString(arguments);
-		this.fullMethodName = m.group(1) + ARGUMENTNAMES_JOIN.asString(arguments);
+		String implementations = IMPLEMENTATION_JOIN.asString(implementation);
+		String fullDeclaration = declaration + ARGUMENTS_JOIN.asString(arguments);
+		String fullMethodName = m.group(1) + ARGUMENTNAMES_JOIN.asString(arguments);
+		this.implementation = javadoc + "public static " + fullDeclaration + " {\n" + implementations + "}\n";
+		this.defaultReference = javadoc + "default " + fullDeclaration + " {\n  return %1$s." + fullMethodName
+				+ ";\n}\n";
 	}
 
 	public String asStaticImplementation() {
-		return javadoc + "public static " + fullDeclaration + " {\n" + implementation + "}\n";
+		return implementation;
 	}
 
 	public String asDefaultReference(String target) {
-		return javadoc + "default " + fullDeclaration + " {\n  return " + target + "." + fullMethodName + ";\n}\n";
+		return String.format(defaultReference, target);
 	}
 
 }

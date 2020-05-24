@@ -31,6 +31,16 @@ public class ElementHelperTest implements TestSuiteSupport, ElementHelper {
 	}
 
 	@Test(fastFail = false)
+	public void testIsSimpleName() {
+		assertThatBiFunction(this::isSimpleName,
+				generateMockitoProcessingEnvironment().getElementUtils().getTypeElement("java.lang.Object"), "Object")
+						.is(true);
+		assertThatBiFunction(this::isSimpleName,
+				generateMockitoProcessingEnvironment().getElementUtils().getTypeElement("java.lang.Object"), "other")
+						.is(false);
+	}
+
+	@Test(fastFail = false)
 	public void testBoundsAsString() {
 		TypeParameterElement tpe = mock(TypeParameterElement.class);
 		TypeMirror type1 = mock(TypeMirror.class);

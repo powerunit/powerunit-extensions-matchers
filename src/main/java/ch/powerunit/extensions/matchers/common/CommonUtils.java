@@ -25,7 +25,6 @@ import java.io.PrintStream;
 import java.time.Instant;
 import java.util.stream.Collectors;
 
-import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.Element;
 import javax.tools.Diagnostic.Kind;
@@ -66,13 +65,15 @@ public class CommonUtils {
 	}
 
 	public static String generateGeneratedAnnotation(Class<?> generatedBy, String comments) {
-		return "@javax.annotation.Generated(\n   value=\"" + generatedBy.getName() + "\",\n   date=\"" + Instant.now().toString()
-				+ "\"" + ofNullable(comments).map(c->",\n   comments=" + toJavaSyntax(c)).orElse("") + ")";
+		return "@javax.annotation.Generated(\n   value=\"" + generatedBy.getName() + "\",\n   date=\""
+				+ Instant.now().toString() + "\""
+				+ ofNullable(comments).map(c -> ",\n   comments=" + toJavaSyntax(c)).orElse("") + ")";
 	}
 
-	public static void traceErrorAndDump(Messager messager, Filer filer, Exception e, Element te) {
+	public static void traceErrorAndDump(ProcessingEnvironmentHelper environment, Exception e, Element te) {
+		Messager messager = environment.getMessager();
 		FileObjectHelper.processFileWithIOException(
-				() -> filer.createResource(StandardLocation.SOURCE_OUTPUT, "",
+				() -> environment.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "",
 						"dump" + System.currentTimeMillis() + "txt", te),
 				s -> new PrintStream(s.openOutputStream()), e::printStackTrace,
 				e2 -> messager.printMessage(Kind.ERROR,
@@ -80,6 +81,10 @@ public class CommonUtils {
 								+ " during handling of " + e,
 						te));
 		messager.printMessage(Kind.ERROR, "Unable to create the file containing the target class because of " + e, te);
+	}
+
+	public static String asStandardMethodName(String input) {
+		return input.substring(0, 1).toLowerCase() + input.substring(1);
 	}
 
 }

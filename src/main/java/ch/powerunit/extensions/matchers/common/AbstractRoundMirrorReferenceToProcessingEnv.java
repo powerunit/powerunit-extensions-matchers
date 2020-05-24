@@ -37,11 +37,14 @@ public abstract class AbstractRoundMirrorReferenceToProcessingEnv
 	protected final RoundEnvironment roundEnv;
 	protected final ProcessingEnvironment processingEnv;
 	protected final TypeMirror objectTypeMirror;
+	protected final TypeMirror provideMatchersMirror;
 
 	public AbstractRoundMirrorReferenceToProcessingEnv(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
 		this.roundEnv = roundEnv;
 		this.processingEnv = processingEnv;
 		this.objectTypeMirror = getElementUtils().getTypeElement("java.lang.Object").asType();
+		provideMatchersMirror = getElementUtils().getTypeElement("ch.powerunit.extensions.matchers.ProvideMatchers")
+				.asType();
 	}
 
 	@Override
@@ -56,5 +59,4 @@ public abstract class AbstractRoundMirrorReferenceToProcessingEnv
 	public TypeMirror getObject() {
 		return objectTypeMirror;
 	}
-
 }

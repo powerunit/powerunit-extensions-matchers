@@ -27,6 +27,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -36,7 +37,6 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
@@ -56,7 +56,7 @@ import ch.powerunit.extensions.matchers.common.FileObjectHelper;
 @SupportedOptions({ "ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor.factory" })
 public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
-	private String factory = null;
+	private Optional<String> factoryParam = null;
 
 	private List<String> factories = new ArrayList<>();
 
@@ -65,7 +65,8 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	@Override
 	public synchronized void init(ProcessingEnvironment processingEnv) {
 		super.init(processingEnv);
-		factory = processingEnv.getOptions().get(ProvidesMatchersAnnotationsProcessor.class.getName() + ".factory");
+		factoryParam = Optional.ofNullable(
+				processingEnv.getOptions().get(ProvidesMatchersAnnotationsProcessor.class.getName() + ".factory"));
 	}
 
 	/*
@@ -96,12 +97,10 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	}
 
 	private void processFinalRound() {
-		if (factory != null) {
-			processFactory();
-		}
+		factoryParam.ifPresent(this::processFactory);
 	}
 
-	private void processFactory() {
+	private void processFactory(String factory) {
 		FileObjectHelper.processFileWithIOException(
 				() -> processingEnv.getFiler().createSourceFile(factory, allSourceElements.toArray(new Element[0])),
 				jfo -> new PrintWriter(jfo.openWriter()),
@@ -113,9 +112,4 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 								+ e.getMessage()));
 	}
 
-	public AnnotationMirror getProvideMatchersAnnotation(TypeElement provideMatchersTE,
-			Collection<? extends AnnotationMirror> annotations) {
-		return annotations.stream().filter(a -> a.getAnnotationType().equals(provideMatchersTE.asType())).findAny()
-				.orElse(null);
-	}
 }

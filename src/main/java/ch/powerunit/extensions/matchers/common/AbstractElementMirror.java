@@ -19,6 +19,8 @@
  */
 package ch.powerunit.extensions.matchers.common;
 
+import static java.util.Optional.ofNullable;
+
 import java.util.Optional;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -41,8 +43,8 @@ public abstract class AbstractElementMirror<E extends Element, R extends Abstrac
 	public AbstractElementMirror(String annotationType, R roundMirror, E element) {
 		this.roundMirror = roundMirror;
 		this.element = element;
-		this.doc = Optional.ofNullable(roundMirror.getElementUtils().getDocComment(element));
-		this.annotation = Optional.ofNullable(roundMirror.getElementUtils().getTypeElement(annotationType));
+		this.doc = ofNullable(roundMirror.getElementUtils().getDocComment(element));
+		this.annotation = ofNullable(roundMirror.getElementUtils().getTypeElement(annotationType));
 	}
 
 	@Override
@@ -52,10 +54,6 @@ public abstract class AbstractElementMirror<E extends Element, R extends Abstrac
 
 	public E getElement() {
 		return element;
-	}
-
-	public Optional<String> getDoc() {
-		return doc;
 	}
 
 	public String getParamComment() {
@@ -69,7 +67,7 @@ public abstract class AbstractElementMirror<E extends Element, R extends Abstrac
 
 	@Override
 	public ProcessingEnvironment getProcessingEnv() {
-		return getRoundMirror().getProcessingEnv();
+		return roundMirror.getProcessingEnv();
 	}
 
 	private static String extractParamCommentFromJavadoc(String docComment) {

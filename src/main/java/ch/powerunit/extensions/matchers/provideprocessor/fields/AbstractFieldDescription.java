@@ -25,9 +25,9 @@ import static ch.powerunit.extensions.matchers.common.ListJoining.nlSeparated;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import ch.powerunit.extensions.matchers.AddToMatcher;
 import ch.powerunit.extensions.matchers.common.ListJoining;
@@ -43,22 +43,23 @@ public abstract class AbstractFieldDescription extends FieldDescriptionMetaData 
 
 	private static final ListJoining<String> STRING_JOINER = nlSeparated();
 
-	private final List<FieldDSLMethod> dsl;
+	private final Supplier<List<FieldDSLMethod>> dsl;
 
 	public AbstractFieldDescription(ProvidesMatchersAnnotatedElementData containingElementMirror,
 			FieldDescriptionMirror mirror) {
 		super(containingElementMirror, mirror);
+		this.dsl = this::generateFieldsDSL;
+	}
+
+	private List<FieldDSLMethod> generateFieldsDSL() {
 		List<FieldDSLMethod> base = new ArrayList<>(generatedFieldDSLMethod(mirror));
 		base.addAll(containingElementMirror.getRoundMirror().getFieldDSLMethodFor(this));
-		this.dsl = Collections.unmodifiableList(base);
+		return base;
 	}
 
 	private List<FieldDSLMethod> generatedFieldDSLMethod(FieldDescriptionMirror mirror) {
-		List<FieldDSLMethod> tmp = new ArrayList<>();
-
-		tmp.addAll(getFieldDslMethodFor());
-		AddToMatcher addToMatchers[] = mirror.getFieldElement().getAnnotationsByType(AddToMatcher.class);
-		Arrays.stream(addToMatchers)
+		List<FieldDSLMethod> tmp = new ArrayList<>(getFieldDslMethodFor());
+		Arrays.stream(mirror.getFieldElement().getAnnotationsByType(AddToMatcher.class))
 				.map(a -> FieldDSLMethodBuilder.of(this).withDeclaration(a.suffix(), a.argument()).withDefaultJavaDoc()
 						.havingImplementation(STRING_JOINER.asString(a.body()) + "\nreturn this;"))
 				.filter(Objects::nonNull).forEach(tmp::add);
@@ -68,11 +69,11 @@ public abstract class AbstractFieldDescription extends FieldDescriptionMetaData 
 	protected abstract Collection<FieldDSLMethod> getFieldDslMethodFor();
 
 	public String getImplementationInterface() {
-		return IMPLEMENTATION_JOINER.asString(dsl);
+		return IMPLEMENTATION_JOINER.asString(dsl.get());
 	}
 
 	public String getDslInterface() {
-		return INTERFACE_JOINER.asString(dsl);
+		return INTERFACE_JOINER.asString(dsl.get());
 	}
 
 }

@@ -1,3 +1,22 @@
+/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
+ */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
 import java.util.Optional;
@@ -19,10 +38,10 @@ class ProvidesMatchersElementVisitor extends AbstractSimpleElementVisitor<Option
 	public Optional<TypeElement> visitType(TypeElement e, Void p) {
 		switch (e.getKind()) {
 		case ENUM:
-			warningForType(e, "enum");
+			errorForType(e, "enum");
 			return Optional.empty();
 		case INTERFACE:
-			warningForType(e, "interface");
+			errorForType(e, "interface");
 			return Optional.empty();
 		default:
 			return Optional.of(e);
@@ -31,14 +50,14 @@ class ProvidesMatchersElementVisitor extends AbstractSimpleElementVisitor<Option
 
 	@Override
 	protected Optional<TypeElement> defaultAction(Element e, Void p) {
-		warningForType(e, "unexpected element");
+		errorForType(e, "unexpected element");
 		return Optional.empty();
 	}
 
-	private void warningForType(Element e, String type) {
-		super.getProcessingEnv().getMessager().printMessage(Kind.ERROR,
-				"The annotation `ProvideMatchers` is used on an " + type
-						+ ", which is not supported. Since version 0.2.0 of powerunit-extension-matchers this is considered as an error.",
+	private void errorForType(Element e, String type) {
+		getProcessingEnv().getMessager().printMessage(Kind.ERROR, "The annotation `ProvideMatchers` is used on an "
+				+ type
+				+ ", which is not supported. Since version 0.2.0 of powerunit-extension-matchers this is considered as an error.",
 				e, support.getProvideMatchersAnnotation(e));
 	}
 

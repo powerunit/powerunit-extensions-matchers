@@ -1,3 +1,22 @@
+/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
+ */
 package ch.powerunit.extensions.matchers.common;
 
 import static ch.powerunit.extensions.matchers.common.CommonUtils.generateGeneratedAnnotation;
@@ -24,7 +43,7 @@ public final class FactoryHelper {
 		wjfo.println();
 		wjfo.println(CommonConstants.DEFAULT_JAVADOC_FOR_FACTORY);
 
-		wjfo.println(generateGeneratedAnnotation(processor,null));
+		wjfo.println(generateGeneratedAnnotation(processor, null));
 		wjfo.println("public interface " + className + " {");
 		wjfo.println();
 		wjfo.println(generateStaticDSL(className));
@@ -34,10 +53,8 @@ public final class FactoryHelper {
 	}
 
 	public static String generateStaticDSL(String className) {
-		return new StringBuilder().append("  /**").append("\n").append(
-				"   * Use this static field to access all the DSL syntax, without be required to implements this interface.")
-				.append("\n").append("  */").append("\n")
-				.append("  public static final " + className + " DSL = new " + className + "() {};").append("\n")
-				.append("\n").toString();
+		return String.format(
+				"  /**\n   * Use this static field to access all the DSL syntax, without be required to implements this interface.\n  */\n  public static final %1$s DSL = new %1$s() {};\n\n",
+				className);
 	}
 }

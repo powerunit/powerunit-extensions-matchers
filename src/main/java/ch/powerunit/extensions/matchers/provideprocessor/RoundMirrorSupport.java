@@ -22,9 +22,9 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 import ch.powerunit.extensions.matchers.common.AbstractRoundMirrorSupport;
 
 @FunctionalInterface
-public interface RoundMirrorSupport extends AbstractRoundMirrorSupport<RoundMirror>{
+public interface RoundMirrorSupport extends AbstractRoundMirrorSupport<RoundMirror> {
 
-	default ProvidesMatchersAnnotatedElementMirror getByName(String name) {
+	default Matchable getByName(String name) {
 		return getRoundMirror().getByName(name);
 	}
 }

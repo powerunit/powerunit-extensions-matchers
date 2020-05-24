@@ -19,6 +19,7 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
+import static ch.powerunit.extensions.matchers.common.CommonUtils.asStandardMethodName;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 
@@ -31,10 +32,9 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 
 import ch.powerunit.extensions.matchers.ProvideMatchers;
-import ch.powerunit.extensions.matchers.common.AbstractTypeElementMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.DSLExtension;
 
-public class ProvideMatchersMirror extends AbstractTypeElementMirror<RoundMirror> {
+public class ProvideMatchersMirror extends ProvideMatchersAnnotationMirror implements Matchable {
 
 	private static final String DEFAULT_PARAM_PARENT = " * @param <_PARENT> used to reference, if necessary, a parent for this builder. By default Void is used an indicate no parent builder.\n";
 
@@ -45,19 +45,21 @@ public class ProvideMatchersMirror extends AbstractTypeElementMirror<RoundMirror
 	protected final String simpleNameOfGeneratedClass;
 	protected final String packageNameOfGeneratedClass;
 	protected final String simpleNameOfGeneratedInterfaceMatcher;
-	protected final ProvideMatchers annotationPM;
+
+	protected final String methodShortClassName;
 
 	public ProvideMatchersMirror(RoundMirror roundMirror, TypeElement annotatedElement) {
-		super("ch.powerunit.extensions.matchers.ProvideMatchers", roundMirror, annotatedElement);
-		ProvideMatchers pm = annotatedElement.getAnnotation(ProvideMatchers.class);
-		this.simpleNameOfGeneratedClass = generateSimpleNameOfGeneratedClass(annotatedElement, pm);
-		this.packageNameOfGeneratedClass = generatePackageNameOfGeneratedClass(annotatedElement, pm,
+		super(roundMirror, annotatedElement);
+		this.simpleNameOfGeneratedClass = generateSimpleNameOfGeneratedClass(annotatedElement);
+		this.packageNameOfGeneratedClass = generatePackageNameOfGeneratedClass(annotatedElement,
 				getProcessingEnv().getElementUtils());
 		this.simpleNameOfGeneratedInterfaceMatcher = getSimpleNameOfClassAnnotated() + "Matcher";
-		this.annotationPM = pm;
+		String simplename = getSimpleNameOfClassAnnotated();
+		this.methodShortClassName = asStandardMethodName(simplename);
 	}
 
-	private String generateSimpleNameOfGeneratedClass(TypeElement annotatedElement, ProvideMatchers pm) {
+	private String generateSimpleNameOfGeneratedClass(TypeElement annotatedElement) {
+		ProvideMatchers pm = realAnnotation;
 		if ("".equals(pm.matchersClassName())) {
 			return getSimpleName(annotatedElement) + "Matchers";
 		} else {
@@ -65,8 +67,8 @@ public class ProvideMatchersMirror extends AbstractTypeElementMirror<RoundMirror
 		}
 	}
 
-	private String generatePackageNameOfGeneratedClass(TypeElement annotatedElement, ProvideMatchers pm,
-			Elements elements) {
+	private String generatePackageNameOfGeneratedClass(TypeElement annotatedElement, Elements elements) {
+		ProvideMatchers pm = realAnnotation;
 		if ("".equals(pm.matchersPackageName())) {
 			return getQualifiedName(elements.getPackageOf(annotatedElement));
 		} else {
@@ -74,9 +76,8 @@ public class ProvideMatchersMirror extends AbstractTypeElementMirror<RoundMirror
 		}
 	}
 
-	public final String[] getExtension() {
-		return annotationPM.extensions();
-
+	public String getMethodShortClassName() {
+		return methodShortClassName;
 	}
 
 	public final String getSimpleNameOfGeneratedClass() {
@@ -92,7 +93,7 @@ public class ProvideMatchersMirror extends AbstractTypeElementMirror<RoundMirror
 	}
 
 	public final Collection<DSLExtension> getDSLExtension() {
-		return DSLExtension.EXTENSION.stream().filter(e -> e.accept(annotationPM.moreMethod()))
+		return DSLExtension.EXTENSION.stream().filter(e -> e.accept(moreMethod()))
 				.collect(collectingAndThen(toList(), Collections::unmodifiableList));
 	}
 
@@ -117,22 +118,14 @@ public class ProvideMatchersMirror extends AbstractTypeElementMirror<RoundMirror
 
 	protected String generateDefaultJavaDoc(Optional<String> moreDetails, Optional<String> param,
 			String returnDescription, boolean withParent) {
-		StringBuilder sb = new StringBuilder("/**\n * ").append(getDefaultDescriptionForDsl()).append(".\n")
-				.append(moreDetails.map(asJavadocFormat(" * <p>\n * ")).orElse("")).append(paramToJavadoc(param))
-				.append(getParamComment()).append(" * \n");
-		if (withParent) {
-			sb.append(DEFAULT_PARAM_PARENT);
-		}
-		return sb.append(" * @return ").append(returnDescription).append("\n */\n").toString();
+		return String.format("/**\n * %1$s.\n%2$s%3$s%4$s * \n%5$s * @return %6$s\n */\n",
+				getDefaultDescriptionForDsl(), moreDetails.map(asJavadocFormat(" * <p>\n * ")).orElse(""),
+				paramToJavadoc(param), getParamComment(), withParent ? DEFAULT_PARAM_PARENT : "", returnDescription);
 	}
 
 	protected String generateJavaDoc(String description, boolean withParent) {
-		StringBuilder sb = new StringBuilder("/**\n * ").append(description).append(".\n").append(getParamComment())
-				.append(" * \n");
-		if (withParent) {
-			sb.append(DEFAULT_PARAM_PARENT);
-		}
-		return sb.append(" */\n").toString();
+		return String.format("/**\n * %1$s.\n%2$s * \n%3$s */\n", description, getParamComment(),
+				withParent ? DEFAULT_PARAM_PARENT : "");
 	}
 
 	public String generateMainJavaDoc() {
@@ -145,15 +138,21 @@ public class ProvideMatchersMirror extends AbstractTypeElementMirror<RoundMirror
 		return "Start a DSL matcher for the " + getDefaultLinkForAnnotatedClass();
 	}
 
-	public Optional<ProvidesMatchersAnnotatedElementMirror> getParentMirror() {
+	public Optional<Matchable> getParentMirror() {
 		RoundMirror rm = getRoundMirror();
 		return Optional.ofNullable(
 				rm.getByName(getQualifiedName(((TypeElement) rm.getTypeUtils().asElement(element.getSuperclass())))));
 	}
 
 	public boolean hasWithSameValue() {
-		return !fullyQualifiedNameOfSuperClassOfClassAnnotated.isPresent() || getParentMirror().isPresent()
-				|| annotationPM.allowWeakWithSameValue();
+		return !hasSuperClass() || getParentMirror().isPresent() || allowWeakWithSameValue;
+	}
+
+	/**
+	 * @return the simpleNameOfGeneratedInterfaceMatcher
+	 */
+	public String getSimpleNameOfGeneratedInterfaceMatcher() {
+		return simpleNameOfGeneratedInterfaceMatcher;
 	}
 
 }

@@ -53,10 +53,7 @@ public abstract class ProvidesMatchersAnnotatedElementFieldMatcherMirror
 
 	private static AbstractFieldDescription reduceByOrderingOnIgnoreFieldDescription(AbstractFieldDescription l,
 			AbstractFieldDescription r) {
-		if (l == null) {
-			return r;
-		}
-		return l instanceof IgnoreFieldDescription ? l : r;
+		return Optional.ofNullable(l).filter(c -> c instanceof IgnoreFieldDescription).orElse(r);
 	}
 
 	private List<AbstractFieldDescription> generateFields(TypeElement typeElement,
@@ -102,6 +99,7 @@ public abstract class ProvidesMatchersAnnotatedElementFieldMatcherMirror
 				+ "  public static final class Metadata {\n\n"
 				+ "    private Metadata() {}\n\n"
 				+ "    public final String ANNOTATION_PROCESSOR_VERSION = \"" + getAnnotationProcessorVersion() + "\";\n\n"
+				+ "    public final long COMPATIBILITY = " + getCompatibility() + ";\n\n"
 				+ "    public final String SOURCE_CLASS_NAME = \"" + getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() + "\";\n\n"
 				+ "    public final Class<"+getFullyQualifiedNameOfClassAnnotated()+"> SOURCE_CLASS = " + getFullyQualifiedNameOfClassAnnotated() + ".class;\n\n"
 				+ "    public final String SOURCE_PARENT_CLASS_NAME = " + fullyQualifiedNameOfSuperClassOfClassAnnotated.map(CommonUtils::toJavaSyntax).orElse("null") + ";\n\n"

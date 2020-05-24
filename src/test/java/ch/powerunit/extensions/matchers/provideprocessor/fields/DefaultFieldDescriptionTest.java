@@ -76,10 +76,14 @@ public class DefaultFieldDescriptionTest implements TestSuite {
 	private void prepareMock() {
 		when(provideMatchersAnnotatedElementMirror.getRoundMirror()).thenReturn(roundMirror);
 		when(roundMirror.getProcessingEnv()).thenReturn(processingEnv);
-		when(roundMirror.isInSameRound(Mockito.any())).thenReturn(false);
 		when(provideMatchersAnnotatedElementMirror.getFullGeneric()).thenReturn("");
 		when(provideMatchersAnnotatedElementMirror.getGeneric()).thenReturn("");
 		when(provideMatchersAnnotatedElementMirror.getFullyQualifiedNameOfClassAnnotated()).thenReturn("fqn.sn");
+		when(provideMatchersAnnotatedElementMirror.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric())
+				.thenReturn("fqn.sn");
+		when(provideMatchersAnnotatedElementMirror.getSimpleNameOfClassAnnotated()).thenReturn("sn");
+		when(provideMatchersAnnotatedElementMirror.getMethodShortClassName()).thenReturn("sn");
+		when(provideMatchersAnnotatedElementMirror.getDefaultReturnMethod()).thenReturn("snMatcher");
 		when(processingEnv.getElementUtils()).thenReturn(elements);
 		when(processingEnv.getTypeUtils()).thenReturn(types);
 		when(primitiveType.getKind()).thenReturn(TypeKind.BOOLEAN);
@@ -158,6 +162,24 @@ public class DefaultFieldDescriptionTest implements TestSuite {
 						executableElement));
 		assertThat(undertest.asMatcherField())
 				.is("private FieldMatcher field = new FieldMatcher(org.hamcrest.Matchers.anything());");
+	}
+
+	@Test
+	public void testGetDslInterface() {
+		DefaultFieldDescription undertest = new DefaultFieldDescription(() -> provideMatchersAnnotatedElementMirror,
+				new FieldDescriptionMirror(() -> provideMatchersAnnotatedElementMirror, "field", "boolean",
+						executableElement));
+		assertThat(undertest.getDslInterface()).is(
+				"/**\n * Add a validation on the field `field` .\n * <p>\n *\n * <i>{@link fqn.sn#field() This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers.\n * (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @param matcher a Matcher on the field.\n * @return the DSL to continue the construction of the matcher.\n * @see org.hamcrest.Matchers The main class from hamcrest that provides default matchers.\n */\n snMatcher field(org.hamcrest.Matcher<? super boolean> matcher);\n\n/**\n * Add a validation on the field `field` .\n * <p>\n *\n * <i>{@link fqn.sn#field() This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers.\n * (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @param value an expected value for the field, which will be compared using the is matcher.\n * @return the DSL to continue the construction of the matcher.\n * @see org.hamcrest.Matchers#is(java.lang.Object)\n */\ndefault  snMatcher field(boolean value){\n  return field((org.hamcrest.Matcher)org.hamcrest.Matchers.is((java.lang.Object)value));\n}\n/**\n * Add a validation on the field `field` by converting the received field before validat it.\n * <p>\n *\n * <i>{@link fqn.sn#field() This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers.\n * (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @param converter a function to convert the field.\n * @param matcher a matcher on the resulting.\n * @param <_TARGETFIELD> The type which this field must be converter.\n * @return the DSL to continue the construction of the matcher.\n */\ndefault <_TARGETFIELD> snMatcher fieldAs(java.util.function.Function<boolean,_TARGETFIELD> converter,org.hamcrest.Matcher<? super _TARGETFIELD> matcher){\n  return field(asFeatureMatcher(\" <field is converted> \",converter,matcher));\n}\n/**\n * Add a validation on the field `field` .\n * <p>\n *\n * <i>{@link fqn.sn#field() This field is accessed by using this approach}.</i>\n * <p>\n * <b>In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.</b> \n * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers.\n * (See for instance {@link org.hamcrest.Matchers#both(org.hamcrest.Matcher)}.\n *\n * @param value an expected value for the field, which will be compared that it is the same instance..\n * @return the DSL to continue the construction of the matcher.\n * @see org.hamcrest.Matchers#is(java.lang.Object)\n */\ndefault  snMatcher fieldIsSameInstance(boolean value){\n  return field((org.hamcrest.Matcher)org.hamcrest.Matchers.sameInstance((java.lang.Object)value));\n}");
+	}
+
+	@Test
+	public void testGetImplementationInterface() {
+		DefaultFieldDescription undertest = new DefaultFieldDescription(() -> provideMatchersAnnotatedElementMirror,
+				new FieldDescriptionMirror(() -> provideMatchersAnnotatedElementMirror, "field", "boolean",
+						executableElement));
+		assertThat(undertest.getImplementationInterface()).is(
+				"@Override\npublic  snMatcher field(org.hamcrest.Matcher<? super boolean> matcher) {\n  field= new FieldMatcher(matcher);\n  return this;\n}\n\n\n\n");
 	}
 
 }

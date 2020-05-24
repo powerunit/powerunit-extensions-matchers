@@ -19,12 +19,13 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
+import static ch.powerunit.extensions.matchers.common.CommonUtils.asStandardMethodName;
+
 import java.util.Optional;
 import java.util.function.Function;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.tools.Diagnostic.Kind;
 
@@ -51,14 +52,14 @@ public class ProvidesMatchersSubElementVisitor extends
 
 	public Optional<AbstractFieldDescription> removeIfNeededAndThenReturn(
 			Optional<AbstractFieldDescription> fieldDescription) {
-		fieldDescription.ifPresent(f -> removeFromIgnoreList.apply(f.getFieldElement()));
+		fieldDescription.map(AbstractFieldDescription::getFieldElement).ifPresent(removeFromIgnoreList::apply);
 		return fieldDescription;
 	}
 
 	@Override
 	public Optional<AbstractFieldDescription> visitVariable(VariableElement e,
 			ProvidesMatchersAnnotatedElementFieldMatcherMirror p) {
-		if (e.getModifiers().contains(Modifier.PUBLIC) && !e.getModifiers().contains(Modifier.STATIC)) {
+		if (isPublic(e) && !isStatic(e)) {
 			String fieldName = getSimpleName(e);
 			return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, fieldName);
 		}
@@ -69,8 +70,7 @@ public class ProvidesMatchersSubElementVisitor extends
 	@Override
 	public Optional<AbstractFieldDescription> visitExecutable(ExecutableElement e,
 			ProvidesMatchersAnnotatedElementFieldMatcherMirror p) {
-		if (e.getModifiers().contains(Modifier.PUBLIC) && e.getParameters().size() == 0
-				&& !e.getModifiers().contains(Modifier.STATIC)) {
+		if (isPublic(e) && e.getParameters().size() == 0 && !isStatic(e)) {
 			String simpleName = getSimpleName(e);
 			if (simpleName.matches("^((get)|(is)).*")) {
 				return visiteExecutableGet(e, "^(get)|(is)", p);
@@ -94,7 +94,7 @@ public class ProvidesMatchersSubElementVisitor extends
 			ProvidesMatchersAnnotatedElementFieldMatcherMirror p) {
 		String methodName = getSimpleName(e);
 		String fieldNameDirect = methodName.replaceFirst(prefix, "");
-		String fieldName = fieldNameDirect.substring(0, 1).toLowerCase() + fieldNameDirect.substring(1);
+		String fieldName = asStandardMethodName(fieldNameDirect);
 		return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, fieldName);
 	}
 

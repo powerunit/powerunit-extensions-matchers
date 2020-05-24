@@ -49,10 +49,6 @@ public interface ProvidesMatchersAnnotatedElementData extends RoundMirrorSupport
 		return getFullData().getSimpleNameOfClassAnnotated();
 	}
 
-	default String getMethodShortClassName() {
-		return getFullData().getMethodShortClassName();
-	}
-
 	default String getDefaultReturnMethod() {
 		return getFullData().getDefaultReturnMethod();
 	}
@@ -62,7 +58,7 @@ public interface ProvidesMatchersAnnotatedElementData extends RoundMirrorSupport
 	}
 
 	default String generateDSLWithSameValueMethodName() {
-		return getMethodShortClassName() + "WithSameValue";
+		return getFullData().getMethodNameDSLWithSameValue();
 	}
 
 	default boolean hasWithSameValue() {
