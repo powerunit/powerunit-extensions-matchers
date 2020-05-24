@@ -124,5 +124,26 @@
 				</p>
 			</answer>
 		</faq>
+		<faq id="hamcrest">
+			<question>
+				Why is the compilation failing because of missing classes from <i>org.hamcrest</i>?
+			</question>
+			<answer>
+				<p>Since version 0.2.0, the hamcrest dependency is not anymore included by this library. You must add this dependency yourself.
+				</p>
+				<p>You may use one of these dependencies : <i>org.hamcrest:hamcrest:2.2 ; org.hamcrest:hamcrest:2.1 ; org.hamcrest:hamcrest-all:1.3</i>
+				</p>
+			</answer>
+		</faq>
+		<faq id="missing">
+			<question>
+				The powerunit-extensions-matchers-providematchers and powerunit-extensions-matchers-factory artifacts are missing ?
+			</question>
+			<answer>
+				<p>
+				Since verson 0.2.0, these two artifacts are not generated anymore. 
+				</p>
+			</answer>
+		</faq>
 	</part>
 </faqs>
