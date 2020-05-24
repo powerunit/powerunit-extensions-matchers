@@ -1,0 +1,50 @@
+Detection of Matcher for Class
+
+ <Since version 0.2.0, the detection of link between classes has been enhanced.>
+ 
+ Conceptually, for every fields or parent classes, the annotation processor will try to find a Matcher to compare the values. This is done by detecting the relation
+ between the class in compilation, but also by looking for existing Matcher (<new in version 0.2.0>). 
+ 
+ To understand this concept, let's assume we have a first maven project, that use <powerunit-extensions-matchers>, with the following class annotated with 
+ <<<@ProvideMatchers>>> :
+ 
+ * <<<Pojo1>>>
+ 
+ []
+ 
+ Based on this class, a <<<Matcher>> class named <<<Pojo1Matchers>>> will also be generated. This class will provide several DSL method, like :
+ 
+ * <<<pojo1With()>>>
+ 
+ * <<<pojo1WithSameValue()>>>
+ 
+ []
+ 
+ Now, we have a second maven project, which uses the first one as dependency, with have the following annotated classes :
+ 
+ * <<<Pojo4>>> which extends <<<Pojo1>>>
+ 
+ * <<<Pojo6>>> which have a <<<Pojo1>>> field (named <<<field1>>>)
+ 
+ []
+ 
+ Based on these classes, several <<<Matchers>>> classes will be generated :
+ 
+ * <<<Pojo4Matchers>>> - The annotation processor detects that the <<<Pojo1Matchers>>> class is a valid <<<Matcher>>> for <<<Pojo1>>> event if it is already 
+   compiled.
+ 
+   * The method <<<pojo4With()>>> starts a DSL without check on the parent class
+   
+   * The method <<<pojo4With(org.hamcrest.Matcher<? super ch.powerunit.extensions.matchers.multi.parent.Pojo1> matcherOnParent)>>> starts a DSL with a matcher on
+     the parent class. 
+     
+   * The method <<<pojo4WithSameValue()>>> start a DSL to compare for same value. The <<<pojo1WithSameValue()>>> from <<<Pojo1Matchers>>> will be used for the control
+     of the parent class.
+     
+ * <<<Pojo6Matchers>>> - The annotation processor detects that the <<<Pojo1Matchers>>> class is a valid <<<Matcher>>> for <<<Pojo1>>> event if it is already 
+   compiled.
+   
+   * The method <<<pojo6With()>>> starts the DSL. This DSL will provides a method <<<field1With()>>> chaining to the <<<pojo1With>>> DSL.
+   
+   * The method <<<pojo4WithSameValue()>>> start a DSL to compare for same value. The <<<pojo6WithSameValue()>>> from <<<Pojo1Matchers>>> will be used for the control
+     of <<<field1>>>.
