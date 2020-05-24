@@ -1,0 +1,132 @@
+Migration to version 0.2.X
+
+ Several changes introduced in version 0.2.0 impact how this annotation processor works. To migrate from a 0.1.X version, the following points must be taken into
+ consideration.
+ 
+* Dependency to hamcrest
+
+ Since version 0.2.0, a dependency to <hamcrest> is not anymore provided automatically. The idea is remove the strong link between <powerunit-extensions-matchers> 
+ and a specific version of <hamcrest>. 
+ 
+ If you haven't a dependency to <hamcrest>, you may have to add once. Three different versions have been tested :
+ 
+** Version 1.X
+
++-----
+<groupId>org.hamcrest</groupId>
+<artifactId>hamcrest-all</artifactId>
+<version>1.3</version>
++-----
+
+ Please note that the artifact <<<hamcrest-all>>> is used.
+
+** Version 2.X
+
++-----
+<groupId>org.hamcrest</groupId>
+<artifactId>hamcrest</artifactId>
+<version>2.1</version>
++-----
+
++-----
+<groupId>org.hamcrest</groupId>
+<artifactId>hamcrest</artifactId>
+<version>2.2</version>
++-----
+
+ The <<<all>>> version is not available any more in version 2.X.
+
+* @Factory annotation removed
+
+ As part of the removal of the link between this library and hamcrest, the generated <<<Matcher>>> doesn't use anymore the annotation <<<@Factory>>>. This
+ annotation was part of <hamcrest> version 1.3 and is not available anymore in version 2+ of <hamcrest>. This annotation was used to generated a class (or interface)
+ referencing all the entry points of the <<<Matcher>>>, but not at runtime. 
+ 
+ As this annotation is not used anymore in the produced <<<Matcher>>>, it will not be possible to use the generator of <hamcrest> (1.3) anymore. Also the included
+ generator included in this annotation processor (parsing the <<<@Factory>>> annotation) as been removed. The generator of this annotation processor was enabled
+ by the option <<<ch.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets>>>. If you used it, you should see below how to replace it.
+
+* Generation of DSL interface
+
+ Before version 0.2.0, two methods were available to generate an interface that exposes the entry points of the <<<Matcher>>>. Only one is now available :
+ 
+ * The option <<<ch.powerunit.extensions.matchers.factoryprocessor.FactoryAnnotationsProcessor.targets>>> is <<removed and not supported anymore>>.
+ 
+ * Using the option <<<ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor.factory>>> it is possible to specify the fully 
+   qualified name of a interface to be generated which will contains references to all the entry points of all the generated <<<Matcher>>>. 
+   
+   It is not possible, as it was with the other generator, to generated differents interface based on a regex. Also, it is not possible to add additional method
+   to this interface as it was possible by using the <<<@Factory>>> annotation.
+ 
+ []
+
+* Removed artifacts
+
+ Before version 0.2.0, two additional artifacts where generated, containing only one of the two annotation processors. As now only one annotation processor exists
+ these two artifacts have been removed. There were named <<<powerunit-extensions-matchers-factory>>> and <<<powerunit-extensions-matchers-providematchers>>>
+ 
+ If you used these artifacts you must now use directly the master artifact <<<powerunit-extensions-matchers>>>. As the factory annotation processor has been removed
+ no direct replacement is provided.
+
+* META-INF files
+
+ Before version 0.2.0, the annotation processors generate (if JAX-B was available, so not on JDK 9+) a metadata XML information file. This file is not generated
+ anymore. It should not be an issue, as it was more an internal functionality than a real feature. Nevertheless metadata information are now directly available inside
+ the generated <<<Matcher>>>. 
+ 
++-----
+  // ---------------------------------------------------------------------------
+  // METADATA
+
+  /**
+   * Metadata regarding this matcher.
+   */
+  public static final Metadata METADATA = new Metadata();
+
+   public static final class FieldMetadata {
+    public final String NAME, TYPE, ACCESSOR, STEREOTYPE;
+    public final boolean IGNORED;
+    private FieldMetadata(String name, String type, String accessor,String stereotype, boolean ignored) {
+      NAME=name; TYPE=type; ACCESSOR=accessor; STEREOTYPE=stereotype; IGNORED=ignored;
+    }
+  }
+
+  public static final class Metadata {
+
+    private Metadata() {}
+
+    public final String ANNOTATION_PROCESSOR_VERSION = "0.2.0";
+
+    public final long COMPATIBILITY = 0;
+
+    public final String SOURCE_CLASS_NAME = "ch.test.testme.SimplePojo ";
+
+    public final Class<ch.test.testme.SimplePojo> SOURCE_CLASS = ch.test.testme.SimplePojo.class;
+
+    public final String SOURCE_PARENT_CLASS_NAME = null;
+
+    public final FieldMetadata[] FIELDS = new FieldMetadata[]{ new FieldMetadata("oneField","java.lang.String","oneField","StringFieldDescription",false) };
+
+  }
++-----
+
+ The Metadata information may evolve, but the field <<<COMPATIBILITY>>> must provide code information regarding these evolutions or evolutions of the matchers.
+
+* Link between classes
+
+ The detection of link between class and generator has been enhanced in version 0.2.0. In some case, when before the annotation processor was not able to detect that
+ a matcher is available for a field or the parent class, the link is detected. In these case, it will be possible to chain the build and the linked matcher will be
+ used for a <WithSameValue> <<<Matcher>>>. It is an enhancement, but it may change the expected outcome, as before a simple <<<is>>> <<<Matcher>>> was use (which
+ rely on the <<<equals>>> method) and the replacement will be to use a <WithSameValue> <<<Matcher>>>. 
+ 
+ Also, the annotation processor try to find matcher already existing, for instance from a dependency. If it found one (using naming convention based on the one from
+ this library and detection of the metadata), it will also use it and avoid using a <<<is>>> <<<Matcher>>>. It may also induce not so visible change in a <<<Matcher>>>
+ as if a matcher is added in a dependency (or already existing), it may be detected and used now.
+ 
+ Finally, if for a class it is not possible to find a Matcher for the super class, before version 0.2.0, the <WithSameValue> was not generated. It is now possible
+ to request the generation of this matcher, by using the option <<<allowWeakWithSameValue>>> of the annotation <<<ProvideMatchers>>>.
+ 
+* Map
+
+ A dedicated <<<Matcher>>> to support <<<Map>>> has been added. It may change the way the comparison was done before.
+ 
