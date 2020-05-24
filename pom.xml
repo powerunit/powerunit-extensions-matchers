@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ch.powerunit.extensions</groupId>
 	<artifactId>powerunit-extensions-matchers</artifactId>
-	<version>0.2.0-SNAPSHOT</version>
+	<version>0.2.0</version>
 
 	<name>Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</name>
 	<description>This is a test framework for the JDK 1.8 - Extension to provide matchers based on annotation.</description>
