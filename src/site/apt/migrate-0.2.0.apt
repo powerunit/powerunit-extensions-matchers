@@ -114,9 +114,9 @@ Migration to version 0.2.X
 
 * Link between classes
 
- The detection of link between class and generator has been enhanced in version 0.2.0. In some case, when before the annotation processor was not able to detect that
- a matcher is available for a field or the parent class, the link is detected. In these case, it will be possible to chain the build and the linked matcher will be
- used for a <WithSameValue> <<<Matcher>>>. It is an enhancement, but it may change the expected outcome, as before a simple <<<is>>> <<<Matcher>>> was use (which
+ The detection of link between class and <<<Matcher>>> has been enhanced in version 0.2.0. In some case, when before the annotation processor was not able to detect 
+ that a matcher is available for a field or the parent class, the link is detected. In these case, it will be possible to chain the build and the linked matcher will 
+ be used for a <WithSameValue> <<<Matcher>>>. It is an enhancement, but it may change the expected outcome, as before a simple <<<is>>> <<<Matcher>>> was use (which
  rely on the <<<equals>>> method) and the replacement will be to use a <WithSameValue> <<<Matcher>>>. 
  
  Also, the annotation processor try to find matcher already existing, for instance from a dependency. If it found one (using naming convention based on the one from
@@ -128,5 +128,5 @@ Migration to version 0.2.X
  
 * Map
 
- A dedicated <<<Matcher>>> to support <<<Map>>> has been added. It may change the way the comparison was done before.
+ A dedicated <<<Matcher>>> to support {{{./map.html}<<<Map>>>}} has been added. It may change the way the comparison was done before.
  
