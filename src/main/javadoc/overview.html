@@ -4,8 +4,7 @@
 </head>
 <body>
 	This is an extension to Powerunit to generate matchers for POJO.
-	<p>
-	This library provides several annotation processors :
+	<p>This library provides several annotation processors :
 	<ul>
 		<li><b>Processing of the ProvideMatchers annotation.</b><br>This
 			processor create <code>Matcher</code> for each annotated class, in
@@ -43,5 +42,8 @@
 			factory method of the matchers, in the interface defined by this
 			parameter.</li>
 	</ul>
+	<b>The annotation {@code javax.annotation.Generated} is not
+		available OOTB with recent version of java. You may need to add a
+		dependency providing it if necessary.</b>
 </body>
 </html>

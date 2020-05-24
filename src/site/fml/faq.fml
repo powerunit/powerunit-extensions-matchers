@@ -110,4 +110,19 @@
 			</answer>
 		</faq>
 	</part>
+	
+	<part id="Troubleshooting">
+		<title>Troubleshooting</title>
+		<faq id="generated">
+			<question>
+				Why is the compilation failing because of missing annotation <i>javax.annotation.Generated</i>?
+			</question>
+			<answer>
+				<p>Since version 9 of java, this annotation is not necessary available OOTB. You must add a dependency providing this annotation.
+				</p>
+				<p>You may use this dependency <i>javax.annotation:javax.annotation-api</i>
+				</p>
+			</answer>
+		</faq>
+	</part>
 </faqs>

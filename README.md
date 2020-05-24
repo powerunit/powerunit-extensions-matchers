@@ -1,4 +1,4 @@
-powerunit-extensions-matchers
+# powerunit-extensions-matchers
 
 
 * Travis ci : [![Build Status](https://travis-ci.org/powerunit/powerunit-extensions-matchers.svg?branch=master)](https://travis-ci.org/powerunit/powerunit-extensions-matchers)
@@ -9,4 +9,32 @@ powerunit-extensions-matchers
 * Git : ![mergify-status](https://gh.mergify.io/badges/powerunit/powerunit-extensions-matchers.png?style=cut)
 
 
-This is an extension to powerunit (a unit test framework for java 8). [Please check the site for more information](http://powerunit.github.io/powerunit-extensions-matchers/).
+This is an extension to powerunit (a unit test framework for java 8). [Please check the site for more information](http://powerunit.github.io/powerunit-extensions-matchers/) that doesn't require this framework, but provides generation of hamcrest matchers.
+
+# Usage
+
+Basic usage is to add this libraray as a dependency and use the annotation :
+
+```java
+@ProvideMatchers
+public class PojoShort {
+  ...
+}
+```
+
+Matchers classes must be created by the annotation processor (in this example, named `PojoShortMatchers`).
+
+# Compatibility
+
+Powerunit-extensions-matchers version | With          | Version | Status
+------------------------------------- | ------------- | ------- | -------
+0.1.6                                 | hamcrest      | 1.3     | :heavy_check_mark:
+0.1.6                                 | hamcrest      | 2.1+    | :grey_question: Not tested by itself, but as some extension use this version, should be OK
+0.1.6                                 | JDK           | 1.8     | :heavy_check_mark:
+0.1.6                                 | JDK           | 9       | Compilation with source and target = 1.8 tested. The `@Generated` annotation may not be available OOTB and the META-INF information are not generated
+0.1.6                                 | JDK           | 10      | Compilation with source and target = 1.8 tested. The `@Generated` annotation may not be available OOTB and the META-INF information are not generated
+0.2.0                                 | hamcrest      | 1.3     | :heavy_check_mark: The `@Factory` annotation is not produced or parsed anymore.
+0.2.0                                 | hamcrest      | 2.1+    | :heavy_check_mark:
+0.2.0                                 | JDK           | 1.8     | :heavy_check_mark:
+0.2.0                                 | JDK           | 9       | Compilation with source and target = 1.8 tested. Execution of generated matcher tested. The `@Generated` annotation may not be available OOTB.
+0.2.0                                 | JDK           | 10      | Compilation with source and target = 1.8 tested. Execution of generated matcher tested. The `@Generated` annotation may not be available OOTB.
