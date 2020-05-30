@@ -1,0 +1,73 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>ch.powerunit.extensions</groupId>
+	<artifactId>powerunit-extensions-matchers-multimodule-parent-old-it1000</artifactId>
+
+	<parent>
+		<groupId>ch.powerunit.extensions</groupId>
+		<artifactId>powerunit-extensions-matchers-multimodule-master-it1000</artifactId>
+		<version>@project.version@</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<packaging>jar</packaging>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<docfilessubdirs>true</docfilessubdirs>
+					<linksource>false</linksource>
+					<detectLinks />
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>${java.source.version}</source>
+					<target>${java.target.version}</target>
+					<fork>true</fork>
+					<compilerArgs>
+						<compilerArg>-J@testcompileargs@</compilerArg>
+					</compilerArgs>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-all</artifactId>
+			<version>${hamcrest.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.powerunit</groupId>
+			<artifactId>powerunit</artifactId>
+			<version>${powerunit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>ch.powerunit.extensions</groupId>
+			<artifactId>powerunit-extensions-matchers</artifactId>
+			<version>0.2.0</version><!-- Forcer sur ancienne version -->
+		</dependency>
+		<dependency>
+			<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+			<version>1.3.2</version>
+		</dependency>
+	</dependencies>
+</project>

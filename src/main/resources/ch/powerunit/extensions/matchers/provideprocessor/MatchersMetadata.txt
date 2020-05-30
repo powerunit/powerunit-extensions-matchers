@@ -1,0 +1,39 @@
+
+  /**
+   * Metadata regarding this matcher.
+   */
+  public static final Metadata METADATA = new Metadata();
+
+   public static final class FieldMetadata {
+     public final String NAME, TYPE, ACCESSOR, STEREOTYPE;
+
+     public final boolean IGNORED;
+
+     private FieldMetadata(String name, String type, String accessor,String stereotype, boolean ignored) {
+       NAME=name; 
+       TYPE=type; 
+       ACCESSOR=accessor; 
+       STEREOTYPE=stereotype; 
+       IGNORED=ignored;
+     }
+  }
+  
+
+  public static final class Metadata {
+    private Metadata() {}
+
+    public final String ANNOTATION_PROCESSOR_VERSION = "%1$s";
+
+    public final long COMPATIBILITY = %2$sL;
+
+    public final String SOURCE_CLASS_NAME = "%3$s";
+
+    public final Class<%4$s> SOURCE_CLASS = %4$s.class;
+
+    public final String SOURCE_PARENT_CLASS_NAME = %5$s;
+    
+    public final FieldMetadata[] FIELDS = new FieldMetadata[]{ 
+      %6$s 
+    };
+
+  }

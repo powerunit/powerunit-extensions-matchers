@@ -60,4 +60,11 @@ public class ProvideMatchersAnnotationMirror extends AbstractTypeElementMirror<R
 		return realAnnotation.extensions();
 	}
 
+	/**
+	 * @return the realAnnotation
+	 */
+	public ProvideMatchers getRealAnnotation() {
+		return realAnnotation;
+	}
+
 }

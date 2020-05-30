@@ -62,9 +62,4 @@ public interface AbstractRoundMirrorSupport<R extends AbstractRoundMirrorReferen
 		return getClass().getPackage().getImplementationVersion();
 	}
 
-	default long getCompatibility() {
-		// No specify bit for the moment
-		return 0L;
-	}
-
 }

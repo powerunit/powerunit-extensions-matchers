@@ -138,12 +138,12 @@ public class DefaultFieldDescriptionTest implements TestSuite {
 	}
 
 	@Test
-	public void testGetFieldCopy() {
+	public void testGetFieldCopyIgnore() {
 		DefaultFieldDescription undertest = new DefaultFieldDescription(() -> provideMatchersAnnotatedElementMirror,
 				new FieldDescriptionMirror(() -> provideMatchersAnnotatedElementMirror, "field", "boolean",
 						executableElement));
-		assertThat(undertest.getFieldCopy("a", "b"))
-				.is("a.field((org.hamcrest.Matcher)org.hamcrest.Matchers.is((java.lang.Object)b.field()))");
+		assertThat(undertest.getFieldCopy("a", "b", ",x"))
+				.is("a.field((org.hamcrest.Matcher)org.hamcrest.Matchers.is((java.lang.Object)b.field()));");
 	}
 
 	@Test
@@ -152,7 +152,7 @@ public class DefaultFieldDescriptionTest implements TestSuite {
 				new FieldDescriptionMirror(() -> provideMatchersAnnotatedElementMirror, "field", "boolean",
 						executableElement));
 		assertThat(undertest.getMatcherForField()).is(
-				"private static class FieldMatcher extends org.hamcrest.FeatureMatcher<fqn.sn,boolean> {\n  public FieldMatcher(org.hamcrest.Matcher<? super boolean> matcher) {\n    super(matcher,\"field\",\"field\");\n  }\n  protected boolean featureValueOf(fqn.sn actual) {\n    return actual.field();\n  }\n}\n");
+				"private static class FieldMatcher extends org.hamcrest.FeatureMatcher<fqn.sn,boolean> {\n  public FieldMatcher(org.hamcrest.Matcher<? super boolean> matcher) {\n    super(matcher,\"field\",\"field\");\n  }\n\n  protected boolean featureValueOf(fqn.sn actual) {\n    return actual.field();\n  }\n}\n");
 	}
 
 	@Test

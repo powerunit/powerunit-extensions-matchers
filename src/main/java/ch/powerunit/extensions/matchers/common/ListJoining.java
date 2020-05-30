@@ -23,7 +23,7 @@ import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.joining;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
@@ -107,7 +107,7 @@ public final class ListJoining<E> {
 		this.finalizer = finalizer;
 	}
 
-	public String asString(List<E> input) {
+	public String asString(Collection<E> input) {
 		return Objects.requireNonNull(input, "input can't be null").stream().map(mapper)
 				.collect(collectingAndThen(joining(delimiter), finalizer));
 	}

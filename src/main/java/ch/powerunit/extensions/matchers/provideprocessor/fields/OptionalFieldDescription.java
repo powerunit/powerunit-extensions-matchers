@@ -79,25 +79,28 @@ public class OptionalFieldDescription extends DefaultFieldDescription {
 	}
 
 	@Override
-	public String getFieldCopy(String lhs, String rhs) {
+	public String getFieldCopy(String lhs, String rhs, String ignore) {
 		if (!"".equals(generic)) {
-			return getFieldCopyForList(lhs, rhs);
+			return getFieldCopyForOptional(lhs, rhs, ignore);
 		}
-		return super.getFieldCopy(lhs, rhs);
+		return super.getFieldCopy(lhs, rhs, ignore);
 	}
 
-	public String getFieldCopyForList(String lhs, String rhs) {
+	public String getFieldCopyForOptional(String lhs, String rhs, String paramForHasSameValue) {
 		String fieldAccessor = getFieldAccessor();
 		String fieldName = getFieldName();
-		return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + fieldName + "(" + MATCHERS
-				+ ".nullValue()); } else if (!" + rhs + "." + fieldAccessor + ".isPresent()) {" + lhs + "." + fieldName
-				+ "IsAbsent(); } else {" + lhs + "." + fieldName + "IsPresentAndIs("
-				+ generateMatcherBuilderReferenceFor(generic, rhs + "." + fieldAccessor + ".get()") + "); }";
+		return "if(" + rhs + "." + fieldAccessor + "==null) {\n  " + lhs + "." + fieldName + "(" + MATCHERS
+				+ ".nullValue());\n} else if (!" + rhs + "." + fieldAccessor + ".isPresent()) {\n  " + lhs + "."
+				+ fieldName + "IsAbsent();\n} else {\n  " + lhs + "." + fieldName + "IsPresentAndIs("
+				+ generateMatcherBuilderReferenceFor(generic, rhs + "." + fieldAccessor + ".get()",
+						paramForHasSameValue)
+				+ ");\n}";
 	}
 
-	public String generateMatcherBuilderReferenceFor(String generic, String accessor) {
-		return ofNullable(getByName(generic)).filter(Matchable::hasWithSameValue)
-				.map(t -> t.getWithSameValue(false) + "(" + accessor + ")").orElse(MATCHERS + ".is(" + accessor + ")");
+	public String generateMatcherBuilderReferenceFor(String generic, String accessor, String paramForHasSameValue) {
+		return ofNullable(getByName(generic)).filter(Matchable::hasWithSameValue).map(
+				t -> t.getWithSameValue(false) + "(" + accessor + (t.supportIgnore() ? paramForHasSameValue : "") + ")")
+				.orElse(MATCHERS + ".is(" + accessor + ")");
 	}
 
 }

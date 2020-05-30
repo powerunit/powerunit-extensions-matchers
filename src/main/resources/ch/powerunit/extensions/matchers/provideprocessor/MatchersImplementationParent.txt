@@ -1,0 +1,80 @@
+/* package protected */ static class %1$s%2$s
+  extends org.hamcrest.TypeSafeDiagnosingMatcher<%3$s> 
+  implements %4$s {
+
+  private final _PARENT _parentBuilder;
+
+  private final java.util.List<org.hamcrest.Matcher> nextMatchers = new java.util.ArrayList<>();
+
+  private SuperClassMatcher _parent;
+  
+%6$s
+
+  public %1$s(
+        org.hamcrest.Matcher<? super %10$s> parent,
+        _PARENT parentBuilder) {
+    this._parent=new SuperClassMatcher(parent);
+    this._parentBuilder=parentBuilder;
+  }
+
+  public %1$s(org.hamcrest.Matcher<? super %10$s> parent) {
+    this._parent=new SuperClassMatcher(parent);
+    this._parentBuilder=null;
+  }
+  
+%7$s
+
+  @Override
+  protected boolean matchesSafely(%5$s actual, 
+                                  org.hamcrest.Description mismatchDescription) {
+    boolean result=true;
+
+    if(!_parent.matches(actual)) {
+      mismatchDescription.appendText("["); 
+      _parent.describeMismatch(actual,mismatchDescription); 
+      mismatchDescription.appendText("]\n");
+      
+      result=false;
+    }
+
+%8$s
+
+    for(org.hamcrest.Matcher nMatcher : nextMatchers) {
+      if(!nMatcher.matches(actual)) {
+        mismatchDescription.appendText("[object itself "); 
+        nMatcher.describeMismatch(actual,mismatchDescription); 
+        mismatchDescription.appendText("]\n");
+        result=false;
+      }
+    }
+
+    return result;
+
+  }
+
+  @Override
+  public void describeTo(org.hamcrest.Description description) {
+    description.appendText("an instance of %5$s with\n");
+
+    description.appendText("[").appendDescriptionOf(_parent).appendText("]\n");
+
+%9$s
+
+    for(org.hamcrest.Matcher nMatcher : nextMatchers) {
+      description.appendText("[object itself ").appendDescriptionOf(nMatcher).appendText("]\n");
+    }
+
+  }
+
+  @Override
+  public _PARENT end() {
+    return _parentBuilder;
+  }
+
+  @Override
+  public %4$s andWith(org.hamcrest.Matcher<? super %3$s> otherMatcher) {
+    nextMatchers.add(java.util.Objects.requireNonNull(otherMatcher,"A matcher is expected"));
+    return this;
+  }
+
+}

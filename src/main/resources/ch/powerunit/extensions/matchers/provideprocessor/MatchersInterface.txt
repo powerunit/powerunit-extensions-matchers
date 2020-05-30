@@ -1,0 +1,105 @@
+/**
+ * DSL interface for matcher on {@link %1$s %2$s} to support the build syntaxic sugar.
+ * 
+%3$s
+ *
+ */
+public static interface %4$sBuildSyntaxicSugar%5$s
+  extends org.hamcrest.Matcher<%6$s> {
+
+  /**
+   * Method that returns the matcher itself.
+   * <p>
+   * <b>This method is a syntaxic sugar that end the DSL and make clear that the matcher can't be change anymore.</b>
+   *
+   * @return the matcher
+   */
+  default org.hamcrest.Matcher<%6$s> build() {
+    return this;
+  }
+
+}
+
+/**
+ * DSL interface for matcher on {@link %1$s %2$s} to support the end build syntaxic sugar.
+ * 
+%3$s
+ * @param <_PARENT> used to reference, if necessary, a parent for this builder. By default Void is used to indicate no parent builder.
+ *
+ */
+public static interface %4$sEndSyntaxicSugar%7$s
+  extends org.hamcrest.Matcher<%6$s> {
+
+  /**
+   * Method that returns the parent builder.
+   * <p>
+   * <b>This method only works in the context of a parent builder. If the real type is Void, then nothing will be returned.</b>
+   *
+   * @return the parent builder or null if not applicable
+   */
+  _PARENT end();
+
+}
+
+
+/**
+ * Start a DSL matcher for the {@link %1$s %2$s}.
+ * 
+%3$s
+ *
+ */
+public static interface %4$s%7$s
+  extends org.hamcrest.Matcher<%6$s>,
+          %4$sBuildSyntaxicSugar%8$s,
+          %4$sEndSyntaxicSugar%9$s {
+
+%10$s
+
+  /**
+   * Add a matcher on the object itself and not on a specific field.
+   * <p>
+   * <i>This method, when used more than once, just add more matcher to the list.</i>
+   *
+   * @param otherMatcher the matcher on the object itself.
+   * @return the DSL to continue
+   */
+  %4$s%9$s andWith(org.hamcrest.Matcher<? super %6$s> otherMatcher);
+
+  /**
+   * Add a matcher on the object itself and not on a specific field, but convert the object before passing it to the matcher.
+   * <p>
+   * <i>This method, when used more than once, just add more matcher to the list.</i>
+   *
+   * @param converter the function to convert the object.
+   * @param otherMatcher the matcher on the converter object itself.
+   * @param <_TARGETOBJECT> the type of the target object
+   * @return the DSL to continue
+   */
+  default <_TARGETOBJECT> %4$s%9$s andWithAs(java.util.function.Function<%6$s ,_TARGETOBJECT> converter,org.hamcrest.Matcher<? super _TARGETOBJECT> otherMatcher) {
+    return andWith(asFeatureMatcher(" <object is converted> ",converter,otherMatcher));
+  }
+
+  /**
+   * Method that return the matcher itself and accept one single Matcher on the object itself.
+   * <p>
+   * <b>This method is a syntaxic sugar that end the DSL and make clear that the matcher can't be change anymore.</b>
+   *
+   * @param otherMatcher the matcher on the object itself.
+   * @return the matcher
+   */
+  default org.hamcrest.Matcher<%6$s> buildWith(org.hamcrest.Matcher<? super %6$s> otherMatcher) {
+    return andWith(otherMatcher);
+  }
+
+  /**
+   * Method that return the parent builder and accept one single Matcher on the object itself.
+   * <p>
+   * <b>This method only works in the context of a parent builder. If the real type is Void, then nothing will be returned.</b>
+   *
+   * @param otherMatcher the matcher on the object itself.
+   * @return the parent builder or null if not applicable
+   */
+  default _PARENT endWith(org.hamcrest.Matcher<? super %6$s> otherMatcher){
+    return andWith(otherMatcher).end();
+  }
+}

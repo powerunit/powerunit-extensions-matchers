@@ -1,5 +1,7 @@
 Detection of Matcher for Class
 
+* General concepts
+
  <Since version 0.2.0, the detection of link between classes has been enhanced.>
  
  Conceptually, for every fields or parent classes, the annotation processor will try to find a Matcher to compare the values. This is done by detecting the relation
@@ -20,7 +22,7 @@ Detection of Matcher for Class
  
  []
  
- Now, we have a second maven project, which uses the first one as dependency, with have the following annotated classes :
+ Now, we have a second maven project, which uses the first one as dependency, we have the following annotated classes :
  
  * <<<Pojo4>>> which extends <<<Pojo1>>>
  
@@ -48,3 +50,33 @@ Detection of Matcher for Class
    
    * The method <<<pojo4WithSameValue()>>> start a DSL to compare for same value. The <<<pojo6WithSameValue()>>> from <<<Pojo1Matchers>>> will be used for the control
      of <<<field1>>>.
+
+     
+   []
+   
+ []
+ 
+* Limitations
+
+** Circular references
+
+ It is possible to create classes that may produce <<<StackOverflowError>>> for the <<<hasSameValue>>> matcher. This is the case with bidirectional class references or 
+ as a more generic case, circular references. It is almost impossible to detect these case at compile time ; For example, event if a class <<<A>>> has a field of class 
+ <<<B>>> and class <<<B>>> a field of class <<<A>>>, it is not possible to assume we have a bidirectional referencing (the issue is only when an instance of <<<A>>> 
+ references a specific instance of <<<B>>> and this instance of <<<B>>> references the previous instance of <<<A>>>. 
+ 
+*** Handling this case with version 0.2.0
+
+ In version 0.2.0, there are two different ways to manage these link :
+ 
+ * At compile time, based on the structure on the link, it is possible to annotated one of the referencing fields with <<<@IgnoreInMatcher>>>. The field will be 
+   ignored which will break the circular reference.
+ * At runtime time, modify manually (using the DSL), the returned matcher, to break the cycle.
+
+*** Handling this case with version 0.3.0
+
+ Since version 0.3.0, an additional <<<hasSameValue>>> methods is available to specify fields (based on field name) to be ignored. The two previous options are still
+ available, but it is also possible to use this ignore parameter. It is possible to chain the ignore by using a syntax like <<<fieldName.fieldNameChildren>>>. 
+ 
+ <In case one of the referenced fields or the super class use an old version of the generated matchers and doesn't support the ignore feature, this feature is also
+  not available on fields of the referenced fields or on fields of the super class.>

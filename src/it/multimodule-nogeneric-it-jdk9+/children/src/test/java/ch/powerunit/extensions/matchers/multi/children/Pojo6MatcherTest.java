@@ -70,6 +70,15 @@ public class Pojo6MatcherTest implements TestSuite {
 							value("").withMessage("was \"\""), 
 							value(new Pojo6()).withMessage("[field1 was null]\n"),
 							value(new Pojo6(new Pojo1())).withMessage("[field1 [msg1 was null]\n]\n"),
-							value(new Pojo6(new Pojo1("t"))).withMessage("[field1 [msg1 was \"t\"]\n]\n")));
+							value(new Pojo6(new Pojo1("t"))).withMessage("[field1 [msg1 was \"t\"]\n]\n")),
+					matcher((Pojo6Matchers.Pojo6MatcherImpl) Pojo6Matchers.pojo6WithSameValue(new Pojo6(new Pojo1("a")),"field1.msg1"))
+					.describedAs("an instance of ch.powerunit.extensions.matchers.multi.children.Pojo6 with\n[field1 an instance of ch.powerunit.extensions.matchers.multi.parent.Pojo1 with\n[msg1 ANYTHING]\n]\n")
+					.nullRejected("was null")
+					.accepting(
+							new Pojo6(new Pojo1("a")),
+							new Pojo6(new Pojo1("b")))
+					.rejecting(
+							value("").withMessage("was \"\""), 
+							value(new Pojo6()).withMessage("[field1 was null]\n")));
 	//@formatter:on
 }

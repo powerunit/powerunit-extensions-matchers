@@ -70,7 +70,7 @@ public abstract class AbstractJacksonAutomatedExtension extends AutomatedExtensi
 				.filter(f -> f instanceof DefaultFieldDescription).map(DefaultFieldDescription.class::cast)
 				.filter(f -> isAssignableWithErasure(f.getMirror().getFieldTypeAsTypeElement(),
 						getTargetElement().asType()))
-				.map(this::acceptJsonMatcher).orElse(Collections.emptyList());
+				.map(this::acceptJsonMatcher).orElseGet(Collections::emptyList);
 	}
 
 	/*

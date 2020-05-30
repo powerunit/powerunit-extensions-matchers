@@ -60,12 +60,13 @@ public interface TestSuiteSupport extends TestSuite {
 		when(fullObjectName.toString()).thenReturn("ch.powerunit.extensions.matchers.ProvideMatchers");
 		Elements elements = mock(Elements.class);
 		ProcessingEnvironment processingEnv = mock(ProcessingEnvironment.class);
+		Types types = mock(Types.class);
 		when(processingEnv.getMessager()).thenReturn(mock(Messager.class));
 		when(processingEnv.getElementUtils()).thenReturn(elements);
 		when(processingEnv.getFiler()).thenReturn(mock(Filer.class));
 		when(processingEnv.getLocale()).thenReturn(Locale.getDefault());
 		when(processingEnv.getOptions()).thenReturn(mock(Map.class));
-		when(processingEnv.getTypeUtils()).thenReturn(mock(Types.class));
+		when(processingEnv.getTypeUtils()).thenReturn(types);
 		when(processingEnv.getSourceVersion()).thenReturn(SourceVersion.RELEASE_8);
 		when(elements.getTypeElement("java.lang.Object")).thenReturn(object);
 		when(elements.getTypeElement("ch.powerunit.extensions.matchers.ProvideMatchers")).thenReturn(provide);

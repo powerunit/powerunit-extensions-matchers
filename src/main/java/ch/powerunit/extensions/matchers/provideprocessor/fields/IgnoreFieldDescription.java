@@ -19,9 +19,11 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
+import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
+
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Optional;
 
 import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.common.CommonUtils;
@@ -51,18 +53,18 @@ public final class IgnoreFieldDescription extends AbstractFieldDescription {
 
 	@Override
 	public String asMatcherField() {
-		return String.format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));",
+		return format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));",
 				getMirror().getMethodFieldName(), getFieldName(), MATCHERS,
 				"\"This field is ignored \"+" + CommonUtils.toJavaSyntax(getDescriptionForIgnoreIfApplicable()));
 	}
 
 	@Override
-	public String getFieldCopy(String lhs, String rhs) {
+	public String getFieldCopy(String lhs, String rhs, String ignore) {
 		return "/* ignored - " + getFieldName() + " */";
 	}
 
 	public String getDescriptionForIgnoreIfApplicable() {
-		return Optional.ofNullable(getFieldElement().getAnnotation(IgnoreInMatcher.class)).map(i -> i.comments())
+		return ofNullable(getFieldElement().getAnnotation(IgnoreInMatcher.class)).map(IgnoreInMatcher::comments)
 				.orElse("");
 	}
 

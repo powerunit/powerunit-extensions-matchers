@@ -38,4 +38,23 @@ public class DSLMethodTest implements TestSuite {
 		assertThat(m.asDefaultReference("target")).is(
 				"/**\n * l1\n * l2\n */\ndefault boolean isOK(java.lang.String one,java.lang.String two) {\n  return target.isOK(one,two);\n}\n");
 	}
+
+	@Test(fastFail = false)
+	public void testDSLMethodOneArgument() {
+		DSLMethod m = DSLMethod.of("boolean isOK").addOneArgument("java.lang.String", "one").withImplementation("l1")
+				.withJavadoc(new String[] { "l1", "l2" });
+		assertThat(m.asStaticImplementation())
+				.is("/**\n * l1\n * l2\n */\npublic static boolean isOK(java.lang.String one) {\n  l1\n}\n");
+		assertThat(m.asDefaultReference("target")).is(
+				"/**\n * l1\n * l2\n */\ndefault boolean isOK(java.lang.String one) {\n  return target.isOK(one);\n}\n");
+	}
+
+	@Test(fastFail = false)
+	public void testDSLMethodZeroArgument() {
+		DSLMethod m = DSLMethod.of("boolean isOK").withoutArgument().withImplementation("l1")
+				.withJavadoc(new String[] { "l1", "l2" });
+		assertThat(m.asStaticImplementation()).is("/**\n * l1\n * l2\n */\npublic static boolean isOK() {\n  l1\n}\n");
+		assertThat(m.asDefaultReference("target"))
+				.is("/**\n * l1\n * l2\n */\ndefault boolean isOK() {\n  return target.isOK();\n}\n");
+	}
 }

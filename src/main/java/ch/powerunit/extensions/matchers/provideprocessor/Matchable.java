@@ -28,6 +28,11 @@ public interface Matchable {
 
 	String getSimpleNameOfGeneratedInterfaceMatcher();
 
+	default long getCompatibility() {
+		// 0x01 : withSameValue also provides a version to ignore fields
+		return 0x01;
+	}
+
 	default String getMethodNameDSLWithSameValue() {
 		return getMethodShortClassName() + "WithSameValue";
 	}
@@ -40,7 +45,12 @@ public interface Matchable {
 		return getFullyQualifiedNameOfGeneratedClass() + (hasReference ? "::" : ".") + getMethodNameDSLWithSameValue();
 	}
 
-	static Matchable of(String fullName, String methodName, String interfaceName, boolean hasWithSameValue) {
+	default boolean supportIgnore() {
+		return (getCompatibility() & 0x01) == 0x01;
+	}
+
+	static Matchable of(String fullName, String methodName, String interfaceName, boolean hasWithSameValue,
+			long compatibility) {
 		return new Matchable() {
 
 			@Override
@@ -61,6 +71,11 @@ public interface Matchable {
 			@Override
 			public String getFullyQualifiedNameOfGeneratedClass() {
 				return fullName;
+			}
+
+			@Override
+			public long getCompatibility() {
+				return compatibility;
 			}
 		};
 	}
