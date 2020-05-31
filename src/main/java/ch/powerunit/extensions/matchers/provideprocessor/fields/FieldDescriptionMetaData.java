@@ -20,6 +20,7 @@
 package ch.powerunit.extensions.matchers.provideprocessor.fields;
 
 import static ch.powerunit.extensions.matchers.common.CommonUtils.toJavaSyntax;
+import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
 import javax.lang.model.element.Element;
@@ -28,14 +29,13 @@ import javax.lang.model.type.TypeMirror;
 
 import ch.powerunit.extensions.matchers.provideprocessor.Matchable;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.provideprocessor.helper.FeatureMatcher;
 
 public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionContainerMetaData {
 
 	public static final String SEE_TEXT_FOR_IS_MATCHER = "org.hamcrest.Matchers#is(java.lang.Object)";
 	public static final String SEE_TEXT_FOR_HAMCREST_MATCHER = "org.hamcrest.Matchers The main class from hamcrest that provides default matchers.";
 	public static final String MATCHERS = "org.hamcrest.Matchers";
-	public static final String MAIN_FIELD_COPY = "%1$s.%2$s(%3$s)";
-	public static final String IS_MATCHER = "(org.hamcrest.Matcher)" + MATCHERS + ".is((java.lang.Object)%1$s.%2$s)";
 
 	protected final String generic;
 	protected final String defaultReturnMethod;
@@ -59,36 +59,26 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 	}
 
 	public String getMatcherForField() {
-		return String.format(
-				"private static class %1$sMatcher%2$s extends org.hamcrest.FeatureMatcher<%3$s%4$s,%5$s> {\n  public %1$sMatcher(org.hamcrest.Matcher<? super %5$s> matcher) {\n    super(matcher,\"%6$s\",\"%6$s\");\n  }\n  protected %5$s featureValueOf(%3$s%4$s actual) {\n    return actual.%7$s;\n  }\n}\n",
-				mirror.getMethodFieldName(), containingElementMirror.getFullGeneric(),
+		return new FeatureMatcher(mirror.getMethodFieldName(), containingElementMirror.getFullGeneric(),
 				getFullyQualifiedNameEnclosingClassOfField(), containingElementMirror.getGeneric(), getFieldType(),
-				getFieldName(), getFieldAccessor());
+				getFieldName(), "actual." + getFieldAccessor()).toString();
 	}
 
-	public String generateBaseFieldCopy(String lhs, String innerMatcher) {
-		return String.format(MAIN_FIELD_COPY, lhs, getFieldName(), innerMatcher);
-	}
-
-	public String getFieldCopyDefault(String lhs, String rhs) {
-		return generateBaseFieldCopy(lhs, String.format(IS_MATCHER, rhs, getFieldAccessor()));
-	}
-
-	public String getFieldCopySameRound(String lhs, String rhs, Matchable target) {
-		String fieldAccessor = getFieldAccessor();
-		return generateBaseFieldCopy(lhs, rhs + "." + fieldAccessor + "==null?" + MATCHERS + ".nullValue():"
-				+ target.getWithSameValue(false) + "(" + rhs + "." + fieldAccessor + ")");
-	}
-
-	public String getFieldCopy(String lhs, String rhs) {
+	public String getFieldCopy(String lhs, String rhs, String ignore) {
 		return mirror.getMatchable(containingElementMirror.getRoundMirror())
 				.filter(a -> mirror.getFieldTypeAsTypeElement().getTypeParameters().isEmpty())
-				.filter(Matchable::hasWithSameValue).map(p -> getFieldCopySameRound(lhs, rhs, p))
-				.orElse(getFieldCopyDefault(lhs, rhs));
+				.filter(Matchable::hasWithSameValue)
+				.map(p -> format(
+						"%1$s.%6$s(%2$s.%3$s == null ? org.hamcrest.Matchers.nullValue() : %4$s(%2$s.%3$s%5$s));", lhs,
+						rhs, getFieldAccessor(), p.getWithSameValue(false), p.supportIgnore() ? ignore : "",
+						getFieldName()))
+				.orElseGet(() -> format(
+						"%1$s.%4$s((org.hamcrest.Matcher)org.hamcrest.Matchers.is((java.lang.Object)%2$s.%3$s));", lhs,
+						rhs, getFieldAccessor(), getFieldName()));
 	}
 
 	public String asMatchesSafely() {
-		return String.format(
+		return format(
 				"if(!%1$s.matches(actual)) {\n  mismatchDescription.appendText(\"[\"); %1$s.describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\"]\\n\");\n  result=false;\n}",
 				getFieldName());
 	}
@@ -98,8 +88,8 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 	}
 
 	public String asMatcherField() {
-		return String.format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));",
-				mirror.getMethodFieldName(), getFieldName(), MATCHERS, "");
+		return format("private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));", mirror.getMethodFieldName(),
+				getFieldName(), MATCHERS, "");
 	}
 
 	public String getFullyQualifiedNameEnclosingClassOfField() {

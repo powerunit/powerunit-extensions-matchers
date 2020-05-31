@@ -42,43 +42,8 @@ final class NameExtractorVisitor extends AbstractTypeKindVisitor<Optional<String
 	}
 
 	@Override
-	public Optional<String> visitPrimitiveAsBoolean(PrimitiveType t, Boolean asPrimitif) {
-		return of((asPrimitif) ? "boolean" : "Boolean");
-	}
-
-	@Override
-	public Optional<String> visitPrimitiveAsByte(PrimitiveType t, Boolean asPrimitif) {
-		return of((asPrimitif) ? "byte" : "Byte");
-	}
-
-	@Override
-	public Optional<String> visitPrimitiveAsShort(PrimitiveType t, Boolean asPrimitif) {
-		return of((asPrimitif) ? "short" : "Short");
-	}
-
-	@Override
-	public Optional<String> visitPrimitiveAsInt(PrimitiveType t, Boolean asPrimitif) {
-		return of((asPrimitif) ? "int" : "Integer");
-	}
-
-	@Override
-	public Optional<String> visitPrimitiveAsLong(PrimitiveType t, Boolean asPrimitif) {
-		return of((asPrimitif) ? "long" : "Long");
-	}
-
-	@Override
-	public Optional<String> visitPrimitiveAsChar(PrimitiveType t, Boolean asPrimitif) {
-		return of((asPrimitif) ? "char" : "Character");
-	}
-
-	@Override
-	public Optional<String> visitPrimitiveAsFloat(PrimitiveType t, Boolean asPrimitif) {
-		return of((asPrimitif) ? "float" : "Float");
-	}
-
-	@Override
-	public Optional<String> visitPrimitiveAsDouble(PrimitiveType t, Boolean asPrimitif) {
-		return of((asPrimitif) ? "double" : "Double");
+	public Optional<String> visitPrimitive(PrimitiveType t, Boolean asPrimitif) {
+		return of(asPrimitif ? t.toString() : getProcessingEnv().getTypeUtils().boxedClass(t).toString());
 	}
 
 	@Override

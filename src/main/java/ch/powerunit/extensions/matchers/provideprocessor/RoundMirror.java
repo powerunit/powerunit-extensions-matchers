@@ -157,7 +157,8 @@ public class RoundMirror extends AbstractRoundMirrorReferenceToProcessingEnv {
 		String withSameValue = shortMethodClassName + "WithSameValue";
 		boolean hasSameValue = methodsIn(guestMatcherEnclosed).stream().filter(t -> isSimpleName(t, withSameValue))
 				.anyMatch(this::isStatic);
-		return Matchable.of(getQualifiedName(guestMatcher), shortMethodClassName, guestMatcherName, hasSameValue);
+		return Matchable.of(getQualifiedName(guestMatcher), shortMethodClassName, guestMatcherName, hasSameValue,
+				compatibilityField.get());
 	}
 
 	public AnnotationMirror getProvideMatchersAnnotation(Element e) {

@@ -1,0 +1,9 @@
+private static class %1$sMatcher%2$s extends org.hamcrest.FeatureMatcher<%3$s%4$s,%5$s> {
+  public %1$sMatcher(org.hamcrest.Matcher<? super %5$s> matcher) {
+    super(matcher,"%6$s","%6$s");
+  }
+
+  protected %5$s featureValueOf(%3$s%4$s actual) {
+    return %7$s;
+  }
+}

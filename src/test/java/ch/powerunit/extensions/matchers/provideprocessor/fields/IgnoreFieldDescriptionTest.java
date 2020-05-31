@@ -100,7 +100,7 @@ public class IgnoreFieldDescriptionTest implements TestSuite {
 
 	@Test
 	public void testGetFieldCopy() {
-		String result = new IgnoreFieldDescription(element, field).getFieldCopy("lhs", "rhs");
+		String result = new IgnoreFieldDescription(element, field).getFieldCopy("lhs", "rhs","");
 		assertThat(result).is("/* ignored - fn */");
 	}
 

@@ -85,24 +85,24 @@ public class CollectionFieldDescription extends DefaultFieldDescription {
 	}
 
 	@Override
-	public String getFieldCopy(String lhs, String rhs) {
+	public String getFieldCopy(String lhs, String rhs, String ignore) {
 		if (!"".equals(generic)) {
 			return getFieldCopyForList(lhs, rhs);
 		}
-		return super.getFieldCopy(lhs, rhs);
+		return super.getFieldCopy(lhs, rhs, ignore);
 	}
 
-	public String getFieldCopyForList(String lhs, String rhs) {
+	protected String getFieldCopyForList(String lhs, String rhs) {
 		String fieldAccessor = getFieldAccessor();
 		String fieldName = getFieldName();
-		return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + fieldName + "(" + MATCHERS
-				+ ".nullValue()); } else if (" + rhs + "." + fieldAccessor + ".isEmpty()) {" + lhs + "." + fieldName
-				+ "IsEmptyIterable(); } else {" + lhs + "." + fieldName + "Contains(" + rhs + "." + fieldAccessor
-				+ ".stream().map(" + generateMatcherBuilderReferenceFor(generic)
-				+ ").collect(java.util.stream.Collectors.toList())); }";
+		return "if(" + rhs + "." + fieldAccessor + "==null) {\n  " + lhs + "." + fieldName + "(" + MATCHERS
+				+ ".nullValue());\n} else if (" + rhs + "." + fieldAccessor + ".isEmpty()) {\n  " + lhs + "."
+				+ fieldName + "IsEmptyIterable();\n} else {\n  " + lhs + "." + fieldName + "Contains(" + rhs + "."
+				+ fieldAccessor + ".stream().map(" + generateMatcherBuilderReferenceFor(generic)
+				+ ").collect(java.util.stream.Collectors.toList()));\n}";
 	}
 
-	public String generateMatcherBuilderReferenceFor(String generic) {
+	protected String generateMatcherBuilderReferenceFor(String generic) {
 		return ofNullable(getByName(generic)).filter(Matchable::hasWithSameValue).map(t -> t.getWithSameValue(true))
 				.orElse(MATCHERS + "::is");
 	}

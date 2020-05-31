@@ -18,7 +18,7 @@ before_install:
  - mkdir -p $HOME/.script
  - curl https://report.ci/annotate.py -o $HOME/.script/annotate.py --retry 5
  - curl https://report.ci/upload.py -o $HOME/.script/upload.py  --retry 5
- - curl https://codecov.io/bash -o $HOME/.script/codecov.bash --retry 5
+ - curl https://codecov.io/bash -o $HOME/.script/codecov.bash --retry 5 -k
  - chmod +x $HOME/.script/codecov.bash
  - chmod +x .travisci/*.sh
 install:

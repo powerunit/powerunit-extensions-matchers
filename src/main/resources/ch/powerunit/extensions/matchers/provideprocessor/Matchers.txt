@@ -1,0 +1,45 @@
+package %1$s;
+
+/**
+ * This class provides matchers for the class {@link %2$s}.
+ *
+ * @see %2$s The class for which matchers are provided.
+ */
+%3$s
+public final class %4$s {
+
+  private %4$s() {}
+  
+  //
+  // ---------------------------------------------------------------------------
+  // Matchers for each fields
+  
+%5$s
+
+  //
+  // ---------------------------------------------------------------------------
+  // Public interface (Builder) for the matchers
+
+%6$s
+
+  //
+  // ---------------------------------------------------------------------------
+  // Builder implementation
+
+
+%7$s
+
+  //
+  // ---------------------------------------------------------------------------
+  // DSL methods to start a matcher
+
+
+%8$s
+
+  // 
+  // ---------------------------------------------------------------------------
+  // METADATA
+
+%9$s
+
+}

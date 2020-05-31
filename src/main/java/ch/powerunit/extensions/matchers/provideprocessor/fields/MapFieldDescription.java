@@ -54,7 +54,7 @@ public class MapFieldDescription extends DefaultFieldDescription {
 							.map(o -> Optional.ofNullable(getByName(o)).filter(Matchable::hasWithSameValue)
 									.map(t -> t.getWithSameValue(false)).orElse(MATCHERS + ".is"))
 							.toArray())
-					.orElse(new String[] { MATCHERS + ".is", MATCHERS + ".is" });
+					.orElseGet(()->new String[] { MATCHERS + ".is", MATCHERS + ".is" });
 
 			tmp.add(generateHasSameValue(fieldType, matchers[0].toString(), matchers[1].toString()));
 		}
@@ -73,28 +73,15 @@ public class MapFieldDescription extends DefaultFieldDescription {
 	}
 
 	@Override
-	public String getMatcherForField() {
-		String matcher = super.getMatcherForField();
-		if (!"".equals(generic)) {
-			String localGeneric = generic.contains("?") ? "" : "<" + generic + ">";
-			matcher += "\n" + String.format(
-					"private static class %1$sMatcherSameValue%2$s extends org.hamcrest.FeatureMatcher<%3$s,%4$s> {\n  public %1$sMatcherSameValue(org.hamcrest.Matcher<? super %4$s> matcher) {\n    super(matcher,\"%5$s\",\"%5$s\");\n  }\n  protected %4$s featureValueOf(%3$s actual) {\n    return (java.util.Set)actual.entrySet();\n  }\n}\n",
-					mirror.getMethodFieldName(), containingElementMirror.getFullGeneric(), getFieldType(),
-					"java.util.Set<java.util.Map.Entry" + localGeneric + ">", " [entries of] ");
-		}
-		return matcher;
-	}
-
-	@Override
-	public String getFieldCopy(String lhs, String rhs) {
+	public String getFieldCopy(String lhs, String rhs, String ignore) {
 		if (!"".equals(generic)) {
 			String fieldAccessor = getFieldAccessor();
 			String fieldName = getFieldName();
-			return "if(" + rhs + "." + fieldAccessor + "==null) {" + lhs + "." + fieldName + "(" + MATCHERS
-					+ ".nullValue()); } else {" + lhs + "." + fieldName + "HasSameValues(" + rhs + "." + fieldAccessor
-					+ ");}";
+			return "if(" + rhs + "." + fieldAccessor + "==null) {\n  " + lhs + "." + fieldName + "(" + MATCHERS
+					+ ".nullValue());\n} else {\n  " + lhs + "." + fieldName + "HasSameValues(" + rhs + "."
+					+ fieldAccessor + ");\n}";
 		}
-		return super.getFieldCopy(lhs, rhs);
+		return super.getFieldCopy(lhs, rhs, ignore);
 
 	}
 

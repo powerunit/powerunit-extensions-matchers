@@ -327,6 +327,7 @@
 					<extraArtifacts>
 						<extraArtifact>org.hamcrest:hamcrest:2.2:jar</extraArtifact>
 						<extraArtifact>org.hamcrest:hamcrest:2.1:jar</extraArtifact>
+						<extraArtifact>ch.powerunit.extensions:powerunit-extensions-matchers:0.2.0:jar</extraArtifact>
 					</extraArtifacts>
 					<writeJunitReport>true</writeJunitReport>
 					<junitPackageName>ch.powerunit.extensions.matchers</junitPackageName>

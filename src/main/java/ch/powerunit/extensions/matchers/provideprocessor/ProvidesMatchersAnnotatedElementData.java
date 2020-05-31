@@ -23,7 +23,7 @@ import javax.tools.Diagnostic.Kind;
 
 @FunctionalInterface
 public interface ProvidesMatchersAnnotatedElementData extends RoundMirrorSupport {
-	ProvidesMatchersAnnotatedElementFieldMatcherMirror getFullData();
+	ProvidesMatchersAnnotatedElementMatcherMirror getFullData();
 
 	default RoundMirror getRoundMirror() {
 		return getFullData().getRoundMirror();

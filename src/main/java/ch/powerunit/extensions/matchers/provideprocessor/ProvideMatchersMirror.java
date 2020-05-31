@@ -20,7 +20,9 @@
 package ch.powerunit.extensions.matchers.provideprocessor;
 
 import static ch.powerunit.extensions.matchers.common.CommonUtils.asStandardMethodName;
+import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 import java.util.Collection;
@@ -37,10 +39,6 @@ import ch.powerunit.extensions.matchers.provideprocessor.extension.DSLExtension;
 public class ProvideMatchersMirror extends ProvideMatchersAnnotationMirror implements Matchable {
 
 	private static final String DEFAULT_PARAM_PARENT = " * @param <_PARENT> used to reference, if necessary, a parent for this builder. By default Void is used an indicate no parent builder.\n";
-
-	public static final String JAVADOC_WARNING_SYNTAXIC_SUGAR_NO_CHANGE_ANYMORE = "<b>This method is a syntaxic sugar that end the DSL and make clear that the matcher can't be change anymore.</b>";
-
-	public static final String JAVADOC_WARNING_PARENT_MAY_BE_VOID = "<b>This method only works in the context of a parent builder. If the real type is Void, then nothing will be returned.</b>";
 
 	protected final String simpleNameOfGeneratedClass;
 	protected final String packageNameOfGeneratedClass;
@@ -102,36 +100,15 @@ public class ProvideMatchersMirror extends ProvideMatchersAnnotationMirror imple
 	}
 
 	private String paramToJavadoc(Optional<String> param) {
-		return param.map(asJavadocFormat(" * @param ")).orElse("");
+		return param.map(p -> stream(p.split("\n"))).map(s -> s.map(asJavadocFormat(" * @param ")))
+				.map(s -> s.collect(joining())).orElse("");
 	}
 
-	protected String generateJavaDocWithoutParamNeitherParent(String description, String moreDetails,
-			Optional<String> param, Optional<String> returnDescription) {
-		return String.format("/**\n * %1$s.\n * <p>\n * %2$s\n%3$s%4$s */\n", description, moreDetails,
-				paramToJavadoc(param), returnDescription.map(asJavadocFormat(" * @return ")).orElse(""));
-	}
-
-	protected String generateDefaultJavaDoc() {
-		return String.format("/**\n * %1$s.\n%2$s * \n%3$s * \n */\n", getDefaultDescriptionForDsl(), getParamComment(),
-				DEFAULT_PARAM_PARENT);
-	}
-
-	protected String generateDefaultJavaDoc(Optional<String> moreDetails, Optional<String> param,
-			String returnDescription, boolean withParent) {
+	public String generateDefaultJavaDoc(Optional<String> moreDetails, Optional<String> param, String returnDescription,
+			boolean withParent) {
 		return String.format("/**\n * %1$s.\n%2$s%3$s%4$s * \n%5$s * @return %6$s\n */\n",
 				getDefaultDescriptionForDsl(), moreDetails.map(asJavadocFormat(" * <p>\n * ")).orElse(""),
 				paramToJavadoc(param), getParamComment(), withParent ? DEFAULT_PARAM_PARENT : "", returnDescription);
-	}
-
-	protected String generateJavaDoc(String description, boolean withParent) {
-		return String.format("/**\n * %1$s.\n%2$s * \n%3$s */\n", description, getParamComment(),
-				withParent ? DEFAULT_PARAM_PARENT : "");
-	}
-
-	public String generateMainJavaDoc() {
-		return String.format(
-				"/**\n* This class provides matchers for the class {@link %1$s}.\n * \n * @see %1$s The class for which matchers are provided.\n */\n",
-				getFullyQualifiedNameOfClassAnnotated());
 	}
 
 	private String getDefaultDescriptionForDsl() {

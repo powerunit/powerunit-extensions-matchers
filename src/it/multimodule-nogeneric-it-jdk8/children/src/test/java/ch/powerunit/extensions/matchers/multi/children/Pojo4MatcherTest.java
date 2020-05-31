@@ -71,6 +71,27 @@ public class Pojo4MatcherTest implements TestSuite {
 							value("").withMessage("was \"\""), 
 							value(new Pojo4()).withMessage("[parent [msg1 was null]\n]\n[msg2 was null]\n"),
 							value(new Pojo4("11")).withMessage("[parent [msg1 was null]\n]\n[msg2 was \"11\"]\n"),
-							value(new Pojo4("z","x")).withMessage("[parent [msg1 was \"z\"]\n]\n")));
+							value(new Pojo4("z","x")).withMessage("[parent [msg1 was \"z\"]\n]\n")),
+					matcher((Pojo4Matchers.Pojo4MatcherImpl) Pojo4Matchers.pojo4WithSameValue(new Pojo4("y","x"),"msg2"))
+					.describedAs("an instance of ch.powerunit.extensions.matchers.multi.children.Pojo4 with\n[parent an instance of ch.powerunit.extensions.matchers.multi.parent.Pojo1 with\n[msg1 is \"y\"]\n]\n[msg2 ANYTHING]\n")
+					.nullRejected("was null")
+					.accepting(
+							new Pojo4("y","x"),
+							new Pojo4("y","x2"))
+					.rejecting(
+							value("").withMessage("was \"\""), 
+							value(new Pojo4()).withMessage("[parent [msg1 was null]\n]\n"),
+							value(new Pojo4("11")).withMessage("[parent [msg1 was null]\n]\n"),
+							value(new Pojo4("z","x")).withMessage("[parent [msg1 was \"z\"]\n]\n")),
+					matcher((Pojo4Matchers.Pojo4MatcherImpl) Pojo4Matchers.pojo4WithSameValue(new Pojo4("y","x"),"msg1"))
+					.describedAs("an instance of ch.powerunit.extensions.matchers.multi.children.Pojo4 with\n[parent an instance of ch.powerunit.extensions.matchers.multi.parent.Pojo1 with\n[msg1 ANYTHING]\n]\n[msg2 is \"x\"]\n")
+					.nullRejected("was null")
+					.accepting(
+							new Pojo4("y","x"),
+							new Pojo4("y2","x"))
+					.rejecting(
+							value("").withMessage("was \"\""), 
+							value(new Pojo4()).withMessage("[msg2 was null]\n"),
+							value(new Pojo4("11")).withMessage("[msg2 was \"11\"]\n")));
 	//@formatter:on
 }
