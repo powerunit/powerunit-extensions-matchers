@@ -24,6 +24,7 @@ import static ch.powerunit.extensions.matchers.common.CommonUtils.generateGenera
 import static ch.powerunit.extensions.matchers.common.CommonUtils.traceErrorAndDump;
 import static ch.powerunit.extensions.matchers.common.FileObjectHelper.processFileWithIOExceptionAndResult;
 import static ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod.of;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -50,7 +51,7 @@ import ch.powerunit.extensions.matchers.provideprocessor.helper.ProvidesMatchers
 
 public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnnotatedElementMatcherMirror {
 
-	private final Collection<Supplier<DSLMethod>> dslProvider;
+	private final Collection<Supplier<Collection<DSLMethod>>> dslProvider;
 
 	private static final String MATCHER_FORMAT = RessourceLoaderHelper
 			.loadRessource(ProvidesMatchersAnnotatedElementMirror.class, "Matchers.txt");
@@ -58,23 +59,30 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	private static final ListJoining<DSLMethod> JOIN_DSL_METHOD = ListJoining
 			.joinWithMapperAndDelimiter(m -> addPrefix("  ", m.asStaticImplementation()), "\n");
 
+	private static Supplier<Collection<DSLMethod>> asCollection(Supplier<DSLMethod> input) {
+		return () -> singletonList(input.get());
+	}
+
 	public ProvidesMatchersAnnotatedElementMirror(TypeElement typeElement, RoundMirror roundMirror) {
 		super(typeElement, roundMirror);
-		List<Supplier<DSLMethod>> tmp = new ArrayList<>(
-				Arrays.asList(this::generateDefaultDSLStarter, this::generateDefaultForChainingDSLStarter));
+		List<Supplier<Collection<DSLMethod>>> tmp = new ArrayList<>(
+				Arrays.asList(asCollection(this::generateDefaultDSLStarter),
+						asCollection(this::generateDefaultForChainingDSLStarter)));
 		if (hasSuperClass()) {
-			tmp.add(this::generateParentDSLStarter);
-			tmp.addAll(ProvidesMatchersWithSameValueHelper.generateParentValueDSLStarter(this));
+			tmp.add(asCollection(this::generateParentDSLStarter));
+			tmp.add(() -> ProvidesMatchersWithSameValueHelper.generateParentValueDSLStarter(this));
 			if (((TypeElement) roundMirror.getTypeUtils().asElement(element.getSuperclass())).getTypeParameters()
 					.isEmpty()) {
-				tmp.add(this::generateParentInSameRoundWithChaningDSLStarter);
+				tmp.add(asCollection(this::generateParentInSameRoundWithChaningDSLStarter));
 			}
 		} else {
-			tmp.addAll(ProvidesMatchersWithSameValueHelper.generateNoParentValueDSLStarter(this));
+			tmp.add(() -> ProvidesMatchersWithSameValueHelper.generateNoParentValueDSLStarter(this));
 		}
 		tmp.addAll(ofNullable(getDSLExtension()).orElseGet(Collections::emptyList).stream()
-				.map(t -> t.getDSLMethodFor(() -> this)).flatMap(Collection::stream).collect(toList()));
-		tmp.addAll(roundMirror.getDSLMethodFor(() -> this));
+				.map(t -> t.getDSLMethodFor(() -> this)).flatMap(Collection::stream)
+				.map(ProvidesMatchersAnnotatedElementMirror::asCollection).collect(toList()));
+		tmp.addAll(roundMirror.getDSLMethodFor(() -> this).stream()
+				.map(ProvidesMatchersAnnotatedElementMirror::asCollection).collect(toList()));
 		this.dslProvider = unmodifiableList(tmp);
 	}
 
@@ -95,7 +103,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	}
 
 	public Collection<DSLMethod> generateDSLStarter() {
-		return dslProvider.stream().map(Supplier::get).filter(Objects::nonNull).collect(toList());
+		return dslProvider.stream().map(Supplier::get).filter(Objects::nonNull).flatMap(Collection::stream)
+				.filter(Objects::nonNull).collect(toList());
 	}
 
 	public String getDefaultStarterBody(boolean withParentBuilder) {

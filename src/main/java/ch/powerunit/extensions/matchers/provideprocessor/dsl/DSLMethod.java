@@ -19,6 +19,8 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.dsl;
 
+import static ch.powerunit.extensions.matchers.common.ListJoining.joinWithMapper;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -37,13 +39,13 @@ import ch.powerunit.extensions.matchers.provideprocessor.dsl.lang.DSLMethodJavad
 public final class DSLMethod {
 	public static final Pattern DECLARATION_PARSER = Pattern.compile("^\\s*.*\\s+([0-9A-Za-z_]+)\\s*$");
 
-	private static final ListJoining<String[]> ARGUMENTS_JOIN = ListJoining
-			.joinWithMapper((String a[]) -> a[0] + " " + a[1]).withCommaDelimiter().withPrefixAndSuffix("(", ")");
-
-	private static final ListJoining<String[]> ARGUMENTNAMES_JOIN = ListJoining.joinWithMapper((String a[]) -> a[1])
+	private static final ListJoining<String[]> ARGUMENTS_JOIN = joinWithMapper((String a[]) -> a[0] + " " + a[1])
 			.withCommaDelimiter().withPrefixAndSuffix("(", ")");
 
-	private static final ListJoining<String> IMPLEMENTATION_JOIN = ListJoining.joinWithMapper((String s) -> "  " + s)
+	private static final ListJoining<String[]> ARGUMENTNAMES_JOIN = joinWithMapper((String a[]) -> a[1])
+			.withCommaDelimiter().withPrefixAndSuffix("(", ")");
+
+	private static final ListJoining<String> IMPLEMENTATION_JOIN = joinWithMapper((String s) -> "  " + s)
 			.withDelimiter("\n").withPrefixAndSuffix("", "\n");
 
 	private final String implementation;

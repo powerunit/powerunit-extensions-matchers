@@ -67,16 +67,19 @@ Detection of Matcher for Class
  
 *** Handling this case with version 0.2.0
 
- In version 0.2.0, there are two different ways to manage these link :
+ In version 0.2.0, the easy way to break the cycle is to :
  
  * At compile time, based on the structure on the link, it is possible to annotated one of the referencing fields with <<<@IgnoreInMatcher>>>. The field will be 
    ignored which will break the circular reference.
- * At runtime time, modify manually (using the DSL), the returned matcher, to break the cycle.
 
 *** Handling this case with version 0.3.0
 
- Since version 0.3.0, an additional <<<hasSameValue>>> methods is available to specify fields (based on field name) to be ignored. The two previous options are still
+ Since version 0.3.0, an additional <<<hasSameValue>>> methods is available to specify fields (based on field name) to be ignored. The previous option is still
  available, but it is also possible to use this ignore parameter. It is possible to chain the ignore by using a syntax like <<<fieldName.fieldNameChildren>>>. 
  
  <In case one of the referenced fields or the super class use an old version of the generated matchers and doesn't support the ignore feature, this feature is also
-  not available on fields of the referenced fields or on fields of the super class.>
+ not available on fields of the referenced fields or on fields of the super class.>
+  
+ Since version 0.3.0, the generated matchers try to detect the cycle. The <<<hasSameValue>>> methods may detect the cycle and break it by replacing the deep reference 
+ with a <<<sameInstance>>> Matcher. This feature is not able to detect cycle involving <<<Map>>>, <<<Collection>>>, <<<Optional>>> or <<<Array>>>.
+ 
