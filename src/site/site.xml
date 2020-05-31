@@ -25,8 +25,8 @@
           img="https://travis-ci.org/powerunit/powerunit-extensions-matchers.svg?branch=master"/>
 	<logo name="Vulnerability" href="https://snyk.io/test/github/powerunit/powerunit-extensions-matchers/badge.svg?targetFile=pom.xml"
 	      img="https://snyk.io/test/github/powerunit/powerunit-extensions-matchers/badge.svg?targetFile=pom.xml"/>          
-    <logo name="Codacy" href="https://www.codacy.com/app/mathieu.boretti/powerunit-extensions-matchers?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=powerunit/powerunit-extensions-matchers&amp;utm_campaign=Badge_Grades"
-          img="https://api.codacy.com/project/badge/Grade/54e6f34a650147e48b1864a420695a1c"/>
+    <logo name="Codacy" href="https://www.codacy.com/gh/powerunit/powerunit-extensions-matchers?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=powerunit/powerunit-extensions-matchers&amp;utm_campaign=Badge_Grade"
+          img="https://app.codacy.com/project/badge/Grade/244810ab50934eebb04cd1d9da7fd57c"/>
     <logo name="Codacy / Coverage" href="https://www.codacy.com/app/mathieu.boretti/powerunit-extensions-matchers?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=powerunit/powerunit-extensions-matchers&amp;utm_campaign=Badge_Coverage"
           img="https://api.codacy.com/project/badge/Coverage/54e6f34a650147e48b1864a420695a1c"/>
     <logo name="Coveralls" href="https://coveralls.io/github/powerunit/powerunit-extensions-matchers?branch=master"
