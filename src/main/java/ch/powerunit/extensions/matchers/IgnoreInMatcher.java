@@ -32,6 +32,10 @@ import java.lang.annotation.Target;
  * <p>
  * <b>With this option, the field will be marked as ignored in the resulting
  * matcher.</b>
+ * <p>
+ * <i>The annotation must be used on the public getter or the field (it this one
+ * is public). Having a public field and a public getter should be avoided as in
+ * this case it is not sure that this annotation will be detected.</i>
  * 
  * @author borettim
  * @since 0.0.7

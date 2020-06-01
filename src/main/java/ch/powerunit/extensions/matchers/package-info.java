@@ -23,6 +23,9 @@
  * annotation provider.
  * 
  * @author borettim
+ * 
+ * @see ch.powerunit.extensions.matchers.ProvideMatchers <code>@ProvideMatchers</code>&nbsp;- the annotation to be used
+ *      on class that must be processed by this annotation processor.
  *
  */
 package ch.powerunit.extensions.matchers;
