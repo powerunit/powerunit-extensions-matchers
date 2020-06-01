@@ -6,18 +6,17 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.joining;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.tools.Diagnostic.Kind;
 
+import ch.powerunit.extensions.matchers.common.RessourceLoaderHelper;
 import ch.powerunit.extensions.matchers.provideprocessor.Matchable;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
@@ -25,62 +24,67 @@ import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDes
 
 public final class ProvidesMatchersWithSameValueHelper {
 
+	private static final String HAS_SAME_VALUE_IGNORE_CYCLE = RessourceLoaderHelper
+			.loadRessource(ProvidesMatchersWithSameValueHelper.class, "DSLHasSameValueIgnoreAndCycle.txt");
+
+	private static final String JAVADOC_OTHER = "other the other object to be used as a reference.";
+
+	private static final String JAVDOC_PREVIOUS = "previous the previous object of the call stack of matcher.";
+
+	private static final String JAVADOC_IGNORE = "ignoredFields fields name that must be ignored.";
+
+	private static final String JAVADOC_OTHER_IGNORE = JAVADOC_OTHER + "\n" + JAVADOC_IGNORE;
+
+	private static final String JAVADOC_OTHER_PREVIOUS_IGNORE = JAVADOC_OTHER + "\n" + JAVDOC_PREVIOUS + "\n"
+			+ JAVADOC_IGNORE;
+
 	private ProvidesMatchersWithSameValueHelper() {
 	}
 
 	private static DSLMethod generateWithSameValueWithParentMatcherIgnoreAndCycle(
 			ProvidesMatchersAnnotatedElementMirror target, boolean hasSuper) {
-		String genericNoParent = target.getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent();
-		String simpleNameGenericNoParent = target.getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent();
-		String simpleNameGenericWithParent = target
-				.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric();
-		String argumentForParentBuilder = hasSuper
+		return of(generateHasSameValueDeclaration(target))
+				.addOneArgument(target.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(), "other")
+				.addOneArgument("java.util.Set<java.lang.Object>", "previous")
+				.addOneArgument("String...", "ignoredFields")
+				.withImplementation(asList(format(HAS_SAME_VALUE_IGNORE_CYCLE,
+						target.getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent(),
+						target.getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent(),
+						generateParentMatcher(target, hasSuper), copyFields(target)).split("\n")))
+				.withJavadoc(target.generateDefaultJavaDocWithoutDSLStarter(Optional.of(JAVADOC_OTHER_PREVIOUS_IGNORE),
+						"the DSL matcher", false));
+	}
+
+	private static String generateParentMatcher(ProvidesMatchersAnnotatedElementMirror target, boolean hasSuper) {
+		return hasSuper
 				? (target.getParentMirror()
 						.map(p -> p.getWithSameValue(false) + "(other" + (p.supportIgnore() ? ",ignoredFields" : "")
 								+ ")")
 						.orElse("org.hamcrest.Matchers.anything()"))
 				: "";
-		String javadoc = target.generateDefaultJavaDocWithoutDSLStarter(Optional.of(
-				"other the other object to be used as a reference.\nprevious the previous object of the call stack of matcher\nignoredFields fields name that must be ignored."),
-				"the DSL matcher", false);
-		List<String> lines = new ArrayList<>();
-		lines.add("java.util.Set<java.lang.Object> nPrevious = new java.util.HashSet(previous);");
-		lines.add("nPrevious.add(other);");
-		lines.add("java.util.Set<String> ignored = new java.util.HashSet<>(java.util.Arrays.asList(ignoredFields));");
-		lines.add(genericNoParent + " m=new " + simpleNameGenericNoParent + "(" + argumentForParentBuilder + ");");
-		lines.add("if (previous.stream().anyMatch(p->p==other)) {");
-		lines.add(
-				"  return m.andWith(org.hamcrest.Matchers.describedAs(\"Same instance control only. A cycle has been detected.\",org.hamcrest.Matchers.sameInstance(other)));");
-		lines.add("}");
-		target.getFields().stream().flatMap(ProvidesMatchersWithSameValueHelper::copyField).forEach(lines::add);
-		lines.add("return m;");
-		return of(generateHasSameValueDeclaration(target))
-				.withArguments(new String[][] { { simpleNameGenericWithParent, "other" },
-						{ "java.util.Set<java.lang.Object>", "previous" }, { "String...", "ignoredFields" } })
-				.withImplementation(lines).withJavadoc(javadoc);
 	}
 
-	private static Stream<String> copyField(AbstractFieldDescription f) {
+	private static String copyFields(ProvidesMatchersAnnotatedElementMirror target) {
+		return target.getFields().stream().flatMap(f -> stream(copyField(f).split("\n"))).collect(joining("\n"));
+	}
+
+	private static String copyField(AbstractFieldDescription f) {
 		String args = f.getTargetAsMatchable().filter(Matchable::supportCycleDetectionV1)
 				.map(x -> ",nPrevious,localIgnored").orElse(",localIgnored");
-		return stream(format(
+		return format(
 				"if(!ignored.contains(\"%1$s\")) {\n  String localIgnored[] = ignored.stream().filter(s->s.startsWith(\"%1$s.\")).map(s->s.replaceFirst(\"%1$s\\\\.\",\"\")).toArray(String[]::new);\n%2$s\n}",
-				f.getFieldName(), addPrefix("  ", f.getFieldCopy("m", "other", args))).split("\n"));
+				f.getFieldName(), addPrefix("  ", f.getFieldCopy("m", "other", args)));
 	}
 
 	private static DSLMethod generateWithSameValueWithParentMatcherIgnore(
 			ProvidesMatchersAnnotatedElementMirror target) {
-		String simpleNameGenericWithParent = target
-				.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric();
-		String javadoc = target.generateDefaultJavaDocWithoutDSLStarter(Optional.of(
-				"other the other object to be used as a reference.\nignoredFields fields name that must be ignored."),
-				"the DSL matcher", false);
 		return of(generateHasSameValueDeclaration(target))
-				.withArguments(
-						new String[][] { { simpleNameGenericWithParent, "other" }, { "String...", "ignoredFields" } })
+				.addOneArgument(target.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(), "other")
+				.addOneArgument("String...", "ignoredFields")
 				.withImplementation(format("return %1$s(other,java.util.Collections.emptySet(),ignoredFields);",
 						target.getMethodNameDSLWithSameValue()))
-				.withJavadoc(javadoc);
+				.withJavadoc(target.generateDefaultJavaDocWithoutDSLStarter(Optional.of(JAVADOC_OTHER_IGNORE),
+						"the DSL matcher", false));
 	}
 
 	private static DSLMethod generateWithSameValueWithParentMatcherAndNoIgnore(
@@ -89,8 +93,8 @@ public final class ProvidesMatchersWithSameValueHelper {
 				.withOneArgument(target.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(), "other")
 				.withImplementation(format("return %1$s(other,java.util.Collections.emptySet(),new String[]{});",
 						target.getMethodNameDSLWithSameValue()))
-				.withJavadoc(target.generateDefaultJavaDocWithoutDSLStarter(
-						Optional.of("other the other object to be used as a reference."), "the DSL matcher", false));
+				.withJavadoc(target.generateDefaultJavaDocWithoutDSLStarter(Optional.of(JAVADOC_OTHER),
+						"the DSL matcher", false));
 	}
 
 	private static String generateHasSameValueDeclaration(ProvidesMatchersAnnotatedElementMirror target) {

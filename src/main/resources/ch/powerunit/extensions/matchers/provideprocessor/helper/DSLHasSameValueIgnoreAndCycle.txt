@@ -1,0 +1,14 @@
+java.util.Set<java.lang.Object> nPrevious = new java.util.HashSet(previous);
+nPrevious.add(other);
+
+java.util.Set<String> ignored = new java.util.HashSet<>(java.util.Arrays.asList(ignoredFields));
+
+%1$s m=new %2$s(%3$s);
+
+if (previous.stream().anyMatch(p->p==other)) {
+  return m.andWith(org.hamcrest.Matchers.describedAs("Same instance control only. A cycle has been detected.",org.hamcrest.Matchers.sameInstance(other)));
+}
+		
+%4$s
+
+return m;
