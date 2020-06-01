@@ -81,8 +81,7 @@ public final class ProvidesMatchersWithSameValueHelper {
 		return of(generateHasSameValueDeclaration(target))
 				.addOneArgument(target.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(), "other")
 				.addOneArgument("String...", "ignoredFields")
-				.withImplementation(format("return %1$s(other,java.util.Collections.emptySet(),ignoredFields);",
-						target.getMethodNameDSLWithSameValue()))
+				.withImplementation(generateReturnOther(target, "ignoredFields"))
 				.withJavadoc(target.generateDefaultJavaDocWithoutDSLStarter(Optional.of(JAVADOC_OTHER_IGNORE),
 						"the DSL matcher", false));
 	}
@@ -91,10 +90,13 @@ public final class ProvidesMatchersWithSameValueHelper {
 			ProvidesMatchersAnnotatedElementMirror target) {
 		return of(generateHasSameValueDeclaration(target))
 				.withOneArgument(target.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(), "other")
-				.withImplementation(format("return %1$s(other,java.util.Collections.emptySet(),new String[]{});",
-						target.getMethodNameDSLWithSameValue()))
-				.withJavadoc(target.generateDefaultJavaDocWithoutDSLStarter(Optional.of(JAVADOC_OTHER),
-						"the DSL matcher", false));
+				.withImplementation(generateReturnOther(target, "new String[]{}")).withJavadoc(target
+						.generateDefaultJavaDocWithoutDSLStarter(Optional.of(JAVADOC_OTHER), "the DSL matcher", false));
+	}
+
+	private static String generateReturnOther(ProvidesMatchersAnnotatedElementMirror target, String complement) {
+		return format("return %1$s(other,java.util.Collections.emptySet(),%2$s);",
+				target.getMethodNameDSLWithSameValue(), complement);
 	}
 
 	private static String generateHasSameValueDeclaration(ProvidesMatchersAnnotatedElementMirror target) {
