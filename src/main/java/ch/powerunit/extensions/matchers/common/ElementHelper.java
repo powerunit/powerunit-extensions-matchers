@@ -19,6 +19,8 @@
  */
 package ch.powerunit.extensions.matchers.common;
 
+import static ch.powerunit.extensions.matchers.common.ListJoining.accepting;
+
 import java.util.List;
 
 import javax.lang.model.element.Element;
@@ -34,20 +36,17 @@ import javax.lang.model.type.TypeMirror;
  */
 public interface ElementHelper {
 
-	static final ListJoining<TypeMirror> TYPE_PARAMETER_BOUND_AS_LIST = ListJoining.accepting(TypeMirror.class)
-			.withToStringMapper().withDelimiter("&").withoutSuffixAndPrefix();
+	static final ListJoining<TypeMirror> TYPE_PARAMETER_BOUND_AS_LIST = accepting(TypeMirror.class).withToStringMapper()
+			.withDelimiter("&").withoutSuffixAndPrefix();
 
-	static final ListJoining<TypeMirror> TYPE_PARAMETER_BOUND_AS_LIST_WITH_EXTENDS = ListJoining
-			.accepting(TypeMirror.class).withToStringMapper().withDelimiter("&")
-			.withOptionalPrefixAndSuffix(" extends ", "");
+	static final ListJoining<TypeMirror> TYPE_PARAMETER_BOUND_AS_LIST_WITH_EXTENDS = accepting(TypeMirror.class)
+			.withToStringMapper().withDelimiter("&").withOptionalPrefixAndSuffix(" extends ", "");
 
-	static final ListJoining<TypeParameterElement> TYPE_PARAMETER_SIMPLE_AS_LIST = ListJoining
-			.accepting(TypeParameterElement.class).withToStringMapper().withCommaDelimiter()
-			.withOptionalPrefixAndSuffix("<", ">");
+	static final ListJoining<TypeParameterElement> TYPE_PARAMETER_SIMPLE_AS_LIST = accepting(TypeParameterElement.class)
+			.withToStringMapper().withCommaDelimiter().withOptionalPrefixAndSuffix("<", ">");
 
 	@SuppressWarnings("unchecked")
-	static final ListJoining<TypeParameterElement> TYPE_PARAMETER_FULL_AS_LIST = ListJoining
-			.accepting(TypeParameterElement.class)
+	static final ListJoining<TypeParameterElement> TYPE_PARAMETER_FULL_AS_LIST = accepting(TypeParameterElement.class)
 			.withMapper(t -> t.toString()
 					+ TYPE_PARAMETER_BOUND_AS_LIST_WITH_EXTENDS.asString((List<TypeMirror>) t.getBounds()))
 			.withCommaDelimiter().withOptionalPrefixAndSuffix("<", ">");

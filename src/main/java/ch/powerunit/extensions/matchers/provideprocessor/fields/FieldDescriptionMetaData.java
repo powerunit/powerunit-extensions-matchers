@@ -23,6 +23,8 @@ import static ch.powerunit.extensions.matchers.common.CommonUtils.toJavaSyntax;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
+import java.util.Optional;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -65,8 +67,7 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 	}
 
 	public String getFieldCopy(String lhs, String rhs, String ignore) {
-		return mirror.getMatchable(containingElementMirror.getRoundMirror())
-				.filter(a -> mirror.getFieldTypeAsTypeElement().getTypeParameters().isEmpty())
+		return getTargetAsMatchable().filter(a -> mirror.getFieldTypeAsTypeElement().getTypeParameters().isEmpty())
 				.filter(Matchable::hasWithSameValue)
 				.map(p -> format(
 						"%1$s.%6$s(%2$s.%3$s == null ? org.hamcrest.Matchers.nullValue() : %4$s(%2$s.%3$s%5$s));", lhs,
@@ -118,6 +119,10 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 
 	public FieldDescriptionMirror getMirror() {
 		return mirror;
+	}
+
+	public Optional<Matchable> getTargetAsMatchable() {
+		return mirror.getMatchable(containingElementMirror.getRoundMirror());
 	}
 
 	public String getGeneric() {

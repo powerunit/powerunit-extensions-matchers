@@ -30,7 +30,8 @@ public interface Matchable {
 
 	default long getCompatibility() {
 		// 0x01 : withSameValue also provides a version to ignore fields
-		return 0x01;
+		// 0x02 : withSameValue also use a list of parent to detect cycle
+		return 0x03;
 	}
 
 	default String getMethodNameDSLWithSameValue() {
@@ -47,6 +48,10 @@ public interface Matchable {
 
 	default boolean supportIgnore() {
 		return (getCompatibility() & 0x01) == 0x01;
+	}
+
+	default boolean supportCycleDetectionV1() {
+		return (getCompatibility() & 0x02) == 0x02;
 	}
 
 	static Matchable of(String fullName, String methodName, String interfaceName, boolean hasWithSameValue,

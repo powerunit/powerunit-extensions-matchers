@@ -44,8 +44,7 @@ public class DefaultFieldDescription extends PrimitiveFieldDescription implement
 	@Override
 	protected Collection<FieldDSLMethod> getFieldDslMethodFor() {
 		List<FieldDSLMethod> tmp = new ArrayList<>(super.getFieldDslMethodFor());
-		mirror.getMatchable(containingElementMirror.getRoundMirror())
-				.filter(a -> mirror.getFieldTypeAsTypeElement().getTypeParameters().isEmpty())
+		getTargetAsMatchable().filter(a -> mirror.getFieldTypeAsTypeElement().getTypeParameters().isEmpty())
 				.map(this::createWithParent).ifPresent(tmp::add);
 		tmp.add(FieldDSLMethodBuilder.of(this).withDeclaration("IsSameInstance", mirror.getFieldType() + " value")
 				.withJavaDoc("",
