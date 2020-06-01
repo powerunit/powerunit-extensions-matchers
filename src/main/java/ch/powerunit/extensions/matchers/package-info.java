@@ -21,8 +21,29 @@
 /**
  * Annotations to be used to generate <i>hamcrest</i> Matchers based on this
  * annotation provider.
+ * <hr>
+ * <p>
+ * <b>Metadata</b>
+ * <p>
+ * Since version 0.2.0, a metadata section is part of the generated matcher. The
+ * format of these metadatas may change and is considered as an internal feature
+ * and not a public feature, but this can be used for debugging and this used by
+ * the annotation processor itself to detect the compatibility of existing
+ * matchers.
+ * <p>
+ * The essential attribute is the
+ * <code>COMPATIBILITY</code> attribute of the class <code>Metadata</code>
+ * (referenced from the static field <code>METADATA</code>) which exposes an
+ * encoded long with the compatibility information regarding this matcher.
+ * <p>
+ * The <code>ANNOTATION_PROCESSOR_VERSION </code> may be used to find the
+ * version of the annotation processor used to generate the class.
  * 
  * @author borettim
+ * 
+ * @see ch.powerunit.extensions.matchers.ProvideMatchers
+ *      <code>@ProvideMatchers</code>&nbsp;- the annotation to be used on class
+ *      that must be processed by this annotation processor.
  *
  */
 package ch.powerunit.extensions.matchers;

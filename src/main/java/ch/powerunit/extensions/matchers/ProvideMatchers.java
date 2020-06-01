@@ -221,6 +221,27 @@ import java.lang.annotation.Target;
  * <li>The annotation processor may also try to find matcher for element of Map,
  * List, Array.</li>
  * </ul>
+ * <hr>
+ * <p>
+ * <b>Ignore field in <i>WithSameValue</i> matchers</b>
+ * <p>
+ * Since version 0.3.0, it is possible to pass a list of field names to be
+ * ignored when constructing a <i>WithSameValue</i> matcher. The generated
+ * matcher tries to also apply in cascade this ignore feature to included
+ * object. The syntax to ignore fields of another fields is to use
+ * <code>fieldName.fieldNameInside</code>.
+ * <p>
+ * The generated matcher may not be able to apply the ignore feature in all the
+ * included fields of the fields.
+ * <hr>
+ * <p>
+ * <b>Cycle detection</b>
+ * <p>
+ * Since version 0.3.0, the generated <i>WithSameValue</i> matchers try to
+ * detect the cycle in the object to be compared. Cycle may be included for
+ * example when working with bidirectional link. The matcher is <b>not</b> able
+ * to detect all cycles, but when detected, replace the control by a same
+ * instance control.
  * 
  * @author borettim
  *
@@ -239,6 +260,9 @@ public @interface ProvideMatchers {
 	 * <p>
 	 * By default, the Matchers class name is the name of the annotated class,
 	 * followed by {@code Matchers}.
+	 * <p>
+	 * <i>Using this attribute may make the matcher undetectable when working with
+	 * separated compilation.</i>
 	 * 
 	 * @return the name of the matchers class or an empty string if this is not
 	 *         overloaded.
@@ -253,6 +277,9 @@ public @interface ProvideMatchers {
 	 * default construction pattern.</i>
 	 * <p>
 	 * By default, the Matchers package name is the same that the annotated class.
+	 * <p>
+	 * <i>Using this attribute may make the matcher undetectable when working with
+	 * separated compilation.</i>
 	 * 
 	 * @return the name of the matchers package or an empty string if this is not
 	 *         overloaded.

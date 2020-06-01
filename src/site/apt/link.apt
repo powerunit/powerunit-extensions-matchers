@@ -14,7 +14,7 @@ Detection of Matcher for Class
  
  []
  
- Based on this class, a <<<Matcher>> class named <<<Pojo1Matchers>>> will also be generated. This class will provide several DSL method, like :
+ Based on this class, a <<<Matcher>>> class named <<<Pojo1Matchers>>> will also be generated. This class will provide several DSL method, like :
  
  * <<<pojo1With()>>>
  

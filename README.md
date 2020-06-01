@@ -38,6 +38,12 @@ Powerunit-extensions-matchers version | With          | Version | Status
 0.2.0                                 | JDK           | 1.8     | :heavy_check_mark:
 0.2.0                                 | JDK           | 9       | Compilation with source and target = 1.8 tested. Execution of generated matcher tested. The `@Generated` annotation may not be available OOTB.
 0.2.0                                 | JDK           | 10      | Compilation with source and target = 1.8 tested. Execution of generated matcher tested. The `@Generated` annotation may not be available OOTB.
+0.3.0                                 | hamcrest      | 1.3     | :heavy_check_mark:
+0.3.0                                 | hamcrest      | 2.1+    | :heavy_check_mark:
+0.3.0                                 | JDK           | 1.8     | :heavy_check_mark:
+0.3.0                                 | JDK           | 9       | Compilation with source and target = 1.8 tested. Execution of generated matcher tested. The `@Generated` annotation may not be available OOTB.
+0.3.0                                 | JDK           | 10      | Compilation with source and target = 1.8 tested. Execution of generated matcher tested. The `@Generated` annotation may not be available OOTB.
+0.3.0                                 | powerunit-extensions-matchers | 0.2.0 | :heavy_check_mark: Matchers generated with version 0.2.0 can be used from matcher of the version 0.3.0. The ignored fields and cycle detection is not propagated to the 0.2.0 matchers.
 
 # Migration
 
