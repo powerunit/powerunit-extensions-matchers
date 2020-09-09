@@ -1,11 +1,11 @@
 package ch.powerunit.extensions.matchers.provideprocessor.helper;
 
 import static ch.powerunit.extensions.matchers.common.CommonUtils.addPrefix;
-import static ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod.of;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
+import static java.util.Optional.of;
 import static java.util.stream.Collectors.joining;
 
 import java.util.Collection;
@@ -20,6 +20,7 @@ import ch.powerunit.extensions.matchers.common.RessourceLoaderHelper;
 import ch.powerunit.extensions.matchers.provideprocessor.Matchable;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.lang.DSLMethodArgument;
 import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
 
 public final class ProvidesMatchersWithSameValueHelper {
@@ -48,7 +49,7 @@ public final class ProvidesMatchersWithSameValueHelper {
 
 	private static DSLMethod generateWithSameValueWithParentMatcherIgnoreAndCycle(
 			ProvidesMatchersAnnotatedElementMirror target, boolean hasSuper) {
-		return of(generateHasSameValueDeclaration(target))
+		return generateHasSameValueDeclaration(target)
 				.addOneArgument(target.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(), "other")
 				.addOneArgument("java.util.Set<java.lang.Object>", "previous")
 				.addOneArgument(
@@ -60,8 +61,8 @@ public final class ProvidesMatchersWithSameValueHelper {
 						target.getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent(),
 						generateParentMatcher(target, hasSuper), copyFields(target),
 						target.getSimpleNameOfGeneratedInterfaceMatcher()).split("\n")))
-				.withJavadoc(target.generateDefaultJavaDocWithoutDSLStarter(
-						Optional.of(JAVADOC_OTHER_PREVIOUS_IGNORE_POST), "the DSL matcher", false));
+				.withJavadoc(target.generateDefaultJavaDocWithoutDSLStarter(of(JAVADOC_OTHER_PREVIOUS_IGNORE_POST),
+						"the DSL matcher", false));
 	}
 
 	private static String generateParentMatcher(ProvidesMatchersAnnotatedElementMirror target, boolean hasSuper) {
@@ -91,33 +92,32 @@ public final class ProvidesMatchersWithSameValueHelper {
 
 	private static DSLMethod generateWithSameValueWithParentMatcherIgnoreAndPostProcessor(
 			ProvidesMatchersAnnotatedElementMirror target) {
-		return of(generateHasSameValueDeclaration(target))
+		return generateHasSameValueDeclaration(target)
 				.addOneArgument(target.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(), "other")
 				.addOneArgument(
 						"java.util.function.BiFunction<org.hamcrest.Matcher<?>,java.lang.Object,org.hamcrest.Matcher<?>>",
 						"postProcessor")
 				.addOneArgument("String...", "ignoredFields")
-				.withImplementation(generateReturnOther(target, "postProcessor,ignoredFields")).withJavadoc(
-						target.generateDefaultJavaDocWithoutDSLStarter(Optional.of(JAVADOC_OTHER_IGNORE_POSTPROCESSOR),
-								"the DSL matcher", false));
+				.withImplementation(generateReturnOther(target, "postProcessor,ignoredFields"))
+				.withJavadoc(target.generateDefaultJavaDocWithoutDSLStarter(of(JAVADOC_OTHER_IGNORE_POSTPROCESSOR),
+						"the DSL matcher", false));
 	}
 
 	private static DSLMethod generateWithSameValueWithParentMatcherIgnore(
 			ProvidesMatchersAnnotatedElementMirror target) {
-		return of(generateHasSameValueDeclaration(target))
+		return generateHasSameValueDeclaration(target)
 				.addOneArgument(target.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(), "other")
 				.addOneArgument("String...", "ignoredFields")
-				.withImplementation(generateReturnOther(target, "(m,o)->m,ignoredFields"))
-				.withJavadoc(target.generateDefaultJavaDocWithoutDSLStarter(Optional.of(JAVADOC_OTHER_IGNORE),
-						"the DSL matcher", false));
+				.withImplementation(generateReturnOther(target, "(m,o)->m,ignoredFields")).withJavadoc(target
+						.generateDefaultJavaDocWithoutDSLStarter(of(JAVADOC_OTHER_IGNORE), "the DSL matcher", false));
 	}
 
 	private static DSLMethod generateWithSameValueWithParentMatcherAndNoIgnore(
 			ProvidesMatchersAnnotatedElementMirror target) {
-		return of(generateHasSameValueDeclaration(target))
+		return generateHasSameValueDeclaration(target)
 				.withOneArgument(target.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(), "other")
-				.withImplementation(generateReturnOther(target, "(m,o)->m,new String[]{}")).withJavadoc(target
-						.generateDefaultJavaDocWithoutDSLStarter(Optional.of(JAVADOC_OTHER), "the DSL matcher", false));
+				.withImplementation(generateReturnOther(target, "(m,o)->m,new String[]{}")).withJavadoc(
+						target.generateDefaultJavaDocWithoutDSLStarter(of(JAVADOC_OTHER), "the DSL matcher", false));
 	}
 
 	private static String generateReturnOther(ProvidesMatchersAnnotatedElementMirror target, String complement) {
@@ -125,10 +125,11 @@ public final class ProvidesMatchersWithSameValueHelper {
 				target.getMethodNameDSLWithSameValue(), complement);
 	}
 
-	private static String generateHasSameValueDeclaration(ProvidesMatchersAnnotatedElementMirror target) {
-		return format("%1$s %2$s.%3$s %4$s", target.getFullGeneric(), target.getFullyQualifiedNameOfGeneratedClass(),
-				target.getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent(),
-				target.getMethodNameDSLWithSameValue());
+	private static DSLMethodArgument generateHasSameValueDeclaration(ProvidesMatchersAnnotatedElementMirror target) {
+		return DSLMethod.of(
+				format("%1$s %2$s.%3$s %4$s", target.getFullGeneric(), target.getFullyQualifiedNameOfGeneratedClass(),
+						target.getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent(),
+						target.getMethodNameDSLWithSameValue()));
 	}
 
 	private static boolean isWeakAllowed(ProvidesMatchersAnnotatedElementMirror target) {
