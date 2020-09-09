@@ -22,6 +22,7 @@ package ch.powerunit.extensions.matchers.samples;
 import static ch.powerunit.matchers.MatcherTester.matcher;
 import static ch.powerunit.matchers.MatcherTester.value;
 
+import ch.powerunit.Test;
 import ch.powerunit.TestDelegate;
 import ch.powerunit.TestSuite;
 import ch.powerunit.matchers.MatcherTester;
@@ -44,8 +45,8 @@ public class Pojo1MatcherTest implements TestSuite {
 
 	//@formatter:off
 	@TestDelegate
-	public final MatcherTester<?> tester = testerOfMatcher(Pojo1Matchers.Pojo1MatcherImpl.class).with(
-			matcher((Pojo1Matchers.Pojo1MatcherImpl) Pojo1Matchers.pojo1WithSameValue(p1))
+	public final MatcherTester<?> tester = testerOfMatcher(Pojo1Matchers.<Void>pojo1MatcherClass()).with(
+			matcher(Pojo1Matchers.pojo1WithSameValue(p1))
 				.describedAs("an instance of ch.powerunit.extensions.matchers.samples.Pojo1 with\n[msg1 is \"x\"]\n[pojo2 null]\n")
 					.nullRejected("was null").
 					accepting(
@@ -55,7 +56,7 @@ public class Pojo1MatcherTest implements TestSuite {
 							value(new Pojo1(null,null)).withMessage("[msg1 was null]\n"),
 							value(new Pojo1("x",p2)).withMessage("[pojo2 was <Pojo2 [msg2=y, pojo1=null]>]\n"),
 							value(new Pojo1("y",null)).withMessage("[msg1 was \"y\"]\n")),
-			matcher((Pojo1Matchers.Pojo1MatcherImpl) Pojo1Matchers.pojo1WithSameValue(p12))
+			matcher(Pojo1Matchers.pojo1WithSameValue(p12))
 			.describedAs("an instance of ch.powerunit.extensions.matchers.samples.Pojo1 with\n[msg1 is \"1\"]\n[pojo2 an instance of ch.powerunit.extensions.matchers.samples.Pojo2 with\n[msg2 is \"2\"]\n[pojo1 an instance of ch.powerunit.extensions.matchers.samples.Pojo1 with\n[msg1 ANYTHING]\n[pojo2 ANYTHING]\n[object itself Same instance control only. A cycle has been detected.]\n]\n]\n")
 				.nullRejected("was null").
 				accepting(
@@ -66,5 +67,11 @@ public class Pojo1MatcherTest implements TestSuite {
 						value(new Pojo1("x",p2)).withMessage("[msg1 was \"x\"]\n[pojo2 [msg2 was \"y\"]\n[pojo1 was null]\n]\n"),
 						value(new Pojo1("y",null)).withMessage("[msg1 was \"y\"]\n[pojo2 was null]\n")));
 	//@formatter:off
-
+	
+	@Test
+	public void testPostProcessor() {
+		assertThat(p12).is(Pojo1Matchers.pojo1WithSameValue(p1,Pojo1Matchers.PostProcessor.of(Pojo1Matchers.pojo1MatcherClass()).when((m,o)->true).then((m,o)->m.msg1("1").pojo2(anything()))));
+		
+	}
+	
 }

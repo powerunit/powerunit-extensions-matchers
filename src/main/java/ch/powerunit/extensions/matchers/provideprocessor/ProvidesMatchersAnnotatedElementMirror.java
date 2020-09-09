@@ -56,6 +56,9 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 	private static final String MATCHER_FORMAT = RessourceLoaderHelper
 			.loadRessource(ProvidesMatchersAnnotatedElementMirror.class, "Matchers.txt");
 
+	private static final String POSTPROCESSOR_FORMAT = addPrefix("  ",
+			RessourceLoaderHelper.loadRessource(ProvidesMatchersAnnotatedElementMirror.class, "PostProcessor.txt"));
+
 	private static final ListJoining<DSLMethod> JOIN_DSL_METHOD = ListJoining
 			.joinWithMapperAndDelimiter(m -> addPrefix("  ", m.asStaticImplementation()), "\n");
 
@@ -65,9 +68,9 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 
 	public ProvidesMatchersAnnotatedElementMirror(TypeElement typeElement, RoundMirror roundMirror) {
 		super(typeElement, roundMirror);
-		List<Supplier<Collection<DSLMethod>>> tmp = new ArrayList<>(
-				Arrays.asList(asCollection(this::generateDefaultDSLStarter),
-						asCollection(this::generateDefaultForChainingDSLStarter)));
+		List<Supplier<Collection<DSLMethod>>> tmp = new ArrayList<>(Arrays.asList(
+				asCollection(this::generateDefaultDSLStarter), asCollection(this::generateDefaultForChainingDSLStarter),
+				asCollection(this::generateMatcherClassMethod)));
 		if (hasSuperClass()) {
 			tmp.add(asCollection(this::generateParentDSLStarter));
 			tmp.add(() -> ProvidesMatchersWithSameValueHelper.generateParentValueDSLStarter(this));
@@ -96,7 +99,8 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 							getFullyQualifiedNameOfClassAnnotated(),
 							generateGeneratedAnnotation(ProvidesMatchersAnnotationsProcessor.class, comments()),
 							getSimpleNameOfGeneratedClass(), generateMatchers(), generatePublicInterface(),
-							generatePrivateImplementation(), JOIN_DSL_METHOD.asString(tmp), generateMetadata());
+							generatePrivateImplementation(), JOIN_DSL_METHOD.asString(tmp), POSTPROCESSOR_FORMAT,
+							generateMetadata());
 					output.flush();
 					return tmp;
 				}, e -> traceErrorAndDump(this, e, te));
@@ -175,6 +179,15 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 									"m._parent = new SuperClassMatcher(tmp);", "return tmp;")
 							.withJavadoc(generateDefaultJavaDoc(empty(), empty(), "the DSL matcher", false));
 		}).orElse(null);
+	}
+
+	public DSLMethod generateMatcherClassMethod() {
+		return of(getFullGenericParent()+" Class<" + getFullyQualifiedNameOfGeneratedClass() + "."
+				+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + "> "
+				+ getMethodShortClassName() + "MatcherClass").withoutArgument()
+						.withImplementation("return (Class)" + getSimpleNameOfGeneratedInterfaceMatcher() + ".class;")
+						.withJavadoc(
+								"/**\n * Helper method to retrieve the Class of the matcher interface.\n * @return the class.\n */\n");
 	}
 
 }
