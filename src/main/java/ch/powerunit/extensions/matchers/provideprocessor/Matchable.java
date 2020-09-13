@@ -31,7 +31,8 @@ public interface Matchable {
 	default long getCompatibility() {
 		// 0x01 : withSameValue also provides a version to ignore fields
 		// 0x02 : withSameValue also use a list of parent to detect cycle
-		return 0x03;
+		// 0x04 : withSameValue also support a post processor
+		return 0x07;
 	}
 
 	default String getMethodNameDSLWithSameValue() {
@@ -52,6 +53,10 @@ public interface Matchable {
 
 	default boolean supportCycleDetectionV1() {
 		return (getCompatibility() & 0x02) == 0x02;
+	}
+	
+	default boolean supportSameValueWithParentPostPrecessor() {
+		return (getCompatibility() & 0x04) == 0x04;
 	}
 
 	static Matchable of(String fullName, String methodName, String interfaceName, boolean hasWithSameValue,

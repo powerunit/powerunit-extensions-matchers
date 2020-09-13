@@ -11,4 +11,4 @@ if (previous.stream().anyMatch(p->p==other)) {
 		
 %4$s
 
-return m;
+return (%5$s)java.util.Objects.requireNonNull(postProcessor,"postProcessor can't be null").apply(m,other);

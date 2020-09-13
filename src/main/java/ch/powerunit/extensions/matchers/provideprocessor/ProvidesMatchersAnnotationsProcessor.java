@@ -19,6 +19,9 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor;
 
+import static ch.powerunit.extensions.matchers.common.CommonUtils.addPrefix;
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -29,6 +32,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -44,6 +48,7 @@ import javax.tools.Diagnostic.Kind;
 import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.common.FactoryHelper;
 import ch.powerunit.extensions.matchers.common.FileObjectHelper;
+import ch.powerunit.extensions.matchers.common.RessourceLoaderHelper;
 
 /**
  * @author borettim
@@ -61,6 +66,10 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 	private List<String> factories = new ArrayList<>();
 
 	private List<Element> allSourceElements = new ArrayList<>();
+
+	private static final List<String> POSTPROCESSOR_FORMAT = unmodifiableList(asList(addPrefix("  ",
+			RessourceLoaderHelper.loadRessource(ProvidesMatchersAnnotatedElementMirror.class, "PostProcessor.txt"))
+					.split("\n")));
 
 	@Override
 	public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -106,7 +115,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 				jfo -> new PrintWriter(jfo.openWriter()),
 				wjfo -> FactoryHelper.generateFactoryClass(wjfo, ProvidesMatchersAnnotationsProcessor.class,
 						factory.replaceAll("\\.[^.]+$", ""), factory.replaceAll("^([^.]+\\.)*", ""),
-						() -> factories.stream()),
+						() -> Stream.concat(factories.stream(), POSTPROCESSOR_FORMAT.stream())),
 				e -> processingEnv.getMessager().printMessage(Kind.ERROR,
 						"Unable to create the file containing the target class `" + factory + "`, because of "
 								+ e.getMessage()));
