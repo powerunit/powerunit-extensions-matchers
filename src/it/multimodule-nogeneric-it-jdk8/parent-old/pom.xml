@@ -62,7 +62,7 @@
 		<dependency>
 			<groupId>ch.powerunit.extensions</groupId>
 			<artifactId>powerunit-extensions-matchers</artifactId>
-			<version>0.2.0</version><!-- Forcer sur ancienne version -->
+			<version>0.3.0</version><!-- Forcer sur ancienne version -->
 		</dependency>
 	</dependencies>
 </project>
