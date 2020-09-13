@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FileObjectHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.common</a> &gt; <span class="el_source">FileObjectHelper.java</span></div><h1>FileObjectHelper.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.common;
+
+import java.io.Closeable;
+import java.util.function.Consumer;
+
+import javax.tools.FileObject;
+
+/**
+ * These are method to write class.
+ * 
+ * @author borettim
+ *
+ */
+public final class FileObjectHelper {
+	private FileObjectHelper() {
+	}
+
+	@FunctionalInterface
+	public static interface ConsumerWithException&lt;S&gt; {
+		void accept(S input) throws Exception;
+	}
+
+	@FunctionalInterface
+	public static interface SupplierWithException&lt;T&gt; {
+		T get() throws Exception;
+	}
+
+	@FunctionalInterface
+	public static interface FunctionWithException&lt;T, R&gt; {
+		R apply(T input) throws Exception;
+	}
+
+	public static &lt;T extends FileObject, S extends Closeable, R&gt; R processFileWithIOExceptionAndResult(
+			SupplierWithException&lt;T&gt; generateFileObject, FunctionWithException&lt;T, S&gt; openStream,
+			FunctionWithException&lt;S, R&gt; actions, Consumer&lt;Exception&gt; exceptionHandler) {
+		try {
+<span class="fc" id="L56">			try (S wjfo = openStream.apply(generateFileObject.get())) {</span>
+<span class="fc" id="L57">				return actions.apply(wjfo);</span>
+			}
+<span class="fc" id="L59">		} catch (Exception e) {</span>
+<span class="fc" id="L60">			exceptionHandler.accept(e);</span>
+<span class="fc" id="L61">			return null;</span>
+		}
+	}
+
+	public static &lt;T extends FileObject, S extends Closeable&gt; boolean processFileWithIOException(
+			SupplierWithException&lt;T&gt; generateFileObject, FunctionWithException&lt;T, S&gt; openStream,
+			ConsumerWithException&lt;S&gt; actions, Consumer&lt;Exception&gt; exceptionHandler) {
+<span class="fc" id="L68">		Boolean result = processFileWithIOExceptionAndResult(generateFileObject, openStream, s -&gt; {</span>
+<span class="fc" id="L69">			actions.accept(s);</span>
+<span class="fc" id="L70">			return true;</span>
+		}, exceptionHandler);
+<span class="fc" id="L72">		return Boolean.TRUE.equals(result);</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

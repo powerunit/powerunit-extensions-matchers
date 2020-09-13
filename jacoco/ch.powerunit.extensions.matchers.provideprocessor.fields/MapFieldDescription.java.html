@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MapFieldDescription.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.provideprocessor.fields</a> &gt; <span class="el_source">MapFieldDescription.java</span></div><h1>MapFieldDescription.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.provideprocessor.fields;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Optional;
+
+import javax.lang.model.type.DeclaredType;
+
+import ch.powerunit.extensions.matchers.provideprocessor.Matchable;
+import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+
+public class MapFieldDescription extends DefaultFieldDescription {
+
+	private static final String EMPTY_MATCHER = &quot;new org.hamcrest.CustomTypeSafeMatcher&lt;%1$s&gt;(\&quot;map is empty\&quot;){ public boolean matchesSafely(%1$s o) {return o.isEmpty();}}&quot;;
+
+	private static final String SIZE_MATCHER = &quot;new org.hamcrest.CustomTypeSafeMatcher&lt;%1$s&gt;(\&quot;map size is \&quot;+other.size()){ public boolean matchesSafely(%1$s o) {return o.size()==other.size();} protected void describeMismatchSafely(%1$s item, org.hamcrest.Description mismatchDescription) {mismatchDescription.appendText(\&quot; was size=\&quot;).appendValue(item.size());}}&quot;;
+
+	public MapFieldDescription(ProvidesMatchersAnnotatedElementData containingElementMirror,
+			FieldDescriptionMirror mirror) {
+<span class="fc" id="L39">		super(containingElementMirror, mirror);</span>
+<span class="fc" id="L40">	}</span>
+
+	@Override
+	protected Collection&lt;FieldDSLMethod&gt; getSpecificFieldDslMethodFor() {
+<span class="nc" id="L44">		String fieldType = getFieldType();</span>
+<span class="nc" id="L45">		final String emptyMatcher = String.format(EMPTY_MATCHER, fieldType);</span>
+
+<span class="nc" id="L47">		Collection&lt;FieldDSLMethod&gt; tmp = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L48">		tmp.add(getDslMethodBuilder().withSuffixDeclarationJavadocAndDefault(&quot;IsEmpty&quot;, &quot;the map is empty&quot;,</span>
+				emptyMatcher));
+<span class="nc bnc" id="L50" title="All 2 branches missed.">		if (!&quot;&quot;.equals(generic)) {</span>
+<span class="nc" id="L51">			Object matchers[] = Optional.of(mirror.getFieldTypeMirror()).filter(m -&gt; m instanceof DeclaredType)</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">					.map(DeclaredType.class::cast).filter(m -&gt; m.getTypeArguments().size() == 2)</span>
+<span class="nc" id="L53">					.map(m -&gt; m.getTypeArguments().stream().map(Object::toString)</span>
+<span class="nc" id="L54">							.map(o -&gt; Optional.ofNullable(getByName(o)).filter(Matchable::hasWithSameValue)</span>
+<span class="nc" id="L55">									.map(t -&gt; t.getWithSameValue(false)).orElse(MATCHERS + &quot;.is&quot;))</span>
+<span class="nc" id="L56">							.toArray())</span>
+<span class="nc" id="L57">					.orElseGet(()-&gt;new String[] { MATCHERS + &quot;.is&quot;, MATCHERS + &quot;.is&quot; });</span>
+
+<span class="nc" id="L59">			tmp.add(generateHasSameValue(fieldType, matchers[0].toString(), matchers[1].toString()));</span>
+		}
+<span class="nc" id="L61">		return tmp;</span>
+	}
+
+	private FieldDSLMethod generateHasSameValue(String fieldType, String keyMatcher, String keyValue) {
+<span class="nc" id="L65">		final String sizeMatcher = String.format(SIZE_MATCHER, fieldType);</span>
+<span class="nc" id="L66">		return getDslMethodBuilder().withDeclaration(&quot;HasSameValues&quot;, fieldType + &quot; other&quot;)</span>
+<span class="nc" id="L67">				.withJavaDoc(&quot;verify that the value from the other map are exactly the once inside this map&quot;,</span>
+						&quot;other the other map&quot;)
+<span class="nc" id="L69">				.havingDefault(MATCHERS + &quot;.both(&quot; + sizeMatcher + &quot;).and(&quot; + MATCHERS</span>
+						+ &quot;.allOf(other.entrySet().stream().map(kv-&gt;&quot; + MATCHERS + &quot;.hasEntry(&quot; + keyMatcher
+						+ &quot;(kv.getKey()),&quot; + keyValue
+						+ &quot;(kv.getValue()))).collect(java.util.stream.Collectors.toList())))&quot;);
+	}
+
+	@Override
+	public String getFieldCopy(String lhs, String rhs, String ignore) {
+<span class="nc bnc" id="L77" title="All 2 branches missed.">		if (!&quot;&quot;.equals(generic)) {</span>
+<span class="nc" id="L78">			String fieldAccessor = getFieldAccessor();</span>
+<span class="nc" id="L79">			String fieldName = getFieldName();</span>
+<span class="nc" id="L80">			return &quot;if(&quot; + rhs + &quot;.&quot; + fieldAccessor + &quot;==null) {\n  &quot; + lhs + &quot;.&quot; + fieldName + &quot;(&quot; + MATCHERS</span>
+					+ &quot;.nullValue());\n} else {\n  &quot; + lhs + &quot;.&quot; + fieldName + &quot;HasSameValues(&quot; + rhs + &quot;.&quot;
+					+ fieldAccessor + &quot;);\n}&quot;;
+		}
+<span class="nc" id="L84">		return super.getFieldCopy(lhs, rhs, ignore);</span>
+
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

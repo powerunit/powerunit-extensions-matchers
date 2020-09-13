@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProvidesMatchersElementVisitor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.provideprocessor</a> &gt; <span class="el_source">ProvidesMatchersElementVisitor.java</span></div><h1>ProvidesMatchersElementVisitor.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.provideprocessor;
+
+import java.util.Optional;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic.Kind;
+
+import ch.powerunit.extensions.matchers.common.AbstractSimpleElementVisitor;
+
+class ProvidesMatchersElementVisitor extends AbstractSimpleElementVisitor&lt;Optional&lt;TypeElement&gt;, Void, RoundMirror&gt;
+		implements RoundMirrorSupport {
+
+	public ProvidesMatchersElementVisitor(RoundMirror roundMirror) {
+<span class="fc" id="L34">		super(roundMirror);</span>
+<span class="fc" id="L35">	}</span>
+
+	@Override
+	public Optional&lt;TypeElement&gt; visitType(TypeElement e, Void p) {
+<span class="fc bfc" id="L39" title="All 3 branches covered.">		switch (e.getKind()) {</span>
+		case ENUM:
+<span class="fc" id="L41">			errorForType(e, &quot;enum&quot;);</span>
+<span class="fc" id="L42">			return Optional.empty();</span>
+		case INTERFACE:
+<span class="fc" id="L44">			errorForType(e, &quot;interface&quot;);</span>
+<span class="fc" id="L45">			return Optional.empty();</span>
+		default:
+<span class="fc" id="L47">			return Optional.of(e);</span>
+		}
+	}
+
+	@Override
+	protected Optional&lt;TypeElement&gt; defaultAction(Element e, Void p) {
+<span class="fc" id="L53">		errorForType(e, &quot;unexpected element&quot;);</span>
+<span class="fc" id="L54">		return Optional.empty();</span>
+	}
+
+	private void errorForType(Element e, String type) {
+<span class="fc" id="L58">		getProcessingEnv().getMessager().printMessage(Kind.ERROR, &quot;The annotation `ProvideMatchers` is used on an &quot;</span>
+				+ type
+				+ &quot;, which is not supported. Since version 0.2.0 of powerunit-extension-matchers this is considered as an error.&quot;,
+<span class="fc" id="L61">				e, support.getProvideMatchersAnnotation(e));</span>
+<span class="fc" id="L62">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

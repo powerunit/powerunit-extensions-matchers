@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FieldDescriptionMetaData.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.provideprocessor.fields</a> &gt; <span class="el_source">FieldDescriptionMetaData.java</span></div><h1>FieldDescriptionMetaData.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.provideprocessor.fields;
+
+import static ch.powerunit.extensions.matchers.common.CommonUtils.toJavaSyntax;
+import static java.lang.String.format;
+import static java.util.stream.Collectors.joining;
+
+import java.util.Optional;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
+
+import ch.powerunit.extensions.matchers.provideprocessor.Matchable;
+import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.provideprocessor.helper.FeatureMatcher;
+
+public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionContainerMetaData {
+
+	public static final String SEE_TEXT_FOR_IS_MATCHER = &quot;org.hamcrest.Matchers#is(java.lang.Object)&quot;;
+	public static final String SEE_TEXT_FOR_HAMCREST_MATCHER = &quot;org.hamcrest.Matchers The main class from hamcrest that provides default matchers.&quot;;
+	public static final String MATCHERS = &quot;org.hamcrest.Matchers&quot;;
+
+	protected final String generic;
+	protected final String defaultReturnMethod;
+	protected final FieldDescriptionMirror mirror;
+
+	public static final String computeGenericInformation(TypeMirror fieldTypeMirror) {
+<span class="fc bfc" id="L47" title="All 2 branches covered.">		if (fieldTypeMirror instanceof DeclaredType) {</span>
+<span class="fc" id="L48">			DeclaredType dt = ((DeclaredType) fieldTypeMirror);</span>
+<span class="fc" id="L49">			return dt.getTypeArguments().stream().map(Object::toString).collect(joining(&quot;,&quot;));</span>
+		}
+<span class="fc" id="L51">		return &quot;&quot;;</span>
+	}
+
+	public FieldDescriptionMetaData(ProvidesMatchersAnnotatedElementData containingElementMirror,
+			FieldDescriptionMirror mirror) {
+<span class="fc" id="L56">		super(containingElementMirror);</span>
+<span class="fc" id="L57">		this.mirror = mirror;</span>
+<span class="fc" id="L58">		TypeMirror fieldTypeMirror = mirror.getFieldTypeMirror();</span>
+<span class="fc" id="L59">		this.defaultReturnMethod = containingElementMirror.getDefaultReturnMethod();</span>
+<span class="fc" id="L60">		this.generic = computeGenericInformation(fieldTypeMirror);</span>
+<span class="fc" id="L61">	}</span>
+
+	public String getMatcherForField() {
+<span class="fc" id="L64">		return new FeatureMatcher(mirror.getMethodFieldName(), containingElementMirror.getFullGeneric(),</span>
+<span class="fc" id="L65">				getFullyQualifiedNameEnclosingClassOfField(), containingElementMirror.getGeneric(), getFieldType(),</span>
+<span class="fc" id="L66">				getFieldName(), &quot;actual.&quot; + getFieldAccessor()).toString();</span>
+	}
+
+	public String getFieldCopy(String lhs, String rhs, String ignore) {
+<span class="fc" id="L70">		return getTargetAsMatchable().filter(a -&gt; mirror.getFieldTypeAsTypeElement().getTypeParameters().isEmpty())</span>
+<span class="fc" id="L71">				.filter(Matchable::hasWithSameValue)</span>
+<span class="fc" id="L72">				.map(p -&gt; format(</span>
+						&quot;%1$s.%6$s(%2$s.%3$s == null ? org.hamcrest.Matchers.nullValue() : %4$s(%2$s.%3$s%5$s));&quot;, lhs,
+<span class="fc bfc" id="L74" title="All 2 branches covered.">						rhs, getFieldAccessor(), p.getWithSameValue(false), p.supportIgnore() ? ignore : &quot;&quot;,</span>
+<span class="fc" id="L75">						getFieldName()))</span>
+<span class="fc" id="L76">				.orElseGet(() -&gt; format(</span>
+						&quot;%1$s.%4$s((org.hamcrest.Matcher)org.hamcrest.Matchers.is((java.lang.Object)%2$s.%3$s));&quot;, lhs,
+<span class="fc" id="L78">						rhs, getFieldAccessor(), getFieldName()));</span>
+	}
+
+	public String asMatchesSafely() {
+<span class="fc" id="L82">		return format(</span>
+				&quot;if(!%1$s.matches(actual)) {\n  mismatchDescription.appendText(\&quot;[\&quot;); %1$s.describeMismatch(actual,mismatchDescription); mismatchDescription.appendText(\&quot;]\\n\&quot;);\n  result=false;\n}&quot;,
+<span class="fc" id="L84">				getFieldName());</span>
+	}
+
+	public String asDescribeTo() {
+<span class="fc" id="L88">		return &quot;description.appendText(\&quot;[\&quot;).appendDescriptionOf(&quot; + getFieldName() + &quot;).appendText(\&quot;]\\n\&quot;);&quot;;</span>
+	}
+
+	public String asMatcherField() {
+<span class="fc" id="L92">		return format(&quot;private %1$sMatcher %2$s = new %1$sMatcher(%3$s.anything(%4$s));&quot;, mirror.getMethodFieldName(),</span>
+<span class="fc" id="L93">				getFieldName(), MATCHERS, &quot;&quot;);</span>
+	}
+
+	public String getFullyQualifiedNameEnclosingClassOfField() {
+<span class="fc" id="L97">		return containingElementMirror.getFullyQualifiedNameOfClassAnnotatedWithProvideMatcher();</span>
+	}
+
+	public String getDefaultReturnMethod() {
+<span class="fc" id="L101">		return defaultReturnMethod;</span>
+	}
+
+	public String getFieldAccessor() {
+<span class="fc" id="L105">		return mirror.getFieldAccessor();</span>
+	}
+
+	public String getFieldName() {
+<span class="fc" id="L109">		return mirror.getFieldName();</span>
+	}
+
+	public String getFieldType() {
+<span class="fc" id="L113">		return mirror.getFieldType();</span>
+	}
+
+	public Element getFieldElement() {
+<span class="fc" id="L117">		return mirror.getFieldElement();</span>
+	}
+
+	public FieldDescriptionMirror getMirror() {
+<span class="fc" id="L121">		return mirror;</span>
+	}
+
+	public Optional&lt;Matchable&gt; getTargetAsMatchable() {
+<span class="fc" id="L125">		return mirror.getMatchable(containingElementMirror.getRoundMirror());</span>
+	}
+
+	public String getGeneric() {
+<span class="fc" id="L129">		return generic;</span>
+	}
+
+	public String generateMetadata(String className) {
+<span class="fc" id="L133">		return &quot;new &quot; + className + &quot;(&quot; + toJavaSyntax(getFieldName()) + &quot;,&quot; + toJavaSyntax(getFieldType()) + &quot;,&quot;</span>
+<span class="fc" id="L134">				+ toJavaSyntax(getFieldAccessor()) + &quot;,&quot; + toJavaSyntax(getClass().getSimpleName()) + &quot;,&quot;</span>
+<span class="fc" id="L135">				+ Boolean.toString(this instanceof IgnoreFieldDescription) + &quot;)&quot;;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

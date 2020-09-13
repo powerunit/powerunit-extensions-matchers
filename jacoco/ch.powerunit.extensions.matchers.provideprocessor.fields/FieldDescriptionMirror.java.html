@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FieldDescriptionMirror.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.provideprocessor.fields</a> &gt; <span class="el_source">FieldDescriptionMirror.java</span></div><h1>FieldDescriptionMirror.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.provideprocessor.fields;
+
+import static java.util.Optional.ofNullable;
+
+import java.util.Optional;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+
+import ch.powerunit.extensions.matchers.common.ElementHelper;
+import ch.powerunit.extensions.matchers.provideprocessor.Matchable;
+import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
+
+public class FieldDescriptionMirror implements ElementHelper {
+
+	private final String fieldName;
+	private final String fieldType;
+	private final TypeElement fieldTypeAsTypeElement;
+	private final Element fieldElement;
+
+	public FieldDescriptionMirror(ProvidesMatchersAnnotatedElementData containingElementMirror, String fieldName,
+<span class="fc" id="L45">			String fieldType, Element fieldElement) {</span>
+<span class="fc" id="L46">		ProcessingEnvironment processingEnv = containingElementMirror.getRoundMirror().getProcessingEnv();</span>
+<span class="fc" id="L47">		this.fieldName = fieldName;</span>
+<span class="fc" id="L48">		this.fieldType = fieldType;</span>
+<span class="fc" id="L49">		this.fieldTypeAsTypeElement = processingEnv.getElementUtils().getTypeElement(fieldType);</span>
+<span class="fc" id="L50">		this.fieldElement = fieldElement;</span>
+<span class="fc" id="L51">	}</span>
+
+	public String getFieldAccessor() {
+<span class="fc bfc" id="L54" title="All 2 branches covered.">		return getSimpleName(fieldElement) + ((fieldElement instanceof ExecutableElement) ? &quot;()&quot; : &quot;&quot;);</span>
+	}
+
+	public String getFieldName() {
+<span class="fc" id="L58">		return fieldName;</span>
+	}
+
+	public String getMethodFieldName() {
+<span class="fc" id="L62">		return fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);</span>
+	}
+
+	public String getFieldType() {
+<span class="fc" id="L66">		return fieldType;</span>
+	}
+
+	public Element getFieldElement() {
+<span class="fc" id="L70">		return fieldElement;</span>
+	}
+
+	public TypeElement getFieldTypeAsTypeElement() {
+<span class="fc" id="L74">		return fieldTypeAsTypeElement;</span>
+	}
+
+	public TypeMirror getFieldTypeMirror() {
+<span class="fc bfc" id="L78" title="All 2 branches covered.">		return (fieldElement instanceof ExecutableElement) ? ((ExecutableElement) fieldElement).getReturnType()</span>
+<span class="fc" id="L79">				: fieldElement.asType();</span>
+	}
+
+	public Optional&lt;Matchable&gt; getMatchable(RoundMirror roundMirror) {
+<span class="fc" id="L83">		return ofNullable(roundMirror.getByName(getFieldType()));</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

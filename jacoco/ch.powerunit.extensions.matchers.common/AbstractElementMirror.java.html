@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractElementMirror.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.common</a> &gt; <span class="el_source">AbstractElementMirror.java</span></div><h1>AbstractElementMirror.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.common;
+
+import static java.util.Optional.ofNullable;
+
+import java.util.Optional;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+
+/**
+ * @author borettim
+ *
+ */
+public abstract class AbstractElementMirror&lt;E extends Element, R extends AbstractRoundMirrorReferenceToProcessingEnv&gt;
+		implements AbstractRoundMirrorSupport&lt;R&gt;, ElementHelper, ProcessingEnvironmentHelper {
+
+	protected final R roundMirror;
+	protected final E element;
+	protected final Optional&lt;String&gt; doc;
+	protected final Optional&lt;TypeElement&gt; annotation;
+
+<span class="fc" id="L43">	public AbstractElementMirror(String annotationType, R roundMirror, E element) {</span>
+<span class="fc" id="L44">		this.roundMirror = roundMirror;</span>
+<span class="fc" id="L45">		this.element = element;</span>
+<span class="fc" id="L46">		this.doc = ofNullable(roundMirror.getElementUtils().getDocComment(element));</span>
+<span class="fc" id="L47">		this.annotation = ofNullable(roundMirror.getElementUtils().getTypeElement(annotationType));</span>
+<span class="fc" id="L48">	}</span>
+
+	@Override
+	public R getRoundMirror() {
+<span class="fc" id="L52">		return roundMirror;</span>
+	}
+
+	public E getElement() {
+<span class="fc" id="L56">		return element;</span>
+	}
+
+	public String getParamComment() {
+<span class="fc" id="L60">		return doc.map(AbstractElementMirror::extractParamCommentFromJavadoc).orElse(&quot; * \n&quot;);</span>
+	}
+
+	public Optional&lt;AnnotationMirror&gt; getAnnotationMirror() {
+<span class="nc" id="L64">		return annotation.map(a -&gt; getTypeUtils().getDeclaredType(a)).map(a -&gt; element.getAnnotationMirrors().stream()</span>
+<span class="nc" id="L65">				.filter(m -&gt; getTypeUtils().isSameType(a, m.getAnnotationType())).findAny().orElse(null));</span>
+	}
+
+	@Override
+	public ProcessingEnvironment getProcessingEnv() {
+<span class="fc" id="L70">		return roundMirror.getProcessingEnv();</span>
+	}
+
+	private static String extractParamCommentFromJavadoc(String docComment) {
+<span class="fc" id="L74">		boolean insideParam = false;</span>
+<span class="fc" id="L75">		StringBuilder sb = new StringBuilder(&quot; * \n&quot;);</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">		for (String line : docComment.split(&quot;\\R&quot;)) {</span>
+<span class="pc bpc" id="L77" title="3 of 4 branches missed.">			if (insideParam &amp;&amp; line.matches(&quot;^\\s*@.*$&quot;)) {</span>
+<span class="nc" id="L78">				insideParam = false;</span>
+			}
+<span class="fc bfc" id="L80" title="All 2 branches covered.">			if (line.matches(&quot;^\\s*@param.*$&quot;)) {</span>
+<span class="fc" id="L81">				insideParam = true;</span>
+			}
+<span class="fc bfc" id="L83" title="All 2 branches covered.">			if (insideParam) {</span>
+<span class="fc" id="L84">				sb.append(&quot; *&quot;).append(line).append(&quot;\n&quot;);</span>
+			}
+		}
+<span class="fc" id="L87">		return sb.toString();</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

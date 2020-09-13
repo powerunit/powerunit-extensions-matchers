@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CollectionFieldDescription.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.provideprocessor.fields</a> &gt; <span class="el_source">CollectionFieldDescription.java</span></div><h1>CollectionFieldDescription.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.provideprocessor.fields;
+
+import static java.util.Optional.ofNullable;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
+import ch.powerunit.extensions.matchers.provideprocessor.Matchable;
+import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+
+public class CollectionFieldDescription extends DefaultFieldDescription {
+
+	private static final String DEFAULT_JAVADOC_MATCHER_ON_ELEMENTS = &quot;matchersOnElements the matchers on the elements&quot;;
+
+	public CollectionFieldDescription(ProvidesMatchersAnnotatedElementData containingElementMirror,
+			FieldDescriptionMirror mirror) {
+<span class="fc" id="L38">		super(containingElementMirror, mirror);</span>
+<span class="fc" id="L39">	}</span>
+
+	@Override
+	protected Collection&lt;FieldDSLMethod&gt; getSpecificFieldDslMethodFor() {
+<span class="nc" id="L43">		List&lt;FieldDSLMethod&gt; tmp = new ArrayList&lt;&gt;(getFieldDslMethodForIterableAndComparable());</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">		if (!&quot;&quot;.equals(generic)) {</span>
+<span class="nc" id="L45">			tmp.addAll(getDslForIterableWithGeneric());</span>
+		}
+<span class="nc" id="L47">		return tmp;</span>
+	}
+
+	public List&lt;FieldDSLMethod&gt; getFieldDslMethodForIterableAndComparable() {
+<span class="nc" id="L51">		return Arrays.asList(</span>
+<span class="nc" id="L52">				getDslMethodBuilder().withSuffixDeclarationJavadocAndDefault(&quot;IsEmptyIterable&quot;,</span>
+						&quot;that the iterable is empty&quot;, &quot;(org.hamcrest.Matcher)&quot; + MATCHERS + &quot;.emptyIterable()&quot;),
+<span class="nc" id="L54">				getDslMethodBuilder().withSuffixDeclarationJavadocAndDefault(&quot;IsEmpty&quot;, &quot;that the collection is empty&quot;,</span>
+						&quot;(org.hamcrest.Matcher)&quot; + MATCHERS + &quot;.empty()&quot;));
+	}
+
+	public List&lt;FieldDSLMethod&gt; getDslForIterableWithGeneric() {
+<span class="nc" id="L59">		String tgeneric = this.generic;</span>
+<span class="nc" id="L60">		String genericmatcher = &quot;org.hamcrest.Matcher&lt;&quot; + tgeneric + &quot;&gt;&quot;;</span>
+<span class="nc" id="L61">		return Arrays.asList(</span>
+<span class="nc" id="L62">				getDslMethodBuilder().withDeclaration(&quot;Contains&quot;, tgeneric + &quot;... elements&quot;)</span>
+<span class="nc" id="L63">						.withJavaDoc(&quot;that the iterable contains the received elements&quot;, &quot;elements the elements&quot;,</span>
+								MATCHERS + &quot;#contains(java.lang.Object[])&quot;)
+<span class="nc" id="L65">						.havingDefault(MATCHERS + &quot;.contains(elements)&quot;),</span>
+<span class="nc" id="L66">				getDslMethodBuilder().withDeclaration(&quot;Contains&quot;, genericmatcher + &quot;... matchersOnElements&quot;)</span>
+<span class="nc" id="L67">						.withJavaDoc(&quot;that the iterable contains the received elements, using matchers&quot;,</span>
+								DEFAULT_JAVADOC_MATCHER_ON_ELEMENTS, MATCHERS + &quot;#contains(org.hamcrest.Matcher[])&quot;)
+<span class="nc" id="L69">						.havingDefault(MATCHERS + &quot;.contains(matchersOnElements)&quot;),</span>
+<span class="nc" id="L70">				getDslMethodBuilder().withDeclaration(&quot;ContainsInAnyOrder&quot;, tgeneric + &quot;... elements&quot;)</span>
+<span class="nc" id="L71">						.withJavaDoc(&quot;that the iterable contains the received elements in any order&quot;,</span>
+								&quot;elements the elements&quot;, MATCHERS + &quot;#containsInAnyOrder(java.lang.Object[])&quot;)
+<span class="nc" id="L73">						.havingDefault(MATCHERS + &quot;.containsInAnyOrder(elements)&quot;),</span>
+<span class="nc" id="L74">				getDslMethodBuilder().withDeclaration(&quot;ContainsInAnyOrder&quot;, genericmatcher + &quot;... matchersOnElements&quot;)</span>
+<span class="nc" id="L75">						.withJavaDoc(&quot;that the iterable contains the received elements, using matchers in any order&quot;,</span>
+								DEFAULT_JAVADOC_MATCHER_ON_ELEMENTS,
+								MATCHERS + &quot;#containsInAnyOrder(org.hamcrest.Matcher[])&quot;)
+<span class="nc" id="L78">						.havingDefault(MATCHERS + &quot;.containsInAnyOrder(matchersOnElements)&quot;),</span>
+<span class="nc" id="L79">				getDslMethodBuilder()</span>
+<span class="nc" id="L80">						.withDeclaration(&quot;Contains&quot;,</span>
+								&quot;java.util.List&lt;org.hamcrest.Matcher&lt;? super &quot; + tgeneric + &quot;&gt;&gt; matchersOnElements&quot;)
+<span class="nc" id="L82">						.withJavaDoc(&quot;that the iterable contains the received elements, using list of matcher&quot;,</span>
+								DEFAULT_JAVADOC_MATCHER_ON_ELEMENTS, MATCHERS + &quot;#contains(java.util.List)&quot;)
+<span class="nc" id="L84">						.havingDefault(MATCHERS + &quot;.contains(matchersOnElements)&quot;));</span>
+	}
+
+	@Override
+	public String getFieldCopy(String lhs, String rhs, String ignore) {
+<span class="nc bnc" id="L89" title="All 2 branches missed.">		if (!&quot;&quot;.equals(generic)) {</span>
+<span class="nc" id="L90">			return getFieldCopyForList(lhs, rhs);</span>
+		}
+<span class="nc" id="L92">		return super.getFieldCopy(lhs, rhs, ignore);</span>
+	}
+
+	protected String getFieldCopyForList(String lhs, String rhs) {
+<span class="nc" id="L96">		String fieldAccessor = getFieldAccessor();</span>
+<span class="nc" id="L97">		String fieldName = getFieldName();</span>
+<span class="nc" id="L98">		return &quot;if(&quot; + rhs + &quot;.&quot; + fieldAccessor + &quot;==null) {\n  &quot; + lhs + &quot;.&quot; + fieldName + &quot;(&quot; + MATCHERS</span>
+				+ &quot;.nullValue());\n} else if (&quot; + rhs + &quot;.&quot; + fieldAccessor + &quot;.isEmpty()) {\n  &quot; + lhs + &quot;.&quot;
+				+ fieldName + &quot;IsEmptyIterable();\n} else {\n  &quot; + lhs + &quot;.&quot; + fieldName + &quot;Contains(&quot; + rhs + &quot;.&quot;
+<span class="nc" id="L101">				+ fieldAccessor + &quot;.stream().map(&quot; + generateMatcherBuilderReferenceFor(generic)</span>
+				+ &quot;).collect(java.util.stream.Collectors.toList()));\n}&quot;;
+	}
+
+	protected String generateMatcherBuilderReferenceFor(String generic) {
+<span class="nc" id="L106">		return ofNullable(getByName(generic)).filter(Matchable::hasWithSameValue).map(t -&gt; t.getWithSameValue(true))</span>
+<span class="nc" id="L107">				.orElse(MATCHERS + &quot;::is&quot;);</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

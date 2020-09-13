@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Matchable.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.provideprocessor</a> &gt; <span class="el_source">Matchable.java</span></div><h1>Matchable.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.provideprocessor;
+
+public interface Matchable {
+	String getMethodShortClassName();
+
+	boolean hasWithSameValue();
+
+	String getFullyQualifiedNameOfGeneratedClass();
+
+	String getSimpleNameOfGeneratedInterfaceMatcher();
+
+	default long getCompatibility() {
+		// 0x01 : withSameValue also provides a version to ignore fields
+		// 0x02 : withSameValue also use a list of parent to detect cycle
+		// 0x04 : withSameValue also support a post processor
+<span class="fc" id="L35">		return 0x07;</span>
+	}
+
+	default String getMethodNameDSLWithSameValue() {
+<span class="fc" id="L39">		return getMethodShortClassName() + &quot;WithSameValue&quot;;</span>
+	}
+
+	default String getMethodNameDSLWithParent() {
+<span class="fc" id="L43">		return getMethodShortClassName() + &quot;WithParent&quot;;</span>
+	}
+
+	default String getWithSameValue(boolean hasReference) {
+<span class="fc bfc" id="L47" title="All 2 branches covered.">		return getFullyQualifiedNameOfGeneratedClass() + (hasReference ? &quot;::&quot; : &quot;.&quot;) + getMethodNameDSLWithSameValue();</span>
+	}
+
+	default boolean supportIgnore() {
+<span class="fc bfc" id="L51" title="All 2 branches covered.">		return (getCompatibility() &amp; 0x01) == 0x01;</span>
+	}
+
+	default boolean supportCycleDetectionV1() {
+<span class="fc bfc" id="L55" title="All 2 branches covered.">		return (getCompatibility() &amp; 0x02) == 0x02;</span>
+	}
+	
+	default boolean supportSameValueWithParentPostPrecessor() {
+<span class="fc bfc" id="L59" title="All 2 branches covered.">		return (getCompatibility() &amp; 0x04) == 0x04;</span>
+	}
+
+	static Matchable of(String fullName, String methodName, String interfaceName, boolean hasWithSameValue,
+			long compatibility) {
+<span class="fc" id="L64">		return new Matchable() {</span>
+
+			@Override
+			public boolean hasWithSameValue() {
+<span class="fc" id="L68">				return hasWithSameValue;</span>
+			}
+
+			@Override
+			public String getSimpleNameOfGeneratedInterfaceMatcher() {
+<span class="fc" id="L73">				return interfaceName;</span>
+			}
+
+			@Override
+			public String getMethodShortClassName() {
+<span class="fc" id="L78">				return methodName;</span>
+			}
+
+			@Override
+			public String getFullyQualifiedNameOfGeneratedClass() {
+<span class="fc" id="L83">				return fullName;</span>
+			}
+
+			@Override
+			public long getCompatibility() {
+<span class="fc" id="L88">				return compatibility;</span>
+			}
+		};
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

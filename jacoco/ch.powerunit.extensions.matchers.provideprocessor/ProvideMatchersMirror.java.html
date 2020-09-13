@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProvideMatchersMirror.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.provideprocessor</a> &gt; <span class="el_source">ProvideMatchersMirror.java</span></div><h1>ProvideMatchersMirror.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.provideprocessor;
+
+import static ch.powerunit.extensions.matchers.common.CommonUtils.asStandardMethodName;
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.function.Function;
+
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
+
+import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.DSLExtension;
+
+public class ProvideMatchersMirror extends ProvideMatchersAnnotationMirror implements Matchable {
+
+	private static final String DEFAULT_PARAM_PARENT = &quot; * @param &lt;_PARENT&gt; used to reference, if necessary, a parent for this builder. By default Void is used an indicate no parent builder.\n&quot;;
+
+	protected final String simpleNameOfGeneratedClass;
+	protected final String packageNameOfGeneratedClass;
+	protected final String simpleNameOfGeneratedInterfaceMatcher;
+
+	protected final String methodShortClassName;
+
+	public ProvideMatchersMirror(RoundMirror roundMirror, TypeElement annotatedElement) {
+<span class="fc" id="L50">		super(roundMirror, annotatedElement);</span>
+<span class="fc" id="L51">		this.simpleNameOfGeneratedClass = generateSimpleNameOfGeneratedClass(annotatedElement);</span>
+<span class="fc" id="L52">		this.packageNameOfGeneratedClass = generatePackageNameOfGeneratedClass(annotatedElement,</span>
+<span class="fc" id="L53">				getProcessingEnv().getElementUtils());</span>
+<span class="fc" id="L54">		this.simpleNameOfGeneratedInterfaceMatcher = getSimpleNameOfClassAnnotated() + &quot;Matcher&quot;;</span>
+<span class="fc" id="L55">		String simplename = getSimpleNameOfClassAnnotated();</span>
+<span class="fc" id="L56">		this.methodShortClassName = asStandardMethodName(simplename);</span>
+<span class="fc" id="L57">	}</span>
+
+	private String generateSimpleNameOfGeneratedClass(TypeElement annotatedElement) {
+<span class="fc" id="L60">		ProvideMatchers pm = realAnnotation;</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">		if (&quot;&quot;.equals(pm.matchersClassName())) {</span>
+<span class="fc" id="L62">			return getSimpleName(annotatedElement) + &quot;Matchers&quot;;</span>
+		} else {
+<span class="fc" id="L64">			return pm.matchersClassName();</span>
+		}
+	}
+
+	private String generatePackageNameOfGeneratedClass(TypeElement annotatedElement, Elements elements) {
+<span class="fc" id="L69">		ProvideMatchers pm = realAnnotation;</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">		if (&quot;&quot;.equals(pm.matchersPackageName())) {</span>
+<span class="fc" id="L71">			return getQualifiedName(elements.getPackageOf(annotatedElement));</span>
+		} else {
+<span class="fc" id="L73">			return pm.matchersPackageName();</span>
+		}
+	}
+
+	public String getMethodShortClassName() {
+<span class="fc" id="L78">		return methodShortClassName;</span>
+	}
+
+	public final String getSimpleNameOfGeneratedClass() {
+<span class="fc" id="L82">		return simpleNameOfGeneratedClass;</span>
+	}
+
+	public final String getFullyQualifiedNameOfGeneratedClass() {
+<span class="fc" id="L86">		return packageNameOfGeneratedClass + &quot;.&quot; + simpleNameOfGeneratedClass;</span>
+	}
+
+	public final String getPackageNameOfGeneratedClass() {
+<span class="fc" id="L90">		return packageNameOfGeneratedClass;</span>
+	}
+
+	public final Collection&lt;DSLExtension&gt; getDSLExtension() {
+<span class="fc" id="L94">		return DSLExtension.EXTENSION.stream().filter(e -&gt; e.accept(moreMethod()))</span>
+<span class="fc" id="L95">				.collect(collectingAndThen(toList(), Collections::unmodifiableList));</span>
+	}
+
+	private Function&lt;String, String&gt; asJavadocFormat(String prefix) {
+<span class="fc" id="L99">		return t -&gt; String.format(&quot;%1$s%2$s\n&quot;, prefix, t);</span>
+	}
+
+	private String paramToJavadoc(Optional&lt;String&gt; param) {
+<span class="fc" id="L103">		return param.map(p -&gt; stream(p.split(&quot;\n&quot;))).map(s -&gt; s.map(asJavadocFormat(&quot; * @param &quot;)))</span>
+<span class="fc" id="L104">				.map(s -&gt; s.collect(joining())).orElse(&quot;&quot;);</span>
+	}
+
+	public String generateDefaultJavaDoc(Optional&lt;String&gt; moreDetails, Optional&lt;String&gt; param, String returnDescription,
+			boolean withParent) {
+<span class="fc" id="L109">		return String.format(&quot;/**\n * %1$s.\n%2$s%3$s%4$s * \n%5$s * @return %6$s\n */\n&quot;,</span>
+<span class="fc" id="L110">				getDefaultDescriptionForDsl(), moreDetails.map(asJavadocFormat(&quot; * &lt;p&gt;\n * &quot;)).orElse(&quot;&quot;),</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">				paramToJavadoc(param), getParamComment(), withParent ? DEFAULT_PARAM_PARENT : &quot;&quot;, returnDescription);</span>
+	}
+
+	private String getDefaultDescriptionForDsl() {
+<span class="fc" id="L115">		return &quot;Start a DSL matcher for the &quot; + getDefaultLinkForAnnotatedClass();</span>
+	}
+
+	public Optional&lt;Matchable&gt; getParentMirror() {
+<span class="nc" id="L119">		RoundMirror rm = getRoundMirror();</span>
+<span class="nc" id="L120">		return Optional.ofNullable(</span>
+<span class="nc" id="L121">				rm.getByName(getQualifiedName(((TypeElement) rm.getTypeUtils().asElement(element.getSuperclass())))));</span>
+	}
+
+	public boolean hasWithSameValue() {
+<span class="nc bnc" id="L125" title="All 6 branches missed.">		return !hasSuperClass() || getParentMirror().isPresent() || allowWeakWithSameValue;</span>
+	}
+
+	/**
+	 * @return the simpleNameOfGeneratedInterfaceMatcher
+	 */
+	public String getSimpleNameOfGeneratedInterfaceMatcher() {
+<span class="fc" id="L132">		return simpleNameOfGeneratedInterfaceMatcher;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

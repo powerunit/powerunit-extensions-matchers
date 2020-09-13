@@ -1,0 +1,28 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>ListJoiningTest xref</title>
+<link type="text/css" rel="stylesheet" href="../../../../../stylesheet.css" />
+</head>
+<body>
+<div id="overview"><a href="../../../../../../testapidocs/ch/powerunit/extensions/matchers/common/ListJoiningTest.html">View Javadoc</a></div><pre>
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <strong class="jxr_keyword">package</strong> ch.powerunit.extensions.matchers.common;
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> ch.powerunit.Test;
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <strong class="jxr_keyword">import</strong> ch.powerunit.extensions.matchers.TestSuiteSupport;
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="ListJoiningTest" href="../../../../../ch/powerunit/extensions/matchers/common/ListJoiningTest.html#ListJoiningTest">ListJoiningTest</a> <strong class="jxr_keyword">implements</strong> <a name="TestSuiteSupport" href="../../../../../ch/powerunit/extensions/matchers/TestSuiteSupport.html#TestSuiteSupport">TestSuiteSupport</a> {
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   	@Test(fastFail = false)
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testAsString() {
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  		assertThat(ListJoining.accepting(String.<strong class="jxr_keyword">class</strong>).withMapper(s -&gt; s + <span class="jxr_string">";"</span>).withDelimiter(<span class="jxr_string">"\n"</span>)
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  				.withPrefixAndSuffix(<span class="jxr_string">"{"</span>, <span class="jxr_string">"}"</span>).asString(<span class="jxr_string">"x"</span>, <span class="jxr_string">"y"</span>)).is(<span class="jxr_string">"{x;\ny;}"</span>);
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  		assertThat(ListJoining.commaSeparated().asString(<span class="jxr_string">"1"</span>, <span class="jxr_string">"2"</span>)).is(<span class="jxr_string">"1,2"</span>);
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  		assertThat(ListJoining.commaSeparated(x -&gt; x + <span class="jxr_string">":"</span>).asString(<span class="jxr_string">"1"</span>, <span class="jxr_string">"2"</span>)).is(<span class="jxr_string">"1:,2:"</span>);
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  	}
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  }
+</pre>
+<hr/>
+<div id="footer">Copyright &#169; 2020. All rights reserved.</div>
+</body>
+</html>

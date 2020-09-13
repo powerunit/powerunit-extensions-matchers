@@ -1,0 +1,419 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/**<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Powerunit - A JDK1.8 test framework<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * Copyright (C) 2014 Mathieu Boretti.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * This file is part of Powerunit<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *<a name="line.6"></a>
+<span class="sourceLineNo">007</span> * Powerunit is free software: you can redistribute it and/or modify<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * it under the terms of the GNU General Public License as published by<a name="line.8"></a>
+<span class="sourceLineNo">009</span> * the Free Software Foundation, either version 3 of the License, or<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * (at your option) any later version.<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * Powerunit is distributed in the hope that it will be useful,<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * but WITHOUT ANY WARRANTY; without even the implied warranty of<a name="line.13"></a>
+<span class="sourceLineNo">014</span> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * GNU General Public License for more details.<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * You should have received a copy of the GNU General Public License<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.<a name="line.18"></a>
+<span class="sourceLineNo">019</span> */<a name="line.19"></a>
+<span class="sourceLineNo">020</span>package ch.powerunit.extensions.matchers;<a name="line.20"></a>
+<span class="sourceLineNo">021</span><a name="line.21"></a>
+<span class="sourceLineNo">022</span>import java.lang.annotation.Documented;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>import java.lang.annotation.ElementType;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>import java.lang.annotation.Inherited;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>import java.lang.annotation.Retention;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>import java.lang.annotation.RetentionPolicy;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>import java.lang.annotation.Target;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>/**<a name="line.29"></a>
+<span class="sourceLineNo">030</span> * This annotation can be used on a java class, to mark this class as supporting<a name="line.30"></a>
+<span class="sourceLineNo">031</span> * generation of hamcrest matcher.<a name="line.31"></a>
+<span class="sourceLineNo">032</span> * &lt;p&gt;<a name="line.32"></a>
+<span class="sourceLineNo">033</span> * &lt;b&gt;This annotation is not supported on interface and enum. A error will be<a name="line.33"></a>
+<span class="sourceLineNo">034</span> * generated in this case.&lt;/b&gt;<a name="line.34"></a>
+<span class="sourceLineNo">035</span> * &lt;p&gt;<a name="line.35"></a>
+<span class="sourceLineNo">036</span> * This annotation is processed by an annotation processor, in order to generate<a name="line.36"></a>
+<span class="sourceLineNo">037</span> * :<a name="line.37"></a>
+<span class="sourceLineNo">038</span> * &lt;ul&gt;<a name="line.38"></a>
+<span class="sourceLineNo">039</span> * &lt;li&gt;One class for each annotated classes, that will contains Hamcrest<a name="line.39"></a>
+<span class="sourceLineNo">040</span> * Matchers for the class.&lt;/li&gt;<a name="line.40"></a>
+<span class="sourceLineNo">041</span> * &lt;li&gt;In case the annotation processor parameter<a name="line.41"></a>
+<span class="sourceLineNo">042</span> * "{@code ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor.factory}"<a name="line.42"></a>
+<span class="sourceLineNo">043</span> * is set, this value define the fully qualified name of a interface that will<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * be generated and will contains all &lt;i&gt;start method&lt;/i&gt; allowing to create<a name="line.44"></a>
+<span class="sourceLineNo">045</span> * instance of the various matchers.&lt;/li&gt;<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * &lt;/ul&gt;<a name="line.46"></a>
+<span class="sourceLineNo">047</span> * &lt;p&gt;<a name="line.47"></a>
+<span class="sourceLineNo">048</span> * &lt;i&gt;The generated classes are related with the hamcrest framework ; This<a name="line.48"></a>
+<span class="sourceLineNo">049</span> * library will be required in the classpath in order to compile or run the<a name="line.49"></a>
+<span class="sourceLineNo">050</span> * generated classes.&lt;/i&gt;<a name="line.50"></a>
+<span class="sourceLineNo">051</span> * &lt;p&gt;<a name="line.51"></a>
+<span class="sourceLineNo">052</span> * &lt;b&gt;Concept regarding the generated Matchers&lt;/b&gt;<a name="line.52"></a>
+<span class="sourceLineNo">053</span> * &lt;p&gt;<a name="line.53"></a>
+<span class="sourceLineNo">054</span> * Hamcrest Matchers can be used, for example, with test framework (JUnit,<a name="line.54"></a>
+<span class="sourceLineNo">055</span> * PowerUnit, etc.) to validate expectation on object. Hamcrest provides several<a name="line.55"></a>
+<span class="sourceLineNo">056</span> * matchers to validate some information of an object (is an instance of, is, an<a name="line.56"></a>
+<span class="sourceLineNo">057</span> * array contains some value, etc.), but can't provide ready to use matcher for<a name="line.57"></a>
+<span class="sourceLineNo">058</span> * your own object. When trying to validate properties of object, no syntaxic<a name="line.58"></a>
+<span class="sourceLineNo">059</span> * sugar (ie. autocompletion) are available and only the generic method can be<a name="line.59"></a>
+<span class="sourceLineNo">060</span> * used.<a name="line.60"></a>
+<span class="sourceLineNo">061</span> * &lt;p&gt;<a name="line.61"></a>
+<span class="sourceLineNo">062</span> * With this annotation, it is possible to provide &lt;i&gt;builder-like&lt;/i&gt; method,<a name="line.62"></a>
+<span class="sourceLineNo">063</span> * based on hamcrest, to validate fields of an object. To do so, the annotation<a name="line.63"></a>
+<span class="sourceLineNo">064</span> * processor do the following :<a name="line.64"></a>
+<span class="sourceLineNo">065</span> * &lt;ul&gt;<a name="line.65"></a>
+<span class="sourceLineNo">066</span> * &lt;li&gt;For each public field or public method starting with {@code get} or<a name="line.66"></a>
+<span class="sourceLineNo">067</span> * {@code is} without any argument, generated a private matcher based on the<a name="line.67"></a>
+<span class="sourceLineNo">068</span> * {@code org.hamcrest.FeatureMatcher} for this field ; this will provide a way<a name="line.68"></a>
+<span class="sourceLineNo">069</span> * to validate the value of one specific &lt;i&gt;property&lt;/i&gt;.&lt;/li&gt;<a name="line.69"></a>
+<span class="sourceLineNo">070</span> * &lt;li&gt;Generate an interface and the related implementation of a matcher (which<a name="line.70"></a>
+<span class="sourceLineNo">071</span> * is also a builder) on the annotated classes itself, which will validate all<a name="line.71"></a>
+<span class="sourceLineNo">072</span> * of the &lt;i&gt;properties&lt;/i&gt;.&lt;/li&gt;<a name="line.72"></a>
+<span class="sourceLineNo">073</span> * &lt;li&gt;Generate various methods, with a name based on the annotated class, to<a name="line.73"></a>
+<span class="sourceLineNo">074</span> * start the creation of the matcher.&lt;/li&gt;<a name="line.74"></a>
+<span class="sourceLineNo">075</span> * &lt;/ul&gt;<a name="line.75"></a>
+<span class="sourceLineNo">076</span> * The annotation processor will also generate javadoc and try to retrieve from<a name="line.76"></a>
+<span class="sourceLineNo">077</span> * the javadoc of the annotated element the information regarding generic<a name="line.77"></a>
+<span class="sourceLineNo">078</span> * attribute.<a name="line.78"></a>
+<span class="sourceLineNo">079</span> * &lt;p&gt;<a name="line.79"></a>
+<span class="sourceLineNo">080</span> * The processor will also try, for field which are not based on generics, to<a name="line.80"></a>
+<span class="sourceLineNo">081</span> * link the generated matchers between them, in order to provide chaining of the<a name="line.81"></a>
+<span class="sourceLineNo">082</span> * Fields.<a name="line.82"></a>
+<span class="sourceLineNo">083</span> * &lt;p&gt;<a name="line.83"></a>
+<span class="sourceLineNo">084</span> * &lt;i&gt;First example&lt;/i&gt;<a name="line.84"></a>
+<span class="sourceLineNo">085</span> * &lt;p&gt;<a name="line.85"></a>
+<span class="sourceLineNo">086</span> * Let's assume the following class, containing one single field, will be<a name="line.86"></a>
+<span class="sourceLineNo">087</span> * processed by the annotation processor :<a name="line.87"></a>
+<span class="sourceLineNo">088</span> * <a name="line.88"></a>
+<span class="sourceLineNo">089</span> * &lt;pre&gt;<a name="line.89"></a>
+<span class="sourceLineNo">090</span> * package ch.powerunit.extensions.matchers.samples;<a name="line.90"></a>
+<span class="sourceLineNo">091</span> *<a name="line.91"></a>
+<span class="sourceLineNo">092</span> * import ch.powerunit.extensions.matchers.ProvideMatchers;<a name="line.92"></a>
+<span class="sourceLineNo">093</span> *<a name="line.93"></a>
+<span class="sourceLineNo">094</span> * &amp;#64;ProvideMatchers<a name="line.94"></a>
+<span class="sourceLineNo">095</span> * public class SimplePojo {<a name="line.95"></a>
+<span class="sourceLineNo">096</span> *      public String oneField;<a name="line.96"></a>
+<span class="sourceLineNo">097</span> * }<a name="line.97"></a>
+<span class="sourceLineNo">098</span> * &lt;/pre&gt;<a name="line.98"></a>
+<span class="sourceLineNo">099</span> * <a name="line.99"></a>
+<span class="sourceLineNo">100</span> * In this case a class named {@code SimplePojoMatchers} will be generated. As a<a name="line.100"></a>
+<span class="sourceLineNo">101</span> * public interface, the following methods will be available :<a name="line.101"></a>
+<span class="sourceLineNo">102</span> * &lt;ul&gt;<a name="line.102"></a>
+<span class="sourceLineNo">103</span> * &lt;li&gt;{@code public static SimplePojoMatcher simplePojoWith()}: This will<a name="line.103"></a>
+<span class="sourceLineNo">104</span> * return a matcher (see below), which by default matches any instance of the<a name="line.104"></a>
+<span class="sourceLineNo">105</span> * SimplePojo class.&lt;/li&gt;<a name="line.105"></a>
+<span class="sourceLineNo">106</span> * &lt;li&gt;<a name="line.106"></a>
+<span class="sourceLineNo">107</span> * {@code public static SimplePojoMatcher simplePojoWithSameValue(SimplePojo  other)}<a name="line.107"></a>
+<span class="sourceLineNo">108</span> * : This will return a matcher, which by default matches an instance of the<a name="line.108"></a>
+<span class="sourceLineNo">109</span> * SimplePojo having the field {@code oneField} matching (Matcher {@code is} of<a name="line.109"></a>
+<span class="sourceLineNo">110</span> * hamcrest) of the reference object.&lt;/li&gt;<a name="line.110"></a>
+<span class="sourceLineNo">111</span> * &lt;/ul&gt;<a name="line.111"></a>
+<span class="sourceLineNo">112</span> * The returned interface is already a correct hamcrest matcher. This interface<a name="line.112"></a>
+<span class="sourceLineNo">113</span> * provide method that set the expectating on the various fields. As in this<a name="line.113"></a>
+<span class="sourceLineNo">114</span> * case, where is only one field, the returned interface ensure that once the<a name="line.114"></a>
+<span class="sourceLineNo">115</span> * expected is defined, it is not possible to modify it. Depending of the type<a name="line.115"></a>
+<span class="sourceLineNo">116</span> * of the field, various methods are generated to define the expectation :<a name="line.116"></a>
+<span class="sourceLineNo">117</span> * &lt;ul&gt;<a name="line.117"></a>
+<span class="sourceLineNo">118</span> * &lt;li&gt;Two standards methods are defined for all type of fields : {@code Matcher<a name="line.118"></a>
+<span class="sourceLineNo">119</span> * &lt;SimplePojo&gt; oneField(Matcher&lt;? super java.lang.String&gt; matcher)} and<a name="line.119"></a>
+<span class="sourceLineNo">120</span> * {@code Matcher&lt;SimplePojo&gt; oneField(String value)}. The second one is a<a name="line.120"></a>
+<span class="sourceLineNo">121</span> * shortcut to validate the field with the {@code is} Matcher and the first one<a name="line.121"></a>
+<span class="sourceLineNo">122</span> * accept another matcher ; The method with matcher parameter ensures that it is<a name="line.122"></a>
+<span class="sourceLineNo">123</span> * possible to combine any other matcher provided by hamcrest or any others<a name="line.123"></a>
+<span class="sourceLineNo">124</span> * extensions.<a name="line.124"></a>
+<span class="sourceLineNo">125</span> * &lt;li&gt;As the field is a String, others special expectation (shortcut) are<a name="line.125"></a>
+<span class="sourceLineNo">126</span> * provided, for example : {@code oneFieldComparesEqualTo},<a name="line.126"></a>
+<span class="sourceLineNo">127</span> * {@code oneFieldLessThan}, {@code oneFieldStartsWith}, etc.&lt;/li&gt;<a name="line.127"></a>
+<span class="sourceLineNo">128</span> * &lt;/ul&gt;<a name="line.128"></a>
+<span class="sourceLineNo">129</span> * &lt;i&gt;Second example&lt;/i&gt;<a name="line.129"></a>
+<span class="sourceLineNo">130</span> * &lt;p&gt;<a name="line.130"></a>
+<span class="sourceLineNo">131</span> * In case the annotated contains several fields, the generated &lt;i&gt;DSL&lt;/i&gt;<a name="line.131"></a>
+<span class="sourceLineNo">132</span> * provide chained methods, for example<a name="line.132"></a>
+<span class="sourceLineNo">133</span> * {@code TwoFieldsPojoMatcher firstField(Matcher&lt;? super String&gt; matcher)} and<a name="line.133"></a>
+<span class="sourceLineNo">134</span> * {@code TwoFieldsPojoMatcher secondField(Matcher&lt;? super String&gt; matcher)}.<a name="line.134"></a>
+<span class="sourceLineNo">135</span> * <a name="line.135"></a>
+<span class="sourceLineNo">136</span> * Also, depending on the class, other &lt;i&gt;with&lt;/i&gt; methods may be provided.<a name="line.136"></a>
+<span class="sourceLineNo">137</span> * &lt;p&gt;<a name="line.137"></a>
+<span class="sourceLineNo">138</span> * &lt;i&gt;Usage example&lt;/i&gt;<a name="line.138"></a>
+<span class="sourceLineNo">139</span> * &lt;p&gt;<a name="line.139"></a>
+<span class="sourceLineNo">140</span> * Assuming powerunit as a test framework, the usage of the matcher will look<a name="line.140"></a>
+<span class="sourceLineNo">141</span> * like :<a name="line.141"></a>
+<span class="sourceLineNo">142</span> * <a name="line.142"></a>
+<span class="sourceLineNo">143</span> * &lt;pre&gt;<a name="line.143"></a>
+<span class="sourceLineNo">144</span> * &amp;#64;Test<a name="line.144"></a>
+<span class="sourceLineNo">145</span> * public void testOKMatcherWithComparable() {<a name="line.145"></a>
+<span class="sourceLineNo">146</span> *      Pojo1 p = new Pojo1();<a name="line.146"></a>
+<span class="sourceLineNo">147</span> *      p.msg2 = "12";<a name="line.147"></a>
+<span class="sourceLineNo">148</span> *      assertThat(p).is(Pojo1Matchers.pojo1With().msg2ComparesEqualTo("12"));<a name="line.148"></a>
+<span class="sourceLineNo">149</span> * }<a name="line.149"></a>
+<span class="sourceLineNo">150</span> * <a name="line.150"></a>
+<span class="sourceLineNo">151</span> * &lt;/pre&gt;<a name="line.151"></a>
+<span class="sourceLineNo">152</span> * <a name="line.152"></a>
+<span class="sourceLineNo">153</span> * Assuming the {@code msg2} is change to the value {@code 11}, the resulting<a name="line.153"></a>
+<span class="sourceLineNo">154</span> * unit test error will look like (the Pojo1 classes contains several fields) :<a name="line.154"></a>
+<span class="sourceLineNo">155</span> * <a name="line.155"></a>
+<span class="sourceLineNo">156</span> * &lt;pre&gt;<a name="line.156"></a>
+<span class="sourceLineNo">157</span> * expecting an instance of ch.powerunit.extensions.matchers.samples.Pojo1 with<a name="line.157"></a>
+<span class="sourceLineNo">158</span> * [msg2 a value equal to "12"]<a name="line.158"></a>
+<span class="sourceLineNo">159</span> * [msg3 ANYTHING]<a name="line.159"></a>
+<span class="sourceLineNo">160</span> * [msg4 ANYTHING]<a name="line.160"></a>
+<span class="sourceLineNo">161</span> * [msg5 ANYTHING]<a name="line.161"></a>
+<span class="sourceLineNo">162</span> * [msg6 ANYTHING]<a name="line.162"></a>
+<span class="sourceLineNo">163</span> * [msg7 ANYTHING]<a name="line.163"></a>
+<span class="sourceLineNo">164</span> * [msg8 ANYTHING]<a name="line.164"></a>
+<span class="sourceLineNo">165</span> * [msg9 ANYTHING]<a name="line.165"></a>
+<span class="sourceLineNo">166</span> * [msg12 ANYTHING]<a name="line.166"></a>
+<span class="sourceLineNo">167</span> * [msg1 ANYTHING]<a name="line.167"></a>
+<span class="sourceLineNo">168</span> * [myBoolean ANYTHING]<a name="line.168"></a>
+<span class="sourceLineNo">169</span> * [oneBoolean ANYTHING]<a name="line.169"></a>
+<span class="sourceLineNo">170</span> * but [msg2 "11" was less than "12"]<a name="line.170"></a>
+<span class="sourceLineNo">171</span> * <a name="line.171"></a>
+<span class="sourceLineNo">172</span> * &lt;/pre&gt;<a name="line.172"></a>
+<span class="sourceLineNo">173</span> * <a name="line.173"></a>
+<span class="sourceLineNo">174</span> * &lt;hr&gt;<a name="line.174"></a>
+<span class="sourceLineNo">175</span> * &lt;p&gt;<a name="line.175"></a>
+<span class="sourceLineNo">176</span> * &lt;b&gt;Overriding the way the matchers are generated&lt;/b&gt;<a name="line.176"></a>
+<span class="sourceLineNo">177</span> * &lt;ul&gt;<a name="line.177"></a>
+<span class="sourceLineNo">178</span> * &lt;li&gt;The attribute {@link #matchersClassName() matchersClassName} may be used<a name="line.178"></a>
+<span class="sourceLineNo">179</span> * to change the simple name (&lt;b&gt;NOT THE FULLY QUALIFIED NAME&lt;/b&gt;) of the<a name="line.179"></a>
+<span class="sourceLineNo">180</span> * generated class.&lt;/li&gt;<a name="line.180"></a>
+<span class="sourceLineNo">181</span> * &lt;li&gt;The attribute {@link #matchersPackageName() matchersPackageName} may be<a name="line.181"></a>
+<span class="sourceLineNo">182</span> * used to change the package name of the generated class.&lt;/li&gt;<a name="line.182"></a>
+<span class="sourceLineNo">183</span> * &lt;/ul&gt;<a name="line.183"></a>
+<span class="sourceLineNo">184</span> * &lt;hr&gt;<a name="line.184"></a>
+<span class="sourceLineNo">185</span> * &lt;p&gt;<a name="line.185"></a>
+<span class="sourceLineNo">186</span> * &lt;b&gt;Extensions&lt;/b&gt;<a name="line.186"></a>
+<span class="sourceLineNo">187</span> * &lt;p&gt;<a name="line.187"></a>
+<span class="sourceLineNo">188</span> * The framework, since version 0.1.0, is able to detect others library and use<a name="line.188"></a>
+<span class="sourceLineNo">189</span> * it :<a name="line.189"></a>
+<span class="sourceLineNo">190</span> * &lt;ul&gt;<a name="line.190"></a>
+<span class="sourceLineNo">191</span> * &lt;li&gt;If &lt;a href="https://github.com/exparity/hamcrest-date"&gt;Hamcrest Date&lt;/a&gt;<a name="line.191"></a>
+<span class="sourceLineNo">192</span> * is available, additional DSL method are added for the Java 8 Date objects.<a name="line.192"></a>
+<span class="sourceLineNo">193</span> * &lt;/li&gt;<a name="line.193"></a>
+<span class="sourceLineNo">194</span> * &lt;li&gt;If &lt;a href="https://github.com/NitorCreations/matchers"&gt;Hamcrest 1.3<a name="line.194"></a>
+<span class="sourceLineNo">195</span> * Utility Matchers&lt;/a&gt; is available, additional DSL method are added for the<a name="line.195"></a>
+<span class="sourceLineNo">196</span> * collections.&lt;/li&gt;<a name="line.196"></a>
+<span class="sourceLineNo">197</span> * &lt;li&gt;If &lt;a href="https://github.com/spotify/java-hamcrest"&gt;Spotify Hamcrest<a name="line.197"></a>
+<span class="sourceLineNo">198</span> * (jackson)&lt;/a&gt; is available and the {@link #JSON_EXTENSION} is used on<a name="line.198"></a>
+<span class="sourceLineNo">199</span> * {@link #extensions()}, then method to validate String as json are added.&lt;/li&gt;<a name="line.199"></a>
+<span class="sourceLineNo">200</span> * &lt;li&gt;If &lt;a href="https://github.com/orien/bean-matchers"&gt;Bean Matchers&lt;/a&gt; is<a name="line.200"></a>
+<span class="sourceLineNo">201</span> * available additional method to validate Class field.&lt;/li&gt;<a name="line.201"></a>
+<span class="sourceLineNo">202</span> * &lt;/ul&gt;<a name="line.202"></a>
+<span class="sourceLineNo">203</span> * &lt;hr&gt;<a name="line.203"></a>
+<span class="sourceLineNo">204</span> * &lt;p&gt;<a name="line.204"></a>
+<span class="sourceLineNo">205</span> * &lt;b&gt;Linking between matchers&lt;/b&gt;<a name="line.205"></a>
+<span class="sourceLineNo">206</span> * &lt;p&gt;<a name="line.206"></a>
+<span class="sourceLineNo">207</span> * The annotation processor try to link the generated matchers. The goal is that<a name="line.207"></a>
+<span class="sourceLineNo">208</span> * when a field or the super class also have a matchers, this one is used. It is<a name="line.208"></a>
+<span class="sourceLineNo">209</span> * not always possible to link everything but the concept is the following :<a name="line.209"></a>
+<span class="sourceLineNo">210</span> * &lt;ul&gt;<a name="line.210"></a>
+<span class="sourceLineNo">211</span> * &lt;li&gt;If the super class is compiled at the same time and is annotated with<a name="line.211"></a>
+<span class="sourceLineNo">212</span> * this annotation, the annotation processor may add a control on the parent and<a name="line.212"></a>
+<span class="sourceLineNo">213</span> * generated chaining method.&lt;/li&gt;<a name="line.213"></a>
+<span class="sourceLineNo">214</span> * &lt;li&gt;If a field class is compiled at the same time and is annotated with this<a name="line.214"></a>
+<span class="sourceLineNo">215</span> * annotation, the annotation processor may add chaining and dedicated control<a name="line.215"></a>
+<span class="sourceLineNo">216</span> * that use this matcher.&lt;/li&gt;<a name="line.216"></a>
+<span class="sourceLineNo">217</span> * &lt;li&gt;If a matcher, following the convention of this framework is detected for<a name="line.217"></a>
+<span class="sourceLineNo">218</span> * the super class or a field (already compiled for example), the annotation<a name="line.218"></a>
+<span class="sourceLineNo">219</span> * processor may also apply the previous rules by using this detected<a name="line.219"></a>
+<span class="sourceLineNo">220</span> * matcher.&lt;/li&gt;<a name="line.220"></a>
+<span class="sourceLineNo">221</span> * &lt;li&gt;The annotation processor may also try to find matcher for element of Map,<a name="line.221"></a>
+<span class="sourceLineNo">222</span> * List, Array.&lt;/li&gt;<a name="line.222"></a>
+<span class="sourceLineNo">223</span> * &lt;/ul&gt;<a name="line.223"></a>
+<span class="sourceLineNo">224</span> * &lt;hr&gt;<a name="line.224"></a>
+<span class="sourceLineNo">225</span> * &lt;p&gt;<a name="line.225"></a>
+<span class="sourceLineNo">226</span> * &lt;b&gt;Ignore field in &lt;i&gt;WithSameValue&lt;/i&gt; matchers&lt;/b&gt;<a name="line.226"></a>
+<span class="sourceLineNo">227</span> * &lt;p&gt;<a name="line.227"></a>
+<span class="sourceLineNo">228</span> * Since version 0.3.0, it is possible to pass a list of field names to be<a name="line.228"></a>
+<span class="sourceLineNo">229</span> * ignored when constructing a &lt;i&gt;WithSameValue&lt;/i&gt; matcher. The generated<a name="line.229"></a>
+<span class="sourceLineNo">230</span> * matcher tries to also apply in cascade this ignore feature to included<a name="line.230"></a>
+<span class="sourceLineNo">231</span> * object. The syntax to ignore fields of another fields is to use<a name="line.231"></a>
+<span class="sourceLineNo">232</span> * &lt;code&gt;fieldName.fieldNameInside&lt;/code&gt;.<a name="line.232"></a>
+<span class="sourceLineNo">233</span> * &lt;p&gt;<a name="line.233"></a>
+<span class="sourceLineNo">234</span> * The generated matcher may not be able to apply the ignore feature in all the<a name="line.234"></a>
+<span class="sourceLineNo">235</span> * included fields of the fields.<a name="line.235"></a>
+<span class="sourceLineNo">236</span> * &lt;hr&gt;<a name="line.236"></a>
+<span class="sourceLineNo">237</span> * &lt;p&gt;<a name="line.237"></a>
+<span class="sourceLineNo">238</span> * &lt;b&gt;Cycle detection&lt;/b&gt;<a name="line.238"></a>
+<span class="sourceLineNo">239</span> * &lt;p&gt;<a name="line.239"></a>
+<span class="sourceLineNo">240</span> * Since version 0.3.0, the generated &lt;i&gt;WithSameValue&lt;/i&gt; matchers try to<a name="line.240"></a>
+<span class="sourceLineNo">241</span> * detect the cycle in the object to be compared. Cycle may be included for<a name="line.241"></a>
+<span class="sourceLineNo">242</span> * example when working with bidirectional link. The matcher is &lt;b&gt;not&lt;/b&gt; able<a name="line.242"></a>
+<span class="sourceLineNo">243</span> * to detect all cycles, but when detected, replace the control by a same<a name="line.243"></a>
+<span class="sourceLineNo">244</span> * instance control.<a name="line.244"></a>
+<span class="sourceLineNo">245</span> * <a name="line.245"></a>
+<span class="sourceLineNo">246</span> * @author borettim<a name="line.246"></a>
+<span class="sourceLineNo">247</span> *<a name="line.247"></a>
+<span class="sourceLineNo">248</span> */<a name="line.248"></a>
+<span class="sourceLineNo">249</span>@Documented<a name="line.249"></a>
+<span class="sourceLineNo">250</span>@Retention(RetentionPolicy.SOURCE)<a name="line.250"></a>
+<span class="sourceLineNo">251</span>@Target({ ElementType.TYPE })<a name="line.251"></a>
+<span class="sourceLineNo">252</span>@Inherited<a name="line.252"></a>
+<span class="sourceLineNo">253</span>public @interface ProvideMatchers {<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        /**<a name="line.254"></a>
+<span class="sourceLineNo">255</span>         * This attribute may be used to override the default class name that will<a name="line.255"></a>
+<span class="sourceLineNo">256</span>         * contains the generated matchers.<a name="line.256"></a>
+<span class="sourceLineNo">257</span>         * &lt;p&gt;<a name="line.257"></a>
+<span class="sourceLineNo">258</span>         * &lt;i&gt;By default, this attribute is an empty string, which indicate to use the<a name="line.258"></a>
+<span class="sourceLineNo">259</span>         * default construction pattern.&lt;/i&gt;<a name="line.259"></a>
+<span class="sourceLineNo">260</span>         * &lt;p&gt;<a name="line.260"></a>
+<span class="sourceLineNo">261</span>         * By default, the Matchers class name is the name of the annotated class,<a name="line.261"></a>
+<span class="sourceLineNo">262</span>         * followed by {@code Matchers}.<a name="line.262"></a>
+<span class="sourceLineNo">263</span>         * &lt;p&gt;<a name="line.263"></a>
+<span class="sourceLineNo">264</span>         * &lt;i&gt;Using this attribute may make the matcher undetectable when working with<a name="line.264"></a>
+<span class="sourceLineNo">265</span>         * separated compilation.&lt;/i&gt;<a name="line.265"></a>
+<span class="sourceLineNo">266</span>         * <a name="line.266"></a>
+<span class="sourceLineNo">267</span>         * @return the name of the matchers class or an empty string if this is not<a name="line.267"></a>
+<span class="sourceLineNo">268</span>         *         overloaded.<a name="line.268"></a>
+<span class="sourceLineNo">269</span>         */<a name="line.269"></a>
+<span class="sourceLineNo">270</span>        String matchersClassName() default "";<a name="line.270"></a>
+<span class="sourceLineNo">271</span><a name="line.271"></a>
+<span class="sourceLineNo">272</span>        /**<a name="line.272"></a>
+<span class="sourceLineNo">273</span>         * This attribute may be used to override the default package name that will be<a name="line.273"></a>
+<span class="sourceLineNo">274</span>         * used for the generated matchers.<a name="line.274"></a>
+<span class="sourceLineNo">275</span>         * &lt;p&gt;<a name="line.275"></a>
+<span class="sourceLineNo">276</span>         * &lt;i&gt;By default, this attribute is an empty string, which indicate to use the<a name="line.276"></a>
+<span class="sourceLineNo">277</span>         * default construction pattern.&lt;/i&gt;<a name="line.277"></a>
+<span class="sourceLineNo">278</span>         * &lt;p&gt;<a name="line.278"></a>
+<span class="sourceLineNo">279</span>         * By default, the Matchers package name is the same that the annotated class.<a name="line.279"></a>
+<span class="sourceLineNo">280</span>         * &lt;p&gt;<a name="line.280"></a>
+<span class="sourceLineNo">281</span>         * &lt;i&gt;Using this attribute may make the matcher undetectable when working with<a name="line.281"></a>
+<span class="sourceLineNo">282</span>         * separated compilation.&lt;/i&gt;<a name="line.282"></a>
+<span class="sourceLineNo">283</span>         * <a name="line.283"></a>
+<span class="sourceLineNo">284</span>         * @return the name of the matchers package or an empty string if this is not<a name="line.284"></a>
+<span class="sourceLineNo">285</span>         *         overloaded.<a name="line.285"></a>
+<span class="sourceLineNo">286</span>         */<a name="line.286"></a>
+<span class="sourceLineNo">287</span>        String matchersPackageName() default "";<a name="line.287"></a>
+<span class="sourceLineNo">288</span><a name="line.288"></a>
+<span class="sourceLineNo">289</span>        /**<a name="line.289"></a>
+<span class="sourceLineNo">290</span>         * This attribute may be used to set a comments that will be passed inside the<a name="line.290"></a>
+<span class="sourceLineNo">291</span>         * {@link javax.annotation.Generated#comments() comments} attribute of the<a name="line.291"></a>
+<span class="sourceLineNo">292</span>         * {@link javax.annotation.Generated @Generated} annotation.<a name="line.292"></a>
+<span class="sourceLineNo">293</span>         * <a name="line.293"></a>
+<span class="sourceLineNo">294</span>         * @return the comments or an empty string if ignored.<a name="line.294"></a>
+<span class="sourceLineNo">295</span>         */<a name="line.295"></a>
+<span class="sourceLineNo">296</span>        String comments() default "";<a name="line.296"></a>
+<span class="sourceLineNo">297</span><a name="line.297"></a>
+<span class="sourceLineNo">298</span>        /**<a name="line.298"></a>
+<span class="sourceLineNo">299</span>         * This attribute may be used to generate additional exposition methods for the<a name="line.299"></a>
+<span class="sourceLineNo">300</span>         * object.<a name="line.300"></a>
+<span class="sourceLineNo">301</span>         * &lt;p&gt;<a name="line.301"></a>
+<span class="sourceLineNo">302</span>         * By default, only the standard method are generated.<a name="line.302"></a>
+<span class="sourceLineNo">303</span>         * <a name="line.303"></a>
+<span class="sourceLineNo">304</span>         * @return additional method to be generated or an empty array by default.<a name="line.304"></a>
+<span class="sourceLineNo">305</span>         * @since 0.1.0<a name="line.305"></a>
+<span class="sourceLineNo">306</span>         */<a name="line.306"></a>
+<span class="sourceLineNo">307</span>        ComplementaryExpositionMethod[] moreMethod() default {};<a name="line.307"></a>
+<span class="sourceLineNo">308</span><a name="line.308"></a>
+<span class="sourceLineNo">309</span>        /**<a name="line.309"></a>
+<span class="sourceLineNo">310</span>         * This attribute may be used to enable some extensions for this objects.<a name="line.310"></a>
+<span class="sourceLineNo">311</span>         * &lt;p&gt;<a name="line.311"></a>
+<span class="sourceLineNo">312</span>         * By default, no extension are enabled.<a name="line.312"></a>
+<span class="sourceLineNo">313</span>         * <a name="line.313"></a>
+<span class="sourceLineNo">314</span>         * @return the extension to be used or an empty array by default.<a name="line.314"></a>
+<span class="sourceLineNo">315</span>         * @since 0.1.0<a name="line.315"></a>
+<span class="sourceLineNo">316</span>         * @see #JSON_EXTENSION An extension to add a validation on String, as JSON,<a name="line.316"></a>
+<span class="sourceLineNo">317</span>         *      based on the &lt;a href="https://github.com/spotify/java-hamcrest"&gt;Spotify<a name="line.317"></a>
+<span class="sourceLineNo">318</span>         *      Matchers&lt;/a&gt;.<a name="line.318"></a>
+<span class="sourceLineNo">319</span>         */<a name="line.319"></a>
+<span class="sourceLineNo">320</span>        String[] extensions() default {};<a name="line.320"></a>
+<span class="sourceLineNo">321</span><a name="line.321"></a>
+<span class="sourceLineNo">322</span>        /**<a name="line.322"></a>
+<span class="sourceLineNo">323</span>         * This attribute may be used in case when it is not possible to create a<a name="line.323"></a>
+<span class="sourceLineNo">324</span>         * &lt;i&gt;sure&lt;/i&gt; &lt;code&gt;WithSameValue&lt;/code&gt; matcher. This may be the case when the<a name="line.324"></a>
+<span class="sourceLineNo">325</span>         * annotated class extends a not annotated class or when the parent class is<a name="line.325"></a>
+<span class="sourceLineNo">326</span>         * already compiled.<a name="line.326"></a>
+<span class="sourceLineNo">327</span>         * &lt;p&gt;<a name="line.327"></a>
+<span class="sourceLineNo">328</span>         * By default, this mode is set to false.<a name="line.328"></a>
+<span class="sourceLineNo">329</span>         * &lt;p&gt;<a name="line.329"></a>
+<span class="sourceLineNo">330</span>         * In case this option is set to true and the &lt;code&gt;WithSameValue&lt;/code&gt; matcher<a name="line.330"></a>
+<span class="sourceLineNo">331</span>         * is considered as weak, a warning will be produced.<a name="line.331"></a>
+<span class="sourceLineNo">332</span>         * <a name="line.332"></a>
+<span class="sourceLineNo">333</span>         * @return to create (or not) a &lt;code&gt;WithSameValue&lt;/code&gt; matcher even if it is<a name="line.333"></a>
+<span class="sourceLineNo">334</span>         *         not possible to ensure the control of the field of the parent class.<a name="line.334"></a>
+<span class="sourceLineNo">335</span>         * @since 2.0.0<a name="line.335"></a>
+<span class="sourceLineNo">336</span>         */<a name="line.336"></a>
+<span class="sourceLineNo">337</span>        boolean allowWeakWithSameValue() default false;<a name="line.337"></a>
+<span class="sourceLineNo">338</span><a name="line.338"></a>
+<span class="sourceLineNo">339</span>        /**<a name="line.339"></a>
+<span class="sourceLineNo">340</span>         * May be use as part of {@link #extensions()} to enable, if available, an<a name="line.340"></a>
+<span class="sourceLineNo">341</span>         * extension an each String to be validated by using a json validation.<a name="line.341"></a>
+<span class="sourceLineNo">342</span>         * <a name="line.342"></a>
+<span class="sourceLineNo">343</span>         * <a name="line.343"></a>
+<span class="sourceLineNo">344</span>         * @since 0.1.0<a name="line.344"></a>
+<span class="sourceLineNo">345</span>         */<a name="line.345"></a>
+<span class="sourceLineNo">346</span>        public static final String JSON_EXTENSION = "json-extension";<a name="line.346"></a>
+<span class="sourceLineNo">347</span>}<a name="line.347"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

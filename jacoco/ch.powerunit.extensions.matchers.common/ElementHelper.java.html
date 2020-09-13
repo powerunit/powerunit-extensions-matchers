@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ElementHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.common</a> &gt; <span class="el_source">ElementHelper.java</span></div><h1>ElementHelper.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.common;
+
+import static ch.powerunit.extensions.matchers.common.ListJoining.accepting;
+
+import java.util.List;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Parameterizable;
+import javax.lang.model.element.QualifiedNameable;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.TypeMirror;
+
+/**
+ * @author borettim
+ *
+ */
+public interface ElementHelper {
+
+<span class="fc" id="L39">	static final ListJoining&lt;TypeMirror&gt; TYPE_PARAMETER_BOUND_AS_LIST = accepting(TypeMirror.class).withToStringMapper()</span>
+<span class="fc" id="L40">			.withDelimiter(&quot;&amp;&quot;).withoutSuffixAndPrefix();</span>
+
+<span class="fc" id="L42">	static final ListJoining&lt;TypeMirror&gt; TYPE_PARAMETER_BOUND_AS_LIST_WITH_EXTENDS = accepting(TypeMirror.class)</span>
+<span class="fc" id="L43">			.withToStringMapper().withDelimiter(&quot;&amp;&quot;).withOptionalPrefixAndSuffix(&quot; extends &quot;, &quot;&quot;);</span>
+
+<span class="fc" id="L45">	static final ListJoining&lt;TypeParameterElement&gt; TYPE_PARAMETER_SIMPLE_AS_LIST = accepting(TypeParameterElement.class)</span>
+<span class="fc" id="L46">			.withToStringMapper().withCommaDelimiter().withOptionalPrefixAndSuffix(&quot;&lt;&quot;, &quot;&gt;&quot;);</span>
+
+	@SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L49">	static final ListJoining&lt;TypeParameterElement&gt; TYPE_PARAMETER_FULL_AS_LIST = accepting(TypeParameterElement.class)</span>
+<span class="fc" id="L50">			.withMapper(t -&gt; t.toString()</span>
+<span class="fc" id="L51">					+ TYPE_PARAMETER_BOUND_AS_LIST_WITH_EXTENDS.asString((List&lt;TypeMirror&gt;) t.getBounds()))</span>
+<span class="fc" id="L52">			.withCommaDelimiter().withOptionalPrefixAndSuffix(&quot;&lt;&quot;, &quot;&gt;&quot;);</span>
+
+	default String getSimpleName(Element e) {
+<span class="fc" id="L55">		return e.getSimpleName().toString();</span>
+	}
+
+	default boolean isSimpleName(Element e, String name) {
+<span class="fc" id="L59">		return name.equals(getSimpleName(e));</span>
+	}
+
+	default String getQualifiedName(QualifiedNameable e) {
+<span class="fc" id="L63">		return e.getQualifiedName().toString();</span>
+	}
+
+	default boolean isStatic(Element e) {
+<span class="fc" id="L67">		return e.getModifiers().contains(Modifier.STATIC);</span>
+	}
+
+	default boolean isPublic(Element e) {
+<span class="fc" id="L71">		return e.getModifiers().contains(Modifier.PUBLIC);</span>
+	}
+
+	@SuppressWarnings(&quot;unchecked&quot;)
+	default String boundsAsString(TypeParameterElement e) {
+<span class="fc" id="L76">		return TYPE_PARAMETER_BOUND_AS_LIST.asString((List&lt;TypeMirror&gt;) e.getBounds());</span>
+	}
+
+	@SuppressWarnings(&quot;unchecked&quot;)
+	default String getGeneric(Parameterizable typeElement) {
+<span class="fc" id="L81">		return TYPE_PARAMETER_SIMPLE_AS_LIST.asString((List&lt;TypeParameterElement&gt;) typeElement.getTypeParameters());</span>
+	}
+
+	@SuppressWarnings(&quot;unchecked&quot;)
+	default String getFullGeneric(Parameterizable typeElement) {
+<span class="fc" id="L86">		return TYPE_PARAMETER_FULL_AS_LIST.asString((List&lt;TypeParameterElement&gt;) typeElement.getTypeParameters());</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

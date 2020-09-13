@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProvidesMatchersAnnotationsProcessor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.provideprocessor</a> &gt; <span class="el_source">ProvidesMatchersAnnotationsProcessor.java</span></div><h1>ProvidesMatchersAnnotationsProcessor.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.provideprocessor;
+
+import static ch.powerunit.extensions.matchers.common.CommonUtils.addPrefix;
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableList;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedOptions;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic.Kind;
+
+import ch.powerunit.extensions.matchers.common.CommonUtils;
+import ch.powerunit.extensions.matchers.common.FactoryHelper;
+import ch.powerunit.extensions.matchers.common.FileObjectHelper;
+import ch.powerunit.extensions.matchers.common.RessourceLoaderHelper;
+
+/**
+ * @author borettim
+ *
+ */
+@SupportedAnnotationTypes({ &quot;ch.powerunit.extensions.matchers.ProvideMatchers&quot;,
+		&quot;ch.powerunit.extensions.matchers.IgnoreInMatcher&quot;, &quot;ch.powerunit.extensions.matchers.AddToMatcher&quot;,
+		&quot;ch.powerunit.extensions.matchers.AddToMatchers&quot; })
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
+@SupportedOptions({ &quot;ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor.factory&quot; })
+<span class="fc" id="L62">public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {</span>
+
+<span class="fc" id="L64">	private Optional&lt;String&gt; factoryParam = null;</span>
+
+<span class="fc" id="L66">	private List&lt;String&gt; factories = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L68">	private List&lt;Element&gt; allSourceElements = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L70">	private static final List&lt;String&gt; POSTPROCESSOR_FORMAT = unmodifiableList(asList(addPrefix(&quot;  &quot;,</span>
+<span class="fc" id="L71">			RessourceLoaderHelper.loadRessource(ProvidesMatchersAnnotatedElementMirror.class, &quot;PostProcessor.txt&quot;))</span>
+<span class="fc" id="L72">					.split(&quot;\n&quot;)));</span>
+
+	@Override
+	public synchronized void init(ProcessingEnvironment processingEnv) {
+<span class="fc" id="L76">		super.init(processingEnv);</span>
+<span class="fc" id="L77">		factoryParam = Optional.ofNullable(</span>
+<span class="fc" id="L78">				processingEnv.getOptions().get(ProvidesMatchersAnnotationsProcessor.class.getName() + &quot;.factory&quot;));</span>
+<span class="fc" id="L79">	}</span>
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see javax.annotation.processing.AbstractProcessor#process(java.util.Set,
+	 * javax.annotation.processing.RoundEnvironment)
+	 */
+	@Override
+	public boolean process(Set&lt;? extends TypeElement&gt; annotations, RoundEnvironment roundEnv) {
+<span class="nc bnc" id="L89" title="All 2 branches missed.">		if (!roundEnv.processingOver()) {</span>
+<span class="nc" id="L90">			processRound(roundEnv);</span>
+		} else {
+<span class="nc" id="L92">			processFinalRound();</span>
+		}
+<span class="nc" id="L94">		return true;</span>
+	}
+
+	private void processRound(RoundEnvironment roundEnv) {
+<span class="nc" id="L98">		Collection&lt;ProvidesMatchersAnnotatedElementMirror&gt; alias = new RoundMirror(roundEnv, processingEnv).parse();</span>
+<span class="nc" id="L99">		factories.addAll(alias.stream()</span>
+<span class="nc" id="L100">				.collect(toMap(ProvidesMatchersAnnotatedElementMirror::getFullyQualifiedNameOfGeneratedClass,</span>
+						ProvidesMatchersAnnotatedElementMirror::process))
+<span class="nc" id="L102">				.entrySet().stream().map(e -&gt; e.getValue().stream()</span>
+<span class="nc" id="L103">						.map(m -&gt; CommonUtils.addPrefix(&quot;  &quot;, m.asDefaultReference(e.getKey()))).collect(joining(&quot;\n&quot;)))</span>
+<span class="nc" id="L104">				.collect(toList()));</span>
+<span class="nc" id="L105">		alias.stream().map(ProvidesMatchersAnnotatedElementMirror::getElement).forEach(allSourceElements::add);</span>
+<span class="nc" id="L106">	}</span>
+
+	private void processFinalRound() {
+<span class="nc" id="L109">		factoryParam.ifPresent(this::processFactory);</span>
+<span class="nc" id="L110">	}</span>
+
+	private void processFactory(String factory) {
+<span class="nc" id="L113">		FileObjectHelper.processFileWithIOException(</span>
+<span class="nc" id="L114">				() -&gt; processingEnv.getFiler().createSourceFile(factory, allSourceElements.toArray(new Element[0])),</span>
+<span class="nc" id="L115">				jfo -&gt; new PrintWriter(jfo.openWriter()),</span>
+<span class="nc" id="L116">				wjfo -&gt; FactoryHelper.generateFactoryClass(wjfo, ProvidesMatchersAnnotationsProcessor.class,</span>
+<span class="nc" id="L117">						factory.replaceAll(&quot;\\.[^.]+$&quot;, &quot;&quot;), factory.replaceAll(&quot;^([^.]+\\.)*&quot;, &quot;&quot;),</span>
+<span class="nc" id="L118">						() -&gt; Stream.concat(factories.stream(), POSTPROCESSOR_FORMAT.stream())),</span>
+<span class="nc" id="L119">				e -&gt; processingEnv.getMessager().printMessage(Kind.ERROR,</span>
+						&quot;Unable to create the file containing the target class `&quot; + factory + &quot;`, because of &quot;
+<span class="nc" id="L121">								+ e.getMessage()));</span>
+<span class="nc" id="L122">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

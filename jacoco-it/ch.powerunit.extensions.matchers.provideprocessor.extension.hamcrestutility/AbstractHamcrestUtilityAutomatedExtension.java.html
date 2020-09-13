@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractHamcrestUtilityAutomatedExtension.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestutility</a> &gt; <span class="el_source">AbstractHamcrestUtilityAutomatedExtension.java</span></div><h1>AbstractHamcrestUtilityAutomatedExtension.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestutility;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.function.Supplier;
+
+import javax.lang.model.type.TypeMirror;
+
+import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.AutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.CollectionFieldDescription;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethod;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.lang.BuilderJavadoc;
+
+/**
+ * @author borettim
+ *
+ */
+public abstract class AbstractHamcrestUtilityAutomatedExtension extends AutomatedExtension {
+
+	protected final TypeMirror knownType;
+
+	protected final String targetType;
+
+	public AbstractHamcrestUtilityAutomatedExtension(RoundMirror roundMirror, String targetType) {
+<span class="fc" id="L48">		super(roundMirror, &quot;com.nitorcreations.Matchers&quot;);</span>
+<span class="fc" id="L49">		this.targetType = targetType;</span>
+<span class="fc" id="L50">		this.knownType = getMirrorFor(targetType);</span>
+<span class="fc" id="L51">	}</span>
+
+	protected BuilderJavadoc builderFor(AbstractFieldDescription field, String targetMethod, String arguments) {
+<span class="fc" id="L54">		String suffix = targetMethod.substring(0, 1).toUpperCase() + targetMethod.substring(1);</span>
+<span class="fc" id="L55">		return builderFor(field).withDeclaration(suffix, arguments);</span>
+	}
+
+	protected abstract Collection&lt;FieldDSLMethod&gt; acceptHamcrestUtility(AbstractFieldDescription field);
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see ch.powerunit.extensions.matchers.provideprocessor.extension.
+	 * AutomatedExtension#accept(ch.powerunit.extensions.matchers.
+	 * provideprocessor.fields.FieldDescriptionMetaData)
+	 */
+	@Override
+	public final Collection&lt;FieldDSLMethod&gt; accept(AbstractFieldDescription field) {
+<span class="pc bpc" id="L69" title="1 of 4 branches missed.">		if (!(field instanceof CollectionFieldDescription) || &quot;&quot;.equals(field.getGeneric())) {</span>
+<span class="fc" id="L70">			return Collections.emptyList();</span>
+		}
+<span class="fc" id="L72">		return acceptHamcrestUtility(field);</span>
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see ch.powerunit.extensions.matchers.provideprocessor.extension.
+	 * AutomatedExtension#accept(ch.powerunit.extensions.matchers.
+	 * provideprocessor.ProvidesMatchersAnnotatedElementData)
+	 */
+	@Override
+	public final Collection&lt;Supplier&lt;DSLMethod&gt;&gt; accept(ProvidesMatchersAnnotatedElementData clazz) {
+<span class="fc" id="L84">		return Collections.emptyList();</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

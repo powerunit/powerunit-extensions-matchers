@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractRoundMirrorReferenceToProcessingEnv.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.common</a> &gt; <span class="el_source">AbstractRoundMirrorReferenceToProcessingEnv.java</span></div><h1>AbstractRoundMirrorReferenceToProcessingEnv.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.common;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.type.TypeMirror;
+
+/**
+ * This is an abstract class to contains all required element of a run.
+ * &lt;p&gt;
+ * It should be implemented by all elements which used these both elements.
+ * 
+ * @author borettim
+ *
+ */
+public abstract class AbstractRoundMirrorReferenceToProcessingEnv
+		implements ElementHelper, ProcessingEnvironmentHelper {
+
+	protected final RoundEnvironment roundEnv;
+	protected final ProcessingEnvironment processingEnv;
+	protected final TypeMirror objectTypeMirror;
+	protected final TypeMirror provideMatchersMirror;
+
+<span class="fc" id="L42">	public AbstractRoundMirrorReferenceToProcessingEnv(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {</span>
+<span class="fc" id="L43">		this.roundEnv = roundEnv;</span>
+<span class="fc" id="L44">		this.processingEnv = processingEnv;</span>
+<span class="fc" id="L45">		this.objectTypeMirror = getElementUtils().getTypeElement(&quot;java.lang.Object&quot;).asType();</span>
+<span class="fc" id="L46">		provideMatchersMirror = getElementUtils().getTypeElement(&quot;ch.powerunit.extensions.matchers.ProvideMatchers&quot;)</span>
+<span class="fc" id="L47">				.asType();</span>
+<span class="fc" id="L48">	}</span>
+
+	@Override
+	public ProcessingEnvironment getProcessingEnv() {
+<span class="fc" id="L52">		return processingEnv;</span>
+	}
+
+	public RoundEnvironment getRoundEnv() {
+<span class="nc" id="L56">		return roundEnv;</span>
+	}
+
+	public TypeMirror getObject() {
+<span class="fc" id="L60">		return objectTypeMirror;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

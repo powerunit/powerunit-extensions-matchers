@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FieldDSLMethodBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.provideprocessor.fields</a> &gt; <span class="el_source">FieldDSLMethodBuilder.java</span></div><h1>FieldDSLMethodBuilder.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.provideprocessor.fields;
+
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.joining;
+
+import java.util.Optional;
+
+import ch.powerunit.extensions.matchers.provideprocessor.fields.lang.BuilderDeclaration;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.lang.BuilderImplementation;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.lang.BuilderJavadoc;
+
+<span class="nc" id="L31">public class FieldDSLMethodBuilder {</span>
+
+	private static final String MATCHERS = &quot;org.hamcrest.Matchers&quot;;
+
+	private static final String DEFAULT_JAVADOCFORMAT = &quot;/**\n&quot; + &quot; * %1$s\n&quot; + &quot; * &lt;p&gt;\n&quot; + &quot; *\n&quot; + &quot; * &lt;i&gt;%2$s&lt;/i&gt;\n&quot;
+			+ &quot; * &lt;p&gt;\n&quot;
+			+ &quot; * &lt;b&gt;In case method specifing a matcher on a fields are used several times, only the last setted matcher will be used.&lt;/b&gt; \n&quot;
+			+ &quot; * When several control must be done on a single field, hamcrest itself provides a way to combine several matchers.\n&quot;
+			+ &quot; * (See for instance {@link &quot; + MATCHERS + &quot;#both(org.hamcrest.Matcher)}.\n&quot; + &quot; *\n&quot; + &quot;%3$s&quot;
+			+ &quot; * @return the DSL to continue the construction of the matcher.\n&quot; + &quot;%4$s */&quot;;
+
+	public static BuilderDeclaration of(AbstractFieldDescription fieldDescription) {
+<span class="fc" id="L43">		return new Builder(fieldDescription);</span>
+	}
+
+	public static class Builder implements BuilderDeclaration, BuilderJavadoc, BuilderImplementation {
+		private final AbstractFieldDescription fieldDescription;
+		private String declaration;
+		private String javadoc;
+
+<span class="fc" id="L51">		private Builder(AbstractFieldDescription fieldDescription) {</span>
+<span class="fc" id="L52">			this.fieldDescription = fieldDescription;</span>
+<span class="fc" id="L53">		}</span>
+
+		@Override
+		public BuilderImplementation withJavaDoc(Optional&lt;String&gt; addToDescription, Optional&lt;String&gt; param,
+				Optional&lt;String&gt; see) {
+<span class="fc" id="L58">			javadoc = getJavaDocFor(fieldDescription, addToDescription, param, see);</span>
+<span class="fc" id="L59">			return this;</span>
+		}
+
+		@Override
+		public FieldDSLMethod havingDefault(String innerMatcher) {
+<span class="fc" id="L64">			return new FieldDSLMethod(buildDefaultDsl(fieldDescription, javadoc, declaration, innerMatcher), &quot;&quot;);</span>
+		}
+
+		@Override
+		public FieldDSLMethod havingImplementation(String body) {
+<span class="fc" id="L69">			return new FieldDSLMethod(buildDsl(javadoc, declaration), buildImplementation(declaration, body));</span>
+		}
+
+		@Override
+		public BuilderJavadoc withExplicitDeclaration(String declaration) {
+<span class="nc" id="L74">			this.declaration = declaration;</span>
+<span class="nc" id="L75">			return this;</span>
+		}
+
+		@Override
+		public BuilderJavadoc withGenericDeclaration(String generic, String postFix, String arguments) {
+<span class="fc" id="L80">			this.declaration = generic + &quot; &quot; + String.format(&quot;%1$s %2$s%3$s(%4$s)&quot;,</span>
+<span class="fc" id="L81">					fieldDescription.getDefaultReturnMethod(), fieldDescription.getFieldName(), postFix, arguments);</span>
+<span class="fc" id="L82">			return this;</span>
+		}
+
+		@Override
+		public FieldDSLMethod withExplicitDeclarationJavadocAndImplementation(String declaration,
+				String addToDescription, String body) {
+<span class="nc" id="L88">			return withExplicitDeclaration(declaration).withJavaDoc(addToDescription).havingImplementation(body);</span>
+		}
+
+		@Override
+		public FieldDSLMethod withJavaDocAndDefault(String addToDescription, String innerMatcher) {
+<span class="nc" id="L93">			return withJavaDoc(addToDescription).havingDefault(innerMatcher);</span>
+		}
+
+		@Override
+		public FieldDSLMethod withSuffixDeclarationJavadocAndDefault(String declaration, String addToDescription,
+				String innerMatcher) {
+<span class="nc" id="L99">			return withSuffixDeclaration(declaration).withJavaDocAndDefault(addToDescription, innerMatcher);</span>
+		}
+
+	}
+
+	public static String getJavaDocFor(AbstractFieldDescription fieldDescription, Optional&lt;String&gt; addToDescription,
+			Optional&lt;String&gt; param, Optional&lt;String&gt; see) {
+<span class="fc" id="L106">		String linkToAccessor = String.format(&quot;{@link %1$s#%2$s This field is accessed by using this approach}.&quot;,</span>
+<span class="fc" id="L107">				fieldDescription.getFullyQualifiedNameEnclosingClassOfField(), fieldDescription.getFieldAccessor());</span>
+<span class="fc" id="L108">		String title = String.format(&quot;Add a validation on the field `%1$s`%2$s.&quot;, fieldDescription.getFieldName(),</span>
+<span class="fc" id="L109">				addToDescription.map(s -&gt; &quot; &quot; + s).orElse(&quot;&quot;));</span>
+<span class="fc" id="L110">		String paramString = param</span>
+<span class="fc" id="L111">				.map(t -&gt; stream(t.split(&quot;\n&quot;)).map(l -&gt; &quot; * @param &quot; + l + &quot;.\n&quot;).collect(joining()))</span>
+<span class="fc" id="L112">				.orElse(&quot;&quot;);</span>
+<span class="fc" id="L113">		String seeString = see.map(s -&gt; &quot; * @see &quot; + s + &quot;\n&quot;).orElse(&quot;&quot;);</span>
+<span class="fc" id="L114">		return String.format(DEFAULT_JAVADOCFORMAT, title, linkToAccessor, paramString, seeString);</span>
+	}
+
+	public static String buildImplementation(String declaration, String body) {
+<span class="fc" id="L118">		return String.format(&quot;@Override\npublic %1$s {\n  %2$s\n}\n&quot;, declaration, body.replaceAll(&quot;\\R&quot;, &quot;\n&quot; + &quot;  &quot;));</span>
+	}
+
+	public static String buildDsl(String javadoc, String declaration) {
+<span class="fc" id="L122">		return String.format(&quot;%1$s\n%2$s;\n&quot;, javadoc.replaceAll(&quot;\\R&quot;, &quot;\n&quot;), declaration);</span>
+	}
+
+	public static String buildDefaultDsl(AbstractFieldDescription fieldDescription, String javadoc, String declaration,
+			String innerMatcher) {
+<span class="fc" id="L127">		return String.format(&quot;%1$s\ndefault %2$s{\n  return %3$s(%4$s);\n}&quot;, javadoc.replaceAll(&quot;\\R&quot;, &quot;\n&quot;),</span>
+<span class="fc" id="L128">				declaration, fieldDescription.getFieldName(), innerMatcher);</span>
+
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

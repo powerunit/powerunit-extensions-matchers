@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractDSLExtensionSupplier.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.provideprocessor.extension</a> &gt; <span class="el_source">AbstractDSLExtensionSupplier.java</span></div><h1>AbstractDSLExtensionSupplier.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.provideprocessor.extension;
+
+import static java.util.stream.Collectors.toList;
+import static ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod.of;
+import static java.util.stream.Collectors.joining;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Supplier;
+
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
+
+public abstract class AbstractDSLExtensionSupplier {
+	protected final String targetName;
+	protected final String returnType;
+	protected final String methodName;
+	protected final String targetMethodName;
+
+	public AbstractDSLExtensionSupplier(String targetName, String returnType, String methodName,
+<span class="fc" id="L40">			String targetMethodName) {</span>
+<span class="fc" id="L41">		this.targetName = targetName;</span>
+<span class="fc" id="L42">		this.returnType = returnType;</span>
+<span class="fc" id="L43">		this.methodName = methodName;</span>
+<span class="fc" id="L44">		this.targetMethodName = targetMethodName;</span>
+<span class="fc" id="L45">	}</span>
+
+	public abstract Collection&lt;Supplier&lt;DSLMethod&gt;&gt; asSuppliers();
+
+	public String[][] getSeveralParameter(boolean lastIsVarargs, String... name) {
+<span class="fc" id="L50">		List&lt;String[]&gt; tmp = Arrays.stream(name).map(this::getOneParameter).collect(toList());</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">		if (lastIsVarargs) {</span>
+<span class="fc" id="L52">			tmp.get(name.length - 1)[0] += &quot;...&quot;;</span>
+		}
+<span class="fc" id="L54">		return tmp.toArray(new String[0][0]);</span>
+	}
+
+	public String[] getOneParameter(String name) {
+<span class="fc" id="L58">		return new String[] { targetName, name };</span>
+	}
+
+	public String getSeveralWith(String... name) {
+<span class="fc" id="L62">		return Arrays.stream(name).map(this::getOneWith).collect(joining(&quot;,&quot;));</span>
+	}
+
+	public String getOneWith(String name) {
+<span class="fc" id="L66">		return targetMethodName + &quot;(&quot; + name + &quot;)&quot;;</span>
+	}
+
+	public String[] generateSeveralWithImplementation(String matcher, String... parameters) {
+<span class="nc" id="L70">		return new String[] { &quot;java.util.List&lt;org.hamcrest.Matcher&lt;&quot; + targetName</span>
+<span class="nc" id="L71">				+ &quot;&gt;&gt; tmp = new java.util.ArrayList&lt;&gt;(java.util.Arrays.asList(&quot; + getSeveralWith(parameters) + &quot;));&quot;,</span>
+				&quot;tmp.addAll(java.util.Arrays.stream(last).map(v-&gt;&quot; + targetMethodName
+						+ &quot;(v)).collect(java.util.stream.Collectors.toList()));&quot;,
+				&quot;return &quot; + matcher + &quot;(tmp.toArray(new org.hamcrest.Matcher[0]));&quot; };
+	}
+
+	public DSLMethod generateSimpleDSLMethodFor(String javadoc[], String containerMatcher, String... parameters) {
+<span class="nc" id="L78">		return of(returnType + &quot; &quot; + methodName).withArguments(getSeveralParameter(false, parameters))</span>
+<span class="nc" id="L79">				.withImplementation(&quot;return &quot; + containerMatcher + &quot;(&quot; + getSeveralWith(parameters) + &quot;);&quot;)</span>
+<span class="nc" id="L80">				.withJavadoc(javadoc);</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

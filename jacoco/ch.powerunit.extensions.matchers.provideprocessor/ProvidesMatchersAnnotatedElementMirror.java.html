@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProvidesMatchersAnnotatedElementMirror.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.provideprocessor</a> &gt; <span class="el_source">ProvidesMatchersAnnotatedElementMirror.java</span></div><h1>ProvidesMatchersAnnotatedElementMirror.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.provideprocessor;
+
+import static ch.powerunit.extensions.matchers.common.CommonUtils.addPrefix;
+import static ch.powerunit.extensions.matchers.common.CommonUtils.generateGeneratedAnnotation;
+import static ch.powerunit.extensions.matchers.common.CommonUtils.traceErrorAndDump;
+import static ch.powerunit.extensions.matchers.common.FileObjectHelper.processFileWithIOExceptionAndResult;
+import static ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod.of;
+import static java.util.Collections.singletonList;
+import static java.util.Collections.unmodifiableList;
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
+
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Formatter;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Supplier;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+
+import ch.powerunit.extensions.matchers.common.ListJoining;
+import ch.powerunit.extensions.matchers.common.RessourceLoaderHelper;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
+import ch.powerunit.extensions.matchers.provideprocessor.helper.ProvidesMatchersWithSameValueHelper;
+
+public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnnotatedElementMatcherMirror {
+
+	private final Collection&lt;Supplier&lt;Collection&lt;DSLMethod&gt;&gt;&gt; dslProvider;
+
+<span class="fc" id="L56">	private static final String MATCHER_FORMAT = RessourceLoaderHelper</span>
+<span class="fc" id="L57">			.loadRessource(ProvidesMatchersAnnotatedElementMirror.class, &quot;Matchers.txt&quot;);</span>
+
+<span class="fc" id="L59">	private static final String POSTPROCESSOR_FORMAT = addPrefix(&quot;  &quot;,</span>
+<span class="fc" id="L60">			RessourceLoaderHelper.loadRessource(ProvidesMatchersAnnotatedElementMirror.class, &quot;PostProcessor.txt&quot;));</span>
+
+<span class="fc" id="L62">	private static final ListJoining&lt;DSLMethod&gt; JOIN_DSL_METHOD = ListJoining</span>
+<span class="pc" id="L63">			.joinWithMapperAndDelimiter(m -&gt; addPrefix(&quot;  &quot;, m.asStaticImplementation()), &quot;\n&quot;);</span>
+
+	private static Supplier&lt;Collection&lt;DSLMethod&gt;&gt; asCollection(Supplier&lt;DSLMethod&gt; input) {
+<span class="fc" id="L66">		return () -&gt; singletonList(input.get());</span>
+	}
+
+	public ProvidesMatchersAnnotatedElementMirror(TypeElement typeElement, RoundMirror roundMirror) {
+<span class="fc" id="L70">		super(typeElement, roundMirror);</span>
+<span class="fc" id="L71">		List&lt;Supplier&lt;Collection&lt;DSLMethod&gt;&gt;&gt; tmp = new ArrayList&lt;&gt;(Arrays.asList(</span>
+<span class="fc" id="L72">				asCollection(this::generateDefaultDSLStarter), asCollection(this::generateDefaultForChainingDSLStarter),</span>
+<span class="fc" id="L73">				asCollection(this::generateMatcherClassMethod)));</span>
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">		if (hasSuperClass()) {</span>
+<span class="nc" id="L75">			tmp.add(asCollection(this::generateParentDSLStarter));</span>
+<span class="nc" id="L76">			tmp.add(() -&gt; ProvidesMatchersWithSameValueHelper.generateParentValueDSLStarter(this));</span>
+<span class="nc" id="L77">			if (((TypeElement) roundMirror.getTypeUtils().asElement(element.getSuperclass())).getTypeParameters()</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">					.isEmpty()) {</span>
+<span class="nc" id="L79">				tmp.add(asCollection(this::generateParentInSameRoundWithChaningDSLStarter));</span>
+			}
+		} else {
+<span class="fc" id="L82">			tmp.add(() -&gt; ProvidesMatchersWithSameValueHelper.generateNoParentValueDSLStarter(this));</span>
+		}
+<span class="fc" id="L84">		tmp.addAll(ofNullable(getDSLExtension()).orElseGet(Collections::emptyList).stream()</span>
+<span class="pc" id="L85">				.map(t -&gt; t.getDSLMethodFor(() -&gt; this)).flatMap(Collection::stream)</span>
+<span class="fc" id="L86">				.map(ProvidesMatchersAnnotatedElementMirror::asCollection).collect(toList()));</span>
+<span class="pc" id="L87">		tmp.addAll(roundMirror.getDSLMethodFor(() -&gt; this).stream()</span>
+<span class="fc" id="L88">				.map(ProvidesMatchersAnnotatedElementMirror::asCollection).collect(toList()));</span>
+<span class="fc" id="L89">		this.dslProvider = unmodifiableList(tmp);</span>
+<span class="fc" id="L90">	}</span>
+
+	public Collection&lt;DSLMethod&gt; process() {
+<span class="nc" id="L93">		Element te = element;</span>
+<span class="nc" id="L94">		return processFileWithIOExceptionAndResult(</span>
+<span class="nc" id="L95">				() -&gt; getFiler().createSourceFile(getFullyQualifiedNameOfGeneratedClass(), te),</span>
+<span class="nc" id="L96">				jfo -&gt; new Formatter(new PrintWriter(jfo.openWriter())), output -&gt; {</span>
+<span class="nc" id="L97">					Collection&lt;DSLMethod&gt; tmp = generateDSLStarter();</span>
+<span class="nc" id="L98">					output.format(MATCHER_FORMAT, getPackageNameOfGeneratedClass(),</span>
+<span class="nc" id="L99">							getFullyQualifiedNameOfClassAnnotated(),</span>
+<span class="nc" id="L100">							generateGeneratedAnnotation(ProvidesMatchersAnnotationsProcessor.class, comments()),</span>
+<span class="nc" id="L101">							getSimpleNameOfGeneratedClass(), generateMatchers(), generatePublicInterface(),</span>
+<span class="nc" id="L102">							generatePrivateImplementation(), JOIN_DSL_METHOD.asString(tmp), POSTPROCESSOR_FORMAT,</span>
+<span class="nc" id="L103">							generateMetadata());</span>
+<span class="nc" id="L104">					output.flush();</span>
+<span class="nc" id="L105">					return tmp;</span>
+<span class="nc" id="L106">				}, e -&gt; traceErrorAndDump(this, e, te));</span>
+	}
+
+	public Collection&lt;DSLMethod&gt; generateDSLStarter() {
+<span class="fc" id="L110">		return dslProvider.stream().map(Supplier::get).filter(Objects::nonNull).flatMap(Collection::stream)</span>
+<span class="fc" id="L111">				.filter(Objects::nonNull).collect(toList());</span>
+	}
+
+	public String getDefaultStarterBody(boolean withParentBuilder) {
+<span class="fc bfc" id="L115" title="All 2 branches covered.">		String targetImpl = withParentBuilder ? getSimpleNameOfGeneratedImplementationMatcherWithGenericParent()</span>
+<span class="fc" id="L116">				: getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent();</span>
+<span class="fc" id="L117">		boolean withSuper = hasSuperClass();</span>
+<span class="pc bpc" id="L118" title="4 of 8 branches missed.">		return &quot;return new &quot; + targetImpl + &quot;(&quot; + (withSuper ? &quot;org.hamcrest.Matchers.anything()&quot; : &quot;&quot;)</span>
+				+ (withSuper &amp;&amp; withParentBuilder ? &quot;,&quot; : &quot;&quot;) + (withParentBuilder ? &quot;parentBuilder&quot; : &quot;&quot;) + &quot;);&quot;;
+	}
+
+	public String generateDefaultJavaDocWithDSLStarter(Optional&lt;String&gt; param, String returnDescription,
+			boolean withParent) {
+<span class="fc" id="L124">		return generateDefaultJavaDoc(Optional.of(getJavadocForDSLStarter()), param, returnDescription, withParent);</span>
+	}
+
+	public String generateDefaultJavaDocWithoutDSLStarter(Optional&lt;String&gt; param, String returnDescription,
+			boolean withParent) {
+<span class="fc" id="L129">		return generateDefaultJavaDoc(empty(), param, returnDescription, withParent);</span>
+	}
+
+	public DSLMethod generateDefaultDSLStarter() {
+<span class="fc" id="L133">		return of(fullGeneric + &quot; &quot; + getFullyQualifiedNameOfGeneratedClass() + &quot;.&quot;</span>
+<span class="fc" id="L134">				+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + &quot; &quot; + methodShortClassName + &quot;With&quot;)</span>
+<span class="fc" id="L135">						.withImplementation(getDefaultStarterBody(false))</span>
+<span class="fc" id="L136">						.withJavadoc(generateDefaultJavaDocWithDSLStarter(empty(), &quot;the DSL matcher&quot;, false));</span>
+	}
+
+	public String getJavadocForDSLStarter() {
+<span class="fc" id="L140">		return &quot;The returned builder (which is also a Matcher), at this point accepts any object that is a &quot;</span>
+<span class="fc" id="L141">				+ getDefaultLinkForAnnotatedClass() + &quot;.&quot;;</span>
+	}
+
+	public DSLMethod generateDefaultForChainingDSLStarter() {
+<span class="fc" id="L145">		return of(getFullGenericParent() + &quot; &quot; + getFullyQualifiedNameOfGeneratedClass() + &quot;.&quot;</span>
+<span class="fc" id="L146">				+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + &quot; &quot; + getMethodNameDSLWithParent())</span>
+<span class="fc" id="L147">						.withOneArgument(&quot;_PARENT&quot;, &quot;parentBuilder&quot;).withImplementation(getDefaultStarterBody(true))</span>
+<span class="fc" id="L148">						.withJavadoc(generateDefaultJavaDocWithDSLStarter(</span>
+<span class="fc" id="L149">								Optional.of(&quot;parentBuilder the parentBuilder.&quot;), &quot;the DSL matcher&quot;, true));</span>
+	}
+
+	public DSLMethod generateParentDSLStarter() {
+<span class="nc" id="L153">		String mscn = methodShortClassName;</span>
+<span class="nc" id="L154">		String fqngc = getFullyQualifiedNameOfGeneratedClass();</span>
+<span class="nc" id="L155">		return of(fullGeneric + &quot; &quot; + fqngc + &quot;.&quot; + getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() + &quot; &quot;</span>
+<span class="nc" id="L156">				+ mscn + &quot;With&quot;).withOneArgument(</span>
+<span class="nc" id="L157">						&quot;org.hamcrest.Matcher&lt;? super &quot; + fullyQualifiedNameOfSuperClassOfClassAnnotated.get() + &quot;&gt;&quot;,</span>
+						&quot;matcherOnParent&quot;)
+<span class="nc" id="L159">						.withImplementation(</span>
+<span class="nc" id="L160">								&quot;return new &quot; + getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent()</span>
+										+ &quot;(matcherOnParent);&quot;)
+<span class="nc" id="L162">						.withJavadoc(generateDefaultJavaDocWithoutDSLStarter(</span>
+<span class="nc" id="L163">								Optional.of(&quot;matcherOnParent the matcher on the parent data.&quot;), &quot;the DSL matcher&quot;,</span>
+								false));
+	}
+
+	public DSLMethod generateParentInSameRoundWithChaningDSLStarter() {
+<span class="nc" id="L168">		String implGenericNoParent = getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent();</span>
+<span class="nc" id="L169">		return getParentMirror().map(parentMirror -&gt; {</span>
+<span class="nc" id="L170">			String pmfqngc = parentMirror.getFullyQualifiedNameOfGeneratedClass();</span>
+<span class="nc" id="L171">			String parentSimpleName = parentMirror.getSimpleNameOfGeneratedInterfaceMatcher();</span>
+<span class="nc" id="L172">			return of(fullGeneric + &quot; &quot; + pmfqngc + &quot;.&quot; + parentSimpleName + genericForChaining + &quot; &quot;</span>
+<span class="nc" id="L173">					+ getMethodNameDSLWithParent())</span>
+<span class="nc" id="L174">							.withImplementation(</span>
+									implGenericNoParent + &quot; m=new &quot; + implGenericNoParent
+											+ &quot;(org.hamcrest.Matchers.anything());&quot;,
+									pmfqngc + &quot;.&quot; + parentSimpleName + &quot; tmp = &quot; + pmfqngc + &quot;.&quot;
+<span class="nc" id="L178">											+ parentMirror.getMethodNameDSLWithParent() + &quot;(m);&quot;,</span>
+									&quot;m._parent = new SuperClassMatcher(tmp);&quot;, &quot;return tmp;&quot;)
+<span class="nc" id="L180">							.withJavadoc(generateDefaultJavaDoc(empty(), empty(), &quot;the DSL matcher&quot;, false));</span>
+<span class="nc" id="L181">		}).orElse(null);</span>
+	}
+
+	public DSLMethod generateMatcherClassMethod() {
+<span class="fc" id="L185">		return of(getFullGenericParent()+&quot; Class&lt;&quot; + getFullyQualifiedNameOfGeneratedClass() + &quot;.&quot;</span>
+<span class="fc" id="L186">				+ getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() + &quot;&gt; &quot;</span>
+<span class="fc" id="L187">				+ getMethodShortClassName() + &quot;MatcherClass&quot;).withoutArgument()</span>
+<span class="fc" id="L188">						.withImplementation(&quot;return (Class)&quot; + getSimpleNameOfGeneratedInterfaceMatcher() + &quot;.class;&quot;)</span>
+<span class="fc" id="L189">						.withJavadoc(</span>
+								&quot;/**\n * Helper method to retrieve the Class of the matcher interface.\n * @return the class.\n */\n&quot;);
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

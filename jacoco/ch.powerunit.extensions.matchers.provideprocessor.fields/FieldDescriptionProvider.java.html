@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FieldDescriptionProvider.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.provideprocessor.fields</a> &gt; <span class="el_source">FieldDescriptionProvider.java</span></div><h1>FieldDescriptionProvider.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.provideprocessor.fields;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+import javax.tools.Diagnostic.Kind;
+
+import ch.powerunit.extensions.matchers.IgnoreInMatcher;
+import ch.powerunit.extensions.matchers.common.AbstractTypeKindVisitor;
+import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
+
+public final class FieldDescriptionProvider {
+
+	private FieldDescriptionProvider() {
+	}
+
+	public static final class ExtractTypeVisitor
+			extends AbstractTypeKindVisitor&lt;AbstractFieldDescription, FieldDescriptionMirror, RoundMirror&gt; {
+
+		private final ProvidesMatchersAnnotatedElementData containingElementMirror;
+
+		public ExtractTypeVisitor(ProvidesMatchersAnnotatedElementData containingElementMirror) {
+<span class="fc" id="L50">			super(containingElementMirror.getRoundMirror());</span>
+<span class="fc" id="L51">			this.containingElementMirror = containingElementMirror;</span>
+<span class="fc" id="L52">		}</span>
+
+		private boolean isAssignable(DeclaredType t, String target) {
+<span class="fc" id="L55">			ProcessingEnvironment processingEnv = getProcessingEnv();</span>
+<span class="fc" id="L56">			Types types = processingEnv.getTypeUtils();</span>
+<span class="fc" id="L57">			Elements elements = processingEnv.getElementUtils();</span>
+<span class="fc" id="L58">			return types.isAssignable(t, types.erasure(elements.getTypeElement(target).asType()));</span>
+		}
+
+		@Override
+		protected AbstractFieldDescription defaultAction(TypeMirror t, FieldDescriptionMirror mirror) {
+<span class="nc" id="L63">			return new DefaultFieldDescription(containingElementMirror, mirror);</span>
+		}
+
+		@Override
+		public AbstractFieldDescription visitPrimitive(PrimitiveType t, FieldDescriptionMirror mirror) {
+<span class="fc" id="L68">			return new PrimitiveFieldDescription(containingElementMirror, mirror);</span>
+		}
+
+		@Override
+		public AbstractFieldDescription visitArray(ArrayType t, FieldDescriptionMirror mirror) {
+<span class="fc" id="L73">			return new ArrayFieldDescription(containingElementMirror, mirror);</span>
+		}
+
+		@Override
+		public AbstractFieldDescription visitDeclared(DeclaredType t, FieldDescriptionMirror mirror) {
+<span class="fc bfc" id="L78" title="All 2 branches covered.">			if (isAssignable(t, &quot;java.util.Optional&quot;)) {</span>
+<span class="fc" id="L79">				return new OptionalFieldDescription(containingElementMirror, mirror);</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">			} else if (isAssignable(t, &quot;java.util.Map&quot;)) {</span>
+<span class="fc" id="L81">				return new MapFieldDescription(containingElementMirror, mirror);</span>
+<span class="fc bfc" id="L82" title="All 4 branches covered.">			} else if (isAssignable(t, &quot;java.util.Set&quot;) || isAssignable(t, &quot;java.util.List&quot;)</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">					|| isAssignable(t, &quot;java.util.Collection&quot;)) {</span>
+<span class="fc" id="L84">				return new CollectionFieldDescription(containingElementMirror, mirror);</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">			} else if (isAssignable(t, &quot;java.lang.String&quot;)) {</span>
+<span class="fc" id="L86">				return new StringFieldDescription(containingElementMirror, mirror);</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">			} else if (isAssignable(t, &quot;java.lang.Comparable&quot;)) {</span>
+<span class="fc" id="L88">				return new ComparableFieldDescription(containingElementMirror, mirror);</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">			} else if (isAssignable(t, &quot;java.util.function.Supplier&quot;)) {</span>
+<span class="fc" id="L90">				return new SupplierFieldDescription(containingElementMirror, mirror);</span>
+			}
+<span class="fc" id="L92">			return new DefaultFieldDescription(containingElementMirror, mirror);</span>
+		}
+
+		@Override
+		public AbstractFieldDescription visitTypeVariable(TypeVariable t, FieldDescriptionMirror mirror) {
+<span class="fc" id="L97">			return new DefaultFieldDescription(containingElementMirror, mirror);</span>
+		}
+
+		@Override
+		public AbstractFieldDescription visitUnknown(TypeMirror t, FieldDescriptionMirror mirror) {
+<span class="fc" id="L102">			getProcessingEnv().getMessager().printMessage(Kind.MANDATORY_WARNING, &quot;Unsupported type element&quot;);</span>
+<span class="fc" id="L103">			return new DefaultFieldDescription(containingElementMirror, mirror);</span>
+		}
+	}
+
+	public static boolean isIgnored(FieldDescriptionMirror mirror) {
+<span class="fc bfc" id="L108" title="All 2 branches covered.">		return mirror.getFieldElement().getAnnotation(IgnoreInMatcher.class) != null;</span>
+	}
+
+	public static AbstractFieldDescription of(ProvidesMatchersAnnotatedElementData containingElementMirror,
+			FieldDescriptionMirror mirror) {
+<span class="fc bfc" id="L113" title="All 2 branches covered.">		if (isIgnored(mirror)) {</span>
+<span class="fc" id="L114">			return new IgnoreFieldDescription(containingElementMirror, mirror);</span>
+		}
+<span class="fc" id="L116">		Element te = mirror.getFieldElement();</span>
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">		return new ExtractTypeVisitor(containingElementMirror).visit(</span>
+<span class="pc" id="L118">				(te instanceof ExecutableElement) ? ((ExecutableElement) te).getReturnType() : te.asType(), mirror);</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RoundMirror.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.provideprocessor</a> &gt; <span class="el_source">RoundMirror.java</span></div><h1>RoundMirror.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.provideprocessor;
+
+import static ch.powerunit.extensions.matchers.common.CommonUtils.asStandardMethodName;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Supplier;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+
+import static javax.lang.model.util.ElementFilter.typesIn;
+import static javax.lang.model.util.ElementFilter.fieldsIn;
+import static javax.lang.model.util.ElementFilter.methodsIn;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.tools.Diagnostic.Kind;
+
+import ch.powerunit.extensions.matchers.AddToMatcher;
+import ch.powerunit.extensions.matchers.AddToMatchers;
+import ch.powerunit.extensions.matchers.IgnoreInMatcher;
+import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.common.AbstractRoundMirrorReferenceToProcessingEnv;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.AutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.beanmatchers.DefaultBeanMatchersAutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.LocalDateMatchersAutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.LocalDateTimeMatchersAutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.LocalTimeMatchersAutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate.ZonedDateTimeMatchersAutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestutility.CollectionHamcrestUtilityAutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.jackson.DefaultJsonNodeJacksonAutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.spotify.JsonStringSpotifyAutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethod;
+
+public class RoundMirror extends AbstractRoundMirrorReferenceToProcessingEnv {
+
+	private final Collection&lt;AutomatedExtension&gt; AUTOMATED_EXTENSIONS;
+	private final Set&lt;? extends Element&gt; elementsWithPM;
+	private final Map&lt;Class&lt;?&gt;, Set&lt;? extends Element&gt;&gt; elementsWithOtherAnnotations;
+<span class="fc" id="L73">	private final Map&lt;String, ProvidesMatchersAnnotatedElementMirror&gt; alias = new HashMap&lt;&gt;();</span>
+
+	public RoundMirror(RoundEnvironment roundEnv, ProcessingEnvironment processingEnv) {
+<span class="fc" id="L76">		super(roundEnv, processingEnv);</span>
+<span class="fc" id="L77">		this.elementsWithOtherAnnotations = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L78">		this.elementsWithPM = roundEnv.getElementsAnnotatedWith(ProvideMatchers.class);</span>
+<span class="fc" id="L79">		elementsWithOtherAnnotations.put(IgnoreInMatcher.class,</span>
+<span class="fc" id="L80">				new HashSet&lt;&gt;(roundEnv.getElementsAnnotatedWith(IgnoreInMatcher.class)));</span>
+<span class="fc" id="L81">		elementsWithOtherAnnotations.put(AddToMatcher.class,</span>
+<span class="fc" id="L82">				new HashSet&lt;&gt;(roundEnv.getElementsAnnotatedWith(AddToMatcher.class)));</span>
+<span class="fc" id="L83">		elementsWithOtherAnnotations.put(AddToMatchers.class,</span>
+<span class="fc" id="L84">				new HashSet&lt;&gt;(roundEnv.getElementsAnnotatedWith(AddToMatchers.class)));</span>
+<span class="fc" id="L85">		AUTOMATED_EXTENSIONS = getDefaultExtension().stream().filter(AutomatedExtension::isPresent)</span>
+<span class="fc" id="L86">				.collect(collectingAndThen(toList(), Collections::unmodifiableList));</span>
+<span class="fc" id="L87">	}</span>
+
+	private final List&lt;AutomatedExtension&gt; getDefaultExtension() {
+<span class="fc" id="L90">		return Arrays.asList(new LocalDateMatchersAutomatedExtension(this),</span>
+				new LocalDateTimeMatchersAutomatedExtension(this), new LocalTimeMatchersAutomatedExtension(this),
+				new ZonedDateTimeMatchersAutomatedExtension(this),
+				new CollectionHamcrestUtilityAutomatedExtension(this), new JsonStringSpotifyAutomatedExtension(this),
+				new DefaultBeanMatchersAutomatedExtension(this), new DefaultJsonNodeJacksonAutomatedExtension(this));
+	}
+
+	public Collection&lt;ProvidesMatchersAnnotatedElementMirror&gt; parse() {
+<span class="nc" id="L98">		ProvidesMatchersElementVisitor providesMatchersElementVisitor = new ProvidesMatchersElementVisitor(this);</span>
+<span class="nc" id="L99">		elementsWithPM.stream().filter(e -&gt; roundEnv.getRootElements().contains(e))</span>
+<span class="nc" id="L100">				.map(e -&gt; e.accept(providesMatchersElementVisitor, null)).filter(Optional::isPresent)</span>
+<span class="nc" id="L101">				.map(t -&gt; new ProvidesMatchersAnnotatedElementMirror(t.get(), this))</span>
+<span class="nc" id="L102">				.forEach(a -&gt; alias.put(a.getFullyQualifiedNameOfClassAnnotated(), a));</span>
+
+<span class="nc" id="L104">		doErrorforAllElements();</span>
+<span class="nc" id="L105">		return alias.values();</span>
+	}
+
+	private void doErrorforAllElements() {
+<span class="nc" id="L109">		elementsWithOtherAnnotations.entrySet().stream().forEach(e -&gt; doErrorForElement(e.getValue(), e.getKey()));</span>
+<span class="nc" id="L110">	}</span>
+
+	private void doErrorForElement(Set&lt;? extends Element&gt; elements, Class&lt;?&gt; aa) {
+<span class="nc" id="L113">		elements.stream().forEach(e -&gt; getMessager().printMessage(Kind.ERROR, &quot;Annotation @&quot; + aa.getName()</span>
+				+ &quot; not supported at this location ; The surrounding class is not annotated with @ProvideMatchers. Since version 0.2.0 of powerunit-extension-matchers this is considered as an error.&quot;,
+<span class="nc" id="L115">				e, findAnnotationMirrorFor(e, aa)));</span>
+<span class="nc" id="L116">	}</span>
+
+	private AnnotationMirror findAnnotationMirrorFor(Element e, Class&lt;?&gt; aa) {
+<span class="nc" id="L119">		String aaName = aa.getName().toString();</span>
+<span class="nc" id="L120">		return e.getAnnotationMirrors().stream()</span>
+<span class="nc" id="L121">				.filter(a -&gt; a.getAnnotationType().equals(getElementUtils().getTypeElement(aaName).asType())).findAny()</span>
+<span class="nc" id="L122">				.orElse(null);</span>
+	}
+
+	public boolean removeFromIgnoreList(Element e) {
+<span class="nc" id="L126">		return elementsWithOtherAnnotations.values().stream().map(t -&gt; t.remove(e)).filter(t -&gt; t).findAny()</span>
+<span class="nc" id="L127">				.orElse(false);</span>
+	}
+
+	public Matchable getByName(String name) {
+<span class="nc" id="L131">		return Optional.ofNullable((Matchable) alias.get(name)).orElseGet(() -&gt; Optional</span>
+<span class="nc" id="L132">				.ofNullable(getElementUtils().getTypeElement(name)).map(this::lookupMatchableByType).orElse(null));</span>
+
+	}
+
+	public Matchable lookupMatchableByType(TypeElement type) {
+<span class="fc" id="L137">		return Optional.ofNullable(getElementUtils().getTypeElement(getQualifiedName(type) + &quot;Matchers&quot;))</span>
+<span class="fc" id="L138">				.map(m -&gt; lookupMatchableByTypeAndMatchers(type, m)).orElse(null);</span>
+	}
+
+	private Matchable lookupMatchableByTypeAndMatchers(TypeElement type, TypeElement guestMatcher) {
+<span class="fc" id="L142">		List&lt;? extends Element&gt; guestMatcherEnclosed = guestMatcher.getEnclosedElements();</span>
+<span class="fc" id="L143">		List&lt;TypeElement&gt; types = typesIn(guestMatcherEnclosed);</span>
+<span class="fc" id="L144">		Optional&lt;Long&gt; compatibilityField = types.stream().filter(t -&gt; isSimpleName(t, &quot;Metadata&quot;))</span>
+<span class="fc" id="L145">				.flatMap(t -&gt; fieldsIn(t.getEnclosedElements()).stream()).filter(t -&gt; isSimpleName(t, &quot;COMPATIBILITY&quot;))</span>
+<span class="fc" id="L146">				.map(VariableElement::getConstantValue).filter(Objects::nonNull).filter(Long.class::isInstance)</span>
+<span class="fc" id="L147">				.map(Long.class::cast).findAny();</span>
+<span class="fc bfc" id="L148" title="All 2 branches covered.">		if (!compatibilityField.isPresent()) {</span>
+<span class="fc" id="L149">			return null;// NOT FOUND</span>
+		}
+		// In future, verify compatiblity
+<span class="fc" id="L152">		String guestMatcherName = getSimpleName(type) + &quot;Matcher&quot;;</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">		if (!types.stream().anyMatch(t -&gt; isSimpleName(t, guestMatcherName))) {</span>
+<span class="fc" id="L154">			return null;// NOT FOUND</span>
+		}
+<span class="fc" id="L156">		String shortMethodClassName = asStandardMethodName(getSimpleName(type));</span>
+<span class="fc" id="L157">		String withSameValue = shortMethodClassName + &quot;WithSameValue&quot;;</span>
+<span class="fc" id="L158">		boolean hasSameValue = methodsIn(guestMatcherEnclosed).stream().filter(t -&gt; isSimpleName(t, withSameValue))</span>
+<span class="fc" id="L159">				.anyMatch(this::isStatic);</span>
+<span class="fc" id="L160">		return Matchable.of(getQualifiedName(guestMatcher), shortMethodClassName, guestMatcherName, hasSameValue,</span>
+<span class="fc" id="L161">				compatibilityField.get());</span>
+	}
+
+	public AnnotationMirror getProvideMatchersAnnotation(Element e) {
+<span class="nc" id="L165">		return getElementUtils().getAllAnnotationMirrors(e).stream()</span>
+<span class="nc" id="L166">				.filter(a -&gt; a.getAnnotationType().equals(provideMatchersMirror)).findAny().orElse(null);</span>
+	}
+
+	public Collection&lt;Supplier&lt;DSLMethod&gt;&gt; getDSLMethodFor(ProvidesMatchersAnnotatedElementData target) {
+<span class="fc" id="L170">		return AUTOMATED_EXTENSIONS.stream().map(ae -&gt; ae.accept(target)).flatMap(Collection::stream).collect(toList());</span>
+	}
+
+	public Collection&lt;FieldDSLMethod&gt; getFieldDSLMethodFor(AbstractFieldDescription target) {
+<span class="nc" id="L174">		return AUTOMATED_EXTENSIONS.stream().map(ae -&gt; ae.accept(target)).flatMap(Collection::stream).collect(toList());</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

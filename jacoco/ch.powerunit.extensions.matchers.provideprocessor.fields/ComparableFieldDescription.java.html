@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ComparableFieldDescription.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.provideprocessor.fields</a> &gt; <span class="el_source">ComparableFieldDescription.java</span></div><h1>ComparableFieldDescription.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.provideprocessor.fields;
+
+import java.util.Arrays;
+import java.util.Collection;
+
+import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+
+public class ComparableFieldDescription extends DefaultFieldDescription {
+
+	public ComparableFieldDescription(ProvidesMatchersAnnotatedElementData containingElementMirror,
+			FieldDescriptionMirror mirror) {
+<span class="fc" id="L31">		super(containingElementMirror, mirror);</span>
+<span class="fc" id="L32">	}</span>
+
+	@Override
+	protected Collection&lt;FieldDSLMethod&gt; getSpecificFieldDslMethodFor() {
+<span class="nc" id="L36">		String fieldtype = getFieldType();</span>
+<span class="nc" id="L37">		return Arrays.asList(</span>
+<span class="nc" id="L38">				getDslMethodBuilder().withDeclaration(&quot;ComparesEqualTo&quot;, fieldtype + &quot; value&quot;)</span>
+<span class="nc" id="L39">						.withJavaDoc(&quot;that this field is equals to another one, using the compareTo method&quot;,</span>
+								&quot;value the value to compare with&quot;, MATCHERS + &quot;#comparesEqualTo(java.lang.Comparable)&quot;)
+<span class="nc" id="L41">				.havingDefault(MATCHERS + &quot;.comparesEqualTo(value)&quot;),</span>
+<span class="nc" id="L42">				getDslMethodBuilder().withDeclaration(&quot;LessThan&quot;, fieldtype + &quot; value&quot;)</span>
+<span class="nc" id="L43">						.withJavaDoc(&quot;that this field is less than another value&quot;, &quot;value the value to compare with&quot;,</span>
+								MATCHERS + &quot;#lessThan(java.lang.Comparable)&quot;)
+<span class="nc" id="L45">						.havingDefault(MATCHERS + &quot;.lessThan(value)&quot;),</span>
+<span class="nc" id="L46">				getDslMethodBuilder().withDeclaration(&quot;lessThanOrEqualTo&quot;, fieldtype + &quot; value&quot;)</span>
+<span class="nc" id="L47">						.withJavaDoc(&quot;that this field is less or equal than another value&quot;,</span>
+								&quot;value the value to compare with&quot;,
+								MATCHERS + &quot;#lessThanOrEqualTo(java.lang.Comparable)&quot;)
+<span class="nc" id="L50">						.havingDefault(MATCHERS + &quot;.lessThanOrEqualTo(value)&quot;),</span>
+<span class="nc" id="L51">				getDslMethodBuilder().withDeclaration(&quot;GreaterThan&quot;, fieldtype + &quot; value&quot;)</span>
+<span class="nc" id="L52">						.withJavaDoc(&quot;that this field is greater than another value&quot;, &quot;value the value to compare with&quot;,</span>
+								MATCHERS + &quot;#greaterThan(java.lang.Comparable)&quot;)
+<span class="nc" id="L54">						.havingDefault(MATCHERS + &quot;.greaterThan(value)&quot;),</span>
+<span class="nc" id="L55">				getDslMethodBuilder().withDeclaration(&quot;GreaterThanOrEqualTo&quot;, fieldtype + &quot; value&quot;)</span>
+<span class="nc" id="L56">						.withJavaDoc(&quot;that this field is greater or equal than another value&quot;,</span>
+								&quot;value the value to compare with&quot;,
+								MATCHERS + &quot;#greaterThanOrEqualTo(java.lang.Comparable)&quot;)
+<span class="nc" id="L59">						.havingDefault(MATCHERS + &quot;.greaterThanOrEqualTo(value)&quot;));</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

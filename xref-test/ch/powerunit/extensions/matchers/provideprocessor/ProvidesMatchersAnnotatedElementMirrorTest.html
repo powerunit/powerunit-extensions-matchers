@@ -1,0 +1,126 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>ProvidesMatchersAnnotatedElementMirrorTest xref</title>
+<link type="text/css" rel="stylesheet" href="../../../../../stylesheet.css" />
+</head>
+<body>
+<div id="overview"><a href="../../../../../../testapidocs/ch/powerunit/extensions/matchers/provideprocessor/ProvidesMatchersAnnotatedElementMirrorTest.html">View Javadoc</a></div><pre>
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <strong class="jxr_keyword">package</strong> ch.powerunit.extensions.matchers.provideprocessor;
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> org.mockito.Mockito.when;
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <strong class="jxr_keyword">import</strong> java.util.Collection;
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <strong class="jxr_keyword">import</strong> java.util.stream.Collectors;
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> javax.annotation.processing.ProcessingEnvironment;
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> javax.lang.model.element.Element;
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">import</strong> javax.lang.model.element.Name;
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <strong class="jxr_keyword">import</strong> javax.lang.model.element.PackageElement;
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> javax.lang.model.element.TypeElement;
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> javax.lang.model.type.TypeMirror;
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <strong class="jxr_keyword">import</strong> javax.lang.model.util.Elements;
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <strong class="jxr_keyword">import</strong> javax.lang.model.util.Types;
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <strong class="jxr_keyword">import</strong> org.mockito.Mock;
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <strong class="jxr_keyword">import</strong> org.mockito.Mockito;
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>  
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <strong class="jxr_keyword">import</strong> ch.powerunit.Rule;
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <strong class="jxr_keyword">import</strong> ch.powerunit.Test;
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <strong class="jxr_keyword">import</strong> ch.powerunit.TestRule;
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <strong class="jxr_keyword">import</strong> ch.powerunit.extensions.matchers.ProvideMatchers;
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> ch.powerunit.extensions.matchers.TestSuiteSupport;
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="ProvidesMatchersAnnotatedElementMirrorTest" href="../../../../../ch/powerunit/extensions/matchers/provideprocessor/ProvidesMatchersAnnotatedElementMirrorTest.html#ProvidesMatchersAnnotatedElementMirrorTest">ProvidesMatchersAnnotatedElementMirrorTest</a> <strong class="jxr_keyword">implements</strong> <a name="TestSuiteSupport" href="../../../../../ch/powerunit/extensions/matchers/TestSuiteSupport.html#TestSuiteSupport">TestSuiteSupport</a> {
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  	@Rule
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> TestRule rules = mockitoRule().around(before(<strong class="jxr_keyword">this</strong>::prepareMock));
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>  
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>  	@Mock
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>  	<strong class="jxr_keyword">private</strong> TypeElement typeElement;
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>  
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>  	@Mock
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>  	<strong class="jxr_keyword">private</strong> Name fullyQualifiedName;
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>  
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>  	@Mock
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>  	<strong class="jxr_keyword">private</strong> Name simpleName;
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>  
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>  	@Mock
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>  	<strong class="jxr_keyword">private</strong> Name packageName;
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>  
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>  	@Mock
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>  	<strong class="jxr_keyword">private</strong> PackageElement packageElement;
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>  
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>  	<strong class="jxr_keyword">private</strong> ProcessingEnvironment processingEnv;
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>  
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>  	<strong class="jxr_keyword">private</strong> Elements elements;
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>  
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>  	@Mock
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>  	<strong class="jxr_keyword">private</strong> Types types;
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>  
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>  	@Mock
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>  	<strong class="jxr_keyword">private</strong> ProvideMatchers provideMatcher;
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>  
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>  	@Mock
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>  	<strong class="jxr_keyword">private</strong> TypeElement te1;
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>  
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>  	<strong class="jxr_keyword">private</strong> RoundMirror roundMirror;
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>  
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> prepareMock() {
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>  		processingEnv = generateMockitoProcessingEnvironment();
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>  		when(provideMatcher.matchersClassName()).thenReturn(<span class="jxr_string">""</span>);
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>  		when(provideMatcher.matchersPackageName()).thenReturn(<span class="jxr_string">""</span>);
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>  		when(provideMatcher.comments()).thenReturn(<span class="jxr_string">""</span>);
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>  
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>  		elements = processingEnv.getElementUtils();
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>  		when(elements.getTypeElement(Mockito.argThat(not(<span class="jxr_string">"java.lang.Object"</span>)))).thenReturn(te1);
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>  		when(processingEnv.getElementUtils()).thenReturn(elements);
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>  		when(processingEnv.getTypeUtils()).thenReturn(types);
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>  
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>  		when(elements.getPackageOf(Mockito.any(Element.<strong class="jxr_keyword">class</strong>))).thenReturn(packageElement);
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>  
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>  		when(typeElement.getQualifiedName()).thenReturn(fullyQualifiedName);
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>  		when(typeElement.getSimpleName()).thenReturn(simpleName);
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>  		when(typeElement.getAnnotation(ProvideMatchers.<strong class="jxr_keyword">class</strong>)).thenReturn(provideMatcher);
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>  		TypeMirror object = elements.getTypeElement(<span class="jxr_string">"java.lang.Object"</span>).asType();
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>  		when(typeElement.getSuperclass()).thenReturn(object);
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>  
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>  		when(fullyQualifiedName.toString()).thenReturn(<span class="jxr_string">"fqn.Sn"</span>);
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>  		when(packageElement.getQualifiedName()).thenReturn(packageName);
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>  		when(packageName.toString()).thenReturn(<span class="jxr_string">"fqn"</span>);
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>  		when(simpleName.toString()).thenReturn(<span class="jxr_string">"Sn"</span>);
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>  		roundMirror = <strong class="jxr_keyword">new</strong> RoundMirror(generateMockitoRoundEnvironment(), processingEnv);
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>  	}
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>  
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>  	@Test
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testGenerateAndExtractFieldAndParentPrivateMatcherWithoutField() {
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>  		ProvidesMatchersAnnotatedElementMirror underTest = <strong class="jxr_keyword">new</strong> ProvidesMatchersAnnotatedElementMirror(typeElement,
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>  				roundMirror);
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>  		assertThat(underTest.generateMatchers()).is(
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>  				<span class="jxr_string">"\n  private static &lt;_TARGET,_SOURCE&gt; org.hamcrest.Matcher&lt;_SOURCE&gt; asFeatureMatcher(\n      String msg,\n      java.util.function.Function&lt;_SOURCE,_TARGET&gt; converter,\n      org.hamcrest.Matcher&lt;? super _TARGET&gt; matcher) {\n   return new org.hamcrest.FeatureMatcher&lt;_SOURCE,_TARGET&gt;(matcher, msg, msg) {\n     protected _TARGET featureValueOf(_SOURCE actual) {\n      return converter.apply(actual);\n    }};\n  }\n\n\n"</span>);
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>  	}
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>  
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>  	@Test
+<a class="jxr_linenumber" name="L96" href="#L96">96</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testGeneratePublicInterfaceWithoutField() {
+<a class="jxr_linenumber" name="L97" href="#L97">97</a>  		ProvidesMatchersAnnotatedElementMirror underTest = <strong class="jxr_keyword">new</strong> ProvidesMatchersAnnotatedElementMirror(typeElement,
+<a class="jxr_linenumber" name="L98" href="#L98">98</a>  				roundMirror);
+<a class="jxr_linenumber" name="L99" href="#L99">99</a>  		assertThat(underTest.generatePublicInterface()).is(
+<a class="jxr_linenumber" name="L100" href="#L100">100</a> 				<span class="jxr_string">"\n  /**\n   * DSL interface for matcher on {@link fqn.Sn Sn} to support the build syntaxic sugar.\n   * \n   * \n  \n   *\n   */\n  public static interface SnMatcherBuildSyntaxicSugar\n    extends org.hamcrest.Matcher&lt;fqn.Sn &gt; {\n  \n    /**\n     * Method that returns the matcher itself.\n     * &lt;p&gt;\n     * &lt;b&gt;This method is a syntaxic sugar that end the DSL and make clear that the matcher can't be change anymore.&lt;/b&gt;\n     *\n     * @return the matcher\n     */\n    default org.hamcrest.Matcher&lt;fqn.Sn &gt; build() {\n      return this;\n    }\n  \n  }\n  \n  /**\n   * DSL interface for matcher on {@link fqn.Sn Sn} to support the end build syntaxic sugar.\n   * \n   * \n  \n   * @param &lt;_PARENT&gt; used to reference, if necessary, a parent for this builder. By default Void is used to indicate no parent builder.\n   *\n   */\n  public static interface SnMatcherEndSyntaxicSugar&lt;_PARENT&gt;\n    extends org.hamcrest.Matcher&lt;fqn.Sn &gt; {\n  \n    /**\n     * Method that returns the parent builder.\n     * &lt;p&gt;\n     * &lt;b&gt;This method only works in the context of a parent builder. If the real type is Void, then nothing will be returned.&lt;/b&gt;\n     *\n     * @return the parent builder or null if not applicable\n     */\n    _PARENT end();\n  \n  }\n  \n  \n  /**\n   * Start a DSL matcher for the {@link fqn.Sn Sn}.\n   * \n   * \n  \n   *\n   */\n  public static interface SnMatcher&lt;_PARENT&gt;\n    extends org.hamcrest.Matcher&lt;fqn.Sn &gt;,\n            SnMatcherBuildSyntaxicSugar,\n            SnMatcherEndSyntaxicSugar&lt;_PARENT&gt; {\n  \n  \n  \n    /**\n     * Add a matcher on the object itself and not on a specific field.\n     * &lt;p&gt;\n     * &lt;i&gt;This method, when used more than once, just add more matcher to the list.&lt;/i&gt;\n     *\n     * @param otherMatcher the matcher on the object itself.\n     * @return the DSL to continue\n     */\n    SnMatcher&lt;_PARENT&gt; andWith(org.hamcrest.Matcher&lt;? super fqn.Sn &gt; otherMatcher);\n  \n    /**\n     * Add a matcher on the object itself and not on a specific field, but convert the object before passing it to the matcher.\n     * &lt;p&gt;\n     * &lt;i&gt;This method, when used more than once, just add more matcher to the list.&lt;/i&gt;\n     *\n     * @param converter the function to convert the object.\n     * @param otherMatcher the matcher on the converter object itself.\n     * @param &lt;_TARGETOBJECT&gt; the type of the target object\n     * @return the DSL to continue\n     */\n    default &lt;_TARGETOBJECT&gt; SnMatcher&lt;_PARENT&gt; andWithAs(java.util.function.Function&lt;fqn.Sn  ,_TARGETOBJECT&gt; converter,org.hamcrest.Matcher&lt;? super _TARGETOBJECT&gt; otherMatcher) {\n      return andWith(asFeatureMatcher(\&quot; &lt;object is converted&gt; \&quot;,converter,otherMatcher));\n    }\n  \n    /**\n     * Method that return the matcher itself and accept one single Matcher on the object itself.\n     * &lt;p&gt;\n     * &lt;b&gt;This method is a syntaxic sugar that end the DSL and make clear that the matcher can't be change anymore.&lt;/b&gt;\n     *\n     * @param otherMatcher the matcher on the object itself.\n     * @return the matcher\n     */\n    default org.hamcrest.Matcher&lt;fqn.Sn &gt; buildWith(org.hamcrest.Matcher&lt;? super fqn.Sn &gt; otherMatcher) {\n      return andWith(otherMatcher);\n    }\n  \n    /**\n     * Method that return the parent builder and accept one single Matcher on the object itself.\n     * &lt;p&gt;\n     * &lt;b&gt;This method only works in the context of a parent builder. If the real type is Void, then nothing will be returned.&lt;/b&gt;\n     *\n     * @param otherMatcher the matcher on the object itself.\n     * @return the parent builder or null if not applicable\n     */\n    default _PARENT endWith(org.hamcrest.Matcher&lt;? super fqn.Sn &gt; otherMatcher){\n      return andWith(otherMatcher).end();\n    }\n  }\n"</span>);
+<a class="jxr_linenumber" name="L101" href="#L101">101</a> 	}
+<a class="jxr_linenumber" name="L102" href="#L102">102</a> 
+<a class="jxr_linenumber" name="L103" href="#L103">103</a> 	@Test
+<a class="jxr_linenumber" name="L104" href="#L104">104</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testGenerateDSLStarter() {
+<a class="jxr_linenumber" name="L105" href="#L105">105</a> 		ProvidesMatchersAnnotatedElementMirror underTest = <strong class="jxr_keyword">new</strong> ProvidesMatchersAnnotatedElementMirror(typeElement,
+<a class="jxr_linenumber" name="L106" href="#L106">106</a> 				roundMirror);
+<a class="jxr_linenumber" name="L107" href="#L107">107</a> 		Collection&lt;DSLMethod&gt; results = underTest.generateDSLStarter();
+<a class="jxr_linenumber" name="L108" href="#L108">108</a> 		assertThat(results).is(iterableWithSize(7));
+<a class="jxr_linenumber" name="L109" href="#L109">109</a> 		assertThat(results.stream().map(x -&gt; x.asStaticImplementation()).collect(Collectors.joining(<span class="jxr_string">"\n"</span>))).is(
+<a class="jxr_linenumber" name="L110" href="#L110">110</a> 				<span class="jxr_string">"/**\n * Start a DSL matcher for the {@link fqn.Sn Sn}.\n * &lt;p&gt;\n * The returned builder (which is also a Matcher), at this point accepts any object that is a {@link fqn.Sn Sn}.\n * \n * \n * @return the DSL matcher\n */\npublic static  fqn.SnMatchers.SnMatcher &lt;Void&gt; snWith() {\n  return new SnMatcherImpl&lt;Void&gt;();\n}\n\n/**\n * Start a DSL matcher for the {@link fqn.Sn Sn}.\n * &lt;p&gt;\n * The returned builder (which is also a Matcher), at this point accepts any object that is a {@link fqn.Sn Sn}.\n * @param parentBuilder the parentBuilder.\n * \n * \n * @param &lt;_PARENT&gt; used to reference, if necessary, a parent for this builder. By default Void is used an indicate no parent builder.\n * @return the DSL matcher\n */\npublic static &lt;_PARENT&gt; fqn.SnMatchers.SnMatcher &lt;_PARENT&gt; snWithParent(_PARENT parentBuilder) {\n  return new SnMatcherImpl&lt;_PARENT&gt;(parentBuilder);\n}\n\n/**\n * Helper method to retrieve the Class of the matcher interface.\n * @return the class.\n */\npublic static &lt;_PARENT&gt; Class&lt;fqn.SnMatchers.SnMatcher &lt;_PARENT&gt;&gt; snMatcherClass() {\n  return (Class)SnMatcher.class;\n}\n\n/**\n * Start a DSL matcher for the {@link fqn.Sn Sn}.\n * @param other the other object to be used as a reference.\n * @param previous the previous object of the call stack of matcher.\n * @param ignoredFields fields name that must be ignored.\n * @param postProcessor Function to be applied to modify, if necessary, the matchers.\n * \n * \n * @return the DSL matcher\n */\npublic static  fqn.SnMatchers.SnMatcher &lt;Void&gt; snWithSameValue(fqn.Sn  other,java.util.Set&lt;java.lang.Object&gt; previous,java.util.function.BiFunction&lt;org.hamcrest.Matcher&lt;?&gt;,java.lang.Object,org.hamcrest.Matcher&lt;?&gt;&gt; postProcessor,String... ignoredFields) {\n  java.util.Set&lt;java.lang.Object&gt; nPrevious = new java.util.HashSet(previous);\n  nPrevious.add(other);\n  \n  java.util.Set&lt;String&gt; ignored = new java.util.HashSet&lt;&gt;(java.util.Arrays.asList(ignoredFields));\n  \n  SnMatcher &lt;Void&gt; m=new SnMatcherImpl&lt;Void&gt;();\n  \n  if (previous.stream().anyMatch(p-&gt;p==other)) {\n    return m.andWith(org.hamcrest.Matchers.describedAs(\&quot;Same instance control only. A cycle has been detected.\&quot;,org.hamcrest.Matchers.sameInstance(other)));\n  }\n  \t\t\n  \n  \n  return (SnMatcher)java.util.Objects.requireNonNull(postProcessor,\&quot;postProcessor can't be null\&quot;).apply(m,other);\n}\n\n/**\n * Start a DSL matcher for the {@link fqn.Sn Sn}.\n * @param other the other object to be used as a reference.\n * @param ignoredFields fields name that must be ignored.\n * @param postProcessor Function to be applied to modify, if necessary, the matchers.\n * \n * \n * @return the DSL matcher\n */\npublic static  fqn.SnMatchers.SnMatcher &lt;Void&gt; snWithSameValue(fqn.Sn  other,java.util.function.BiFunction&lt;org.hamcrest.Matcher&lt;?&gt;,java.lang.Object,org.hamcrest.Matcher&lt;?&gt;&gt; postProcessor,String... ignoredFields) {\n  return snWithSameValue(other,java.util.Collections.emptySet(),postProcessor,ignoredFields);\n}\n\n/**\n * Start a DSL matcher for the {@link fqn.Sn Sn}.\n * @param other the other object to be used as a reference.\n * @param ignoredFields fields name that must be ignored.\n * \n * \n * @return the DSL matcher\n */\npublic static  fqn.SnMatchers.SnMatcher &lt;Void&gt; snWithSameValue(fqn.Sn  other,String... ignoredFields) {\n  return snWithSameValue(other,java.util.Collections.emptySet(),(m,o)-&gt;m,ignoredFields);\n}\n\n/**\n * Start a DSL matcher for the {@link fqn.Sn Sn}.\n * @param other the other object to be used as a reference.\n * \n * \n * @return the DSL matcher\n */\npublic static  fqn.SnMatchers.SnMatcher &lt;Void&gt; snWithSameValue(fqn.Sn  other) {\n  return snWithSameValue(other,java.util.Collections.emptySet(),(m,o)-&gt;m,new String[]{});\n}\n"</span>);
+<a class="jxr_linenumber" name="L111" href="#L111">111</a> 	}
+<a class="jxr_linenumber" name="L112" href="#L112">112</a> 
+<a class="jxr_linenumber" name="L113" href="#L113">113</a> }
+</pre>
+<hr/>
+<div id="footer">Copyright &#169; 2020. All rights reserved.</div>
+</body>
+</html>

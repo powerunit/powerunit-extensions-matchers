@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractHamcrestDateMatchersAutomatedExtension.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate</a> &gt; <span class="el_source">AbstractHamcrestDateMatchersAutomatedExtension.java</span></div><h1>AbstractHamcrestDateMatchersAutomatedExtension.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.provideprocessor.extension.hamcrestdate;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import javax.lang.model.type.TypeMirror;
+
+import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
+import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
+import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
+import ch.powerunit.extensions.matchers.provideprocessor.extension.AutomatedExtension;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.AbstractFieldDescription;
+import ch.powerunit.extensions.matchers.provideprocessor.fields.FieldDSLMethod;
+
+/**
+ * @author borettim
+ *
+ */
+public abstract class AbstractHamcrestDateMatchersAutomatedExtension extends AutomatedExtension {
+
+	private final TypeMirror knownType;
+
+	private final String targetType;
+
+	private final boolean withSameDay;
+
+	public AbstractHamcrestDateMatchersAutomatedExtension(RoundMirror roundMirror, String targetElement,
+			String targetType, boolean withSameDay) {
+<span class="fc" id="L52">		super(roundMirror, targetElement);</span>
+<span class="fc" id="L53">		this.targetType = targetType;</span>
+<span class="fc" id="L54">		knownType = getMirrorFor(targetType);</span>
+<span class="fc" id="L55">		this.withSameDay = withSameDay;</span>
+<span class="fc" id="L56">	}</span>
+
+	private FieldDSLMethod builderFor(AbstractFieldDescription field, String targetMethod) {
+<span class="fc" id="L59">		String suffix = targetMethod.substring(0, 1).toUpperCase() + targetMethod.substring(1);</span>
+<span class="fc" id="L60">		String readable = Arrays.stream(targetMethod.split(&quot;(?=[A-Z])&quot;)).collect(Collectors.joining(&quot; &quot;)).toLowerCase();</span>
+<span class="fc" id="L61">		String target = getExpectedElement();</span>
+<span class="fc" id="L62">		return builderFor(field).withDeclaration(suffix, targetType + &quot; date&quot;)</span>
+<span class="fc" id="L63">				.withJavaDoc(&quot;Verify that this `&quot; + targetType + &quot;` is &quot; + readable + &quot; another one&quot;,</span>
+						&quot;date the `&quot; + targetType + &quot;` to compare with&quot;,
+						target + &quot;#&quot; + targetMethod + &quot;(&quot; + targetType + &quot;)&quot;)
+<span class="fc" id="L66">				.havingDefault(target + &quot;.&quot; + targetMethod + &quot;(date)&quot;);</span>
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see ch.powerunit.extensions.matchers.provideprocessor.extension.
+	 * AutomatedExtension#accept(ch.powerunit.extensions.matchers.
+	 * provideprocessor.fields.FieldDescriptionMetaData)
+	 */
+	@Override
+	public Collection&lt;FieldDSLMethod&gt; accept(AbstractFieldDescription field) {
+<span class="fc bfc" id="L78" title="All 2 branches covered.">		if (!isSameType(field.getMirror().getFieldTypeAsTypeElement(), knownType)) {</span>
+<span class="fc" id="L79">			return Collections.emptyList();</span>
+		}
+<span class="fc" id="L81">		Collection&lt;FieldDSLMethod&gt; tmp = new ArrayList&lt;&gt;(Arrays.asList(builderFor(field, &quot;after&quot;),</span>
+<span class="fc" id="L82">				builderFor(field, &quot;sameOrAfter&quot;), builderFor(field, &quot;before&quot;), builderFor(field, &quot;sameOrBefore&quot;)));</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">		if (withSameDay) {</span>
+<span class="fc" id="L84">			tmp.add(builderFor(field, &quot;sameDay&quot;));</span>
+		}
+<span class="fc" id="L86">		return Collections.unmodifiableCollection(tmp);</span>
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see ch.powerunit.extensions.matchers.provideprocessor.extension.
+	 * AutomatedExtension#accept(ch.powerunit.extensions.matchers.
+	 * provideprocessor.ProvidesMatchersAnnotatedElementData)
+	 */
+	@Override
+	public Collection&lt;Supplier&lt;DSLMethod&gt;&gt; accept(ProvidesMatchersAnnotatedElementData clazz) {
+<span class="fc" id="L98">		return Collections.emptyList();</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProvidesMatchersAnnotatedElementGeneralMirror.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Powerunit - Java Testing framework for JDK 1.8 - Extension to provide matchers based on annotations.</a> &gt; <a href="index.source.html" class="el_package">ch.powerunit.extensions.matchers.provideprocessor</a> &gt; <span class="el_source">ProvidesMatchersAnnotatedElementGeneralMirror.java</span></div><h1>ProvidesMatchersAnnotatedElementGeneralMirror.java</h1><pre class="source lang-java linenums">/**
+ * Powerunit - A JDK1.8 test framework
+ * Copyright (C) 2014 Mathieu Boretti.
+ *
+ * This file is part of Powerunit
+ *
+ * Powerunit is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Powerunit is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Powerunit. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package ch.powerunit.extensions.matchers.provideprocessor;
+
+import javax.lang.model.element.TypeElement;
+
+public abstract class ProvidesMatchersAnnotatedElementGeneralMirror extends ProvideMatchersMirror
+		implements RoundMirrorSupport {
+
+	protected final String genericForChaining;
+
+	public ProvidesMatchersAnnotatedElementGeneralMirror(TypeElement typeElement, RoundMirror roundMirror) {
+<span class="fc" id="L30">		super(roundMirror, typeElement);</span>
+<span class="fc" id="L31">		this.genericForChaining = getGenericParent().replaceAll(&quot;^&lt;_PARENT&quot;,</span>
+<span class="fc" id="L32">				&quot;&lt;&quot; + getFullyQualifiedNameOfGeneratedClass() + &quot;.&quot; + simpleNameOfGeneratedInterfaceMatcher</span>
+<span class="fc" id="L33">						+ getGenericNoParent());</span>
+<span class="fc" id="L34">	}</span>
+
+	public String getDefaultReturnMethod() {
+<span class="fc" id="L37">		return getSimpleNameOfClassAnnotated() + &quot;Matcher&quot; + getGenericParent();</span>
+	}
+
+	public String getSimpleNameOfGeneratedImplementationMatcher() {
+<span class="fc" id="L41">		return getSimpleNameOfClassAnnotated() + &quot;MatcherImpl&quot;;</span>
+	}
+
+	public String getSimpleNameOfGeneratedImplementationMatcherWithGenericNoParent() {
+<span class="fc" id="L45">		return getSimpleNameOfGeneratedImplementationMatcher() + getGenericNoParent();</span>
+	}
+
+	public String getSimpleNameOfGeneratedImplementationMatcherWithGenericParent() {
+<span class="fc" id="L49">		return getSimpleNameOfGeneratedImplementationMatcher() + getGenericParent();</span>
+	}
+
+	public String getSimpleNameOfGeneratedInterfaceMatcherWithGenericParent() {
+<span class="fc" id="L53">		return simpleNameOfGeneratedInterfaceMatcher + &quot; &quot; + getGenericParent();</span>
+	}
+
+	public String getSimpleNameOfGeneratedInterfaceMatcherWithGenericNoParent() {
+<span class="fc" id="L57">		return simpleNameOfGeneratedInterfaceMatcher + &quot; &quot; + getGenericNoParent();</span>
+	}
+
+	public String getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric() {
+<span class="fc" id="L61">		return getFullyQualifiedNameOfClassAnnotated() + &quot; &quot; + generic;</span>
+	}
+
+	public static String getAddParentToGeneric(String generic) {
+<span class="fc bfc" id="L65" title="All 2 branches covered.">		if (&quot;&quot;.equals(generic)) {</span>
+<span class="fc" id="L66">			return &quot;&lt;_PARENT&gt;&quot;;</span>
+		} else {
+<span class="fc" id="L68">			return generic.replaceFirst(&quot;&lt;&quot;, &quot;&lt;_PARENT,&quot;);</span>
+		}
+	}
+
+	public static String getAddNoParentToGeneric(String generic) {
+<span class="fc bfc" id="L73" title="All 2 branches covered.">		if (&quot;&quot;.equals(generic)) {</span>
+<span class="fc" id="L74">			return &quot;&lt;Void&gt;&quot;;</span>
+		} else {
+<span class="fc" id="L76">			return generic.replaceFirst(&quot;&lt;&quot;, &quot;&lt;Void,&quot;);</span>
+		}
+	}
+
+	public String getGenericParent() {
+<span class="fc" id="L81">		return getAddParentToGeneric(generic);</span>
+	}
+
+	public String getGenericNoParent() {
+<span class="fc" id="L85">		return getAddNoParentToGeneric(generic);</span>
+	}
+
+	public String getFullGenericParent() {
+<span class="fc" id="L89">		return getAddParentToGeneric(fullGeneric);</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
