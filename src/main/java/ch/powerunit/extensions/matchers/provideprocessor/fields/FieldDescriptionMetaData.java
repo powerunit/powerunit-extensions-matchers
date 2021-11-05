@@ -85,7 +85,7 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 	}
 
 	public String asDescribeTo() {
-		return "description.appendText(\"[\").appendDescriptionOf(" + getFieldName() + ").appendText(\"]\\n\");";
+		return "_description.appendText(\"[\").appendDescriptionOf(this." + getFieldName() + ").appendText(\"]\\n\");";
 	}
 
 	public String asMatcherField() {

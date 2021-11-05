@@ -53,15 +53,15 @@
   }
 
   @Override
-  public void describeTo(org.hamcrest.Description description) {
-    description.appendText("an instance of %5$s with\n");
+  public void describeTo(org.hamcrest.Description _description) {
+    _description.appendText("an instance of %5$s with\n");
 
-    description.appendText("[").appendDescriptionOf(_parent).appendText("]\n");
+    _description.appendText("[").appendDescriptionOf(_parent).appendText("]\n");
 
 %9$s
 
     for(org.hamcrest.Matcher nMatcher : nextMatchers) {
-      description.appendText("[object itself ").appendDescriptionOf(nMatcher).appendText("]\n");
+      _description.appendText("[object itself ").appendDescriptionOf(nMatcher).appendText("]\n");
     }
 
   }

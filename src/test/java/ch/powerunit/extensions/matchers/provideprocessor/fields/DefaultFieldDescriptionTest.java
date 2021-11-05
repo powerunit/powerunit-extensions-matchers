@@ -125,7 +125,7 @@ public class DefaultFieldDescriptionTest implements TestSuite {
 				new FieldDescriptionMirror(() -> provideMatchersAnnotatedElementMirror, "field", "boolean",
 						executableElement));
 		assertThat(undertest.asDescribeTo())
-				.is("description.appendText(\"[\").appendDescriptionOf(field).appendText(\"]\\n\");");
+				.is("_description.appendText(\"[\").appendDescriptionOf(this.field).appendText(\"]\\n\");");
 	}
 
 	@Test
