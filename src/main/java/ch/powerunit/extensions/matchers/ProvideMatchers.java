@@ -344,4 +344,12 @@ public @interface ProvideMatchers {
 	 * @since 0.1.0
 	 */
 	public static final String JSON_EXTENSION = "json-extension";
+	
+	/**
+	 * May be used to disable generation of the factory.
+	 * 
+	 * @return true to disable the generation of the factory
+	 * @since 0.4.0
+	 */
+	boolean disableGenerationOfFactory() default false;
 }
