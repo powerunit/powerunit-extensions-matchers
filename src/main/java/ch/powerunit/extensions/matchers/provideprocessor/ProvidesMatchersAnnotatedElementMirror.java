@@ -102,6 +102,9 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 							generatePrivateImplementation(), JOIN_DSL_METHOD.asString(tmp), POSTPROCESSOR_FORMAT,
 							generateMetadata());
 					output.flush();
+					if (isDisableGenerationOfFactory() ) {
+						return Collections.emptyList();
+					}
 					return tmp;
 				}, e -> traceErrorAndDump(this, e, te));
 	}

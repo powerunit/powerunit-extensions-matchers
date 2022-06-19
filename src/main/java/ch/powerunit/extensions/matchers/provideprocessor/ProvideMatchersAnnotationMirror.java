@@ -66,5 +66,14 @@ public class ProvideMatchersAnnotationMirror extends AbstractTypeElementMirror<R
 	public ProvideMatchers getRealAnnotation() {
 		return realAnnotation;
 	}
+	
+	/**
+	 * 
+	 * @return is generation of factory disable
+	 * @since 0.4.0
+	 */
+	public boolean isDisableGenerationOfFactory() {
+		return realAnnotation.disableGenerationOfFactory();
+	}
 
 }
