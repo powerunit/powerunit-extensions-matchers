@@ -29,6 +29,7 @@ import ch.powerunit.extensions.matchers.ProvideMatchers;
  *
  */
 @ProvideMatchers
+@Deprecated
 public class PojoWithSameRoundList {
 	public List<PojoWithStringList> field;
 
