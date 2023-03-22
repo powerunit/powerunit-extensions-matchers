@@ -46,7 +46,7 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 	public static final String computeGenericInformation(TypeMirror fieldTypeMirror) {
 		if (fieldTypeMirror instanceof DeclaredType) {
 			DeclaredType dt = ((DeclaredType) fieldTypeMirror);
-			return dt.getTypeArguments().stream().map(Object::toString).collect(joining(","));
+			return dt.getTypeArguments().stream().map(Object::toString).map(s->s.replaceAll("@[^ ]+ ", "")).collect(joining(","));
 		}
 		return "";
 	}

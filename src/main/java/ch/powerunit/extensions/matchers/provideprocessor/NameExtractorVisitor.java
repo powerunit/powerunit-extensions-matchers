@@ -53,7 +53,7 @@ final class NameExtractorVisitor extends AbstractTypeKindVisitor<Optional<String
 
 	@Override
 	public Optional<String> visitDeclared(DeclaredType t, Boolean asPrimitif) {
-		return of(t.toString());
+		return of(t.toString().replaceAll("@[^ ]+ ", ""));
 	}
 
 	@Override

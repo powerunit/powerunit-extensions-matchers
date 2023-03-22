@@ -21,6 +21,7 @@ package ch.powerunit.extensions.matchers.samples.iterable;
 
 import java.util.List;
 import java.util.Objects;
+import javax.validation.Valid;
 
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 
@@ -31,10 +32,14 @@ import ch.powerunit.extensions.matchers.ProvideMatchers;
 @ProvideMatchers
 @Deprecated
 public class PojoWithSameRoundList {
-	public List<PojoWithStringList> field;
+	public List<@Valid PojoWithStringList> field;
 
 	public PojoWithSameRoundList(List<PojoWithStringList> field) {
 		this.field = field;
+	}
+	
+	public List<@Valid PojoWithStringList> dummy() {
+		return field;
 	}
 
 	@Override
