@@ -65,10 +65,16 @@ public class ElementHelperTest implements TestSuiteSupport, ElementHelper {
 		assertThatFunction(this::getGeneric, te).is("");
 		doReturn(Collections.singletonList(tpe1)).when(te).getTypeParameters();
 		when(tpe1.toString()).thenReturn("T1");
+		TypeMirror t1 = mock(TypeMirror.class);
+		when(tpe1.asType()).thenReturn(t1);
+		when(t1.toString()).thenReturn("T1");
 		assertThatFunction(this::getGeneric, te).is("<T1>");
 		doReturn(Arrays.asList(tpe1, tpe2)).when(te).getTypeParameters();
 		when(tpe1.toString()).thenReturn("T1");
 		when(tpe2.toString()).thenReturn("T2");
+		TypeMirror t2 = mock(TypeMirror.class);
+		when(tpe2.asType()).thenReturn(t2);
+		when(t2.toString()).thenReturn("T2");
 		assertThatFunction(this::getGeneric, te).is("<T1,T2>");
 	}
 
@@ -83,10 +89,16 @@ public class ElementHelperTest implements TestSuiteSupport, ElementHelper {
 		assertThatFunction(this::getFullGeneric, te).is("");
 		doReturn(Collections.singletonList(tpe1)).when(te).getTypeParameters();
 		when(tpe1.toString()).thenReturn("T1");
+		TypeMirror t1 = mock(TypeMirror.class);
+		when(tpe1.asType()).thenReturn(t1);
+		when(t1.toString()).thenReturn("T1");
 		assertThatFunction(this::getFullGeneric, te).is("<T1>");
 		doReturn(Arrays.asList(tpe1, tpe2)).when(te).getTypeParameters();
 		when(tpe1.toString()).thenReturn("T1");
 		when(tpe2.toString()).thenReturn("T2");
+		TypeMirror t2 = mock(TypeMirror.class);
+		when(tpe2.asType()).thenReturn(t2);
+		when(t2.toString()).thenReturn("T2");
 		assertThatFunction(this::getFullGeneric, te).is("<T1,T2>");
 		doReturn(Arrays.asList(tpe1, tpe2)).when(te).getTypeParameters();
 		when(tpe1.toString()).thenReturn("T1");
