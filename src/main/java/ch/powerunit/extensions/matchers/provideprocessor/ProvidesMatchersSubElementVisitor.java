@@ -26,6 +26,7 @@ import java.util.function.Function;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.VariableElement;
 import javax.tools.Diagnostic.Kind;
 
@@ -79,6 +80,12 @@ public class ProvidesMatchersSubElementVisitor extends
 		generateIfNeededErrorForNotSupportedElementAndRemoveIt(
 				"Check that this method is public, doesn't have any parameter and is named isXXX or getXXX", e);
 		return Optional.empty();
+	}
+	
+	@Override
+	public Optional<AbstractFieldDescription> visitRecordComponent(RecordComponentElement e,
+			ProvidesMatchersAnnotatedElementMatcherMirror p) {
+		return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, getSimpleName(e));
 	}
 
 	private void generateIfNeededErrorForNotSupportedElementAndRemoveIt(String description, Element e) {
