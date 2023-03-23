@@ -32,7 +32,8 @@ public interface Matchable {
 		// 0x01 : withSameValue also provides a version to ignore fields
 		// 0x02 : withSameValue also use a list of parent to detect cycle
 		// 0x04 : withSameValue also support a post processor
-		return 0x07;
+		// 0x08 : java 17 generation
+		return 0x0F;
 	}
 
 	default String getMethodNameDSLWithSameValue() {

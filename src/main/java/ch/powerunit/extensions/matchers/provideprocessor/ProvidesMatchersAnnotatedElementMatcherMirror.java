@@ -115,7 +115,7 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 				format(INTERFACE_FORMAT, getFullyQualifiedNameOfClassAnnotated(), getSimpleNameOfClassAnnotated(),
 						getParamComment(), simpleNameOfGeneratedInterfaceMatcher, fullGeneric,
 						getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(), getFullGenericParent(),
-						generic, getGenericParent(), JOIN_FIELD_DSL_INTERFACE.asString(fields)));
+						generic, getGenericParent(), JOIN_FIELD_DSL_INTERFACE.asString(fields),getSimpleNameOfGeneratedImplementationMatcher()));
 	}
 
 	protected String generatePrivateImplementation() {

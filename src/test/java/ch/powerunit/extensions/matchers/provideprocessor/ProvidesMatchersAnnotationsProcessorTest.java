@@ -15,7 +15,7 @@ public class ProvidesMatchersAnnotationsProcessorTest implements TestSuite {
 	ProcessingEnvironment processingEnv;
 
 	private void prepare() {
-
+		
 	}
 
 	@Rule

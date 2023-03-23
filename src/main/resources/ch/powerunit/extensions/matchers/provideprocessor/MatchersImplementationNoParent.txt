@@ -1,4 +1,4 @@
-/* package protected */ static class %1$s%2$s
+/* package protected */ static final class %1$s%2$s
   extends org.hamcrest.TypeSafeDiagnosingMatcher<%3$s> 
   implements %4$s {
 

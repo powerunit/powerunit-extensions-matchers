@@ -48,10 +48,11 @@ public static interface %4$sEndSyntaxicSugar%7$s
 %3$s
  *
  */
-public static interface %4$s%7$s
+public static sealed interface %4$s%7$s
   extends org.hamcrest.Matcher<%6$s>,
           %4$sBuildSyntaxicSugar%8$s,
-          %4$sEndSyntaxicSugar%9$s {
+          %4$sEndSyntaxicSugar%9$s
+  permits %11$s {
 
 %10$s
 
