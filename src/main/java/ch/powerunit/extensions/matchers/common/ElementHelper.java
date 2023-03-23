@@ -43,11 +43,11 @@ public interface ElementHelper {
 			.withToStringMapper().withDelimiter("&").withOptionalPrefixAndSuffix(" extends ", "");
 
 	static final ListJoining<TypeParameterElement> TYPE_PARAMETER_SIMPLE_AS_LIST = accepting(TypeParameterElement.class)
-			.withMapper(t -> t.asType().toString()).withCommaDelimiter().withOptionalPrefixAndSuffix("<", ">");
+			.withToStringMapper().withCommaDelimiter().withOptionalPrefixAndSuffix("<", ">");
 
 	@SuppressWarnings("unchecked")
 	static final ListJoining<TypeParameterElement> TYPE_PARAMETER_FULL_AS_LIST = accepting(TypeParameterElement.class)
-			.withMapper(t -> t.asType().toString()
+			.withMapper(t -> t.toString()
 					+ TYPE_PARAMETER_BOUND_AS_LIST_WITH_EXTENDS.asString((List<TypeMirror>) t.getBounds()))
 			.withCommaDelimiter().withOptionalPrefixAndSuffix("<", ">");
 
