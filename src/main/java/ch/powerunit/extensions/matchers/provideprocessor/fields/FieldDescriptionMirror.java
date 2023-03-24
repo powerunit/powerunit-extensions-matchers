@@ -76,7 +76,7 @@ public class FieldDescriptionMirror implements ElementHelper {
 	}
 
 	public TypeMirror getFieldTypeMirror() {
-		return (fieldElement instanceof ExecutableElement) ? ((ExecutableElement) fieldElement).getReturnType()
+		return (fieldElement instanceof ExecutableElement ee) ? ee.getReturnType()
 				: fieldElement.asType();
 	}
 

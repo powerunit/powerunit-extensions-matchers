@@ -106,7 +106,7 @@ public class ProvidesMatchersSubElementVisitor extends
 	public Optional<AbstractFieldDescription> createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(
 			Element e, ProvidesMatchersAnnotatedElementMatcherMirror p, String fieldName) {
 		return removeIfNeededAndThenReturn(
-				((e instanceof ExecutableElement) ? ((ExecutableElement) e).getReturnType() : e.asType())
+				((e instanceof ExecutableElement ee) ? ee.getReturnType() : e.asType())
 						.accept(extractNameVisitor, false).map(f -> FieldDescriptionProvider.of(() -> p,
 								new FieldDescriptionMirror(() -> p, fieldName, f, e))));
 	}
