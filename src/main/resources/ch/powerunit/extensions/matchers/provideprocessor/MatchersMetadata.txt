@@ -4,20 +4,15 @@
    */
   public static final Metadata METADATA = new Metadata();
 
-   public static final class FieldMetadata {
-     public final String NAME, TYPE, ACCESSOR, STEREOTYPE;
-
-     public final boolean IGNORED;
-
-     private FieldMetadata(String name, String type, String accessor,String stereotype, boolean ignored) {
-       NAME=name; 
-       TYPE=type; 
-       ACCESSOR=accessor; 
-       STEREOTYPE=stereotype; 
-       IGNORED=ignored;
-     }
-  }
-  
+  public static record FieldMetadata(
+    String name, 
+    String type, 
+    String accessor,
+    java.util.function.Function<%4$s,?> accessorFunction,
+    String stereotype, 
+    boolean ignored, 
+    String kind,
+    Object linkedMatcherMetadata) {}
 
   public static final class Metadata {
     private Metadata() {}
@@ -35,5 +30,9 @@
     public final FieldMetadata[] FIELDS = new FieldMetadata[]{ 
       %6$s 
     };
+    
+    public final String SOURCE_LEVEL = "%7$s";
+    
+    public final boolean IS_JAVA_PREVIEW = %8$s;
 
   }
