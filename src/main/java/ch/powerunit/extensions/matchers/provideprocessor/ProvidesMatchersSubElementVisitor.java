@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.VariableElement;
@@ -60,6 +61,10 @@ public class ProvidesMatchersSubElementVisitor extends
 	@Override
 	public Optional<AbstractFieldDescription> visitVariable(VariableElement e,
 			ProvidesMatchersAnnotatedElementMatcherMirror p) {
+		if (ElementKind.RECORD.equals(e.getEnclosingElement().getKind())) {
+			removeFromIgnoreList.apply(e);
+			return Optional.empty();
+		}
 		if (isPublic(e) && !isStatic(e)) {
 			String fieldName = getSimpleName(e);
 			return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, fieldName);
@@ -75,6 +80,10 @@ public class ProvidesMatchersSubElementVisitor extends
 			String simpleName = getSimpleName(e);
 			if (simpleName.matches("^((get)|(is)).*")) {
 				return visiteExecutableGet(e, "^(get)|(is)", p);
+			}
+			if (ElementKind.RECORD.equals(e.getEnclosingElement().getKind())) {
+				removeFromIgnoreList.apply(e);
+				return Optional.empty();
 			}
 		}
 		generateIfNeededErrorForNotSupportedElementAndRemoveIt(

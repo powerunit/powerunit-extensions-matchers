@@ -118,6 +118,7 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 	@Test
 	public void testVisitVariableNoPublicAndNotInListThenEmptyAndNoWarning() {
 		when(variableElement.getModifiers()).thenReturn(Collections.emptySet());
+		when(variableElement.getEnclosingElement()).thenReturn(variableElement);
 		Optional<AbstractFieldDescription> ofd = underTest.visitVariable(variableElement,
 				providesMatchersAnnotatedElementMirror);
 		assertThat(ofd).isNotNull();
@@ -129,6 +130,7 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 	@Test
 	public void testVisitVariablePublicAndStaticAndNotInListThenEmptyAndNoWarning() {
 		when(variableElement.getModifiers()).thenReturn(new HashSet(Arrays.asList(Modifier.PUBLIC, Modifier.STATIC)));
+		when(variableElement.getEnclosingElement()).thenReturn(variableElement);
 		Optional<AbstractFieldDescription> ofd = underTest.visitVariable(variableElement,
 				providesMatchersAnnotatedElementMirror);
 		assertThat(ofd).isNotNull();
@@ -175,6 +177,7 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 	@Test
 	public void testVisitVariableNoPublicAndInListThenEmptyAndWarning() {
 		when(variableElement.getModifiers()).thenReturn(Collections.emptySet());
+		when(variableElement.getEnclosingElement()).thenReturn(variableElement);
 		when(roundMirror.removeFromIgnoreList(Mockito.any())).thenReturn(true);
 		Optional<AbstractFieldDescription> ofd = underTest.visitVariable(variableElement,
 				providesMatchersAnnotatedElementMirror);
@@ -187,6 +190,7 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 	@Test
 	public void testVisitVariablePublicAndStaticAndInListThenEmptyAndWarning() {
 		when(variableElement.getModifiers()).thenReturn(new HashSet(Arrays.asList(Modifier.PUBLIC, Modifier.STATIC)));
+		when(variableElement.getEnclosingElement()).thenReturn(variableElement);
 		when(roundMirror.removeFromIgnoreList(Mockito.any())).thenReturn(true);
 		Optional<AbstractFieldDescription> ofd = underTest.visitVariable(variableElement,
 				providesMatchersAnnotatedElementMirror);
@@ -228,6 +232,7 @@ public class ProvidesMatchersSubElementVisitorTest implements TestSuite {
 		when(roundMirror.removeFromIgnoreList(Mockito.any())).thenReturn(true);
 		when(executableElement.getModifiers()).thenReturn(Collections.singleton(Modifier.PUBLIC));
 		when(executableElement.getParameters()).thenReturn(Collections.emptyList());
+		when(executableElement.getEnclosingElement()).thenReturn(executableElement);
 		Optional<AbstractFieldDescription> ofd = underTest.visitExecutable(executableElement,
 				providesMatchersAnnotatedElementMirror);
 		assertThat(ofd).isNotNull();

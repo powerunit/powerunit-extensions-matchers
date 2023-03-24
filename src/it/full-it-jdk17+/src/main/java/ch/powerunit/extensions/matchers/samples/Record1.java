@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
+import ch.powerunit.extensions.matchers.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.ProvideMatchers;
 
 /**
@@ -32,4 +33,7 @@ import ch.powerunit.extensions.matchers.ProvideMatchers;
  *
  */
 @ProvideMatchers()
-public record Record1 (String msg1){}
+public record Record1 (
+		String msg1, 
+		@IgnoreInMatcher String ignoreMe
+	){}
