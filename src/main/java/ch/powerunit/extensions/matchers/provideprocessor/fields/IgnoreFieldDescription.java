@@ -25,7 +25,7 @@ import static java.util.Optional.ofNullable;
 import java.util.Collection;
 import java.util.Collections;
 
-import ch.powerunit.extensions.matchers.IgnoreInMatcher;
+import ch.powerunit.extensions.matchers.api.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.common.CommonUtils;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 

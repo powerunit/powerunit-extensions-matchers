@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import javax.validation.Valid;
 
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.api.ProvideMatchers;
 
 /**
  * @author borettim

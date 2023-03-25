@@ -3,7 +3,7 @@ package ch.powerunit.extensions.matchers.samples;
 import java.util.List;
 import java.util.function.Supplier;
 
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.api.ProvideMatchers;
 
 @ProvideMatchers
 public class SampleSupplier {

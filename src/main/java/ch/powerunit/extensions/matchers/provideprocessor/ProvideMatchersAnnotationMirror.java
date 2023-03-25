@@ -21,8 +21,8 @@ package ch.powerunit.extensions.matchers.provideprocessor;
 
 import javax.lang.model.element.TypeElement;
 
-import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.api.ComplementaryExpositionMethod;
+import ch.powerunit.extensions.matchers.api.ProvideMatchers;
 import ch.powerunit.extensions.matchers.common.AbstractTypeElementMirror;
 
 public class ProvideMatchersAnnotationMirror extends AbstractTypeElementMirror<RoundMirror> {
@@ -31,14 +31,14 @@ public class ProvideMatchersAnnotationMirror extends AbstractTypeElementMirror<R
 	protected final boolean allowWeakWithSameValue;
 
 	public ProvideMatchersAnnotationMirror(RoundMirror roundMirror, TypeElement annotatedElement) {
-		super("ch.powerunit.extensions.matchers.ProvideMatchers", roundMirror, annotatedElement);
+		super("ch.powerunit.extensions.matchers.api.ProvideMatchers", roundMirror, annotatedElement);
 		this.realAnnotation = annotatedElement.getAnnotation(ProvideMatchers.class);
 		this.allowWeakWithSameValue = realAnnotation.allowWeakWithSameValue();
 	}
 
 	/**
 	 * @return
-	 * @see ch.powerunit.extensions.matchers.ProvideMatchers#comments()
+	 * @see ch.powerunit.extensions.matchers.api.ProvideMatchers#comments()
 	 */
 	public String comments() {
 		return realAnnotation.comments();
@@ -46,7 +46,7 @@ public class ProvideMatchersAnnotationMirror extends AbstractTypeElementMirror<R
 
 	/**
 	 * @return
-	 * @see ch.powerunit.extensions.matchers.ProvideMatchers#moreMethod()
+	 * @see ch.powerunit.extensions.matchers.api.ProvideMatchers#moreMethod()
 	 */
 	public ComplementaryExpositionMethod[] moreMethod() {
 		return realAnnotation.moreMethod();
@@ -54,7 +54,7 @@ public class ProvideMatchersAnnotationMirror extends AbstractTypeElementMirror<R
 
 	/**
 	 * @return
-	 * @see ch.powerunit.extensions.matchers.ProvideMatchers#extensions()
+	 * @see ch.powerunit.extensions.matchers.api.ProvideMatchers#extensions()
 	 */
 	public String[] extensions() {
 		return realAnnotation.extensions();

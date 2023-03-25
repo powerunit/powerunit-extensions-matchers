@@ -15,8 +15,8 @@ import org.mockito.Mockito;
 import ch.powerunit.Rule;
 import ch.powerunit.Test;
 import ch.powerunit.TestRule;
-import ch.powerunit.extensions.matchers.ProvideMatchers;
 import ch.powerunit.extensions.matchers.TestSuiteSupport;
+import ch.powerunit.extensions.matchers.api.ProvideMatchers;
 
 public class ProvideMatchersMirrorTest implements TestSuiteSupport {
 

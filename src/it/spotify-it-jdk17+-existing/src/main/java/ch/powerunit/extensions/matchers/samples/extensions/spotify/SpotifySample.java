@@ -1,6 +1,6 @@
 package ch.powerunit.extensions.matchers.samples.extensions.spotify;
 
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.api.ProvideMatchers;
 
 @ProvideMatchers(extensions=ProvideMatchers.JSON_EXTENSION)
 public class SpotifySample {

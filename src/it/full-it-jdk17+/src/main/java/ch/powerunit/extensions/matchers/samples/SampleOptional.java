@@ -2,8 +2,8 @@ package ch.powerunit.extensions.matchers.samples;
 
 import java.util.Optional;
 
-import ch.powerunit.extensions.matchers.IgnoreInMatcher;
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.api.IgnoreInMatcher;
+import ch.powerunit.extensions.matchers.api.ProvideMatchers;
 import ch.powerunit.extensions.matchers.samples.extension.MyTestWithoutGeneric;
 import ch.powerunit.extensions.matchers.samples.extension.MyTestWithoutGeneric2;
 

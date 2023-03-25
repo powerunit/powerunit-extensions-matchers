@@ -22,7 +22,7 @@ package ch.powerunit.extensions.matchers.samples.iterable;
 import java.util.Objects;
 import java.util.Set;
 
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.api.ProvideMatchers;
 
 /**
  * @author borettim

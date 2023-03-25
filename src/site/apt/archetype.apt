@@ -199,7 +199,7 @@ mvn -e clean install
 +-----
 package mygroupid;
 
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.api.ProvideMatchers;
 
 @ProvideMatchers
 public class SimplePojo {
@@ -208,7 +208,7 @@ public class SimplePojo {
 
 package mygroupid;
 
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.api.ProvideMatchers;
 
 @ProvideMatchers
 public class TwoFieldsPojo {

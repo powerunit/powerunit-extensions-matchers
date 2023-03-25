@@ -19,8 +19,8 @@
  */
 package ch.powerunit.extensions.matchers.samples.addmatcher;
 
-import ch.powerunit.extensions.matchers.AddToMatcher;
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.api.AddToMatcher;
+import ch.powerunit.extensions.matchers.api.ProvideMatchers;
 
 @ProvideMatchers
 public class PojoWithOverrideField {

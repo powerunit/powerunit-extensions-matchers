@@ -90,8 +90,8 @@ public class RoundMirrorTest implements TestSuite {
 	private void prepare() {
 		when(processingEnv.getElementUtils()).thenReturn(elements);
 		when(elements.getTypeElement(eq("java.lang.Object"))).thenReturn(te1);
-		when(elements.getTypeElement(eq("ch.powerunit.extensions.matchers.ProvideMatchers"))).thenReturn(te1);
-		when(elements.getTypeElement(eq("ch.powerunit.extensions.matchers.ProvideMatchers"))).thenReturn(te1);
+		when(elements.getTypeElement(eq("ch.powerunit.extensions.matchers.api.ProvideMatchers"))).thenReturn(te1);
+		when(elements.getTypeElement(eq("ch.powerunit.extensions.matchers.api.ProvideMatchers"))).thenReturn(te1);
 		when(elements.getTypeElement(argThat(not(containsString("Matcher"))))).thenReturn(te1);
 	}
 

@@ -19,7 +19,7 @@
  */
 package ch.powerunit.extensions.matchers.multi.children;
 
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.api.ProvideMatchers;
 import ch.powerunit.extensions.matchers.multi.parent.Pojo2;
 
 /**
