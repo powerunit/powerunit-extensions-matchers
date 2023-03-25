@@ -1,6 +1,6 @@
 package \${package};
 
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.api.ProvideMatchers;
 
 @ProvideMatchers
 public class TwoFieldsPojo {

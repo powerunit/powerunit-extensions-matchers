@@ -18,7 +18,7 @@ import ch.powerunit.Rule;
 import ch.powerunit.Test;
 import ch.powerunit.TestRule;
 import ch.powerunit.TestSuite;
-import ch.powerunit.extensions.matchers.AddToMatcher;
+import ch.powerunit.extensions.matchers.api.AddToMatcher;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
 

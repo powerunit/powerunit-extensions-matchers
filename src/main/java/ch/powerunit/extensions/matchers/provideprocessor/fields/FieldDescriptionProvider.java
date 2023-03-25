@@ -31,7 +31,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 
-import ch.powerunit.extensions.matchers.IgnoreInMatcher;
+import ch.powerunit.extensions.matchers.api.IgnoreInMatcher;
 import ch.powerunit.extensions.matchers.common.AbstractTypeKindVisitor;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;

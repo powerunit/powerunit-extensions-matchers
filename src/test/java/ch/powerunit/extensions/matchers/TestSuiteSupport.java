@@ -57,7 +57,7 @@ public interface TestSuiteSupport extends TestSuite {
 		when(objectName.toString()).thenReturn("ProvideMatchers");
 		fullObjectName = mock(Name.class);
 		when(provide.getQualifiedName()).thenReturn(fullObjectName);
-		when(fullObjectName.toString()).thenReturn("ch.powerunit.extensions.matchers.ProvideMatchers");
+		when(fullObjectName.toString()).thenReturn("ch.powerunit.extensions.matchers.api.ProvideMatchers");
 		Elements elements = mock(Elements.class);
 		ProcessingEnvironment processingEnv = mock(ProcessingEnvironment.class);
 		Types types = mock(Types.class);
@@ -69,7 +69,7 @@ public interface TestSuiteSupport extends TestSuite {
 		when(processingEnv.getTypeUtils()).thenReturn(types);
 		when(processingEnv.getSourceVersion()).thenReturn(SourceVersion.RELEASE_8);
 		when(elements.getTypeElement("java.lang.Object")).thenReturn(object);
-		when(elements.getTypeElement("ch.powerunit.extensions.matchers.ProvideMatchers")).thenReturn(provide);
+		when(elements.getTypeElement("ch.powerunit.extensions.matchers.api.ProvideMatchers")).thenReturn(provide);
 
 		when(object.asType()).thenReturn(mock(TypeMirror.class));
 		return processingEnv;

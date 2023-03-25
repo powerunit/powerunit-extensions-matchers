@@ -2,7 +2,7 @@ package ch.powerunit.extensions.matchers.samples.extensions.hamcrestdate;
 
 import java.time.LocalDate;
 
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.api.ProvideMatchers;
 
 @ProvideMatchers
 public class SampleLocalDate {

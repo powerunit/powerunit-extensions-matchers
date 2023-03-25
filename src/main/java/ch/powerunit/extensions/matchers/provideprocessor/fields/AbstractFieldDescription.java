@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import ch.powerunit.extensions.matchers.AddToMatcher;
+import ch.powerunit.extensions.matchers.api.AddToMatcher;
 import ch.powerunit.extensions.matchers.common.ListJoining;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 

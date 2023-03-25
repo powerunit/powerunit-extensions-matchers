@@ -2,7 +2,7 @@ package ch.powerunit.extensions.matchers.samples;
 
 import java.time.LocalDateTime;
 
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.api.ProvideMatchers;
 
 @ProvideMatchers
 public class SampleLocalDateTime {

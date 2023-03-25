@@ -22,8 +22,8 @@ package ch.powerunit.extensions.matchers.samples;
 import java.io.Serializable;
 import java.util.List;
 
-import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.api.ComplementaryExpositionMethod;
+import ch.powerunit.extensions.matchers.api.ProvideMatchers;
 
 /**
  * @author borettim

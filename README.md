@@ -9,7 +9,7 @@
 * Git : ![mergify-status](https://gh.mergify.io/badges/powerunit/powerunit-extensions-matchers.png?style=cut)
 
 
-This is an extension to powerunit (a unit test framework for java 8)  that doesn't require this framework, but provides generation of hamcrest matchers. [Please check the site for more information](http://powerunit.github.io/powerunit-extensions-matchers/)
+This is an extension to powerunit (a unit test framework for java 8) that doesn't require this framework, but provides generation of hamcrest matchers.
 
 **This version of the library doesn't support version below java 17**
 
@@ -25,3 +25,8 @@ public class PojoShort {
 ```
 
 Matchers classes must be created by the annotation processor (in this example, named `PojoShortMatchers`).
+
+# Upgrade to version 1.0.0
+
+The version 1.0.0 breaks the package of the annotations. It will be necessary to replace the package
+`ch.powerunit.extensions.matchers` by `ch.powerunit.extensions.matchers.api`.

@@ -47,10 +47,10 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.tools.Diagnostic.Kind;
 
-import ch.powerunit.extensions.matchers.AddToMatcher;
-import ch.powerunit.extensions.matchers.AddToMatchers;
-import ch.powerunit.extensions.matchers.IgnoreInMatcher;
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.api.AddToMatcher;
+import ch.powerunit.extensions.matchers.api.AddToMatchers;
+import ch.powerunit.extensions.matchers.api.IgnoreInMatcher;
+import ch.powerunit.extensions.matchers.api.ProvideMatchers;
 import ch.powerunit.extensions.matchers.common.AbstractRoundMirrorReferenceToProcessingEnv;
 import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.AutomatedExtension;

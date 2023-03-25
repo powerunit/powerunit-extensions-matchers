@@ -43,7 +43,7 @@ public abstract class AbstractRoundMirrorReferenceToProcessingEnv
 		this.roundEnv = roundEnv;
 		this.processingEnv = processingEnv;
 		this.objectTypeMirror = getElementUtils().getTypeElement("java.lang.Object").asType();
-		provideMatchersMirror = getElementUtils().getTypeElement("ch.powerunit.extensions.matchers.ProvideMatchers")
+		provideMatchersMirror = getElementUtils().getTypeElement("ch.powerunit.extensions.matchers.api.ProvideMatchers")
 				.asType();
 	}
 

@@ -19,15 +19,15 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.extension;
 
-import static ch.powerunit.extensions.matchers.ComplementaryExpositionMethod.ARRAYCONTAINING;
-import static ch.powerunit.extensions.matchers.ComplementaryExpositionMethod.CONTAINS;
+import static ch.powerunit.extensions.matchers.api.ComplementaryExpositionMethod.ARRAYCONTAINING;
+import static ch.powerunit.extensions.matchers.api.ComplementaryExpositionMethod.CONTAINS;
 
 import java.util.Collection;
 import java.util.function.Supplier;
 
 import ch.powerunit.Test;
 import ch.powerunit.TestSuite;
-import ch.powerunit.extensions.matchers.ComplementaryExpositionMethod;
+import ch.powerunit.extensions.matchers.api.ComplementaryExpositionMethod;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
 

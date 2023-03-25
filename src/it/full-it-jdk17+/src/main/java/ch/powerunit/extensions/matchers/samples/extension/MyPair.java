@@ -2,7 +2,7 @@ package ch.powerunit.extensions.matchers.samples.extension;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.api.ProvideMatchers;
 
 @ProvideMatchers
 public class MyPair<L,R> extends Pair<L, R> {

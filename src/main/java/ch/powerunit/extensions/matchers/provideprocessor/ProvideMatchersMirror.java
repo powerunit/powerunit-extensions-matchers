@@ -33,7 +33,7 @@ import java.util.function.Function;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.api.ProvideMatchers;
 import ch.powerunit.extensions.matchers.provideprocessor.extension.DSLExtension;
 
 public class ProvideMatchersMirror extends ProvideMatchersAnnotationMirror implements Matchable {

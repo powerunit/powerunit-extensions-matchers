@@ -50,5 +50,6 @@
  *      <code>@ProvideMatchers</code>&nbsp;- the annotation to be used on class
  *      that must be processed by this annotation processor.
  *
+ * @since 1.0.0
  */
-package ch.powerunit.extensions.matchers;
+package ch.powerunit.extensions.matchers.api;

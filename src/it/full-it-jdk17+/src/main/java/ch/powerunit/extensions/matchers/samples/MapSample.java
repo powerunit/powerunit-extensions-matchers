@@ -2,7 +2,7 @@ package ch.powerunit.extensions.matchers.samples;
 
 import java.util.Map;
 
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.api.ProvideMatchers;
 import ch.powerunit.extensions.matchers.samples.extension.MyTestWithoutGeneric;
 import ch.powerunit.extensions.matchers.samples.extension.MyTestWithoutGeneric2;
 

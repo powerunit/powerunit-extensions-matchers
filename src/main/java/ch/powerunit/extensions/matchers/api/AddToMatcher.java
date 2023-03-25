@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Powerunit. If not, see <http://www.gnu.org/licenses/>.
  */
-package ch.powerunit.extensions.matchers;
+package ch.powerunit.extensions.matchers.api;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

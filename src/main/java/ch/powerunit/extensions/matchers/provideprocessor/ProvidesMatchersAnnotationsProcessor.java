@@ -54,9 +54,9 @@ import ch.powerunit.extensions.matchers.common.RessourceLoaderHelper;
  * @author borettim
  *
  */
-@SupportedAnnotationTypes({ "ch.powerunit.extensions.matchers.ProvideMatchers",
-		"ch.powerunit.extensions.matchers.IgnoreInMatcher", "ch.powerunit.extensions.matchers.AddToMatcher",
-		"ch.powerunit.extensions.matchers.AddToMatchers" })
+@SupportedAnnotationTypes({ "ch.powerunit.extensions.matchers.api.ProvideMatchers",
+		"ch.powerunit.extensions.matchers.api.IgnoreInMatcher", "ch.powerunit.extensions.matchers.api.AddToMatcher",
+		"ch.powerunit.extensions.matchers.api.AddToMatchers" })
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
 @SupportedOptions({ "ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor.factory" })
 public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {

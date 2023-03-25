@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import ch.powerunit.extensions.matchers.ProvideMatchers;
+import ch.powerunit.extensions.matchers.api.ProvideMatchers;
 import ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotatedElementData;
 import ch.powerunit.extensions.matchers.provideprocessor.RoundMirror;
 import ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod;
