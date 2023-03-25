@@ -19,7 +19,6 @@
  */
 package ch.powerunit.extensions.matchers.provideprocessor.extension;
 
-import static java.util.stream.Collectors.toList;
 import static ch.powerunit.extensions.matchers.provideprocessor.dsl.DSLMethod.of;
 import static java.util.stream.Collectors.joining;
 
@@ -47,7 +46,7 @@ public abstract class AbstractDSLExtensionSupplier {
 	public abstract Collection<Supplier<DSLMethod>> asSuppliers();
 
 	public String[][] getSeveralParameter(boolean lastIsVarargs, String... name) {
-		List<String[]> tmp = Arrays.stream(name).map(this::getOneParameter).collect(toList());
+		List<String[]> tmp = Arrays.stream(name).map(this::getOneParameter).toList();
 		if (lastIsVarargs) {
 			tmp.get(name.length - 1)[0] += "...";
 		}

@@ -397,7 +397,6 @@
 					<docfilessubdirs>true</docfilessubdirs>
 					<linksource>false</linksource>
 					<detectLinks />
-					<footer><![CDATA[<img src="http://www.powerunit.ch/powerunit/logo.png" width="80%" height="80%"/>]]></footer>
 				</configuration>
 			</plugin>
 			<plugin>

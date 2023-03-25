@@ -28,7 +28,6 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toList;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -83,9 +82,9 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 		}
 		tmp.addAll(ofNullable(getDSLExtension()).orElseGet(Collections::emptyList).stream()
 				.map(t -> t.getDSLMethodFor(() -> this)).flatMap(Collection::stream)
-				.map(ProvidesMatchersAnnotatedElementMirror::asCollection).collect(toList()));
+				.map(ProvidesMatchersAnnotatedElementMirror::asCollection).toList());
 		tmp.addAll(roundMirror.getDSLMethodFor(() -> this).stream()
-				.map(ProvidesMatchersAnnotatedElementMirror::asCollection).collect(toList()));
+				.map(ProvidesMatchersAnnotatedElementMirror::asCollection).toList());
 		this.dslProvider = unmodifiableList(tmp);
 	}
 
@@ -111,7 +110,7 @@ public class ProvidesMatchersAnnotatedElementMirror extends ProvidesMatchersAnno
 
 	public Collection<DSLMethod> generateDSLStarter() {
 		return dslProvider.stream().map(Supplier::get).filter(Objects::nonNull).flatMap(Collection::stream)
-				.filter(Objects::nonNull).collect(toList());
+				.filter(Objects::nonNull).toList();
 	}
 
 	public String getDefaultStarterBody(boolean withParentBuilder) {

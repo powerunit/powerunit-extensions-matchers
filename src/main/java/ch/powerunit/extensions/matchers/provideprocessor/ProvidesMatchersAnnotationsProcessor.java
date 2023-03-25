@@ -23,7 +23,6 @@ import static ch.powerunit.extensions.matchers.common.CommonUtils.addPrefix;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 import java.io.PrintWriter;
@@ -104,7 +103,7 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 						ProvidesMatchersAnnotatedElementMirror::process))
 				.entrySet().stream().map(e -> e.getValue().stream()
 						.map(m -> CommonUtils.addPrefix("  ", m.asDefaultReference(e.getKey()))).collect(joining("\n")))
-				.collect(toList()));
+				.toList());
 		alias.stream().map(ProvidesMatchersAnnotatedElementMirror::getElement).forEach(allSourceElements::add);
 	}
 
