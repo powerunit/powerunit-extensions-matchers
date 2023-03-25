@@ -26,7 +26,6 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.reducing;
-import static java.util.stream.Collectors.toList;
 
 import java.util.Comparator;
 import java.util.List;
@@ -102,7 +101,7 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 						ProvidesMatchersAnnotatedElementMatcherMirror::reduceByOrderingOnIgnoreFieldDescription)),
 						Map::values))
 				.stream().filter(Optional::isPresent).map(Optional::get).sorted(COMPARING_FIELD_BY_NAME)
-				.collect(toList());
+				.toList();
 	}
 
 	public ProvidesMatchersAnnotatedElementMatcherMirror(TypeElement typeElement, RoundMirror roundMirror) {

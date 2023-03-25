@@ -51,7 +51,7 @@ public class MapFieldDescription extends DefaultFieldDescription {
 			Object matchers[] = Optional.of(mirror.getFieldTypeMirror()).filter(m -> m instanceof DeclaredType)
 					.map(DeclaredType.class::cast).filter(m -> m.getTypeArguments().size() == 2)
 					.map(m -> m.getTypeArguments().stream().map(Object::toString)
-							.map(o -> Optional.ofNullable(getByName(o)).filter(Matchable::hasWithSameValue)
+							.map(o -> Optional.ofNullable(getByName(o.replaceAll("@[^ ]+ ",""))).filter(Matchable::hasWithSameValue)
 									.map(t -> t.getWithSameValue(false)).orElse(MATCHERS + ".is"))
 							.toArray())
 					.orElseGet(()->new String[] { MATCHERS + ".is", MATCHERS + ".is" });

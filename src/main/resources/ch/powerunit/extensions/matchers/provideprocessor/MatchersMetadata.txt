@@ -4,35 +4,100 @@
    */
   public static final Metadata METADATA = new Metadata();
 
-  public static record FieldMetadata(
-    String name, 
-    String type, 
+  /**
+   * This record defines the field level metadata.
+   */
+  public static record FieldMetadata<_T>(
+    /**
+     * This is the name of the field.
+     */
+    String name,
+    /**
+     * This is a string representing the type of the field.
+     */ 
+    String type,
+    /**
+     * This is a string representing how to access the field.
+     */
     String accessor,
+    /**
+     * This is a function to access the field.
+     */
     java.util.function.Function<%4$s,?> accessorFunction,
+    /**
+     * This string define how this field was interpreted by this annotation processor.
+     */
     String stereotype, 
-    boolean ignored, 
+    /**
+     * This boolean indicate if this field is ignored or not.
+     */
+    boolean ignored,
+    /**
+     * This is the kind of the field (how the field was detected).
+     */ 
     String kind,
-    Object linkedMatcherMetadata) {}
+    /**
+     * This is the class of the metadata, if available of a matcher for this field. Void if not avaible
+     */
+    Class<_T> linkedMatcherMetadataClass,
+    /**
+     * This is the metadata of the linked matcher if available.
+     */
+    _T linkedMatcherMetadata) {}
 
+  /**
+   * This is the class defining the metadata of this matcher.
+   */
   public static final class Metadata {
     private Metadata() {}
 
+    /**
+     * This is the version of the annotation processor.
+     */
     public final String ANNOTATION_PROCESSOR_VERSION = "%1$s";
 
+    /**
+     * This is compatibility flags of this matcher.
+     * <p>
+     * <ul>
+     * <li>0x01 : withSameValue also provides a version to ignore fields</li>
+	 * <li>0x02 : withSameValue also use a list of parent to detect cycle</li>
+	 * <li>0x04 : withSameValue also support a post processor</li>
+	 * <li>0x08 : java 17 generation</li>
+     * </ul>
+     */
     public final long COMPATIBILITY = %2$sL;
 
+    /**
+     * This is the source class name.
+     */
     public final String SOURCE_CLASS_NAME = "%3$s";
 
+    /**
+     * This is the class of the source class.
+     */
     public final Class<%4$s> SOURCE_CLASS = %4$s.class;
 
+    /**
+     * This is the name of the parent class name.
+     */
     public final String SOURCE_PARENT_CLASS_NAME = %5$s;
     
+    /**
+     * This is the list of all fields.
+     */
     public final FieldMetadata[] FIELDS = new FieldMetadata[]{ 
       %6$s 
     };
     
+    /**
+     * This is the source level of the generation of this class.
+     */
     public final String SOURCE_LEVEL = "%7$s";
     
+    /**
+     * Indicate if the preview flag was set during build.
+     */
     public final boolean IS_JAVA_PREVIEW = %8$s;
 
   }

@@ -167,11 +167,11 @@ public class RoundMirror extends AbstractRoundMirrorReferenceToProcessingEnv {
 	}
 
 	public Collection<Supplier<DSLMethod>> getDSLMethodFor(ProvidesMatchersAnnotatedElementData target) {
-		return AUTOMATED_EXTENSIONS.stream().map(ae -> ae.accept(target)).flatMap(Collection::stream).collect(toList());
+		return AUTOMATED_EXTENSIONS.stream().map(ae -> ae.accept(target)).flatMap(Collection::stream).toList();
 	}
 
 	public Collection<FieldDSLMethod> getFieldDSLMethodFor(AbstractFieldDescription target) {
-		return AUTOMATED_EXTENSIONS.stream().map(ae -> ae.accept(target)).flatMap(Collection::stream).collect(toList());
+		return AUTOMATED_EXTENSIONS.stream().map(ae -> ae.accept(target)).flatMap(Collection::stream).toList();
 	}
 
 }

@@ -98,7 +98,7 @@ public class OptionalFieldDescription extends DefaultFieldDescription {
 	}
 
 	public String generateMatcherBuilderReferenceFor(String generic, String accessor, String paramForHasSameValue) {
-		return ofNullable(getByName(generic)).filter(Matchable::hasWithSameValue).map(
+		return ofNullable(getByName(generic.replaceAll("@[^ ]+ ",""))).filter(Matchable::hasWithSameValue).map(
 				t -> t.getWithSameValue(false) + "(" + accessor + (t.supportIgnore() ? paramForHasSameValue : "") + ")")
 				.orElse(MATCHERS + ".is(" + accessor + ")");
 	}

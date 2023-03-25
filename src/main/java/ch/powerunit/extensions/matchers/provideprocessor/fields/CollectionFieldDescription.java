@@ -103,7 +103,7 @@ public class CollectionFieldDescription extends DefaultFieldDescription {
 	}
 
 	protected String generateMatcherBuilderReferenceFor(String generic) {
-		return ofNullable(getByName(generic)).filter(Matchable::hasWithSameValue).map(t -> t.getWithSameValue(true))
+		return ofNullable(getByName(generic.replaceAll("@[^ ]+ ",""))).filter(Matchable::hasWithSameValue).map(t -> t.getWithSameValue(true))
 				.orElse(MATCHERS + "::is");
 	}
 

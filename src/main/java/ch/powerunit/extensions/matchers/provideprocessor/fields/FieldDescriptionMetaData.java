@@ -131,7 +131,7 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 
 	public String generateMetadata(String className) {
 		return format("""
-				new %1$s(
+				new %1$s<%9$s>(
 				        %2$s,
 				        %3$s,
 				        %4$s,
@@ -139,7 +139,8 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 				        %6$s,
 				        %7$s,
 				        "%8$s",
-				        %9$s)""",
+				        %9$s.class,
+				        %10$s)""",
 				className,
 				toJavaSyntax(getFieldName()),
 				toJavaSyntax(getFieldType()),
@@ -148,6 +149,7 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 				toJavaSyntax(getClass().getSimpleName()),
 				Boolean.toString(this instanceof IgnoreFieldDescription),
 				getFieldElement().getKind().name(),
+				getTargetAsMatchable().map(m->m.getFullyQualifiedNameOfGeneratedClass()+".Metadata").orElse("Void"),
 				getTargetAsMatchable().map(m->m.getFullyQualifiedNameOfGeneratedClass()+".METADATA").orElse("null"));
 
 	}
