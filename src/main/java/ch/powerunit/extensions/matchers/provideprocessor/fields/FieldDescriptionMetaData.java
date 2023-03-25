@@ -26,6 +26,7 @@ import static java.util.stream.Collectors.joining;
 import java.util.Optional;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
@@ -44,8 +45,7 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 	protected final FieldDescriptionMirror mirror;
 
 	public static final String computeGenericInformation(TypeMirror fieldTypeMirror) {
-		if (fieldTypeMirror instanceof DeclaredType) {
-			DeclaredType dt = ((DeclaredType) fieldTypeMirror);
+		if (fieldTypeMirror instanceof DeclaredType dt) {
 			return dt.getTypeArguments().stream().map(Object::toString).map(s->s.replaceAll("@[^ ]+ ", "")).collect(joining(","));
 		}
 		return "";
@@ -130,9 +130,26 @@ public abstract class FieldDescriptionMetaData extends AbstractFieldDescriptionC
 	}
 
 	public String generateMetadata(String className) {
-		return "new " + className + "(" + toJavaSyntax(getFieldName()) + "," + toJavaSyntax(getFieldType()) + ","
-				+ toJavaSyntax(getFieldAccessor()) + "," + toJavaSyntax(getClass().getSimpleName()) + ","
-				+ Boolean.toString(this instanceof IgnoreFieldDescription) + ")";
+		return format("""
+				new %1$s(
+				        %2$s,
+				        %3$s,
+				        %4$s,
+				        %5$s,
+				        %6$s,
+				        %7$s,
+				        "%8$s",
+				        %9$s)""",
+				className,
+				toJavaSyntax(getFieldName()),
+				toJavaSyntax(getFieldType()),
+				toJavaSyntax(getFieldAccessor()),
+				(getFieldElement().getKind().equals(ElementKind.FIELD)?"o->o.":getFullyQualifiedNameEnclosingClassOfField()+"::")+getFieldAccessor().replaceAll("[()]+", ""),
+				toJavaSyntax(getClass().getSimpleName()),
+				Boolean.toString(this instanceof IgnoreFieldDescription),
+				getFieldElement().getKind().name(),
+				getTargetAsMatchable().map(m->m.getFullyQualifiedNameOfGeneratedClass()+".METADATA").orElse("null"));
+
 	}
 
 }

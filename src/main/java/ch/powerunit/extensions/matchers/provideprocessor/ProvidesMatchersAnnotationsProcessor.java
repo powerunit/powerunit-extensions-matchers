@@ -57,7 +57,7 @@ import ch.powerunit.extensions.matchers.common.RessourceLoaderHelper;
 @SupportedAnnotationTypes({ "ch.powerunit.extensions.matchers.ProvideMatchers",
 		"ch.powerunit.extensions.matchers.IgnoreInMatcher", "ch.powerunit.extensions.matchers.AddToMatcher",
 		"ch.powerunit.extensions.matchers.AddToMatchers" })
-@SupportedSourceVersion(SourceVersion.RELEASE_8)
+@SupportedSourceVersion(SourceVersion.RELEASE_17)
 @SupportedOptions({ "ch.powerunit.extensions.matchers.provideprocessor.ProvidesMatchersAnnotationsProcessor.factory" })
 public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 
@@ -76,6 +76,9 @@ public class ProvidesMatchersAnnotationsProcessor extends AbstractProcessor {
 		super.init(processingEnv);
 		factoryParam = Optional.ofNullable(
 				processingEnv.getOptions().get(ProvidesMatchersAnnotationsProcessor.class.getName() + ".factory"));
+		if(processingEnv.getSourceVersion()!=null && processingEnv.getSourceVersion().compareTo(SourceVersion.RELEASE_17)<0) {
+			processingEnv.getMessager().printMessage(Kind.ERROR, "The source version "+processingEnv.getSourceVersion()+" is not supported by this powerunit-extensions-matchers.");
+		}
 	}
 
 	/*

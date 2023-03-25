@@ -115,7 +115,7 @@ public final class FieldDescriptionProvider {
 		}
 		Element te = mirror.getFieldElement();
 		return new ExtractTypeVisitor(containingElementMirror).visit(
-				(te instanceof ExecutableElement) ? ((ExecutableElement) te).getReturnType() : te.asType(), mirror);
+				(te instanceof ExecutableElement ee) ? ee.getReturnType() : te.asType(), mirror);
 	}
 
 }

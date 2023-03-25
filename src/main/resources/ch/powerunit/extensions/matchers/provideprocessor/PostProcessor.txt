@@ -44,7 +44,7 @@ public interface PostProcessor
 		 */
 		PostProcessor3<O, T> then(java.util.function.BiFunction<T, O, T> postProcessor);
 
-		static <O, T extends org.hamcrest.Matcher<O>> PostProcessor2<O, T> _newPostProcessor2Simple(
+		private static <O, T extends org.hamcrest.Matcher<O>> PostProcessor2<O, T> _newPostProcessor2Simple(
 				Class<T> targetMatcher, java.util.function.BiPredicate<T, O> accept) {
 			return p -> new PostProcessor3<O, T>() {
 
@@ -62,7 +62,7 @@ public interface PostProcessor
 			};
 		}
 
-		static <O, T extends org.hamcrest.Matcher<O>> PostProcessor2<O, T> _newPostProcessor2Chained(
+		private static <O, T extends org.hamcrest.Matcher<O>> PostProcessor2<O, T> _newPostProcessor2Chained(
 				Class<T> targetMatcher, java.util.function.BiPredicate<T, O> accept,
 				java.util.function.BiFunction<org.hamcrest.Matcher<?>, java.lang.Object, org.hamcrest.Matcher<?>> before) {
 			return p -> new PostProcessor3<O, T>() {

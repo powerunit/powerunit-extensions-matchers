@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 
 import ch.powerunit.extensions.matchers.common.CommonUtils;
@@ -77,7 +78,7 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 			f -> addPrefix("  ", f.getMatcherForField()), "\n");
 
 	private static final ListJoining<AbstractFieldDescription> JOIN_FIELD_METADATA = joinWithMapperAndDelimiter(
-			f -> f.generateMetadata("FieldMetadata"), ", ");
+			f -> f.generateMetadata("FieldMetadata"), ",\n      ");
 
 	private static final Comparator<AbstractFieldDescription> COMPARING_FIELD_BY_NAME = Comparator
 			.comparing(FieldDescriptionMetaData::getFieldName);
@@ -115,7 +116,7 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 				format(INTERFACE_FORMAT, getFullyQualifiedNameOfClassAnnotated(), getSimpleNameOfClassAnnotated(),
 						getParamComment(), simpleNameOfGeneratedInterfaceMatcher, fullGeneric,
 						getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(), getFullGenericParent(),
-						generic, getGenericParent(), JOIN_FIELD_DSL_INTERFACE.asString(fields)));
+						generic, getGenericParent(), JOIN_FIELD_DSL_INTERFACE.asString(fields),getSimpleNameOfGeneratedImplementationMatcher()));
 	}
 
 	protected String generatePrivateImplementation() {
@@ -145,11 +146,14 @@ public abstract class ProvidesMatchersAnnotatedElementMatcherMirror
 	}
 
 	public String generateMetadata() {
+		ProcessingEnvironment processingEnv = getProcessingEnv();
 		return format(METADATA_FORMAT, getAnnotationProcessorVersion(), getCompatibility(),
-				getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric(),
+				getFullyQualifiedNameOfClassAnnotatedWithProvideMatcherWithGeneric().strip(),
 				getFullyQualifiedNameOfClassAnnotated(),
 				fullyQualifiedNameOfSuperClassOfClassAnnotated.map(CommonUtils::toJavaSyntax).orElse("null"),
-				JOIN_FIELD_METADATA.asString(fields));
+				JOIN_FIELD_METADATA.asString(fields),
+				processingEnv.getSourceVersion().name(),
+				processingEnv.isPreviewEnabled());
 	}
 
 }

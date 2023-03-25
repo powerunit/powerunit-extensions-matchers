@@ -26,6 +26,7 @@ import java.util.Optional;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
@@ -51,7 +52,7 @@ public class FieldDescriptionMirror implements ElementHelper {
 	}
 
 	public String getFieldAccessor() {
-		return getSimpleName(fieldElement) + ((fieldElement instanceof ExecutableElement) ? "()" : "");
+		return getSimpleName(fieldElement) + ((fieldElement instanceof ExecutableElement || fieldElement instanceof RecordComponentElement) ? "()" : "");
 	}
 
 	public String getFieldName() {
@@ -75,7 +76,7 @@ public class FieldDescriptionMirror implements ElementHelper {
 	}
 
 	public TypeMirror getFieldTypeMirror() {
-		return (fieldElement instanceof ExecutableElement) ? ((ExecutableElement) fieldElement).getReturnType()
+		return (fieldElement instanceof ExecutableElement ee) ? ee.getReturnType()
 				: fieldElement.asType();
 	}
 

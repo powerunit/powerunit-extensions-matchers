@@ -25,7 +25,9 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.VariableElement;
 import javax.tools.Diagnostic.Kind;
 
@@ -59,6 +61,10 @@ public class ProvidesMatchersSubElementVisitor extends
 	@Override
 	public Optional<AbstractFieldDescription> visitVariable(VariableElement e,
 			ProvidesMatchersAnnotatedElementMatcherMirror p) {
+		if (ElementKind.RECORD.equals(e.getEnclosingElement().getKind())) {
+			removeFromIgnoreList.apply(e);
+			return Optional.empty();
+		}
 		if (isPublic(e) && !isStatic(e)) {
 			String fieldName = getSimpleName(e);
 			return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, fieldName);
@@ -75,10 +81,20 @@ public class ProvidesMatchersSubElementVisitor extends
 			if (simpleName.matches("^((get)|(is)).*")) {
 				return visiteExecutableGet(e, "^(get)|(is)", p);
 			}
+			if (ElementKind.RECORD.equals(e.getEnclosingElement().getKind())) {
+				removeFromIgnoreList.apply(e);
+				return Optional.empty();
+			}
 		}
 		generateIfNeededErrorForNotSupportedElementAndRemoveIt(
 				"Check that this method is public, doesn't have any parameter and is named isXXX or getXXX", e);
 		return Optional.empty();
+	}
+	
+	@Override
+	public Optional<AbstractFieldDescription> visitRecordComponent(RecordComponentElement e,
+			ProvidesMatchersAnnotatedElementMatcherMirror p) {
+		return createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(e, p, getSimpleName(e));
 	}
 
 	private void generateIfNeededErrorForNotSupportedElementAndRemoveIt(String description, Element e) {
@@ -99,7 +115,7 @@ public class ProvidesMatchersSubElementVisitor extends
 	public Optional<AbstractFieldDescription> createFieldDescriptionIfApplicableAndRemoveElementFromListWhenApplicable(
 			Element e, ProvidesMatchersAnnotatedElementMatcherMirror p, String fieldName) {
 		return removeIfNeededAndThenReturn(
-				((e instanceof ExecutableElement) ? ((ExecutableElement) e).getReturnType() : e.asType())
+				((e instanceof ExecutableElement ee) ? ee.getReturnType() : e.asType())
 						.accept(extractNameVisitor, false).map(f -> FieldDescriptionProvider.of(() -> p,
 								new FieldDescriptionMirror(() -> p, fieldName, f, e))));
 	}

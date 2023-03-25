@@ -53,8 +53,13 @@ public final class FactoryHelper {
 	}
 
 	public static String generateStaticDSL(String className) {
-		return String.format(
-				"  /**\n   * Use this static field to access all the DSL syntax, without be required to implements this interface.\n  */\n  public static final %1$s DSL = new %1$s() {};\n\n",
+		return String.format("""
+				/**
+				 * Use this static field to access all the DSL syntax, without be required to implements this interface.
+				 */
+				public static final %1$s DSL = new %1$s() {};
+				
+				""".indent(2),
 				className);
 	}
 }

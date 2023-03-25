@@ -19,7 +19,7 @@
  */
 package ch.powerunit.extensions.matchers.common;
 
-import javax.lang.model.util.SimpleElementVisitor8;
+import javax.lang.model.util.SimpleElementVisitor14;
 
 /**
  * Element Visitor for this project, which support access to the round and
@@ -29,7 +29,7 @@ import javax.lang.model.util.SimpleElementVisitor8;
  *
  */
 public abstract class AbstractSimpleElementVisitor<R, P, S extends AbstractRoundMirrorReferenceToProcessingEnv>
-		extends SimpleElementVisitor8<R, P> implements AbstractRoundMirrorSupport<S>,ElementHelper {
+		extends SimpleElementVisitor14<R, P> implements AbstractRoundMirrorSupport<S>,ElementHelper {
 	protected final S support;
 
 	public AbstractSimpleElementVisitor(S support) {

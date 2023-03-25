@@ -67,7 +67,7 @@ public abstract class AbstractTypeElementMirror<R extends AbstractRoundMirrorRef
 	}
 
 	public boolean hasSuperClass() {
-		return fullyQualifiedNameOfSuperClassOfClassAnnotated.isPresent();
+		return fullyQualifiedNameOfSuperClassOfClassAnnotated.filter(s->!s.equals("java.lang.Record")).isPresent();
 	}
 
 }

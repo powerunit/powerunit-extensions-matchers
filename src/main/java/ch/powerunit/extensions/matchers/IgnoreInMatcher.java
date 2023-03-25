@@ -42,7 +42,7 @@ import java.lang.annotation.Target;
  */
 @Documented
 @Retention(RetentionPolicy.SOURCE)
-@Target({ ElementType.FIELD, ElementType.METHOD })
+@Target({ ElementType.FIELD, ElementType.METHOD, ElementType.RECORD_COMPONENT })
 @Inherited
 public @interface IgnoreInMatcher {
 
